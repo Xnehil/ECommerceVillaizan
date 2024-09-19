@@ -1,14 +1,15 @@
 import { buildQuery, FindConfig, Selector, TransactionBaseService } from "@medusajs/medusa";
-import { Producto } from "src/models/Producto";
+import { Producto } from "../models/Producto";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils"
+import ProductoRepository from "src/repositories/Producto";
 
 class ProductoService extends TransactionBaseService {
-    protected productoRepository_: Repository<Producto>;
+    protected productoRepository_: typeof ProductoRepository;
 
     constructor(container){
         super(container);
-        this.productoRepository_ = this.activeManager_.getRepository(Producto);
+        this.productoRepository_ = container.productoRepository;
     }
 
 
@@ -17,11 +18,12 @@ class ProductoService extends TransactionBaseService {
       }
 
       async listar(): Promise<Producto[]> {
-        return this.productoRepository_.find();
+        const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
+        return productoRepo.find();
       }
     
       async listarYContar(
-        selector?: Selector<Producto>,
+        selector: Selector<Producto> ={},
         config: FindConfig<Producto> = {
           skip: 0,
           take: 20,

@@ -10,7 +10,7 @@ import { Producto } from "src/models/Producto";
     req: MedusaRequest,
     res: MedusaResponse
   ) => {
-    const productoService = new ProductoService(req.scope.resolve("ProductoService"));
+    const productoService: ProductoService = req.scope.resolve("productoService");
 
     res.json({
       productos: await productoService.listarConPaginacion(),
@@ -21,7 +21,7 @@ import { Producto } from "src/models/Producto";
     req: MedusaRequest,
     res: MedusaResponse
   ) => {
-    const productoService = new ProductoService(req.scope.resolve("ProductoService"));
+    const productoService: ProductoService = req.scope.resolve("productoService");
 
     if (!req.body) {
       res.status(400).json({ error: "Petición inválida" });
@@ -34,3 +34,5 @@ import { Producto } from "src/models/Producto";
       producto,
     });
   }
+
+  export const AUTHENTICATE = false
