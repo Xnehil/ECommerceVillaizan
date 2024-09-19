@@ -1,1 +1,7 @@
-backendecommerce\datasource.js
+backendecommerce/datasource.js
+
+#Ignore node_modules folder inside any directory
+node_modules
+
+#Ignore datasource.js file inside any directory
+datasource.js
