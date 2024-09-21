@@ -9,7 +9,7 @@ class LibroReclamacionesService extends TransactionBaseService {
 
     constructor(container){
         super(container);
-        this.libroReclamacionesRepository_ = container.libroReclamacionesRepository;
+        this.libroReclamacionesRepository_ = container.libroreclamacionesRepository;
     }
 
 

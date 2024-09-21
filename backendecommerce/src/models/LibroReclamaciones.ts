@@ -6,11 +6,12 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
   } from "typeorm"
-  import { BaseEntity, SoftDeletableEntity } from "@medusajs/medusa"
-  import { generateEntityId } from "@medusajs/medusa/dist/utils"
+import { BaseEntity, SoftDeletableEntity } from "@medusajs/medusa"
+import { generateEntityId } from "@medusajs/medusa/dist/utils"
+import { EntidadBase } from "./EntidadBase"
 
 @Entity("vi_libro_reclamaciones") 
-export class LibroReclamaciones extends SoftDeletableEntity {
+export class LibroReclamaciones extends EntidadBase {
     @Column({ type: "timestamp" })
     fechaIncidente: Date
 

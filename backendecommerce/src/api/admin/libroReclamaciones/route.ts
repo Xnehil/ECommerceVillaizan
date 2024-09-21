@@ -10,7 +10,7 @@ import { LibroReclamaciones } from "src/models/LibroReclamaciones";
     req: MedusaRequest,
     res: MedusaResponse
   ) => {
-    const libroReclamacionesService: LibroReclamacionesService = req.scope.resolve("libroReclamacionesService");
+    const libroReclamacionesService: LibroReclamacionesService = req.scope.resolve("libroreclamacionesService");
 
     res.json({
       libroReclamacioness: await libroReclamacionesService.listarConPaginacion(),
@@ -21,7 +21,7 @@ import { LibroReclamaciones } from "src/models/LibroReclamaciones";
     req: MedusaRequest,
     res: MedusaResponse
   ) => {
-    const libroReclamacionesService: LibroReclamacionesService = req.scope.resolve("libroReclamacionesService");
+    const libroReclamacionesService: LibroReclamacionesService = req.scope.resolve("libroreclamacionesService");
 
     if (!req.body) {
       res.status(400).json({ error: "Petición inválida" });
