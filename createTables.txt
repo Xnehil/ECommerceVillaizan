@@ -81,6 +81,31 @@ CREATE TABLE vi_libroreclamaciones (
 
 -- Gestión de productos
 
+CREATE TABLE vi_tipoproducto (
+    id VARCHAR(50) PRIMARY KEY,
+	nombre varchar(255) not null,
+	--trazabilidad
+    estaactivo boolean default true not null,
+    desactivadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);
+
+CREATE TABLE vi_subcategoria (
+    id VARCHAR(50) PRIMARY KEY,
+	nombre varchar(255) not null,
+	--trazabilidad
+    estaactivo boolean default true not null,
+    desactivadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);
+
+
 CREATE TABLE vi_tipoproducto_subcategoria (
     tipoproducto_id VARCHAR(50),
     subcategoria_id VARCHAR(50),
@@ -96,17 +121,6 @@ CREATE TABLE vi_tipoproducto_subcategoria (
     usuarioactualizacion varchar(50)
 );
 
-CREATE TABLE vi_tipoproducto (
-    id VARCHAR(50) PRIMARY KEY,
-	nombre varchar(255) not null,
-	--trazabilidad
-    estaactivo boolean default true not null,
-    desactivadoen timestamp null,
-    creadoen timestamp default current_timestamp not null,
-    actualizadoen timestamp default current_timestamp not null,
-    usuariocreacion varchar(50) not null,
-    usuarioactualizacion varchar(50)
-);
 
 create table vi_producto (
     id varchar(50) primary key,
@@ -122,9 +136,11 @@ create table vi_producto (
     informacionNutricional text,
     razonEliminacion text,
     estado boolean default true not null,
+    sevendeEcommerce boolean default false not null,
+    --trazabilidad
+    estaactivo boolean default true not null,
     usuariocreacion varchar(255) not null,
     usuarioactualizacion varchar(255),
-    sevendeEcommerce boolean default false not null,
     creadoen timestamp default current_timestamp not null,
     actualizadoen timestamp default current_timestamp not null,
     desactivadoen timestamp null,
@@ -147,17 +163,6 @@ create table vi_fruta (
     usuarioactualizacion varchar(50)
 );
 
-CREATE TABLE vi_subcategoria (
-    id VARCHAR(50) PRIMARY KEY,
-	nombre varchar(255) not null,
-	--trazabilidad
-    estaactivo boolean default true not null,
-    desactivadoen timestamp null,
-    creadoen timestamp default current_timestamp not null,
-    actualizadoen timestamp default current_timestamp not null,
-    usuariocreacion varchar(50) not null,
-    usuarioactualizacion varchar(50)
-);
 
 
 CREATE TABLE vi_contenidoeducativo (
