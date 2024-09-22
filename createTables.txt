@@ -16,6 +16,8 @@ DROP TABLE IF EXISTS vi_producto;
 
 DROP TABLE IF EXISTS vi_almacen;
 
+DROP TABLE IF EXISTS vi_libroreclamaciones;
+
 DROP TABLE IF EXISTS vi_igv;
 
 DROP TABLE IF EXISTS vi_ordenserie;
@@ -293,7 +295,7 @@ CREATE TABLE vi_pedido (
 CREATE TABLE vi_detallepedido (
     id_producto VARCHAR(50),
 	id_pedido VARCHAR(50),
-	PRIMARY KEY (producto_id, fruta_id),
+	PRIMARY KEY (id_producto, id_pedido),
 	CONSTRAINT fk_producto FOREIGN KEY (id_producto) REFERENCES vi_producto(id),
 	CONSTRAINT fk_pedido FOREIGN KEY (id_pedido) REFERENCES vi_pedido(id),
 	cantidad INT NOT NULL,
