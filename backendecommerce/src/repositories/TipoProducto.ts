@@ -1,4 +1,4 @@
-import { TipoProducto } from "src/models/TipoProducto"
+import { TipoProducto } from "../models/TipoProducto"
 import { Producto } from "../models/Producto"
 import { 
   dataSource,
