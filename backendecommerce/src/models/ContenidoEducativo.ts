@@ -5,7 +5,7 @@ import { Fruta } from "./Fruta";
 
 @Entity("vi_contenidoeducativo")
 export class ContenidoEducativo extends EntidadBase {
-    @ManyToOne(() => Fruta, fruta => fruta.contenidosEducativos)
+    @ManyToOne(() => Fruta, fruta => fruta.contenidosEducativos, { eager: true })
     @JoinColumn({ name: "id_fruta" }) // Foreign key for Fruta
     fruta: Fruta;
 

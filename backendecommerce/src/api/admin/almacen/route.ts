@@ -27,7 +27,7 @@ import { Almacen } from "src/models/Almacen";
  *             schema:
  *               type: object
  *               properties:
- *                 almacens:
+ *                 almacenes:
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Almacen'
@@ -39,7 +39,7 @@ import { Almacen } from "src/models/Almacen";
     const almacenService: AlmacenService = req.scope.resolve("almacenService");
 
     res.json({
-      almacens: await almacenService.listarConPaginacion(),
+      almacenes: await almacenService.listarConPaginacion(),
     })
   }
 

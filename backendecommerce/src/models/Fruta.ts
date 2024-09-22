@@ -21,7 +21,7 @@ export class Fruta extends EntidadBase {
     @Column("text", { nullable: true })
     descripcion: string;
 
-    @Column("text", { nullable: true , name: "informacionnutricional"})
+    @Column("text", { nullable: true , name: "informacioneducativa"})
     informacionEducativa: string;
 
 

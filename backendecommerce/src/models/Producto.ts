@@ -51,6 +51,7 @@ export class Producto extends EntidadBase {
     precioB: number
 
     @Column("decimal", { precision: 10, scale: 2, name: "precioc" })
+    precioC: number
 
     @Column({name: "urlimagen"})
     urlImagen: string

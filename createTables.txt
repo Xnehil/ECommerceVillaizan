@@ -38,6 +38,11 @@ DROP TABLE IF EXISTS vi_metodopago;
 
 DROP TABLE IF EXISTS vi_banco;
 
+DROP TABLE IF EXISTS vi_inventariomotorizado;
+DROP TABLE IF EXISTS vi_direccion;
+DROP TABLE IF EXISTS vi_motorizado;
+DROP TABLE IF EXISTS vi_ubicacion;
+DROP TABLE IF EXISTS vi_ciudad;
 
 
 
@@ -101,7 +106,7 @@ CREATE TABLE vi_subcategoria (
     desactivadoen timestamp null,
     creadoen timestamp default current_timestamp not null,
     actualizadoen timestamp default current_timestamp not null,
-    usuariocreacion varchar(50) not null,
+    usuariocreacion varchar(50) default 'admin' not null,
     usuarioactualizacion varchar(50)
 );
 
@@ -117,7 +122,7 @@ CREATE TABLE vi_tipoproducto_subcategoria (
     desactivadoen timestamp null,
     creadoen timestamp default current_timestamp not null,
     actualizadoen timestamp default current_timestamp not null,
-    usuariocreacion varchar(50) not null,
+    usuariocreacion varchar(50) default 'admin' not null,
     usuarioactualizacion varchar(50)
 );
 
@@ -221,7 +226,7 @@ CREATE TABLE vi_producto_subcategoria (
     desactivadoen timestamp null,
     creadoen timestamp default current_timestamp not null,
     actualizadoen timestamp default current_timestamp not null,
-    usuariocreacion varchar(50) not null,
+    usuariocreacion varchar(50) default 'admin' not null,
     usuarioactualizacion varchar(50)
 );
 
@@ -237,7 +242,7 @@ CREATE TABLE vi_producto_fruta (
     desactivadoen timestamp null,
     creadoen timestamp default current_timestamp not null,
     actualizadoen timestamp default current_timestamp not null,
-    usuariocreacion varchar(50) not null,
+    usuariocreacion varchar(50) default 'admin' not null,
     usuarioactualizacion varchar(50)
 );
 -- Gestión de envios
@@ -377,7 +382,7 @@ CREATE TABLE vi_pedido_metodopago (
     desactivadoen TIMESTAMP,
     creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    usuariocreacion VARCHAR(50) NOT NULL,
+    usuariocreacion VARCHAR(50) default 'admin' not null,
     usuarioactualizacion VARCHAR(50)
 );
 
@@ -404,4 +409,83 @@ CREATE TABLE vi_pago (
 );
 
 
+
+CREATE TABLE vi_motorizado (
+    id VARCHAR(50) PRIMARY KEY,
+    placa VARCHAR(20) NOT NULL,
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_ubicacion (
+    id VARCHAR(50) PRIMARY KEY,
+    latitud DECIMAL(10, 7) NOT NULL,
+    longitud DECIMAL(10, 7) NOT NULL,
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_ciudad (
+    id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,  -- Ejemplo: Moyobamba, Tarapoto, Jaen
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
+
+
+CREATE TABLE vi_direccion (
+    id VARCHAR(50) PRIMARY KEY,
+    calle VARCHAR(255) NOT NULL,
+    numeroExterior VARCHAR(20) NOT NULL,
+    numeroInterior VARCHAR(20),
+    region VARCHAR(100) NOT NULL,
+    codigoPostal VARCHAR(10),
+    referencia VARCHAR(255),
+    idCiudad VARCHAR(50),
+    CONSTRAINT fk_ciudad FOREIGN KEY (idCiudad) REFERENCES vi_ciudad(id),
+    idUbicacion VARCHAR(50),
+    CONSTRAINT fk_ubicacion FOREIGN KEY (idUbicacion) REFERENCES vi_ubicacion(id),
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_inventariomotorizado (
+    id VARCHAR(50) PRIMARY KEY,
+    stock INT NOT NULL,
+    stockMinimo INT NOT NULL,
+    esMerma BOOLEAN DEFAULT FALSE NOT NULL,
+    motivoMerma VARCHAR(255),
+    urlImagenMerma VARCHAR(255),
+    idMotorizado VARCHAR(50),
+    CONSTRAINT fk_motorizado FOREIGN KEY (idMotorizado) REFERENCES vi_motorizado(id),
+    idProducto VARCHAR(50),
+    CONSTRAINT fk_producto FOREIGN KEY (idProducto) REFERENCES vi_producto(id),
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
 

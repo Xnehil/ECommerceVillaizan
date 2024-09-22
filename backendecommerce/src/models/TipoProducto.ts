@@ -18,7 +18,8 @@ export class TipoProducto extends EntidadBase {
         inverseJoinColumn: {
           name: "subcategoria_id",
           referencedColumnName: "id"
-        }
+        },
+        
       })
     subcategorias: Subcategoria[];
 
