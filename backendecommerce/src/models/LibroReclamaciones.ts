@@ -10,82 +10,83 @@ import { BaseEntity, SoftDeletableEntity } from "@medusajs/medusa"
 import { generateEntityId } from "@medusajs/medusa/dist/utils"
 import { EntidadBase } from "./EntidadBase"
 
-@Entity("vi_libro_reclamaciones") 
+@Entity("vi_libroreclamaciones") 
 export class LibroReclamaciones extends EntidadBase {
+
     @Column({ type: "timestamp", name: "fechaincidente" })
-    fechaIncidente: Date
+    fechaIncidente: Date;
 
     @Column({ type: "varchar", length: 100 })
-    nombres: string
+    nombres: string;
 
     @Column({ type: "varchar", length: 100 })
-    apellidos: string
+    apellidos: string;
 
     @Column({ type: "varchar", length: 100 })
-    correo: string
+    correo: string;
 
     @Column({ type: "varchar", length: 20, nullable: true })
-    telefono: string
+    telefono: string;
 
     @Column({ type: "varchar", length: 3, name: "tipodoc" })
-    tipoDoc: string
+    tipoDoc: string;
 
     @Column({ type: "varchar", length: 20, name: "nrdocumento" })
-    nrDocumento: string
+    nrDocumento: string;
 
     @Column({ type: "boolean", default: false })
-    menor: boolean
+    menor: boolean;
 
     @Column({ type: "varchar", length: 50 })
-    departamento: string
+    departamento: string;
 
     @Column({ type: "varchar", length: 50 })
-    provincia: string
+    provincia: string;
 
     @Column({ type: "varchar", length: 50 })
-    distrito: string
+    distrito: string;
 
     @Column({ type: "varchar", length: 200 })
-    direccion: string
+    direccion: string;
 
     @Column({ type: "varchar", length: 10 })
-    tipo: string
+    tipo: string;
 
     @Column({ type: "decimal", precision: 10, scale: 2, name: "montoreclamado" })
-    montoReclamado: number
+    montoReclamado: number;
 
     @Column("text")
-    descripcion: string
+    descripcion: string;
 
     @Column({ type: "varchar", length: 7 })
-    reclamacion: string
+    reclamacion: string;
 
     @Column({ type: "varchar", length: 50, nullable: true, name: "nrpedido" })
-    nrPedido: string
+    nrPedido: string;
 
     @Column({ type: "timestamp", nullable: true, name: "fechapedido" })
-    fechaPedido: Date
+    fechaPedido: Date;
 
     @Column("text", { nullable: true })
-    detalle: string
+    detalle: string;
 
     @Column("text", { nullable: true, name: "pedidoconcreto" })
-    pedidoConcreto: string
+    pedidoConcreto: string;
 
     @Column({ type: "varchar", length: 200, nullable: true, name: "urlcomprobante" })
-    urlComprobante: string
+    urlComprobante: string;
 
     @Column("text", { nullable: true, name: "accionesproveedor" })
-    accionesProveedor: string
+    accionesProveedor: string;
 
     @Column({ type: "boolean", default: true, name: "estaactivo" })
-    estaActivo: boolean
+    estaActivo: boolean;
 
     @Column({ type: "varchar", length: 50, name: "usuariocreacion" })
-    usuarioCreacion: string
+    usuarioCreacion: string;
 
     @Column({ type: "varchar", length: 50, nullable: true, name: "usuarioactualizacion" })
-    usuarioActualizacion: string
+    usuarioActualizacion: string;
 
     @BeforeInsert()
     private beforeInsert() {
