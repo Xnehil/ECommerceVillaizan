@@ -16,6 +16,42 @@ DROP TABLE IF EXISTS vi_producto;
 
 DROP TABLE IF EXISTS vi_almacen;
 
+-- Libro de Reclamaciones
+
+CREATE TABLE vi_libro_reclamaciones (
+    id VARCHAR PRIMARY KEY,
+    fechaIncidente TIMESTAMP NOT NULL,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    correo VARCHAR(100) NOT NULL,
+    telefono VARCHAR(20),
+    tipoDoc VARCHAR(3) NOT NULL,
+    nrDocumento VARCHAR(20) NOT NULL,
+    menor BOOLEAN DEFAULT FALSE NOT NULL,
+    departamento VARCHAR(50) NOT NULL,
+    provincia VARCHAR(50) NOT NULL,
+    distrito VARCHAR(50) NOT NULL,
+    direccion VARCHAR(200) NOT NULL,
+    tipo VARCHAR(10) NOT NULL,
+    montoReclamado DECIMAL(10, 2) NOT NULL,
+    descripcion TEXT NOT NULL,
+    reclamacion VARCHAR(7) NOT NULL,
+    nrPedido VARCHAR(50),
+    fechaPedido TIMESTAMP,
+    detalle TEXT,
+    pedidoConcreto TEXT,
+    urlComprobante VARCHAR(200),
+    accionesProveedor TEXT,
+	--trazabilidad
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
+-- Gestión de productos
 
 CREATE TABLE vi_tipoproducto (
     id VARCHAR(50) PRIMARY KEY,
@@ -156,3 +192,120 @@ CREATE TABLE vi_producto_fruta (
     usuariocreacion varchar(50) not null,
     usuarioactualizacion varchar(50)
 );
+-- Gestión de envios
+
+CREATE TABLE vi_pedido (
+    id VARCHAR(50) PRIMARY KEY,
+    estado VARCHAR(50) NOT NULL,
+    prioridadEntrega VARCHAR(20),
+    total DECIMAL(10, 2) NOT NULL,
+	puntosOtorgados INT DEFAULT 0,
+    motivoCancelacion TEXT,
+    codigoSeguimiento VARCHAR(100),
+    montoEfectivoPagar DECIMAL(10, 2),
+	--trazabilidad
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_detalle_pedido (
+    id VARCHAR(50) PRIMARY KEY,
+    cantidad INT NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    --trazabilidad
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_igv (
+    id VARCHAR(50) PRIMARY KEY,
+    porcentaje DECIMAL(5, 2) NOT NULL,
+    --trazabilidad
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_venta (
+    id VARCHAR(50) PRIMARY KEY,
+    tipoComprobante VARCHAR(10) CHECK (tipoComprobante IN ('boleta', 'factura')) NOT NULL,
+    fechaVenta TIMESTAMP NOT NULL,
+    numeroComprobante VARCHAR(50) NOT NULL,
+    montoTotal DECIMAL(10, 2) NOT NULL,
+    totalPaletas INT NOT NULL,
+    totalMafeletas INT NOT NULL,
+    estado VARCHAR(50) NOT NULL,
+    totalIGV DECIMAL(10, 2) NOT NULL,
+    --trazabilidad
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_orden_serie (
+    id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(10) NOT NULL,
+    descripcion TEXT,
+    --trazabilidad
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_metodo_pago (
+    id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    --trazabilidad
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_pago (
+    id VARCHAR(50) PRIMARY KEY,
+    esTransferencia BOOLEAN NOT NULL,
+    montoCobrado DECIMAL(10, 2) NOT NULL,
+    numeroOperacion VARCHAR(50),
+    urlEvidencia VARCHAR(200),
+	codigoTransaccion VARCHAR(100),
+    --trazabilidad
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_banco (
+    id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    --trazabilidad
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
