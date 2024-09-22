@@ -1,0 +1,770 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Ecommerce API",
+    "version": "1.0.0",
+    "description": "Documentación de la API de Ecommerce Villaizan"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9000"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "EntidadBase": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "sub_01H8B4RD715N9ZYPE95KR76839"
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-10-01T12:00:00Z"
+          },
+          "actualizadoEn": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2023-10-01T12:00:00Z"
+          },
+          "desactivadoEn": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "example": null
+          },
+          "usuarioCreacion": {
+            "type": "string",
+            "example": "admin_user"
+          },
+          "usuarioActualizacion": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "estaActivo": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "Subcategoria": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string",
+                "example": "Subcategoria Ejemplo"
+              },
+              "tipoProducto": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "tipo_01H8B4RD715N9ZYPE95KR76839"
+                    }
+                  }
+                }
+              },
+              "productos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "prod_01H8B4RD715N9ZYPE95KR76839"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "TipoProducto": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string",
+                "example": "TipoProducto Ejemplo"
+              },
+              "subcategorias": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "sub_01H8B4RD715N9ZYPE95KR76839"
+                    }
+                  }
+                }
+              },
+              "productos": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "prod_01H8B4RD715N9ZYPE95KR76839"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Producto": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "tipoProducto": {
+                "$ref": "#/components/schemas/TipoProducto"
+              },
+              "subcategorias": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Subcategoria"
+                }
+              },
+              "frutas": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Fruta"
+                }
+              },
+              "codigo": {
+                "type": "string",
+                "example": "PROD12345"
+              },
+              "nombre": {
+                "type": "string",
+                "example": "Producto Ejemplo"
+              },
+              "precioA": {
+                "type": "number",
+                "format": "decimal",
+                "example": 100
+              },
+              "precioB": {
+                "type": "number",
+                "format": "decimal",
+                "example": 90
+              },
+              "precioC": {
+                "type": "number",
+                "format": "decimal",
+                "example": 80
+              }
+            }
+          }
+        ]
+      },
+      "Fruta": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "productos": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Producto"
+                }
+              },
+              "contenidosEducativos": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ContenidoEducativo"
+                }
+              },
+              "nombre": {
+                "type": "string",
+                "example": "Fruta Ejemplo"
+              },
+              "urlImagen": {
+                "type": "string",
+                "example": "http://example.com/imagen.jpg"
+              },
+              "descripcion": {
+                "type": "string",
+                "nullable": true,
+                "example": "Descripción de la fruta"
+              },
+              "informacionEducativa": {
+                "type": "string",
+                "nullable": true,
+                "example": "Información nutricional de la fruta"
+              }
+            }
+          }
+        ]
+      },
+      "ContenidoEducativo": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "fruta": {
+                "$ref": "#/components/schemas/Fruta"
+              },
+              "titulo": {
+                "type": "string",
+                "example": "Contenido Educativo Ejemplo"
+              },
+              "descripcion": {
+                "type": "string",
+                "nullable": true,
+                "example": "Descripción del contenido educativo"
+              },
+              "tipoContenido": {
+                "type": "string",
+                "example": "Video"
+              },
+              "URLContenido": {
+                "type": "string",
+                "example": "http://example.com/contenido.mp4"
+              },
+              "fechaPublicacion": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2023-10-01T12:00:00Z"
+              }
+            }
+          }
+        ]
+      },
+      "Almacen": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string",
+                "example": "Almacén Ejemplo"
+              }
+            }
+          }
+        ]
+      },
+      "InventarioAlmacen": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "stock": {
+                "type": "integer",
+                "example": 100
+              },
+              "producto": {
+                "$ref": "#/components/schemas/Producto"
+              },
+              "almacen": {
+                "$ref": "#/components/schemas/Almacen"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "paths": {
+    "/almacenes": {
+      "get": {
+        "summary": "Lista todos los almacenes con paginación",
+        "tags": [
+          "Almacenes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de almacenes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "almacens": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Almacen"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo almacén",
+        "tags": [
+          "Almacenes"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Almacen"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El almacén ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Almacen"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/contenidoseducativos": {
+      "get": {
+        "summary": "Lista todos los contenidos educativos con paginación",
+        "tags": [
+          "ContenidosEducativos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de contenidos educativos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "contenidoEducativos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ContenidoEducativo"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo contenido educativo",
+        "tags": [
+          "ContenidosEducativos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContenidoEducativo"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El contenido educativo ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContenidoEducativo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "description": {
+      "0": "A",
+      "1": "P",
+      "2": "I",
+      "3": " ",
+      "4": "p",
+      "5": "a",
+      "6": "r",
+      "7": "a",
+      "8": " ",
+      "9": "f",
+      "10": "r",
+      "11": "u",
+      "12": "t",
+      "13": "a",
+      "14": "s"
+    },
+    "/frutas": {
+      "get": {
+        "summary": "Lista todas las frutas con paginación",
+        "tags": [
+          "Frutas"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de frutas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "frutas": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Fruta"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea una nueva fruta",
+        "tags": [
+          "Frutas"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Fruta"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "La fruta ha sido creada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Fruta"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/inventariosalmacen": {
+      "get": {
+        "summary": "Lista todos los inventarios de almacén con paginación",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de inventarios de almacén",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "inventarioAlmacens": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InventarioAlmacen"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo inventario de almacén",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventarioAlmacen"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El inventario de almacén ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioAlmacen"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/productos": {
+      "get": {
+        "summary": "Lista todos los productos con paginación",
+        "tags": [
+          "Productos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de productos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "productos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Producto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo producto",
+        "tags": [
+          "Productos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Producto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El producto ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Producto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/subcategorias": {
+      "get": {
+        "summary": "Lista de subcategorias con paginación (20 elementos por página)",
+        "tags": [
+          "Subcategorias"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of subcategorias",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "subcategorias": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Subcategoria"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crear una subcategoria",
+        "tags": [
+          "Subcategorias"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Subcategoria"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "La subcategoria ha sido creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subcategoria"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida (el body no es correcto)"
+          }
+        }
+      }
+    },
+    "/tipoproductos": {
+      "get": {
+        "summary": "Lista todos los tipoProductos con paginación",
+        "tags": [
+          "TipoProductos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de tipoProductos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tipoProductos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TipoProducto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo tipoProducto",
+        "tags": [
+          "TipoProductos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TipoProducto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El tipoProducto ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoProducto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Almacenes",
+      "description": "API para la gestión de almacenes"
+    },
+    {
+      "name": "ContenidosEducativos",
+      "description": "API para la gestión de contenidos educativos"
+    },
+    {
+      "name": "Frutas"
+    },
+    {
+      "name": "InventariosAlmacen",
+      "description": "API para la gestión de inventarios de almacén"
+    },
+    {
+      "name": "Productos",
+      "description": "API para la gestión de productos"
+    },
+    {
+      "name": "Subcategorias",
+      "description": "API para subcategorías"
+    },
+    {
+      "name": "TipoProductos",
+      "description": "API para tipo de productos"
+    }
+  ]
+}

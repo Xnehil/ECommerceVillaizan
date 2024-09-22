@@ -2,6 +2,8 @@ DROP TABLE IF EXISTS vi_producto_fruta;
 
 DROP TABLE IF EXISTS vi_producto_subcategoria;
 
+DROP TABLE IF EXISTS vi_tipoproducto_subcategoria;
+
 DROP TABLE IF EXISTS vi_inventarioalmacen;
 
 DROP TABLE IF EXISTS vi_contenidoeducativo;
@@ -78,6 +80,21 @@ CREATE TABLE vi_libroreclamaciones (
 );
 
 -- Gestión de productos
+
+CREATE TABLE vi_tipoproducto_subcategoria (
+    tipoproducto_id VARCHAR(50),
+    subcategoria_id VARCHAR(50),
+    PRIMARY KEY (tipoproducto_id, subcategoria_id),
+    CONSTRAINT fk_producto FOREIGN KEY (tipoproducto_id) REFERENCES vi_tipoproducto(id),
+    CONSTRAINT fk_subcategoria FOREIGN KEY (subcategoria_id) REFERENCES vi_subcategoria(id),
+	--trazabilidad
+    estaactivo boolean default true not null,
+    desactivadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);
 
 CREATE TABLE vi_tipoproducto (
     id VARCHAR(50) PRIMARY KEY,

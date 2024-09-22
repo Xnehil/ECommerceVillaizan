@@ -6,9 +6,12 @@ import { TipoProducto } from "./TipoProducto";
 
 @Entity("vi_subcategoria")
 export class Subcategoria extends EntidadBase {
-    @ManyToOne(() => TipoProducto, tipoProducto => tipoProducto.subcategorias)
-    @JoinColumn({ name: "id_tipoproducto" }) // Foreign key for TipoProducto
-    tipoProducto: TipoProducto;
+    // @ManyToOne(() => TipoProducto, tipoProducto => tipoProducto.subcategorias)
+    // @JoinColumn({ name: "id_tipoproducto" }) // Foreign key for TipoProducto
+    // tipoProducto: TipoProducto;
+    @ManyToMany(() => TipoProducto, tipoProducto => tipoProducto.subcategorias)
+    tipoProducto: TipoProducto[];
+
 
     @ManyToMany(() => Producto, producto => producto.subcategorias)
     productos: Producto[];
@@ -19,6 +22,6 @@ export class Subcategoria extends EntidadBase {
 
     @BeforeInsert()
     private beforeInsert() {
-        this.id = generateEntityId(this.id, "tip");
+        this.id = generateEntityId(this.id, "subcat");
     }
 }

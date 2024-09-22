@@ -3,64 +3,65 @@ import type {
     MedusaResponse,
   } from "@medusajs/medusa"
   
-import  ProductoService  from "../../../services/Producto"
-import { Producto } from "src/models/Producto";
+import  AlmacenService  from "../../../services/Almacen"
+import { Almacen } from "src/models/Almacen";
+
 /**
  * @swagger
  * tags:
- *   name: Productos
- *   description: API para la gestión de productos
+ *   name: Almacenes
+ *   description: API para la gestión de almacenes
  */
 
 /**
  * @swagger
- * /productos:
+ * /almacenes:
  *   get:
- *     summary: Lista todos los productos con paginación
- *     tags: [Productos]
+ *     summary: Lista todos los almacenes con paginación
+ *     tags: [Almacenes]
  *     responses:
  *       200:
- *         description: Una lista de productos
+ *         description: Una lista de almacenes
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 productos:
+ *                 almacens:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Producto'
+ *                     $ref: '#/components/schemas/Almacen'
  */
   export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse
   ) => {
-    const productoService: ProductoService = req.scope.resolve("productoService");
+    const almacenService: AlmacenService = req.scope.resolve("almacenService");
 
     res.json({
-      productos: await productoService.listarConPaginacion(),
+      almacens: await almacenService.listarConPaginacion(),
     })
   }
 
   /**
  * @swagger
- * /productos:
+ * /almacenes:
  *   post:
- *     summary: Crea un nuevo producto
- *     tags: [Productos]
+ *     summary: Crea un nuevo almacén
+ *     tags: [Almacenes]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Producto'
+ *             $ref: '#/components/schemas/Almacen'
  *     responses:
  *       201:
- *         description: El producto ha sido creado exitosamente.
+ *         description: El almacén ha sido creado exitosamente.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Producto'
+ *               $ref: '#/components/schemas/Almacen'
  *       400:
  *         description: Petición inválida
  */
@@ -68,17 +69,17 @@ import { Producto } from "src/models/Producto";
     req: MedusaRequest,
     res: MedusaResponse
   ) => {
-    const productoService: ProductoService = req.scope.resolve("productoService");
+    const almacenService: AlmacenService = req.scope.resolve("almacenService");
 
     if (!req.body) {
       res.status(400).json({ error: "Petición inválida" });
       return;
     }
-    const productoData = req.body as Producto;
-    const producto = await productoService.crear(productoData);
+    const almacenData = req.body as Almacen;
+    const almacen = await almacenService.crear(almacenData);
 
     res.status(201).json({
-      producto,
+      almacen,
     });
   }
 
