@@ -1,0 +1,158 @@
+DROP TABLE IF EXISTS vi_producto_fruta;
+
+DROP TABLE IF EXISTS vi_producto_subcategoria;
+
+DROP TABLE IF EXISTS vi_inventarioalmacen;
+
+DROP TABLE IF EXISTS vi_contenidoeducativo;
+
+DROP TABLE IF EXISTS vi_fruta;
+
+DROP TABLE IF EXISTS vi_subcategoria;
+
+DROP TABLE IF EXISTS vi_tipoproducto;
+
+DROP TABLE IF EXISTS vi_producto;
+
+DROP TABLE IF EXISTS vi_almacen;
+
+
+CREATE TABLE vi_tipoproducto (
+    id VARCHAR(50) PRIMARY KEY,
+	nombre varchar(255) not null,
+	--trazabilidad
+    estaactivo boolean default true not null,
+    eliminadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);
+
+create table vi_producto (
+    id varchar(50) primary key,
+    codigo varchar(255) unique not null,
+    nombre varchar(255) not null,
+    "precioA" decimal(10, 2) not null,
+    "precioB" decimal(10, 2) not null,
+    "precioC" decimal(10, 2) not null,
+    "urlImagen" varchar(255) not null,
+    "cantMinPed" int not null,
+    "cantMaxPed" int not null,
+    descripcion text,
+    "informacionNutricional" text,
+    "razonEliminacion" text,
+    estado boolean default true not null,
+    usuariocreacion varchar(255) not null,
+    usuarioactualizacion varchar(255),
+    "sevendeEcommerce" boolean default false not null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    desactivadoen timestamp null,
+	id_tipoproducto VARCHAR(50),
+	CONSTRAINT fk_tipo_producto FOREIGN KEY (id_tipoproducto) REFERENCES vi_tipoproducto(id)
+);
+
+create table vi_fruta (
+    idfruta varchar(50) primary key,
+    nombre varchar(255) not null,
+    urlimagen varchar(255) not null,
+    descripcion text,
+    informacioneducativa text,
+	--trazabilidad
+    estaactivo boolean default true not null,
+    eliminadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);
+
+CREATE TABLE vi_subcategoria (
+    id VARCHAR(50) PRIMARY KEY,
+	nombre varchar(255) not null,
+	--trazabilidad
+    estaactivo boolean default true not null,
+    eliminadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);
+
+
+CREATE TABLE vi_contenidoeducativo (
+    id VARCHAR(50) PRIMARY KEY,
+    id_fruta VARCHAR(50),
+	titulo varchar(200) not null,
+    descripcion TEXT NULL,
+    tipocontenido VARCHAR(100) NOT NULL,
+    urlcontenido VARCHAR(255) NOT NULL,
+	fechapublicacion TIMESTAMP NOT NULL,
+    --trazabilidad
+    estaactivo boolean default true not null,
+    eliminadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50),
+	CONSTRAINT fk_fruta FOREIGN KEY (id_fruta) REFERENCES vi_fruta(id)
+);
+
+CREATE TABLE vi_almacen (
+    idAlmacen VARCHAR(50) PRIMARY KEY,
+	nombre varchar(255) not null,
+    --trazabilidad
+    estaactivo boolean default true not null,
+    eliminadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);
+
+CREATE TABLE vi_inventarioalmacen (
+    id VARCHAR(50) PRIMARY KEY,
+    stock INT,
+    estaactivo BOOLEAN DEFAULT TRUE,
+    eliminadoen TIMESTAMP NULL,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuariocreacion VARCHAR(50),
+    usuarioactualizacion VARCHAR(50),
+    id_producto VARCHAR(50),
+    id_almacen VARCHAR(50),
+    CONSTRAINT fk_producto FOREIGN KEY (id_producto) REFERENCES vi_producto(id),
+    CONSTRAINT fk_almacen FOREIGN KEY (id_almacen) REFERENCES vi_almacen(idAlmacen)
+);
+
+CREATE TABLE vi_producto_subcategoria (
+    producto_id VARCHAR(50),
+    subcategoria_id VARCHAR(50),
+    PRIMARY KEY (producto_id, subcategoria_id),
+    CONSTRAINT fk_producto FOREIGN KEY (producto_id) REFERENCES vi_producto(id),
+    CONSTRAINT fk_subcategoria FOREIGN KEY (subcategoria_id) REFERENCES vi_subcategoria(id),
+	--trazabilidad
+    estaactivo boolean default true not null,
+    eliminadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);
+
+
+CREATE TABLE vi_producto_fruta (
+    producto_id VARCHAR(50),
+    fruta_id VARCHAR(50),
+    PRIMARY KEY (producto_id, fruta_id),
+    CONSTRAINT fk_producto FOREIGN KEY (producto_id) REFERENCES vi_producto(id),
+    CONSTRAINT fk_fruta FOREIGN KEY (fruta_id) REFERENCES vi_fruta(id)
+	--trazabilidad
+    estaactivo boolean default true not null,
+    eliminadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);

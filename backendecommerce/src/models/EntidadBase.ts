@@ -19,4 +19,7 @@ export abstract class EntidadBase{
 
     @Column({ type: "varchar", name: "usuarioactualizacion", length: 50, nullable: true })
     usuarioActualizacion: string;
+
+    @Column({ type: "boolean", name: "estaactivo", default: true })
+    estaActivo: boolean;
 }
