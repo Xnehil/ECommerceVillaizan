@@ -5,11 +5,13 @@ import {
     CreateDateColumn, 
     UpdateDateColumn, 
     ManyToMany,
-    JoinTable
+    JoinTable,
+    ManyToOne
 } from "typeorm"
 import { generateEntityId } from "@medusajs/medusa/dist/utils"
 import { EntidadBase } from "./EntidadBase"
 import { MetodoPago } from "./MetodoPago";
+import { Motorizado } from "./Motorizado";
 
 @Entity("vi_pedido")
 export class Pedido extends EntidadBase {
@@ -38,9 +40,8 @@ export class Pedido extends EntidadBase {
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_motorizado" })
     // idMotorizado: string
 
-    // @ManyToOne(() => Motorizado, motorizado => motorizado.id)
-    // @JoinColumn({ name: "id_motorizado" })
-    // motorizado: Motorizado;
+    @ManyToOne(() => Motorizado, motorizado => motorizado.pedidos)
+    motorizado: Motorizado;
 
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_direccion" })
     // idDireccion: string

@@ -15,6 +15,7 @@ import { EntidadBase } from "./EntidadBase"
 import { TipoProducto } from "./TipoProducto";
 import { Subcategoria } from "./Subcategoria";
 import { Fruta } from "./Fruta";
+import { InventarioMotorizado } from "./InventarioMotorizado";
 
 @Entity("vi_producto")
 export class Producto extends EntidadBase {
@@ -37,6 +38,10 @@ export class Producto extends EntidadBase {
         inverseJoinColumn: { name: "fruta_id", referencedColumnName: "id" }
     })
     frutas: Fruta[];
+
+    @OneToMany(() => InventarioMotorizado, inventario => inventario.producto)
+    inventarios: InventarioMotorizado[];
+
 
     @Column({ unique: true })
     codigo: string
