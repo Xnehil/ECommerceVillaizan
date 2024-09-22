@@ -44,34 +44,33 @@ export class Producto extends EntidadBase {
     @Column()
     nombre: string
 
-    @Column("decimal", { precision: 10, scale: 2 })
+    @Column("decimal", { precision: 10, scale: 2 , name: "precioa" })
     precioA: number
 
-    @Column("decimal", { precision: 10, scale: 2 })
+    @Column("decimal", { precision: 10, scale: 2 , name: "preciob" })
     precioB: number
 
-    @Column("decimal", { precision: 10, scale: 2 })
-    precioC: number
+    @Column("decimal", { precision: 10, scale: 2, name: "precioc" })
 
-    @Column()
+    @Column({name: "urlimagen"})
     urlImagen: string
 
-    @Column({ type: "int" })
+    @Column({ type: "int" , name: "cantminped"})
     cantMinPed: number
 
-    @Column({ type: "int" })
+    @Column({ type: "int" , name: "cantmaxped"})
     cantMaxPed: number
 
     @Column("text", { nullable: true })
     descripcion: string
 
-    @Column("text", { nullable: true })
+    @Column("text", { nullable: true , name: "informacionnutricional"})
     informacionNutricional: string
 
-    @Column("text", { nullable: true })
+    @Column("text", { nullable: true, name: "razoneliminacion" })
     razonEliminacion: string
 
-    @Column({ default: false })
+    @Column({ default: false , name: "sevendeecommerce"})
     seVendeEcommerce: boolean
 
     @BeforeInsert()

@@ -11,6 +11,6 @@ export class Almacen extends EntidadBase {
 
     @BeforeInsert()
     private beforeInsert() {
-        this.id = generateEntityId(this.id, "tip");
+        this.id = generateEntityId(this.id, "alm");
     }
 }
