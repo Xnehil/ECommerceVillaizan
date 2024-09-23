@@ -1,6 +1,7 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, BeforeInsert } from 'typeorm';
 import { Direccion } from './Direccion';
 import { EntidadBase } from './EntidadBase';
+import { generateEntityId } from '@medusajs/medusa';
 
 @Entity('vi_ciudad')
 export class Ciudad extends EntidadBase {
@@ -9,4 +10,9 @@ export class Ciudad extends EntidadBase {
 
   @OneToMany(() => Direccion, direccion => direccion.ciudad)
   direcciones: Direccion[];
+
+  @BeforeInsert()
+    private beforeInsert() {
+        this.id = generateEntityId(this.id, "ciud");
+    }
 }

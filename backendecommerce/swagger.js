@@ -294,6 +294,168 @@ const options = {
             },
           ],
         },
+        Ubicacion: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                latitud: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 40.712776,
+                },
+                longitud: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: -74.005974,
+                },
+                direcciones: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/Direccion',
+                  },
+                },
+              },
+            },
+          ],
+        },
+        Ciudad: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                nombre: {
+                  type: 'string',
+                  example: 'New York',
+                },
+                direcciones: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/Direccion',
+                  },
+                  nullable: true,
+                },
+              },
+            },
+          ],
+        },
+        Motorizado: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                placa: {
+                  type: 'string',
+                  example: 'ABC-1234',
+                },
+                almacen: {
+                  $ref: '#/components/schemas/Almacen',
+                },
+                inventarios: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/InventarioMotorizado',
+                  },
+                },
+                pedidos: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/Pedido',
+                  },
+                  nullable: true,
+                },
+              },
+            },
+          ],
+        },
+        Direccion: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                calle: {
+                  type: 'string',
+                  example: 'Calle Ejemplo',
+                },
+                numeroExterior: {
+                  type: 'string',
+                  example: '123',
+                },
+                numeroInterior: {
+                  type: 'string',
+                  nullable: true,
+                  example: 'A',
+                },
+                region: {
+                  type: 'string',
+                  example: 'Región Ejemplo',
+                },
+                codigoPostal: {
+                  type: 'string',
+                  example: '12345',
+                },
+                referencia: {
+                  type: 'string',
+                  nullable: true,
+                  example: 'Cerca del parque',
+                },
+                ciudad: {
+                  $ref: '#/components/schemas/Ciudad',
+                },
+                ubicacion: {
+                  $ref: '#/components/schemas/Ubicacion',
+                },
+              },
+            },
+          ],
+        },
+        InventarioMotorizado: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                stock: {
+                  type: 'integer',
+                  example: 100,
+                },
+                stockMinimo: {
+                  type: 'integer',
+                  example: 10,
+                },
+                esMerma: {
+                  type: 'boolean',
+                  example: false,
+                },
+                motivoMerma: {
+                  type: 'string',
+                  nullable: true,
+                  example: 'Producto dañado',
+                },
+                urlImagenMerma: {
+                  type: 'string',
+                  nullable: true,
+                  example: 'http://example.com/imagen-merma.jpg',
+                },
+                motorizado: {
+                  $ref: '#/components/schemas/Motorizado',
+                },
+                producto: {
+                  $ref: '#/components/schemas/Producto',
+                },
+              },
+            },
+          ],
+        },
       }
     }
   },

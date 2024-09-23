@@ -1,12 +1,10 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, BeforeInsert } from 'typeorm';
 import { Direccion } from './Direccion';
 import { EntidadBase } from './EntidadBase';
+import { generateEntityId } from '@medusajs/medusa';
 
 @Entity('vi_ubicacion')
 export class Ubicacion extends EntidadBase {
-  @PrimaryColumn({ type: 'varchar', length: 50 })
-  id: string;
-
   @Column({ type: 'decimal', precision: 10, scale: 8 })
   latitud: number;
 
@@ -16,4 +14,9 @@ export class Ubicacion extends EntidadBase {
 
   @OneToMany(() => Direccion, direccion => direccion.ubicacion)
   direcciones: Direccion[];
+
+  @BeforeInsert()
+    private beforeInsert() {
+        this.id = generateEntityId(this.id, "ubi");
+    }
 }
