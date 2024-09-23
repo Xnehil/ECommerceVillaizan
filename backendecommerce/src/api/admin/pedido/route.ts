@@ -6,6 +6,33 @@ import type {
 import PedidoService from "../../../services/Pedido";
 import { Pedido } from "src/models/Pedido";
 
+/**
+ * @swagger
+ * tags:
+ *   name: Pedidos
+ *   description: API para la gestión de pedidos
+ */
+
+/**
+ * @swagger
+ * /pedidos:
+ *   get:
+ *     summary: Lista todos los pedidos con paginación
+ *     tags: [Pedidos]
+ *     responses:
+ *       200:
+ *         description: Una lista de pedidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 pedidos:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Pedido'
+ */
+
 export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse

@@ -5,21 +5,17 @@ import {
     CreateDateColumn, 
     UpdateDateColumn, 
     PrimaryColumn, 
-    DeleteDateColumn
+    DeleteDateColumn,
+    JoinColumn,
+    ManyToOne
 } from "typeorm";
 import { generateEntityId } from "@medusajs/medusa/dist/utils";
 import { EntidadBase } from "./EntidadBase";
+import { Producto } from "./Producto";
+import { Pedido } from "./Pedido";
 
 @Entity("vi_detallepedido")
-export class DetallePedido {
-
-    // TO DO - Ver si funciona
-
-    @PrimaryColumn({ type: "varchar", length: 50, name: "id_producto" })
-    idProducto: string;
-
-    @PrimaryColumn({ type: "varchar", length: 50, name: "id_pedido" })
-    idPedido: string;
+export class DetallePedido extends EntidadBase{
 
     @Column({ type: "int", nullable: false })
     cantidad: number;
@@ -28,29 +24,27 @@ export class DetallePedido {
     subtotal: number;
 
     // Foreign key relationships can be added later when the related entities are defined
+    //@Column({ type: "varchar", length: 50, nullable: true, name: "id_producto" })
+    //id_producto: string;
+
+    @ManyToOne(() => Producto, producto => producto.id)
+    @JoinColumn({ name: "id_producto" })
+    producto: Producto;
+
+    // Foreign key relationships can be added later when the related entities are defined
+    //@Column({ type: "varchar", length: 50, nullable: true, name: "id_pedido" })
+    //id_pedido: string;
+
+    @ManyToOne(() => Pedido, pedido => pedido.id)
+    @JoinColumn({ name: "id_pedido" })
+    pedido: Pedido;
+
+    // Foreign key relationships can be added later when the related entities are defined
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_promocion" })
     // idPromocion: string;
 
     // @ManyToOne(() => Promocion, promocion => promocion.id)
     // @JoinColumn({ name: "id_promocion" })
     // promocion: Promocion;
-
-    @CreateDateColumn({ type: "timestamp", name: "creadoen"})
-    creadoEn: Date;
-
-    @UpdateDateColumn({ type: "timestamp" , name: "actualizadoen"})
-    actualizadoEn: Date;
-
-    @DeleteDateColumn({ type: "timestamp", name: "desactivadoen", nullable: true })
-    desactivadoEn: Date | null;
-
-    @Column({ type: "varchar", name: "usuariocreacion", length: 50 })
-    usuarioCreacion: string;
-
-    @Column({ type: "varchar", name: "usuarioactualizacion", length: 50, nullable: true })
-    usuarioActualizacion: string;
-
-    @Column({ type: "boolean", name: "estaactivo", default: true })
-    estaActivo: boolean;
 
 }

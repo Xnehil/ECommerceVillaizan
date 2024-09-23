@@ -6,6 +6,33 @@ import type {
 import PagoService from "../../../services/Pago";
 import { Pago } from "src/models/Pago";
 
+/**
+ * @swagger
+ * tags:
+ *   name: Pagos
+ *   description: API para la gestión de pagos
+ */
+
+/**
+ * @swagger
+ * /pagos:
+ *   get:
+ *     summary: Lista todos los pagos con paginación
+ *     tags: [Pagos]
+ *     responses:
+ *       200:
+ *         description: Una lista de pagos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 pagos:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Pago'
+ */
+
 export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse

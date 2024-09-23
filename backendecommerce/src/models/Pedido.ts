@@ -6,12 +6,14 @@ import {
     UpdateDateColumn, 
     ManyToMany,
     JoinTable,
-    ManyToOne
+    ManyToOne,
+    JoinColumn
 } from "typeorm"
 import { generateEntityId } from "@medusajs/medusa/dist/utils"
 import { EntidadBase } from "./EntidadBase"
 import { MetodoPago } from "./MetodoPago";
 import { Motorizado } from "./Motorizado";
+import { Direccion } from "./Direccion";
 
 @Entity("vi_pedido")
 export class Pedido extends EntidadBase {
@@ -41,14 +43,15 @@ export class Pedido extends EntidadBase {
     // idMotorizado: string
 
     @ManyToOne(() => Motorizado, motorizado => motorizado.pedidos)
+    @JoinColumn({ name: "id_motorizado" })
     motorizado: Motorizado;
 
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_direccion" })
     // idDireccion: string
 
-    // @ManyToOne(() => Direccion, direccion => direccion.id)
-    // @JoinColumn({ name: "id_direccion" })
-    // direccion: Direccion;
+    @ManyToOne(() => Direccion, direccion => direccion.id)
+    @JoinColumn({ name: "id_direccion" })
+    direccion: Direccion;
 
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_usuario" })
     // idUsuario: string

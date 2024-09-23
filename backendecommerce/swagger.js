@@ -456,6 +456,379 @@ const options = {
             },
           ],
         },
+        Banco: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                nombre: {
+                  type: 'string',
+                  example: 'Banco Ejemplo',
+                },
+              },
+            },
+          ],
+        },
+        DetallePedido: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                cantidad: {
+                  type: 'integer',
+                  example: 5,
+                },
+                subtotal: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 150.0,
+                },
+                producto: {
+                  $ref: '#/components/schemas/Producto',
+                },
+                pedido: {
+                  $ref: '#/components/schemas/Pedido',
+                },
+              },
+            },
+          ],
+        },
+        Igv: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                porcentaje: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 18.00,
+                },
+              },
+            },
+          ],
+        },
+        LibroReclamaciones: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                fechaIncidente: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2023-10-01T12:00:00Z',
+                },
+                nombres: {
+                  type: 'string',
+                  example: 'Juan',
+                },
+                apellidos: {
+                  type: 'string',
+                  example: 'Pérez',
+                },
+                correo: {
+                  type: 'string',
+                  example: 'juan.perez@example.com',
+                },
+                telefono: {
+                  type: 'string',
+                  example: '123456789',
+                  nullable: true,
+                },
+                tipoDoc: {
+                  type: 'string',
+                  example: 'DNI',
+                },
+                nrDocumento: {
+                  type: 'string',
+                  example: '12345678',
+                },
+                menor: {
+                  type: 'boolean',
+                  example: false,
+                },
+                departamento: {
+                  type: 'string',
+                  example: 'Lima',
+                },
+                provincia: {
+                  type: 'string',
+                  example: 'Lima',
+                },
+                distrito: {
+                  type: 'string',
+                  example: 'Miraflores',
+                },
+                direccion: {
+                  type: 'string',
+                  example: 'Av. Ejemplo 123',
+                },
+                tipo: {
+                  type: 'string',
+                  example: 'Reclamo',
+                },
+                montoReclamado: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 150.00,
+                },
+                descripcion: {
+                  type: 'string',
+                  example: 'Descripción del reclamo',
+                },
+                reclamacion: {
+                  type: 'string',
+                  example: 'Reclamo',
+                },
+                nrPedido: {
+                  type: 'string',
+                  example: 'PED12345',
+                  nullable: true,
+                },
+                fechaPedido: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2023-10-01T12:00:00Z',
+                  nullable: true,
+                },
+                detalle: {
+                  type: 'string',
+                  example: 'Detalle del reclamo',
+                  nullable: true,
+                },
+                pedidoConcreto: {
+                  type: 'string',
+                  example: 'Pedido concreto del reclamo',
+                  nullable: true,
+                },
+                urlComprobante: {
+                  type: 'string',
+                  example: 'http://example.com/comprobante.jpg',
+                  nullable: true,
+                },
+                accionesProveedor: {
+                  type: 'string',
+                  example: 'Acciones tomadas por el proveedor',
+                  nullable: true,
+                },
+                estaActivo: {
+                  type: 'boolean',
+                  example: true,
+                },
+                usuarioCreacion: {
+                  type: 'string',
+                  example: 'admin_user',
+                },
+                usuarioActualizacion: {
+                  type: 'string',
+                  example: 'admin_user',
+                  nullable: true,
+                },
+              },
+            },
+          ],
+        },
+        MetodoPago: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                nombre: {
+                  type: 'string',
+                  example: 'Tarjeta de Crédito',
+                },
+                pedidos: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/Pedido',
+                  },
+                },
+              },
+            },
+          ],
+        },
+        OrdenSerie: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                nombre: {
+                  type: 'string',
+                  example: 'Serie1',
+                },
+                descripcion: {
+                  type: 'string',
+                  example: 'Descripción de la serie de orden',
+                  nullable: true,
+                },
+              },
+            },
+          ],
+        },
+        Pago: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                esTransferencia: {
+                  type: 'boolean',
+                  example: true,
+                },
+                montoCobrado: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 150.00,
+                },
+                numeroOperacion: {
+                  type: 'string',
+                  example: 'OP123456',
+                  nullable: true,
+                },
+                urlEvidencia: {
+                  type: 'string',
+                  example: 'http://example.com/evidencia.jpg',
+                  nullable: true,
+                },
+                codigoTransaccion: {
+                  type: 'string',
+                  example: 'TX1234567890',
+                  nullable: true,
+                },
+                venta: {
+                  $ref: '#/components/schemas/Venta',
+                },
+                metodoPago: {
+                  $ref: '#/components/schemas/MetodoPago',
+                },
+                banco: {
+                  $ref: '#/components/schemas/Banco',
+                },
+              },
+            },
+          ],
+        },
+        Pedido: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                estado: {
+                  type: 'string',
+                  example: 'En proceso',
+                },
+                prioridadEntrega: {
+                  type: 'string',
+                  example: 'Alta',
+                  nullable: true,
+                },
+                total: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 250.00,
+                },
+                puntosOtorgados: {
+                  type: 'integer',
+                  example: 10,
+                },
+                motivoCancelacion: {
+                  type: 'string',
+                  example: 'Cliente canceló el pedido',
+                  nullable: true,
+                },
+                codigoSeguimiento: {
+                  type: 'string',
+                  example: 'TRACK123456',
+                  nullable: true,
+                },
+                montoEfectivoPagar: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 50.00,
+                  nullable: true,
+                },
+                motorizado: {
+                  $ref: '#/components/schemas/Motorizado',
+                },
+                direccion: {
+                  $ref: '#/components/schemas/Direccion',
+                },
+                metodosPago: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/MetodoPago',
+                  },
+                },
+              },
+            },
+          ],
+        },
+        Venta: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                tipoComprobante: {
+                  type: 'string',
+                  example: 'Factura',
+                },
+                fechaVenta: {
+                  type: 'string',
+                  format: 'date-time',
+                  example: '2023-10-01T12:00:00Z',
+                },
+                numeroComprobante: {
+                  type: 'string',
+                  example: 'FAC123456',
+                },
+                montoTotal: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 500.00,
+                },
+                totalPaletas: {
+                  type: 'integer',
+                  example: 10,
+                },
+                totalMafelitas: {
+                  type: 'integer',
+                  example: 5,
+                },
+                estado: {
+                  type: 'string',
+                  example: 'Completado',
+                },
+                totalIgv: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 90.00,
+                },
+                pedido: {
+                  $ref: '#/components/schemas/Pedido',
+                },
+                ordenSerie: {
+                  $ref: '#/components/schemas/OrdenSerie',
+                },
+              },
+            },
+          ],
+        },
       }
     }
   },

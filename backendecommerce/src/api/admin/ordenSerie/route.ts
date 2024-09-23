@@ -6,6 +6,33 @@ import type {
 import OrdenSerieService from "../../../services/OrdenSerie";
 import { OrdenSerie } from "src/models/OrdenSerie";
 
+/**
+ * @swagger
+ * tags:
+ *   name: OrdenSeries
+ *   description: API para la gestión de series de órdenes
+ */
+
+/**
+ * @swagger
+ * /ordenseries:
+ *   get:
+ *     summary: Lista todas las series de órdenes con paginación
+ *     tags: [OrdenSeries]
+ *     responses:
+ *       200:
+ *         description: Una lista de series de órdenes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ordenseries:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/OrdenSerie'
+ */
+
 export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse

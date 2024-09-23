@@ -6,6 +6,33 @@ import type {
 import  LibroReclamacionesService  from "../../../services/LibroReclamaciones"
 import { LibroReclamaciones } from "src/models/LibroReclamaciones";
 
+/**
+ * @swagger
+ * tags:
+ *   name: LibroReclamaciones
+ *   description: API para la gestión de libros de reclamaciones
+ */
+
+/**
+ * @swagger
+ * /libroreclamaciones:
+ *   get:
+ *     summary: Lista todos los libros de reclamaciones con paginación
+ *     tags: [LibroReclamaciones]
+ *     responses:
+ *       200:
+ *         description: Una lista de libros de reclamaciones
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 libroreclamaciones:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/LibroReclamaciones'
+ */
+
   export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse
