@@ -6,6 +6,33 @@ import type {
 import BancoService from "../../../services/Banco";
 import { Banco } from "src/models/Banco";
 
+/**
+ * @swagger
+ * tags:
+ *   name: Bancos
+ *   description: API para la gestión de bancos
+ */
+
+/**
+ * @swagger
+ * /bancos:
+ *   get:
+ *     summary: Lista todos los bancos con paginación
+ *     tags: [Bancos]
+ *     responses:
+ *       200:
+ *         description: Una lista de bancos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bancos:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Banco'
+ */
+
 export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse
