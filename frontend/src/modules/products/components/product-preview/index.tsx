@@ -8,6 +8,7 @@ import { Region } from "@medusajs/medusa"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
 import PreviewPrice from "./price"
+import Link from "next/link"
 
 export default async function ProductPreview({
   productPreview,
@@ -33,7 +34,7 @@ export default async function ProductPreview({
   })
 
   return (
-    <LocalizedClientLink
+    <Link
       href={`/products/${productPreview.handle}`}
       className="group"
     >
@@ -50,6 +51,6 @@ export default async function ProductPreview({
           </div>
         </div>
       </div>
-    </LocalizedClientLink>
+    </Link>
   )
 }
