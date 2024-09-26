@@ -25,11 +25,11 @@ export class Direccion extends EntidadBase {
   referencia: string;
 
   @ManyToOne(() => Ciudad, ciudad => ciudad.direcciones, { eager: true })
-  @JoinColumn({ name: 'idciudad' })
+  @JoinColumn({ name: 'id_ciudad' })
   ciudad: Ciudad;
 
   @ManyToOne(() => Ubicacion, ubicacion => ubicacion.direcciones, { eager: true })
-  @JoinColumn({ name: 'idubicacion' })
+  @JoinColumn({ name: 'id_ubicacion' })
   ubicacion: Ubicacion;
 
   @BeforeInsert()
