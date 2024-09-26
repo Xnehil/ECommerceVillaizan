@@ -110,11 +110,11 @@ CREATE TABLE vi_subcategoria (
 
 
 CREATE TABLE vi_tipoproducto_subcategoria (
-    tipoproducto_id VARCHAR(50),
-    subcategoria_id VARCHAR(50),
-    PRIMARY KEY (tipoproducto_id, subcategoria_id),
-    CONSTRAINT fk_producto FOREIGN KEY (tipoproducto_id) REFERENCES vi_tipoproducto(id),
-    CONSTRAINT fk_subcategoria FOREIGN KEY (subcategoria_id) REFERENCES vi_subcategoria(id),
+    id_tipoproducto VARCHAR(50),
+    id_subcategoria VARCHAR(50),
+    PRIMARY KEY (id_tipoproducto, id_subcategoria),
+    CONSTRAINT fk_producto FOREIGN KEY (id_tipoproducto) REFERENCES vi_tipoproducto(id),
+    CONSTRAINT fk_subcategoria FOREIGN KEY (id_subcategoria) REFERENCES vi_subcategoria(id),
 	--trazabilidad
     estaactivo boolean default true not null,
     desactivadoen timestamp null,
@@ -129,17 +129,17 @@ create table vi_producto (
     id varchar(50) primary key,
     codigo varchar(255) unique not null,
     nombre varchar(255) not null,
-    precioA decimal(10, 2) not null,
-    precioB decimal(10, 2) not null,
-    precioC decimal(10, 2) not null,
-    urlImagen varchar(255) not null,
-    cantMinPed int not null,
-    cantMaxPed int not null,
+    precioa decimal(10, 2) not null,
+    preciob decimal(10, 2) not null,
+    precioc decimal(10, 2) not null,
+    urlimagen varchar(255) not null,
+    cantminped int not null,
+    cantmaxped int not null,
     descripcion text,
-    informacionNutricional text,
-    razonEliminacion text,
+    informacionnutricional text,
+    razoneliminacion text,
     estado boolean default true not null,
-    sevendeEcommerce boolean default false not null,
+    sevendeecommerce boolean default false not null,
     --trazabilidad
     estaactivo boolean default true not null,
     usuariocreacion varchar(255) not null,
@@ -241,11 +241,11 @@ CREATE TABLE vi_inventarioalmacen (
 );
 
 CREATE TABLE vi_producto_subcategoria (
-    producto_id VARCHAR(50),
-    subcategoria_id VARCHAR(50),
-    PRIMARY KEY (producto_id, subcategoria_id),
-    CONSTRAINT fk_producto FOREIGN KEY (producto_id) REFERENCES vi_producto(id),
-    CONSTRAINT fk_subcategoria FOREIGN KEY (subcategoria_id) REFERENCES vi_subcategoria(id),
+    id_producto VARCHAR(50),
+    id_subcategoria VARCHAR(50),
+    PRIMARY KEY (id_producto, id_subcategoria),
+    CONSTRAINT fk_producto FOREIGN KEY (id_producto) REFERENCES vi_producto(id),
+    CONSTRAINT fk_subcategoria FOREIGN KEY (id_subcategoria) REFERENCES vi_subcategoria(id),
 	--trazabilidad
     estaactivo boolean default true not null,
     desactivadoen timestamp null,
@@ -257,11 +257,11 @@ CREATE TABLE vi_producto_subcategoria (
 
 
 CREATE TABLE vi_producto_fruta (
-    producto_id VARCHAR(50),
-    fruta_id VARCHAR(50),
-    PRIMARY KEY (producto_id, fruta_id),
-    CONSTRAINT fk_producto FOREIGN KEY (producto_id) REFERENCES vi_producto(id),
-    CONSTRAINT fk_fruta FOREIGN KEY (fruta_id) REFERENCES vi_fruta(id),
+    id_producto VARCHAR(50),
+    id_fruta VARCHAR(50),
+    PRIMARY KEY (id_producto, id_fruta),
+    CONSTRAINT fk_producto FOREIGN KEY (id_producto) REFERENCES vi_producto(id),
+    CONSTRAINT fk_fruta FOREIGN KEY (id_fruta) REFERENCES vi_fruta(id),
 	--trazabilidad
     estaactivo boolean default true not null,
     desactivadoen timestamp null,
@@ -455,15 +455,15 @@ CREATE TABLE vi_motorizado (
 CREATE TABLE vi_direccion (
     id VARCHAR(50) PRIMARY KEY,
     calle VARCHAR(255) NOT NULL,
-    numeroExterior VARCHAR(20) NOT NULL,
-    numeroInterior VARCHAR(20),
+    numeroexterior VARCHAR(20) NOT NULL,
+    numerointerior VARCHAR(20),
     region VARCHAR(100) NOT NULL,
-    codigoPostal VARCHAR(10),
+    codigopostal VARCHAR(10),
     referencia VARCHAR(255),
-    idCiudad VARCHAR(50),
-    CONSTRAINT fk_ciudad FOREIGN KEY (idCiudad) REFERENCES vi_ciudad(id),
-    idUbicacion VARCHAR(50),
-    CONSTRAINT fk_ubicacion FOREIGN KEY (idUbicacion) REFERENCES vi_ubicacion(id),
+    id_ciudad VARCHAR(50),
+    CONSTRAINT fk_ciudad FOREIGN KEY (id_ciudad) REFERENCES vi_ciudad(id),
+    id_ubicacion VARCHAR(50),
+    CONSTRAINT fk_ubicacion FOREIGN KEY (id_ubicacion) REFERENCES vi_ubicacion(id),
     --trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,
@@ -476,10 +476,10 @@ CREATE TABLE vi_direccion (
 CREATE TABLE vi_inventariomotorizado (
     id VARCHAR(50) PRIMARY KEY,
     stock INT NOT NULL,
-    stockMinimo INT NOT NULL,
-    esMerma BOOLEAN DEFAULT FALSE NOT NULL,
-    motivoMerma VARCHAR(255),
-    urlImagenMerma VARCHAR(255),
+    stockminimo INT NOT NULL,
+    esmerma BOOLEAN DEFAULT FALSE NOT NULL,
+    motivomerma VARCHAR(255),
+    urlimagenmerma VARCHAR(255),
     id_motorizado VARCHAR(50),
     CONSTRAINT fk_motorizado FOREIGN KEY (id_motorizado) REFERENCES vi_motorizado(id),
     id_producto VARCHAR(50),
@@ -499,11 +499,11 @@ CREATE TABLE vi_usuario (
     id VARCHAR(50) PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     apellido VARCHAR(100) NOT NULL,
-    conCuenta BOOLEAN NOT NULL,
-    numeroTelefono VARCHAR(15),
+    concuenta BOOLEAN NOT NULL,
+    numerotelefono VARCHAR(15),
     correo VARCHAR(150) NOT NULL,
     contrasena VARCHAR(255) NOT NULL,
-    fechaUltimoLogin TIMESTAMP,
+    fechaultimologin TIMESTAMP,
 	id_persona VARCHAR(50),
     CONSTRAINT fk_persona FOREIGN KEY (id_persona) REFERENCES vi_persona(id),
     --trazabilidad
@@ -517,9 +517,9 @@ CREATE TABLE vi_usuario (
 
 CREATE TABLE vi_persona (
     id VARCHAR(50) PRIMARY KEY,
-    tipoDocumento VARCHAR(5) NOT NULL,
-    numeroDocumento VARCHAR(20) NOT NULL,
-    razonEliminacion VARCHAR(255),
+    tipodocumento VARCHAR(5) NOT NULL,
+    numerodocumento VARCHAR(20) NOT NULL,
+    razoneliminacion VARCHAR(255),
     estado VARCHAR(50) NOT NULL,
     --trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
