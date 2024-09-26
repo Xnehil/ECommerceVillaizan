@@ -82,11 +82,13 @@ class PagoService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<Pago> {
         return await this.atomicPhase_(async (manager) => {
             const pagoRepo = manager.withRepository(this.pagoRepository_);
             const pago = await this.recuperar(id);
-            await pagoRepo.remove([pago]);
+            pago.estaActivo = false;
+            pago.desactivadoEn = new Date();
+            return await pagoRepo.save(pago);
         });
     }
 }

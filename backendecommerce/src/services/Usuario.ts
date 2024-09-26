@@ -82,11 +82,13 @@ class UsuarioService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<Usuario> {
         return await this.atomicPhase_(async (manager) => {
             const usuarioRepo = manager.withRepository(this.usuarioRepository_);
             const usuario = await this.recuperar(id);
-            await usuarioRepo.remove([usuario]);
+            usuario.estaActivo = false;
+            usuario.desactivadoEn = new Date();
+            return await usuarioRepo.save(usuario);
         });
     }
 }

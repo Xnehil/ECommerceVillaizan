@@ -82,13 +82,16 @@ class PedidoService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
             const pedido = await this.recuperar(id);
-            await pedidoRepo.remove([pedido]);
+            pedido.estaActivo = false;
+            pedido.desactivadoEn = new Date();
+            return await pedidoRepo.save(pedido);
         });
     }
+
 }
 
 export default PedidoService;

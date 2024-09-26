@@ -83,11 +83,13 @@ class InventarioAlmacenService extends TransactionBaseService {
         });
       }
     
-      async eliminar(id: string): Promise<void> {
+      async eliminar(id: string): Promise<InventarioAlmacen> {
         return await this.atomicPhase_(async (manager) => {
           const inventarioAlmacenRepo = manager.withRepository(this.inventarioAlmacenRepository_);
           const inventarioAlmacen = await this.recuperar(id);
-          await inventarioAlmacenRepo.remove([inventarioAlmacen]);
+          inventarioAlmacen.estaActivo = false;
+          inventarioAlmacen.desactivadoEn = new Date();
+          return await inventarioAlmacenRepo.save(inventarioAlmacen);
         });
       }
 
@@ -99,10 +101,10 @@ class InventarioAlmacenService extends TransactionBaseService {
             const inventarioAlmacenRepo = manager.withRepository(this.inventarioAlmacenRepository_);
             const inventarioAlmacen = await this.recuperar(id);
 
-            // Updating stock value
+            // Actualizar stock 
             inventarioAlmacen.stock = nuevoStock;
 
-            // Save updated entity
+            // Guardar entidad
             return await inventarioAlmacenRepo.save(inventarioAlmacen);
         });
     }
@@ -115,10 +117,10 @@ class InventarioAlmacenService extends TransactionBaseService {
             const inventarioAlmacenRepo = manager.withRepository(this.inventarioAlmacenRepository_);
             const inventarioAlmacen = await this.recuperar(id);
 
-            // Updating stock value
+            // Actualizar stock 
             inventarioAlmacen.stock += cantidad;
 
-            // Save updated entity
+            // Guardar entidad
             return await inventarioAlmacenRepo.save(inventarioAlmacen);
         });
     }
@@ -130,11 +132,11 @@ class InventarioAlmacenService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const inventarioAlmacenRepo = manager.withRepository(this.inventarioAlmacenRepository_);
             const inventarioAlmacen = await this.recuperar(id);
-
-            // Updating stock value
+             
+            // Actualizar stock
             inventarioAlmacen.stock -= cantidad;
 
-            // Save updated entity
+            // Guardar entidad
             return await inventarioAlmacenRepo.save(inventarioAlmacen);
         });
     }

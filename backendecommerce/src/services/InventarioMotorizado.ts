@@ -82,11 +82,13 @@ class InventarioMotorizadoService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<InventarioMotorizado> {
         return await this.atomicPhase_(async (manager) => {
             const inventarioMotorizadoRepo = manager.withRepository(this.inventarioMotorizadoRepository_);
             const inventarioMotorizado = await this.recuperar(id);
-            await inventarioMotorizadoRepo.remove([inventarioMotorizado]);
+            inventarioMotorizado.estaActivo = false;
+            inventarioMotorizado.desactivadoEn = new Date();
+            return await inventarioMotorizadoRepo.save(inventarioMotorizado);
         });
     }
 
@@ -132,7 +134,7 @@ class InventarioMotorizadoService extends TransactionBaseService {
             const inventarioMotorizadoRepo = manager.withRepository(this.inventarioMotorizadoRepository_);
             const inventarioMotorizado = await this.recuperar(id);
 
-            // DDisminuir stock en cantidad
+            // Disminuir stock en cantidad
             inventarioMotorizado.stock -= cantidad;
 
             // Guardar entidad actualizada

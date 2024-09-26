@@ -82,11 +82,13 @@ class PersonaService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<Persona> {
         return await this.atomicPhase_(async (manager) => {
             const personaRepo = manager.withRepository(this.personaRepository_);
             const persona = await this.recuperar(id);
-            await personaRepo.remove([persona]);
+            persona.estaActivo = false;
+            persona.desactivadoEn = new Date();
+            return await personaRepo.save(persona);
         });
     }
 }
