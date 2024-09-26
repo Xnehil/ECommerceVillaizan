@@ -3,66 +3,66 @@ import type {
     MedusaResponse,
 } from "@medusajs/medusa";
 
-import IgvService from "../../../services/Igv";
-import { Igv } from "src/models/Igv";
+import PersonaService from "../../../services/Persona";
+import { Persona } from "src/models/Persona";
 
 /**
  * @swagger
  * tags:
- *   name: Igvs
- *   description: API para la gestión de IGVs
+ *   name: Personas
+ *   description: API para la gestión de personas
  */
 
 /**
  * @swagger
- * /igvs:
+ * /personas:
  *   get:
- *     summary: Lista todos los IGVs con paginación
- *     tags: [Igvs]
+ *     summary: Lista todas las personas con paginación
+ *     tags: [Personas]
  *     responses:
  *       200:
- *         description: Una lista de IGVs
+ *         description: Una lista de personas
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 igvs:
+ *                 personas:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Igv'
+ *                     $ref: '#/components/schemas/Persona'
  */
 
 export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse
 ) => {
-    const igvService: IgvService = req.scope.resolve("igvService");
+    const personaService: PersonaService = req.scope.resolve("personaService");
 
     res.json({
-        igvs: await igvService.listarConPaginacion(),
+        personas: await personaService.listarConPaginacion(),
     });
 };
 
 /**
  * @swagger
- * /igv:
+ * /persona:
  *   post:
- *     summary: Crea un nuevo IGV
- *     tags: [IGV]
+ *     summary: Crea una nueva persona
+ *     tags: [Persona]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Igv'
+ *             $ref: '#/components/schemas/Persona'
  *     responses:
  *       201:
- *         description: El IGV ha sido creado exitosamente.
+ *         description: La persona ha sido creada exitosamente.
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Igv'
+ *               $ref: '#/components/schemas/Persona'
  *       400:
  *         description: Petición inválida
  */
@@ -71,17 +71,17 @@ export const POST = async (
     req: MedusaRequest,
     res: MedusaResponse
 ) => {
-    const igvService: IgvService = req.scope.resolve("igvService");
+    const personaService: PersonaService = req.scope.resolve("personaService");
 
     if (!req.body) {
         res.status(400).json({ error: "Petición inválida" });
         return;
     }
-    const igvData = req.body as Igv;
-    const igv = await igvService.crear(igvData);
+    const personaData = req.body as Persona;
+    const persona = await personaService.crear(personaData);
 
     res.json({
-        igv,
+        persona,
     });
 };
 

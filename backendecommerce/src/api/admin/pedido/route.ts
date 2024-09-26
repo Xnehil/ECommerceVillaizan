@@ -44,6 +44,29 @@ export const GET = async (
     });
 };
 
+/**
+ * @swagger
+ * /pedido:
+ *   post:
+ *     summary: Crea un nuevo pedido
+ *     tags: [Pedido]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Pedido'
+ *     responses:
+ *       201:
+ *         description: El pedido ha sido creado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Pedido'
+ *       400:
+ *         description: Petición inválida
+ */
+
 export const POST = async (
     req: MedusaRequest,
     res: MedusaResponse

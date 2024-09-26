@@ -43,7 +43,28 @@ export const GET = async (
         pagos: await pagoService.listarConPaginacion(),
     });
 };
-
+/**
+ * @swagger
+ * /pago:
+ *   post:
+ *     summary: Crea un nuevo pago
+ *     tags: [Pago]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Pago'
+ *     responses:
+ *       201:
+ *         description: El pago ha sido creado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Pago'
+ *       400:
+ *         description: Petición inválida
+ */
 export const POST = async (
     req: MedusaRequest,
     res: MedusaResponse

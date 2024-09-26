@@ -44,6 +44,29 @@ export const GET = async (
     });
 };
 
+/**
+ * @swagger
+ * /orden-serie:
+ *   post:
+ *     summary: Crea una nueva serie de órdenes
+ *     tags: [OrdenSerie]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OrdenSerie'
+ *     responses:
+ *       201:
+ *         description: La serie de órdenes ha sido creada exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrdenSerie'
+ *       400:
+ *         description: Petición inválida
+ */
+
 export const POST = async (
     req: MedusaRequest,
     res: MedusaResponse

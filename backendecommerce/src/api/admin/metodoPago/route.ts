@@ -43,7 +43,28 @@ export const GET = async (
         metodoPagos: await metodoPagoService.listarConPaginacion(),
     });
 };
-
+/**
+ * @swagger
+ * /metodo-pago:
+ *   post:
+ *     summary: Crea un nuevo método de pago
+ *     tags: [MetodoPago]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/MetodoPago'
+ *     responses:
+ *       201:
+ *         description: El método de pago ha sido creado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MetodoPago'
+ *       400:
+ *         description: Petición inválida
+ */
 export const POST = async (
     req: MedusaRequest,
     res: MedusaResponse

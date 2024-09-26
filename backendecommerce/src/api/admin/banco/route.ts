@@ -44,6 +44,29 @@ export const GET = async (
     });
 };
 
+/**
+ * @swagger
+ * /bancos:
+ *   post:
+ *     summary: Crea un nuevo banco
+ *     tags: [Bancos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Banco'
+ *     responses:
+ *       201:
+ *         description: El banco ha sido creado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Banco'
+ *       400:
+ *         description: Petición inválida
+ */
+
 export const POST = async (
     req: MedusaRequest,
     res: MedusaResponse
