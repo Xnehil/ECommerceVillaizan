@@ -110,11 +110,11 @@ CREATE TABLE vi_subcategoria (
 
 
 CREATE TABLE vi_tipoproducto_subcategoria (
-    tipoproducto_id VARCHAR(50),
-    subcategoria_id VARCHAR(50),
+    id_tipoproducto VARCHAR(50),
+    id_subcategoria VARCHAR(50),
     PRIMARY KEY (tipoproducto_id, subcategoria_id),
-    CONSTRAINT fk_producto FOREIGN KEY (tipoproducto_id) REFERENCES vi_tipoproducto(id),
-    CONSTRAINT fk_subcategoria FOREIGN KEY (subcategoria_id) REFERENCES vi_subcategoria(id),
+    CONSTRAINT fk_producto FOREIGN KEY (id_tipoproducto) REFERENCES vi_tipoproducto(id),
+    CONSTRAINT fk_subcategoria FOREIGN KEY (id_subcategoria) REFERENCES vi_subcategoria(id),
 	--trazabilidad
     estaactivo boolean default true not null,
     desactivadoen timestamp null,
