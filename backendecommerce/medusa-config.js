@@ -1,4 +1,5 @@
 const dotenv = require("dotenv");
+const { serve } = require("swagger-ui-express");
 
 let ENV_FILE_NAME = "";
 switch (process.env.NODE_ENV) {
@@ -42,16 +43,17 @@ const plugins = [
       upload_dir: "uploads",
     },
   },
-  {
-    resolve: "@medusajs/admin",
-    /** @type {import('@medusajs/admin').PluginOptions} */
-    options: {
-      autoRebuild: true,
-      develop: {
-        open: process.env.OPEN_BROWSER !== "false",
-      },
-    },
-  },
+  // {
+    // resolve: "@medusajs/admin",
+    // /** @type {import('@medusajs/admin').PluginOptions} */
+    // options: {
+    //   autoRebuild: true,
+    //   develop: {
+    //     open: process.env.OPEN_BROWSER !== "false",
+    //   },
+    //   serve: false,
+    // },
+  // },
 ];
 
 const modules = {
