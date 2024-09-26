@@ -82,11 +82,13 @@ class OrdenSerieService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<OrdenSerie> {
         return await this.atomicPhase_(async (manager) => {
             const ordenSerieRepo = manager.withRepository(this.ordenSerieRepository_);
             const ordenSerie = await this.recuperar(id);
-            await ordenSerieRepo.remove([ordenSerie]);
+            ordenSerie.estaActivo = false;
+            ordenSerie.desactivadoEn = new Date();
+            return await ordenSerieRepo.save(ordenSerie);
         });
     }
 }

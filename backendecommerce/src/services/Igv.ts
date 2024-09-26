@@ -82,11 +82,13 @@ class IgvService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<Igv> {
         return await this.atomicPhase_(async (manager) => {
             const igvRepo = manager.withRepository(this.igvRepository_);
             const igv = await this.recuperar(id);
-            await igvRepo.remove([igv]);
+            igv.estaActivo = false;
+            igv.desactivadoEn = new Date();
+            return await igvRepo.save(igv);
         });
     }
 }

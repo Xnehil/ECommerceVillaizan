@@ -82,11 +82,13 @@ class DetallePedidoService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<DetallePedido> {
         return await this.atomicPhase_(async (manager) => {
             const detallePedidoRepo = manager.withRepository(this.detallePedidoRepository_);
             const detallePedido = await this.recuperar(id);
-            await detallePedidoRepo.remove([detallePedido]);
+            detallePedido.estaActivo = false;
+            detallePedido.desactivadoEn = new Date();
+            return await detallePedidoRepo.save(detallePedido);
         });
     }
 }

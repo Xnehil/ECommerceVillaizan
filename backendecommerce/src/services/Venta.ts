@@ -82,11 +82,13 @@ class VentaService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<Venta> {
         return await this.atomicPhase_(async (manager) => {
             const ventaRepo = manager.withRepository(this.ventaRepository_);
             const venta = await this.recuperar(id);
-            await ventaRepo.remove([venta]);
+            venta.estaActivo = false;
+            venta.desactivadoEn = new Date();
+            return await ventaRepo.save(venta);
         });
     }
 }

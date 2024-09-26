@@ -82,11 +82,63 @@ class InventarioMotorizadoService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<InventarioMotorizado> {
         return await this.atomicPhase_(async (manager) => {
             const inventarioMotorizadoRepo = manager.withRepository(this.inventarioMotorizadoRepository_);
             const inventarioMotorizado = await this.recuperar(id);
-            await inventarioMotorizadoRepo.remove([inventarioMotorizado]);
+            inventarioMotorizado.estaActivo = false;
+            inventarioMotorizado.desactivadoEn = new Date();
+            return await inventarioMotorizadoRepo.save(inventarioMotorizado);
+        });
+    }
+
+    async modificarStock(
+        id: string,
+        nuevoStock: number
+    ): Promise<InventarioMotorizado> {
+        return await this.atomicPhase_(async (manager) => {
+            const inventarioMotorizadoRepo = manager.withRepository(this.inventarioMotorizadoRepository_);
+            const inventarioMotorizado = await this.recuperar(id);
+
+            // Actualizar stock 
+            inventarioMotorizado.stock = nuevoStock;
+
+            // Guardar entidad
+            return await inventarioMotorizadoRepo.save(inventarioMotorizado);
+        });
+    }
+
+    
+
+    async aumentarStock(
+        id: string,
+        cantidad: number
+    ): Promise<InventarioMotorizado> {
+        return await this.atomicPhase_(async (manager) => {
+            const inventarioMotorizadoRepo = manager.withRepository(this.inventarioMotorizadoRepository_);
+            const inventarioMotorizado = await this.recuperar(id);
+
+            // Incrementar stock en cantidad
+            inventarioMotorizado.stock += cantidad;
+
+            // Guardar entidad actualizada
+            return await inventarioMotorizadoRepo.save(inventarioMotorizado);
+        });
+    }
+
+    async disminuirStock(
+        id: string,
+        cantidad: number
+    ): Promise<InventarioMotorizado> {
+        return await this.atomicPhase_(async (manager) => {
+            const inventarioMotorizadoRepo = manager.withRepository(this.inventarioMotorizadoRepository_);
+            const inventarioMotorizado = await this.recuperar(id);
+
+            // Disminuir stock en cantidad
+            inventarioMotorizado.stock -= cantidad;
+
+            // Guardar entidad actualizada
+            return await inventarioMotorizadoRepo.save(inventarioMotorizado);
         });
     }
 }

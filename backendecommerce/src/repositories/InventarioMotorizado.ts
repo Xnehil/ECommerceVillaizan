@@ -4,6 +4,27 @@ import { dataSource } from "@medusajs/medusa/dist/loaders/database"
 export const InventarioMotorizadoRepository = dataSource
   .getRepository(InventarioMotorizado)
   .extend({
-  })
+    async findByMotorizadoId(motorizadoId: string) {
+      return this.find({
+        where: {
+          motorizado: {
+            id: motorizadoId,
+          },
+        },
+        relations: ['motorizado', 'producto'],
+      });
+    },
+
+    async findByProductoId(productoId: string) {
+      return this.find({
+        where: {
+          producto: {
+            id: productoId,
+          },
+        },
+        relations: ['motorizado', 'producto'],
+      });
+    },
+  });
 
 export default InventarioMotorizadoRepository

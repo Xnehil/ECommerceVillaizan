@@ -83,11 +83,13 @@ class LibroReclamacionesService extends TransactionBaseService {
         });
       }
     
-      async eliminar(id: string): Promise<void> {
+      async eliminar(id: string): Promise<LibroReclamaciones> {
         return await this.atomicPhase_(async (manager) => {
           const libroReclamacionesRepo = manager.withRepository(this.libroReclamacionesRepository_);
           const libroReclamaciones = await this.recuperar(id);
-          await libroReclamacionesRepo.remove([libroReclamaciones]);
+          libroReclamaciones.estaActivo = false;
+          libroReclamaciones.desactivadoEn = new Date();
+          return await libroReclamacionesRepo.save(libroReclamaciones);
         });
       }
 }

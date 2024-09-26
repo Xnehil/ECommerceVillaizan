@@ -82,11 +82,13 @@ class BancoService extends TransactionBaseService {
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id: string): Promise<Banco> {
         return await this.atomicPhase_(async (manager) => {
             const bancoRepo = manager.withRepository(this.bancoRepository_);
             const banco = await this.recuperar(id);
-            await bancoRepo.remove([banco]);
+            banco.estaActivo = false;
+            banco.desactivadoEn = new Date();
+            return await bancoRepo.save(banco);
         });
     }
 }
