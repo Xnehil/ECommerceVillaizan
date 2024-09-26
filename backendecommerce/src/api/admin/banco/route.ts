@@ -15,7 +15,7 @@ import { Banco } from "src/models/Banco";
 
 /**
  * @swagger
- * /bancos:
+ * /banco:
  *   get:
  *     summary: Lista todos los bancos con paginación
  *     tags: [Bancos]
@@ -46,7 +46,7 @@ export const GET = async (
 
 /**
  * @swagger
- * /bancos:
+ * /banco:
  *   post:
  *     summary: Crea un nuevo banco
  *     tags: [Bancos]
@@ -87,7 +87,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /bancos/{id}:
+ * /banco/{id}:
  *   get:
  *     summary: Recupera un banco por ID
  *     tags: [Bancos]
@@ -126,7 +126,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /bancos/{id}:
+ * /banco/{id}:
  *   put:
  *     summary: Actualiza un banco por ID
  *     tags: [Bancos]
@@ -178,7 +178,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /bancos/{id}:
+ * /banco/{id}:
  *   delete:
  *     summary: Elimina un banco por ID
  *     tags: [Bancos]
