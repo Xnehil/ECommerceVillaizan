@@ -270,6 +270,7 @@ CREATE TABLE vi_producto_fruta (
     usuariocreacion varchar(50) default 'admin' not null,
     usuarioactualizacion varchar(50)
 );
+
 -- Gestión de envios
 
 CREATE TABLE vi_igv (
@@ -331,12 +332,12 @@ CREATE TABLE vi_pedido (
     motivocancelacion TEXT,
     codigoseguimiento VARCHAR(100),
     montoefectivopagar DECIMAL(10, 2),
-	--TO DO id_motorizado VARCHAR(50),
-	--TO DO CONSTRAINT fk_motorizado FOREIGN KEY (id_motorizado) REFERENCES vi_motorizado(id),
-	--TO DO id_direccion VARCHAR(50),
-	--TO DO CONSTRAINT fk_direccion FOREIGN KEY (id_direccion) REFERENCES vi_direccion(id),
-	--TO DO id_usuario VARCHAR(50),
-	--TO DO CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES vi_usuario(id),
+	id_motorizado VARCHAR(50),
+	CONSTRAINT fk_motorizado FOREIGN KEY (id_motorizado) REFERENCES vi_motorizado(id),
+	id_direccion VARCHAR(50),
+	CONSTRAINT fk_direccion FOREIGN KEY (id_direccion) REFERENCES vi_direccion(id),
+	id_usuario VARCHAR(50),
+	CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES vi_usuario(id),
 	--trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,

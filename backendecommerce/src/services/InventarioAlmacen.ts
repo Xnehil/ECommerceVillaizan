@@ -90,6 +90,54 @@ class InventarioAlmacenService extends TransactionBaseService {
           await inventarioAlmacenRepo.remove([inventarioAlmacen]);
         });
       }
+
+      async modificarStock(
+        id: string,
+        nuevoStock: number
+    ): Promise<InventarioAlmacen> {
+        return await this.atomicPhase_(async (manager) => {
+            const inventarioAlmacenRepo = manager.withRepository(this.inventarioAlmacenRepository_);
+            const inventarioAlmacen = await this.recuperar(id);
+
+            // Updating stock value
+            inventarioAlmacen.stock = nuevoStock;
+
+            // Save updated entity
+            return await inventarioAlmacenRepo.save(inventarioAlmacen);
+        });
+    }
+
+    async aumentarStock(
+        id: string,
+        cantidad: number
+    ): Promise<InventarioAlmacen> {
+        return await this.atomicPhase_(async (manager) => {
+            const inventarioAlmacenRepo = manager.withRepository(this.inventarioAlmacenRepository_);
+            const inventarioAlmacen = await this.recuperar(id);
+
+            // Updating stock value
+            inventarioAlmacen.stock += cantidad;
+
+            // Save updated entity
+            return await inventarioAlmacenRepo.save(inventarioAlmacen);
+        });
+    }
+
+    async disminuirStock(
+        id: string,
+        cantidad: number
+    ): Promise<InventarioAlmacen> {
+        return await this.atomicPhase_(async (manager) => {
+            const inventarioAlmacenRepo = manager.withRepository(this.inventarioAlmacenRepository_);
+            const inventarioAlmacen = await this.recuperar(id);
+
+            // Updating stock value
+            inventarioAlmacen.stock -= cantidad;
+
+            // Save updated entity
+            return await inventarioAlmacenRepo.save(inventarioAlmacen);
+        });
+    }
 }
 
 export default InventarioAlmacenService;

@@ -89,6 +89,56 @@ class InventarioMotorizadoService extends TransactionBaseService {
             await inventarioMotorizadoRepo.remove([inventarioMotorizado]);
         });
     }
+
+    async modificarStock(
+        id: string,
+        nuevoStock: number
+    ): Promise<InventarioMotorizado> {
+        return await this.atomicPhase_(async (manager) => {
+            const inventarioMotorizadoRepo = manager.withRepository(this.inventarioMotorizadoRepository_);
+            const inventarioMotorizado = await this.recuperar(id);
+
+            // Actualizar stock 
+            inventarioMotorizado.stock = nuevoStock;
+
+            // Guardar entidad
+            return await inventarioMotorizadoRepo.save(inventarioMotorizado);
+        });
+    }
+
+    
+
+    async aumentarStock(
+        id: string,
+        cantidad: number
+    ): Promise<InventarioMotorizado> {
+        return await this.atomicPhase_(async (manager) => {
+            const inventarioMotorizadoRepo = manager.withRepository(this.inventarioMotorizadoRepository_);
+            const inventarioMotorizado = await this.recuperar(id);
+
+            // Incrementar stock en cantidad
+            inventarioMotorizado.stock += cantidad;
+
+            // Guardar entidad actualizada
+            return await inventarioMotorizadoRepo.save(inventarioMotorizado);
+        });
+    }
+
+    async disminuirStock(
+        id: string,
+        cantidad: number
+    ): Promise<InventarioMotorizado> {
+        return await this.atomicPhase_(async (manager) => {
+            const inventarioMotorizadoRepo = manager.withRepository(this.inventarioMotorizadoRepository_);
+            const inventarioMotorizado = await this.recuperar(id);
+
+            // DDisminuir stock en cantidad
+            inventarioMotorizado.stock -= cantidad;
+
+            // Guardar entidad actualizada
+            return await inventarioMotorizadoRepo.save(inventarioMotorizado);
+        });
+    }
 }
 
 export default InventarioMotorizadoService;
