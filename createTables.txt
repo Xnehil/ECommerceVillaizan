@@ -2,48 +2,66 @@ DROP TABLE IF EXISTS vi_producto_fruta;
 DROP TABLE IF EXISTS vi_producto_subcategoria;
 DROP TABLE IF EXISTS vi_inventariomotorizado;
 DROP TABLE IF EXISTS vi_tipoproducto_subcategoria;
-
 DROP TABLE IF EXISTS vi_inventarioalmacen;
-
 DROP TABLE IF EXISTS vi_contenidoeducativo;
-
 DROP TABLE IF EXISTS vi_fruta;
-
 DROP TABLE IF EXISTS vi_subcategoria;
-
 DROP TABLE IF EXISTS vi_detallepedido;
-
 DROP TABLE IF EXISTS vi_producto;
-
 DROP TABLE IF EXISTS vi_tipoproducto;
-
-DROP TABLE IF EXISTS vi_almacen;
-
 DROP TABLE IF EXISTS vi_libroreclamaciones;
-
 DROP TABLE IF EXISTS vi_igv;
-
 DROP TABLE IF EXISTS vi_pago;
-
 DROP TABLE IF EXISTS vi_venta;
-
 DROP TABLE IF EXISTS vi_ordenserie;
-
 DROP TABLE IF EXISTS vi_pedido_metodopago;
-
 DROP TABLE IF EXISTS vi_pedido;
-
 DROP TABLE IF EXISTS vi_metodopago;
-
 DROP TABLE IF EXISTS vi_banco;
-
 DROP TABLE IF EXISTS vi_direccion;
 DROP TABLE IF EXISTS vi_motorizado;
+DROP TABLE IF EXISTS vi_almacen;
 DROP TABLE IF EXISTS vi_ubicacion;
 DROP TABLE IF EXISTS vi_ciudad;
+DROP TABLE IF EXISTS vi_usuario;
+DROP TABLE IF EXISTS vi_persona;
 
 
+-- Gestion de usuarios
+CREATE TABLE vi_persona (
+    id VARCHAR(50) PRIMARY KEY,
+    tipoDocumento VARCHAR(5) NOT NULL,
+    numeroDocumento VARCHAR(20) NOT NULL,
+    razonEliminacion VARCHAR(255),
+    estado VARCHAR(50) NOT NULL,
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
 
+CREATE TABLE vi_usuario (
+    id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    conCuenta BOOLEAN NOT NULL,
+    numeroTelefono VARCHAR(15),
+    correo VARCHAR(150) NOT NULL,
+    contrasena VARCHAR(255) NOT NULL,
+    fechaUltimoLogin TIMESTAMP,
+	id_persona VARCHAR(50),
+    CONSTRAINT fk_persona FOREIGN KEY (id_persona) REFERENCES vi_persona(id),
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
 
 -- Libro de Reclamaciones
 
@@ -202,6 +220,7 @@ CREATE TABLE vi_ubicacion (
 CREATE TABLE vi_ciudad (
     id VARCHAR(50) PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,  -- Ejemplo: Moyobamba, Tarapoto, Jaen
+    region VARCHAR(100), -- Ejemplo: San Martin, Cajamarca
     --trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,
@@ -323,6 +342,44 @@ CREATE TABLE vi_banco (
     usuarioactualizacion VARCHAR(50)
 );
 
+CREATE TABLE vi_motorizado (
+    id VARCHAR(50) PRIMARY KEY,
+    placa VARCHAR(20) NOT NULL,
+    id_almacen VARCHAR(50),
+    CONSTRAINT fk_almacen FOREIGN KEY (id_almacen) REFERENCES vi_almacen(id),
+    --id_cuenta VARCHAR(50),
+    --CONSTRAINT fk_cuenta FOREIGN KEY (id_cuenta) REFERENCES vi_cuenta(id),
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_direccion (
+    id VARCHAR(50) PRIMARY KEY,
+    calle VARCHAR(255) NOT NULL,
+    numeroExterior VARCHAR(20) NOT NULL,
+    numeroInterior VARCHAR(20),
+    distrito VARCHAR(100) NOT NULL,
+    codigoPostal VARCHAR(10),
+    referencia VARCHAR(255),
+    id_ciudad VARCHAR(50),
+    CONSTRAINT fk_ciudad FOREIGN KEY (id_ciudad) REFERENCES vi_ciudad(id),
+    id_ubicacion VARCHAR(50),
+    CONSTRAINT fk_ubicacion FOREIGN KEY (id_ubicacion) REFERENCES vi_ubicacion(id),
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
+
+
 CREATE TABLE vi_pedido (
     id VARCHAR(50) PRIMARY KEY,
     estado VARCHAR(50) NOT NULL,
@@ -394,9 +451,6 @@ CREATE TABLE vi_venta (
     usuarioactualizacion VARCHAR(50)
 );
 
-
-
-
 CREATE TABLE vi_pedido_metodopago (
 	id_pedido VARCHAR(50),
 	id_metodopago VARCHAR(50),
@@ -434,44 +488,6 @@ CREATE TABLE vi_pago (
     usuarioactualizacion VARCHAR(50)
 );
 
-
-
-CREATE TABLE vi_motorizado (
-    id VARCHAR(50) PRIMARY KEY,
-    placa VARCHAR(20) NOT NULL,
-    id_almacen VARCHAR(50),
-    CONSTRAINT fk_almacen FOREIGN KEY (id_almacen) REFERENCES vi_almacen(id),
-    --id_cuenta VARCHAR(50),
-    --CONSTRAINT fk_cuenta FOREIGN KEY (id_cuenta) REFERENCES vi_cuenta(id),
-    --trazabilidad
-    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
-    desactivadoen TIMESTAMP,
-    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    usuariocreacion VARCHAR(50) NOT NULL,
-    usuarioactualizacion VARCHAR(50)
-);
-
-CREATE TABLE vi_direccion (
-    id VARCHAR(50) PRIMARY KEY,
-    calle VARCHAR(255) NOT NULL,
-    numeroexterior VARCHAR(20) NOT NULL,
-    numerointerior VARCHAR(20),
-    distrito VARCHAR(100) NOT NULL,
-    codigopostal VARCHAR(10),
-    referencia VARCHAR(255),
-    id_ciudad VARCHAR(50),
-    CONSTRAINT fk_ciudad FOREIGN KEY (id_ciudad) REFERENCES vi_ciudad(id),
-    id_ubicacion VARCHAR(50),
-    CONSTRAINT fk_ubicacion FOREIGN KEY (id_ubicacion) REFERENCES vi_ubicacion(id),
-    --trazabilidad
-    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
-    desactivadoen TIMESTAMP,
-    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    usuariocreacion VARCHAR(50) NOT NULL,
-    usuarioactualizacion VARCHAR(50)
-);
 
 CREATE TABLE vi_inventariomotorizado (
     id VARCHAR(50) PRIMARY KEY,

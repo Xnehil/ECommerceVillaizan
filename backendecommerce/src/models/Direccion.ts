@@ -16,7 +16,7 @@ export class Direccion extends EntidadBase {
   numeroInterior: string;
 
   @Column({ type: 'varchar', length: 50 })
-  region: string;
+  distrito: string;
 
   @Column({ type: 'varchar', length: 10, name: 'codigopostal' })
   codigoPostal: string;
@@ -25,11 +25,11 @@ export class Direccion extends EntidadBase {
   referencia: string;
 
   @ManyToOne(() => Ciudad, ciudad => ciudad.direcciones, { eager: true })
-  @JoinColumn({ name: 'idciudad' })
+  @JoinColumn({ name: 'id_ciudad' })
   ciudad: Ciudad;
 
   @ManyToOne(() => Ubicacion, ubicacion => ubicacion.direcciones, { eager: true })
-  @JoinColumn({ name: 'idubicacion' })
+  @JoinColumn({ name: 'id_ubicacion' })
   ubicacion: Ubicacion;
 
   @BeforeInsert()

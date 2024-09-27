@@ -26,16 +26,16 @@ export class Producto extends EntidadBase {
     @ManyToMany(() => Subcategoria, subcategoria => subcategoria.productos)
     @JoinTable({
         name: "vi_producto_subcategoria", // Join table name
-        joinColumn: { name: "producto_id", referencedColumnName: "id" },
-        inverseJoinColumn: { name: "subcategoria_id", referencedColumnName: "id" }
+        joinColumn: { name: "id_producto", referencedColumnName: "id" },
+        inverseJoinColumn: { name: "id_subcategoria", referencedColumnName: "id" }
     })
     subcategorias: Subcategoria[];
 
     @ManyToMany(() => Fruta, fruta => fruta.productos)
     @JoinTable({
         name: "vi_producto_fruta", // Join table name
-        joinColumn: { name: "producto_id", referencedColumnName: "id" },
-        inverseJoinColumn: { name: "fruta_id", referencedColumnName: "id" }
+        joinColumn: { name: "id_producto", referencedColumnName: "id" },
+        inverseJoinColumn: { name: "id_fruta", referencedColumnName: "id" }
     })
     frutas: Fruta[];
 

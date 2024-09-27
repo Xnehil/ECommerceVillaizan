@@ -12,11 +12,11 @@ export class TipoProducto extends EntidadBase {
     @JoinTable({
         name: "vi_tipoproducto_subcategoria", // Name of the join table
         joinColumn: {
-          name: "tipoproducto_id",
+          name: "id_tipoproducto",
           referencedColumnName: "id"
         },
         inverseJoinColumn: {
-          name: "subcategoria_id",
+          name: "id_subcategoria",
           referencedColumnName: "id"
         },
         
