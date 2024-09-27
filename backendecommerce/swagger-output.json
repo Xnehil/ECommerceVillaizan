@@ -303,6 +303,646 @@
             }
           }
         ]
+      },
+      "Ubicacion": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "latitud": {
+                "type": "number",
+                "format": "decimal",
+                "example": 40.712776
+              },
+              "longitud": {
+                "type": "number",
+                "format": "decimal",
+                "example": -74.005974
+              },
+              "direcciones": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Direccion"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Ciudad": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string",
+                "example": "New York"
+              },
+              "direcciones": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Direccion"
+                },
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "Motorizado": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "placa": {
+                "type": "string",
+                "example": "ABC-1234"
+              },
+              "almacen": {
+                "$ref": "#/components/schemas/Almacen"
+              },
+              "inventarios": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/InventarioMotorizado"
+                }
+              },
+              "pedidos": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Pedido"
+                },
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "Direccion": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "calle": {
+                "type": "string",
+                "example": "Calle Ejemplo"
+              },
+              "numeroExterior": {
+                "type": "string",
+                "example": "123"
+              },
+              "numeroInterior": {
+                "type": "string",
+                "nullable": true,
+                "example": "A"
+              },
+              "region": {
+                "type": "string",
+                "example": "Región Ejemplo"
+              },
+              "codigoPostal": {
+                "type": "string",
+                "example": "12345"
+              },
+              "referencia": {
+                "type": "string",
+                "nullable": true,
+                "example": "Cerca del parque"
+              },
+              "ciudad": {
+                "$ref": "#/components/schemas/Ciudad"
+              },
+              "ubicacion": {
+                "$ref": "#/components/schemas/Ubicacion"
+              }
+            }
+          }
+        ]
+      },
+      "InventarioMotorizado": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "stock": {
+                "type": "integer",
+                "example": 100
+              },
+              "stockMinimo": {
+                "type": "integer",
+                "example": 10
+              },
+              "esMerma": {
+                "type": "boolean",
+                "example": false
+              },
+              "motivoMerma": {
+                "type": "string",
+                "nullable": true,
+                "example": "Producto dañado"
+              },
+              "urlImagenMerma": {
+                "type": "string",
+                "nullable": true,
+                "example": "http://example.com/imagen-merma.jpg"
+              },
+              "motorizado": {
+                "$ref": "#/components/schemas/Motorizado"
+              },
+              "producto": {
+                "$ref": "#/components/schemas/Producto"
+              }
+            }
+          }
+        ]
+      },
+      "Banco": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string",
+                "example": "Banco Ejemplo"
+              }
+            }
+          }
+        ]
+      },
+      "DetallePedido": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "cantidad": {
+                "type": "integer",
+                "example": 5
+              },
+              "subtotal": {
+                "type": "number",
+                "format": "decimal",
+                "example": 150
+              },
+              "producto": {
+                "$ref": "#/components/schemas/Producto"
+              },
+              "pedido": {
+                "$ref": "#/components/schemas/Pedido"
+              }
+            }
+          }
+        ]
+      },
+      "Igv": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "porcentaje": {
+                "type": "number",
+                "format": "decimal",
+                "example": 18
+              }
+            }
+          }
+        ]
+      },
+      "LibroReclamaciones": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "fechaIncidente": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2023-10-01T12:00:00Z"
+              },
+              "nombres": {
+                "type": "string",
+                "example": "Juan"
+              },
+              "apellidos": {
+                "type": "string",
+                "example": "Pérez"
+              },
+              "correo": {
+                "type": "string",
+                "example": "juan.perez@example.com"
+              },
+              "telefono": {
+                "type": "string",
+                "example": "123456789",
+                "nullable": true
+              },
+              "tipoDoc": {
+                "type": "string",
+                "example": "DNI"
+              },
+              "nrDocumento": {
+                "type": "string",
+                "example": "12345678"
+              },
+              "menor": {
+                "type": "boolean",
+                "example": false
+              },
+              "departamento": {
+                "type": "string",
+                "example": "Lima"
+              },
+              "provincia": {
+                "type": "string",
+                "example": "Lima"
+              },
+              "distrito": {
+                "type": "string",
+                "example": "Miraflores"
+              },
+              "direccion": {
+                "type": "string",
+                "example": "Av. Ejemplo 123"
+              },
+              "tipo": {
+                "type": "string",
+                "example": "Reclamo"
+              },
+              "montoReclamado": {
+                "type": "number",
+                "format": "decimal",
+                "example": 150
+              },
+              "descripcion": {
+                "type": "string",
+                "example": "Descripción del reclamo"
+              },
+              "reclamacion": {
+                "type": "string",
+                "example": "Reclamo"
+              },
+              "nrPedido": {
+                "type": "string",
+                "example": "PED12345",
+                "nullable": true
+              },
+              "fechaPedido": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2023-10-01T12:00:00Z",
+                "nullable": true
+              },
+              "detalle": {
+                "type": "string",
+                "example": "Detalle del reclamo",
+                "nullable": true
+              },
+              "pedidoConcreto": {
+                "type": "string",
+                "example": "Pedido concreto del reclamo",
+                "nullable": true
+              },
+              "urlComprobante": {
+                "type": "string",
+                "example": "http://example.com/comprobante.jpg",
+                "nullable": true
+              },
+              "accionesProveedor": {
+                "type": "string",
+                "example": "Acciones tomadas por el proveedor",
+                "nullable": true
+              },
+              "estaActivo": {
+                "type": "boolean",
+                "example": true
+              },
+              "usuarioCreacion": {
+                "type": "string",
+                "example": "admin_user"
+              },
+              "usuarioActualizacion": {
+                "type": "string",
+                "example": "admin_user",
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "MetodoPago": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string",
+                "example": "Tarjeta de Crédito"
+              },
+              "pedidos": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Pedido"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "OrdenSerie": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string",
+                "example": "Serie1"
+              },
+              "descripcion": {
+                "type": "string",
+                "example": "Descripción de la serie de orden",
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "Pago": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "esTransferencia": {
+                "type": "boolean",
+                "example": true
+              },
+              "montoCobrado": {
+                "type": "number",
+                "format": "decimal",
+                "example": 150
+              },
+              "numeroOperacion": {
+                "type": "string",
+                "example": "OP123456",
+                "nullable": true
+              },
+              "urlEvidencia": {
+                "type": "string",
+                "example": "http://example.com/evidencia.jpg",
+                "nullable": true
+              },
+              "codigoTransaccion": {
+                "type": "string",
+                "example": "TX1234567890",
+                "nullable": true
+              },
+              "venta": {
+                "$ref": "#/components/schemas/Venta"
+              },
+              "metodoPago": {
+                "$ref": "#/components/schemas/MetodoPago"
+              },
+              "banco": {
+                "$ref": "#/components/schemas/Banco"
+              }
+            }
+          }
+        ]
+      },
+      "Pedido": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "estado": {
+                "type": "string",
+                "example": "En proceso"
+              },
+              "prioridadEntrega": {
+                "type": "string",
+                "example": "Alta",
+                "nullable": true
+              },
+              "total": {
+                "type": "number",
+                "format": "decimal",
+                "example": 250
+              },
+              "puntosOtorgados": {
+                "type": "integer",
+                "example": 10
+              },
+              "motivoCancelacion": {
+                "type": "string",
+                "example": "Cliente canceló el pedido",
+                "nullable": true
+              },
+              "codigoSeguimiento": {
+                "type": "string",
+                "example": "TRACK123456",
+                "nullable": true
+              },
+              "montoEfectivoPagar": {
+                "type": "number",
+                "format": "decimal",
+                "example": 50,
+                "nullable": true
+              },
+              "motorizado": {
+                "$ref": "#/components/schemas/Motorizado"
+              },
+              "direccion": {
+                "$ref": "#/components/schemas/Direccion"
+              },
+              "metodosPago": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MetodoPago"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Venta": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "tipoComprobante": {
+                "type": "string",
+                "example": "Factura"
+              },
+              "fechaVenta": {
+                "type": "string",
+                "format": "date-time",
+                "example": "2023-10-01T12:00:00Z"
+              },
+              "numeroComprobante": {
+                "type": "string",
+                "example": "FAC123456"
+              },
+              "montoTotal": {
+                "type": "number",
+                "format": "decimal",
+                "example": 500
+              },
+              "totalPaletas": {
+                "type": "integer",
+                "example": 10
+              },
+              "totalMafelitas": {
+                "type": "integer",
+                "example": 5
+              },
+              "estado": {
+                "type": "string",
+                "example": "Completado"
+              },
+              "totalIgv": {
+                "type": "number",
+                "format": "decimal",
+                "example": 90
+              },
+              "pedido": {
+                "$ref": "#/components/schemas/Pedido"
+              },
+              "ordenSerie": {
+                "$ref": "#/components/schemas/OrdenSerie"
+              }
+            }
+          }
+        ]
+      },
+      "Persona": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "tipoDocumento": {
+                "type": "string",
+                "example": "DNI"
+              },
+              "numeroDocumento": {
+                "type": "string",
+                "example": "12345678"
+              },
+              "razonEliminacion": {
+                "type": "string",
+                "nullable": true,
+                "example": "Duplicated entry"
+              },
+              "estado": {
+                "type": "string",
+                "example": "Active"
+              }
+            }
+          }
+        ]
+      },
+      "Usuario": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "nombre": {
+                "type": "string",
+                "example": "John"
+              },
+              "apellido": {
+                "type": "string",
+                "example": "Doe"
+              },
+              "conCuenta": {
+                "type": "boolean",
+                "example": true
+              },
+              "numeroTelefono": {
+                "type": "string",
+                "nullable": true,
+                "example": "123456789"
+              },
+              "correo": {
+                "type": "string",
+                "example": "john.doe@example.com"
+              },
+              "contrasena": {
+                "type": "string",
+                "example": "password123"
+              },
+              "fechaUltimoLogin": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true,
+                "example": "2023-10-01T12:00:00Z"
+              },
+              "persona": {
+                "$ref": "#/components/schemas/Persona"
+              }
+            }
+          }
+        ]
       }
     }
   },
@@ -321,7 +961,7 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "almacens": {
+                    "almacenes": {
                       "type": "array",
                       "items": {
                         "$ref": "#/components/schemas/Almacen"
@@ -356,6 +996,228 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Almacen"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/bancos": {
+      "get": {
+        "summary": "Lista todos los bancos con paginación",
+        "tags": [
+          "Bancos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de bancos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bancos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Banco"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo banco",
+        "tags": [
+          "Bancos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Banco"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El banco ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Banco"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/bancos/{id}": {
+      "get": {
+        "summary": "Recupera un banco por ID",
+        "tags": [
+          "Bancos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del banco"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del banco",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Banco"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Banco no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un banco por ID",
+        "tags": [
+          "Bancos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del banco"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Banco"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Banco actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Banco"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Banco no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un banco por ID",
+        "tags": [
+          "Bancos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del banco"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Banco eliminado exitosamente"
+          },
+          "404": {
+            "description": "Banco no encontrado"
+          }
+        }
+      }
+    },
+    "/ciudades": {
+      "get": {
+        "summary": "Lista todas los ciudades con paginación",
+        "tags": [
+          "Ciudades"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de ciudades",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ciudades": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Ciudad"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea una nueva ciudad",
+        "tags": [
+          "Ciudades"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Ciudad"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "La ciudad ha sido creada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ciudad"
                 }
               }
             }
@@ -415,6 +1277,230 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ContenidoEducativo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/detallePedidos": {
+      "get": {
+        "summary": "Lista todos los detalles de pedidos con paginación",
+        "tags": [
+          "DetallePedidos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de detalles de pedidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detallePedidos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DetallePedido"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/detalles-pedido": {
+      "post": {
+        "summary": "Crea un nuevo detalle de pedido",
+        "tags": [
+          "DetallesPedido"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetallePedido"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El detalle de pedido ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetallePedido"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/detallePedidos/{id}": {
+      "get": {
+        "summary": "Recupera un detalle de pedido por ID",
+        "tags": [
+          "DetallePedidos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del detalle de pedido"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del pedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetallePedido"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Detalle de pedido no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un detalle de pedido por ID",
+        "tags": [
+          "DetallePedidos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del detalle de pedido"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DetallePedido"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalle de pedido actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DetallePedido"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Detalle de pedido no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un detalle de pedido por ID",
+        "tags": [
+          "DetallePedidos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del detalle de pedido"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle de pedido eliminado exitosamente"
+          },
+          "404": {
+            "description": "Detalle de pedido no encontrado"
+          }
+        }
+      }
+    },
+    "/direcciones": {
+      "get": {
+        "summary": "Lista todas los direcciones con paginación",
+        "tags": [
+          "Direcciones"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de direcciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "direcciones": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Direccion"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea una nueva dirección",
+        "tags": [
+          "Direcciones"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Direccion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "La ubicación ha sido creada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Direccion"
                 }
               }
             }
@@ -501,6 +1587,171 @@
         }
       }
     },
+    "/igvs": {
+      "get": {
+        "summary": "Lista todos los IGVs con paginación",
+        "tags": [
+          "Igvs"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de IGVs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "igvs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Igv"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/igv": {
+      "post": {
+        "summary": "Crea un nuevo IGV",
+        "tags": [
+          "IGV"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Igv"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El IGV ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Igv"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/igvs/{id}": {
+      "get": {
+        "summary": "Recupera un IGV por ID",
+        "tags": [
+          "Igvs"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del IGV"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del IGV",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Igv"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "IGV no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un IGV por ID",
+        "tags": [
+          "Igvs"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del IGV"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Igv"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "IGV actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Igv"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "IGV no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un IGV por ID",
+        "tags": [
+          "Igvs"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del IGV"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "IGV eliminado exitosamente"
+          },
+          "404": {
+            "description": "IGV no encontrado"
+          }
+        }
+      }
+    },
     "/inventariosalmacen": {
       "get": {
         "summary": "Lista todos los inventarios de almacén con paginación",
@@ -556,6 +1807,1430 @@
           },
           "400": {
             "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/inventariosalmacen/{id}": {
+      "get": {
+        "summary": "Recupera un inventario de almacén por ID",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario de almacén"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del inventario de almacén",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioAlmacen"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Inventario de almacén no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un inventario de almacén por ID",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario de almacén"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventarioAlmacen"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inventario de almacén actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioAlmacen"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Inventario de almacén no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un inventario de almacén por ID",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario de almacén"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventario de almacén eliminado exitosamente"
+          },
+          "404": {
+            "description": "Inventario de almacén no encontrado"
+          }
+        }
+      }
+    },
+    "/inventariosalmacen/{id}/aumentar": {
+      "patch": {
+        "summary": "Aumenta el stock de un inventario de almacén por ID",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario de almacén"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cantidad": {
+                    "type": "number",
+                    "description": "Cantidad a aumentar"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stock aumentado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioAlmacen"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Inventario de almacén no encontrado"
+          }
+        }
+      }
+    },
+    "/inventariosalmacen/{id}/disminuir": {
+      "patch": {
+        "summary": "Disminuye el stock de un inventario de almacén por ID",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario de almacén"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cantidad": {
+                    "type": "number",
+                    "description": "Cantidad a disminuir"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stock disminuido exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioAlmacen"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Inventario de almacén no encontrado"
+          }
+        }
+      }
+    },
+    "/inventarioMotorizadoes": {
+      "get": {
+        "summary": "Lista todos los inventarioMotorizadoes con paginación",
+        "tags": [
+          "InventarioMotorizados"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de inventarioMotorizadoes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "inventarioMotorizadoes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InventarioMotorizado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo inventarioMotorizado",
+        "tags": [
+          "InventarioMotorizados"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventarioMotorizado"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El inventarioMotorizado ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioMotorizado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/inventarioMotorizadoes/{id}": {
+      "get": {
+        "summary": "Recupera un inventario motorizado por ID",
+        "tags": [
+          "InventarioMotorizados"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario motorizado"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del inventario motorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioMotorizado"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Inventario motorizado no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un inventario motorizado por ID",
+        "tags": [
+          "InventarioMotorizados"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario motorizado"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventarioMotorizado"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inventario motorizado actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioMotorizado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Inventario motorizado no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un inventario motorizado por ID",
+        "tags": [
+          "InventarioMotorizados"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario motorizado"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inventario motorizado eliminado exitosamente"
+          },
+          "404": {
+            "description": "Inventario motorizado no encontrado"
+          }
+        }
+      }
+    },
+    "/inventarioMotorizadoes/{id}/aumentar": {
+      "patch": {
+        "summary": "Aumenta el stock de un inventario motorizado por ID",
+        "tags": [
+          "InventarioMotorizados"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario motorizado"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cantidad": {
+                    "type": "number",
+                    "description": "Cantidad a aumentar"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stock aumentado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioMotorizado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Inventario motorizado no encontrado"
+          }
+        }
+      }
+    },
+    "/inventarioMotorizadoes/{id}/disminuir": {
+      "patch": {
+        "summary": "Disminuye el stock de un inventario motorizado por ID",
+        "tags": [
+          "InventarioMotorizados"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del inventario motorizado"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cantidad": {
+                    "type": "number",
+                    "description": "Cantidad a disminuir"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stock disminuido exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioMotorizado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Inventario motorizado no encontrado"
+          }
+        }
+      }
+    },
+    "/libroreclamaciones": {
+      "get": {
+        "summary": "Lista todos los libros de reclamaciones con paginación",
+        "tags": [
+          "LibroReclamaciones"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de libros de reclamaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "libroreclamaciones": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/LibroReclamaciones"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/libro-reclamaciones": {
+      "post": {
+        "summary": "Crea un nuevo libro de reclamaciones",
+        "tags": [
+          "LibroReclamaciones"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LibroReclamaciones"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El libro de reclamaciones ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LibroReclamaciones"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/metodopagos": {
+      "get": {
+        "summary": "Lista todos los métodos de pago con paginación",
+        "tags": [
+          "MetodoPagos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de métodos de pago",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "metodopagos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/MetodoPago"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metodo-pago": {
+      "post": {
+        "summary": "Crea un nuevo método de pago",
+        "tags": [
+          "MetodoPago"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetodoPago"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El método de pago ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetodoPago"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/metodopagos/{id}": {
+      "get": {
+        "summary": "Recupera un método de pago por ID",
+        "tags": [
+          "MetodoPagos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del método de pago"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del método de pago",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetodoPago"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Método de pago no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un método de pago por ID",
+        "tags": [
+          "MetodoPagos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del método de pago"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetodoPago"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Método de pago actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetodoPago"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Método de pago no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un método de pago por ID",
+        "tags": [
+          "MetodoPagos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del método de pago"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Método de pago eliminado exitosamente"
+          },
+          "404": {
+            "description": "Método de pago no encontrado"
+          }
+        }
+      }
+    },
+    "/motorizadoes": {
+      "get": {
+        "summary": "Lista todos los motorizadoes con paginación",
+        "tags": [
+          "Motorizados"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de motorizadoes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "motorizadoes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Motorizado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo  motorizado",
+        "tags": [
+          "Motorizados"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Motorizado"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El motorizado ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Motorizado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/ordenseries": {
+      "get": {
+        "summary": "Lista todas las series de órdenes con paginación",
+        "tags": [
+          "OrdenSeries"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de series de órdenes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ordenseries": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/OrdenSerie"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orden-serie": {
+      "post": {
+        "summary": "Crea una nueva serie de órdenes",
+        "tags": [
+          "OrdenSerie"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrdenSerie"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "La serie de órdenes ha sido creada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenSerie"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/ordenseries/{id}": {
+      "get": {
+        "summary": "Recupera una serie de órdenes por ID",
+        "tags": [
+          "OrdenSeries"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID de la serie de órdenes"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles de la serie de órdenes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenSerie"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Serie de órdenes no encontrada"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza una serie de órdenes por ID",
+        "tags": [
+          "OrdenSeries"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID de la serie de órdenes"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrdenSerie"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Serie de órdenes actualizada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrdenSerie"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Serie de órdenes no encontrada"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina una serie de órdenes por ID",
+        "tags": [
+          "OrdenSeries"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID de la serie de órdenes"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Serie de órdenes eliminada exitosamente"
+          },
+          "404": {
+            "description": "Serie de órdenes no encontrada"
+          }
+        }
+      }
+    },
+    "/pagos": {
+      "get": {
+        "summary": "Lista todos los pagos con paginación",
+        "tags": [
+          "Pagos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de pagos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pagos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Pago"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pago": {
+      "post": {
+        "summary": "Crea un nuevo pago",
+        "tags": [
+          "Pago"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pago"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El pago ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pago"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/pagos/{id}": {
+      "get": {
+        "summary": "Recupera un pago por ID",
+        "tags": [
+          "Pagos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del pago"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del pago",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pago"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pago no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un pago por ID",
+        "tags": [
+          "Pagos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del pago"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pago"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pago actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pago"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Pago no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un pago por ID",
+        "tags": [
+          "Pagos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del pago"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pago eliminado exitosamente"
+          },
+          "404": {
+            "description": "Pago no encontrado"
+          }
+        }
+      }
+    },
+    "/pedidos": {
+      "get": {
+        "summary": "Lista todos los pedidos con paginación",
+        "tags": [
+          "Pedidos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de pedidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pedidos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Pedido"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pedido": {
+      "post": {
+        "summary": "Crea un nuevo pedido",
+        "tags": [
+          "Pedido"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pedido"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El pedido ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pedido"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/pedidos/{id}": {
+      "get": {
+        "summary": "Recupera un pedido por ID",
+        "tags": [
+          "Pedidos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del pedido"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del pedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pedido"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pedido no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un pedido por ID",
+        "tags": [
+          "Pedidos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del pedido"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pedido"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pedido actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pedido"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Pedido no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un pedido por ID",
+        "tags": [
+          "Pedidos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del pedido"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pedido eliminado exitosamente"
+          },
+          "404": {
+            "description": "Pedido no encontrado"
+          }
+        }
+      }
+    },
+    "/personas": {
+      "get": {
+        "summary": "Lista todas las personas con paginación",
+        "tags": [
+          "Personas"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de personas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "personas": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Persona"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/persona": {
+      "post": {
+        "summary": "Crea una nueva persona",
+        "tags": [
+          "Persona"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Persona"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "La persona ha sido creada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Persona"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/personas/{id}": {
+      "get": {
+        "summary": "Recupera una persona por ID",
+        "tags": [
+          "Personas"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID de la persona"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles de la persona",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Persona"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Persona no encontrada"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza una persona por ID",
+        "tags": [
+          "Personas"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID de la persona"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Persona"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Persona actualizada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Persona"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Persona no encontrada"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina una persona por ID",
+        "tags": [
+          "Personas"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID de la persona"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Persona eliminada exitosamente"
+          },
+          "404": {
+            "description": "Persona no encontrada"
           }
         }
       }
@@ -736,6 +3411,395 @@
           }
         }
       }
+    },
+    "/ubicaciones": {
+      "get": {
+        "summary": "Lista todos los ubicaciones con paginación",
+        "tags": [
+          "Ubicaciones"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de ubicaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ubicaciones": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Ubicacion"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea una nueva ubicación",
+        "tags": [
+          "Ubicaciones"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Ubicacion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "La ubicación ha sido creada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ubicacion"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/usuarios": {
+      "get": {
+        "summary": "Lista todos los usuarios con paginación",
+        "tags": [
+          "Usuarios"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de usuarios",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "usuarios": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Usuario"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usuario": {
+      "post": {
+        "summary": "Crea un nuevo usuario",
+        "tags": [
+          "Usuario"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Usuario"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El usuario ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/usuarios/{id}": {
+      "get": {
+        "summary": "Recupera un usuario por ID",
+        "tags": [
+          "Usuarios"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del usuario"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del usuario",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un usuario por ID",
+        "tags": [
+          "Usuarios"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del usuario"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Usuario"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuario actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Usuario"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un usuario por ID",
+        "tags": [
+          "Usuarios"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del usuario"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usuario eliminado exitosamente"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
+        }
+      }
+    },
+    "/ventas": {
+      "get": {
+        "summary": "Lista todas las ventas con paginación",
+        "tags": [
+          "Ventas"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de ventas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ventas": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Venta"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/venta": {
+      "post": {
+        "summary": "Crea una nueva venta",
+        "tags": [
+          "Venta"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Venta"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "La venta ha sido creada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Venta"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/ventas/{id}": {
+      "get": {
+        "summary": "Recupera una venta por ID",
+        "tags": [
+          "Ventas"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID de la venta"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles de la venta",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Venta"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Venta no encontrada"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza una venta por ID",
+        "tags": [
+          "Ventas"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID de la venta"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Venta"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Venta actualizada exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Venta"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Venta no encontrada"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina una venta por ID",
+        "tags": [
+          "Ventas"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID de la venta"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Venta eliminada exitosamente"
+          },
+          "404": {
+            "description": "Venta no encontrada"
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -744,15 +3808,67 @@
       "description": "API para la gestión de almacenes"
     },
     {
+      "name": "Bancos",
+      "description": "API para la gestión de bancos"
+    },
+    {
+      "name": "Ciudades",
+      "description": "API para la gestión de ciudades"
+    },
+    {
       "name": "ContenidosEducativos",
       "description": "API para la gestión de contenidos educativos"
+    },
+    {
+      "name": "DetallePedidos",
+      "description": "API para la gestión de detalle de pedidos"
+    },
+    {
+      "name": "Direcciones",
+      "description": "API para la gestión de direcciones"
     },
     {
       "name": "Frutas"
     },
     {
+      "name": "Igvs",
+      "description": "API para la gestión de IGVs"
+    },
+    {
       "name": "InventariosAlmacen",
       "description": "API para la gestión de inventarios de almacén"
+    },
+    {
+      "name": "InventarioMotorizadoes",
+      "description": "API para la gestión de inventarioMotorizadoes"
+    },
+    {
+      "name": "LibroReclamaciones",
+      "description": "API para la gestión de libros de reclamaciones"
+    },
+    {
+      "name": "MetodoPagos",
+      "description": "API para la gestión de métodos de pago"
+    },
+    {
+      "name": "Motorizadoes",
+      "description": "API para la gestión de motorizadoes"
+    },
+    {
+      "name": "OrdenSeries",
+      "description": "API para la gestión de series de órdenes"
+    },
+    {
+      "name": "Pagos",
+      "description": "API para la gestión de pagos"
+    },
+    {
+      "name": "Pedidos",
+      "description": "API para la gestión de pedidos"
+    },
+    {
+      "name": "Personas",
+      "description": "API para la gestión de personas"
     },
     {
       "name": "Productos",
@@ -765,6 +3881,18 @@
     {
       "name": "TipoProductos",
       "description": "API para tipo de productos"
+    },
+    {
+      "name": "Ubicaciones",
+      "description": "API para la gestión de ubicaciones"
+    },
+    {
+      "name": "Usuarios",
+      "description": "API para la gestión de usuarios"
+    },
+    {
+      "name": "Ventas",
+      "description": "API para la gestión de ventas"
     }
   ]
 }

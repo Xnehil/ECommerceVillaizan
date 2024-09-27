@@ -829,6 +829,80 @@ const options = {
             },
           ],
         },
+        Persona: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                tipoDocumento: {
+                  type: 'string',
+                  example: 'DNI',
+                },
+                numeroDocumento: {
+                  type: 'string',
+                  example: '12345678',
+                },
+                razonEliminacion: {
+                  type: 'string',
+                  nullable: true,
+                  example: 'Duplicated entry',
+                },
+                estado: {
+                  type: 'string',
+                  example: 'Active',
+                },
+              },
+            },
+          ],
+        },
+        Usuario: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                nombre: {
+                  type: 'string',
+                  example: 'John',
+                },
+                apellido: {
+                  type: 'string',
+                  example: 'Doe',
+                },
+                conCuenta: {
+                  type: 'boolean',
+                  example: true,
+                },
+                numeroTelefono: {
+                  type: 'string',
+                  nullable: true,
+                  example: '123456789',
+                },
+                correo: {
+                  type: 'string',
+                  example: 'john.doe@example.com',
+                },
+                contrasena: {
+                  type: 'string',
+                  example: 'password123',
+                },
+                fechaUltimoLogin: {
+                  type: 'string',
+                  format: 'date-time',
+                  nullable: true,
+                  example: '2023-10-01T12:00:00Z',
+                },
+                persona: {
+                  $ref: '#/components/schemas/Persona',
+                },
+              },
+            },
+          ],
+        },
+
       }
     }
   },
