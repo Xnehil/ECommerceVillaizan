@@ -457,7 +457,7 @@ CREATE TABLE vi_direccion (
     calle VARCHAR(255) NOT NULL,
     numeroexterior VARCHAR(20) NOT NULL,
     numerointerior VARCHAR(20),
-    region VARCHAR(100) NOT NULL,
+    distrito VARCHAR(100) NOT NULL,
     codigopostal VARCHAR(10),
     referencia VARCHAR(255),
     id_ciudad VARCHAR(50),
