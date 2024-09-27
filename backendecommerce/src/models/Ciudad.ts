@@ -8,6 +8,9 @@ export class Ciudad extends EntidadBase {
   @Column({ type: 'varchar', length: 100 })
   nombre: string;
 
+  @Column({ type: 'varchar', length: 100 })
+  region: string;
+
   @OneToMany(() => Direccion, direccion => direccion.ciudad)
   direcciones: Direccion[];
 

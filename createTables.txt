@@ -220,6 +220,7 @@ CREATE TABLE vi_ubicacion (
 CREATE TABLE vi_ciudad (
     id VARCHAR(50) PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,  -- Ejemplo: Moyobamba, Tarapoto, Jaen
+    region VARCHAR(100), -- Ejemplo: San Martin, Cajamarca
     --trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,
@@ -362,7 +363,7 @@ CREATE TABLE vi_direccion (
     calle VARCHAR(255) NOT NULL,
     numeroExterior VARCHAR(20) NOT NULL,
     numeroInterior VARCHAR(20),
-    region VARCHAR(100) NOT NULL,
+    distrito VARCHAR(100) NOT NULL,
     codigoPostal VARCHAR(10),
     referencia VARCHAR(255),
     id_ciudad VARCHAR(50),

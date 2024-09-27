@@ -16,7 +16,7 @@ export class Direccion extends EntidadBase {
   numeroInterior: string;
 
   @Column({ type: 'varchar', length: 50 })
-  region: string;
+  distrito: string;
 
   @Column({ type: 'varchar', length: 10, name: 'codigopostal' })
   codigoPostal: string;
