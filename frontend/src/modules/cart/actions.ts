@@ -15,7 +15,9 @@ import {
   updateCart,
   updateItem,
 } from "@lib/data"
+import axios from "axios"
 
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 /**
  * Retrieves the cart based on the cartId cookie
  *
@@ -23,24 +25,26 @@ import {
  * @example
  * const cart = await getOrSetCart()
  */
-export async function getOrSetCart(countryCode: string) {
+export async function getOrSetCart() {
   const cartId = cookies().get("_medusa_cart_id")?.value
   let cart
 
   if (cartId) {
-    cart = await getCart(cartId).then((cart) => cart)
+    cart = await axios.get(`${baseUrl}/admin/pedido/${cartId}`).then((res) => res.data)
   }
 
-  const region = await getRegion(countryCode)
+  // const region = await getRegion(countryCode)
 
-  if (!region) {
-    return null
-  }
+  // if (!region) {
+  //   return null
+  // }
 
-  const region_id = region.id
+  // const region_id = region.id
 
   if (!cart) {
-    cart = await createCart({ region_id }).then((res) => res)
+    cart = await axios.post(`${baseUrl}/admin/pedido`, {
+      "estado": "carrito",
+    }).then((res) => res.data)
     cart &&
       cookies().set("_medusa_cart_id", cart.id, {
         maxAge: 60 * 60 * 24 * 7,
@@ -51,10 +55,11 @@ export async function getOrSetCart(countryCode: string) {
     revalidateTag("cart")
   }
 
-  if (cart && cart?.region_id !== region_id) {
-    await updateCart(cart.id, { region_id })
-    revalidateTag("cart")
-  }
+  // Esto es para temas de cambio de region. De momento no se usa
+  // if (cart && cart?.region_id !== region_id) {
+  //   await updateCart(cart.id, { region_id })
+  //   revalidateTag("cart")
+  // }
 
   return cart
 }
@@ -67,7 +72,7 @@ export async function retrieveCart() {
   }
 
   try {
-    const cart = await getCart(cartId).then((cart) => cart)
+    const cart = await axios.get(`${baseUrl}/admin/pedido/${cartId}`).then((res) => res.data)
     return cart
   } catch (e) {
     console.log(e)
@@ -76,26 +81,24 @@ export async function retrieveCart() {
 }
 
 export async function addToCart({
-  variantId,
-  quantity,
-  countryCode,
+  idProducto,
+  cantidad,
 }: {
-  variantId: string
-  quantity: number
-  countryCode: string
+  idProducto: string
+  cantidad: number
 }) {
-  const cart = await getOrSetCart(countryCode).then((cart) => cart)
+  const cart = await getOrSetCart()
 
   if (!cart) {
     return "Missing cart ID"
   }
 
-  if (!variantId) {
+  if (!idProducto) {
     return "Missing product variant ID"
   }
 
   try {
-    await addItem({ cartId: cart.id, variantId, quantity })
+    // await addItem({ cartId: cart.id, idProducto, cantidad }) modificar esto
     revalidateTag("cart")
   } catch (e) {
     return "Error adding item to cart"
@@ -124,7 +127,7 @@ export async function updateLineItem({
   }
 
   try {
-    await updateItem({ cartId, lineId, quantity })
+    // await updateItem({ cartId, lineId, quantity }) modificar esto
     revalidateTag("cart")
   } catch (e: any) {
     return e.toString()
