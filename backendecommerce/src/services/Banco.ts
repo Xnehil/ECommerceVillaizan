@@ -31,7 +31,21 @@ class BancoService extends TransactionBaseService {
     ): Promise<[Banco[], number]> {
         const bancoRepo = this.activeManager_.withRepository(this.bancoRepository_);
         const query = buildQuery(selector, config);
+
+        //console.log('Executing query with selector:', selector);
+        //console.log('Executing query with config:', config);
+        //console.log('Generated query:', query);
+
+        const result = await bancoRepo.findAndCount(query);
+
+        //console.log('Query result:', result);
+
+        //const bancoRepo = this.activeManager_.withRepository(this.bancoRepository_);
+        //const result = await bancoRepo.find();
+        //console.log('Direct query result:', result);
+
         return bancoRepo.findAndCount(query);
+        
     }
 
     async listarConPaginacion(
@@ -42,7 +56,21 @@ class BancoService extends TransactionBaseService {
             relations: [],
         }
     ): Promise<Banco[]> {
+
+        if (selector) {
+            console.log('Selector is not empty:', selector);
+        } else {
+            console.log('Selector is empty');
+        }
+    
+        if (config) {
+            console.log('Config is not empty:', config);
+        } else {
+            console.log('Config is empty');
+        }
+
         const [bancos] = await this.listarYContar(selector, config);
+        console.log('Bancos:', bancos);
         return bancos;
     }
 
