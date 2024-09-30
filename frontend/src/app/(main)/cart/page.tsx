@@ -10,6 +10,7 @@ import { getCheckoutStep } from "@lib/util/get-checkout-step"
 import { CartWithCheckoutStep } from "types/global"
 import { getCart, getCustomer } from "@lib/data"
 import CustomRectangle from "components/CustomRectangle"
+import CartClient from "./CartClient/CartClient"
 
 export const metadata: Metadata = {
   title: "Cart",
@@ -45,16 +46,5 @@ export default async function Cart() {
   const cart = await fetchCart()
   const customer = await getCustomer()
 
-  //return <CartTemplate cart={cart} customer={customer} />
-  return (
-    <>
-      <CartTemplate cart={cart} customer={customer} />
-      <CustomRectangle 
-        text="Contra Entrega" 
-        images={[{ src: "/images/contra2.png", hoverText: "Pago en Efectivo" }]} 
-        width="50%" 
-        height="100px" 
-      />
-    </>
-  )
+  return <CartClient cart={cart} customer={customer} />
 }
