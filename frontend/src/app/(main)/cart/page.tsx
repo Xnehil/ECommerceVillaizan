@@ -8,6 +8,7 @@ import { enrichLineItems } from "@modules/cart/actions"
 import { getCheckoutStep } from "@lib/util/get-checkout-step"
 import { CartWithCheckoutStep } from "types/global"
 import { getCart, getCustomer } from "@lib/data"
+import CustomRectangle from "components/CustomRectangle"
 
 export const metadata: Metadata = {
   title: "Cart",
@@ -43,5 +44,16 @@ export default async function Cart() {
   const cart = await fetchCart()
   const customer = await getCustomer()
 
-  return <CartTemplate cart={cart} customer={customer} />
+  //return <CartTemplate cart={cart} customer={customer} />
+  return (
+    <>
+      <CartTemplate cart={cart} customer={customer} />
+      <CustomRectangle 
+        text="Sample Text" 
+        images={["/images/contra.png"]} 
+        width="50%" 
+        height="100px" 
+      />
+    </>
+  )
 }
