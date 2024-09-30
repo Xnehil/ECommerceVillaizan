@@ -7,6 +7,11 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
+.imageWrapper:hover .hoverText {
+  visibility: visible;
+  opacity: 1;
+}
+
 @layer utilities {
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {

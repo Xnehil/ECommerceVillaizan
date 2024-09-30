@@ -3,6 +3,7 @@ import { Metadata } from "next"
 import { cookies } from "next/headers"
 
 import CartTemplate from "@modules/cart/templates"
+import 'styles/globals.css'
 
 import { enrichLineItems } from "@modules/cart/actions"
 import { getCheckoutStep } from "@lib/util/get-checkout-step"
@@ -49,8 +50,8 @@ export default async function Cart() {
     <>
       <CartTemplate cart={cart} customer={customer} />
       <CustomRectangle 
-        text="Sample Text" 
-        images={["/images/contra.png"]} 
+        text="Contra Entrega" 
+        images={[{ src: "/images/contra2.png", hoverText: "Pago en Efectivo" }]} 
         width="50%" 
         height="100px" 
       />
