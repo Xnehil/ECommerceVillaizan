@@ -23,30 +23,40 @@ const CustomRectangle: React.FC<CustomRectangleProps> = ({
   width = "100%",
   height = "auto",
   onImageClick,
-  selectedImageId, // Recibimos la imagen seleccionada
+  selectedImageId: propSelectedImageId, // Recibimos la imagen seleccionada como prop
 }) => {
   const [isCircleSelected, setIsCircleSelected] = useState(false); // Estado para controlar la selección del círculo
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [selectedImageId, setSelectedImageId] = useState<string | null>(propSelectedImageId); // Estado para manejar la imagen seleccionada
 
   // Sincronizamos el estado del círculo si una imagen está seleccionada
   useEffect(() => {
-    if (selectedImageId) {
+    if (propSelectedImageId) {
+      setSelectedImageId(propSelectedImageId);
       setIsCircleSelected(true);
     } else {
-      setIsCircleSelected(false);
+      setIsCircleSelected(false); // Aquí se asegurará de que el círculo se deseleccione
+      setSelectedImageId(null); // Asegúrate de limpiar el ID seleccionado cuando no hay imagen seleccionada
     }
-  }, [selectedImageId]);
+  }, [propSelectedImageId]);
 
   // El rectángulo se oscurece si hay una imagen seleccionada o el círculo está seleccionado
   const isSelected = selectedImageId !== null || isCircleSelected;
 
   const handleCircleClick = () => {
-    setIsCircleSelected(!isCircleSelected); // Cambiamos el estado del círculo al hacer clic
+    if (isCircleSelected) {
+      setIsCircleSelected(false); // Cambiamos el estado del círculo al hacer clic
+      setSelectedImageId(null); // Desseleccionamos la imagen
+    } else {
+      setIsCircleSelected(true); // Rellenar el círculo si no estaba seleccionado
+    }
   };
 
   const handleImageClick = (index: number) => {
     setIsCircleSelected(true); // Rellenar el círculo cuando se selecciona una imagen
-    onImageClick(images[index].id); // Llamar a la función prop con el id de la imagen clickeada
+    const imageId = images[index].id;
+    setSelectedImageId(imageId); // Actualizar la imagen seleccionada
+    onImageClick(imageId); // Llamar a la función prop con el id de la imagen clickeada
   };
 
   const handleMouseEnter = (index: number) => {
