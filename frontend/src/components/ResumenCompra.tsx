@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import EntregaPopup from './EntregaPopup'; // Asegúrate de importar el componente EntregaPopup
 
 interface Producto {
   nombre: string;
@@ -14,12 +15,24 @@ interface ResumenCompraProps {
 }
 
 const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado }) => {
+  const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
+  const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
+
   const calcularSubtotal = () => {
     return productos.reduce((acc, producto) => acc + producto.precio * producto.cantidad, 0);
   };
 
   const calcularTotal = () => {
     return calcularSubtotal() - descuento + costoEnvio;
+  };
+
+  const toggleSeleccion = () => {
+    setSeleccionado(!seleccionado); // Cambia el estado entre true y false
+  };
+
+  const handleConfirmar = () => {
+    // Lógica adicional al confirmar, si es necesario
+    setShowPopup(false);
   };
 
   return (
@@ -40,7 +53,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
         <span>${calcularTotal().toFixed(2)}</span>
       </div>
       <hr style={{ margin: '10px 0' }} />
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} onClick={toggleSeleccion}>
         <div
           style={{
             width: '20px',
@@ -48,11 +61,52 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
             border: '2px solid black',
             borderRadius: '50%',
             marginRight: '10px',
+            backgroundColor: seleccionado ? 'black' : 'transparent',
+            cursor: 'pointer',
           }}
         />
         <span>Términos y Condiciones</span>
       </div>
       <p>{textoCustomizado}</p>
+
+      {/* Botón Comprar */}
+      <button
+        style={{
+          width: '100%',
+          padding: '10px',
+          border: '2px solid black',
+          borderRadius: '5px',
+          backgroundColor: 'transparent',
+          color: 'black',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+          transition: 'background-color 0.3s, color 0.3s',
+        }}
+        onMouseOver={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'black';
+          (e.currentTarget as HTMLButtonElement).style.color = 'white';
+        }}
+        onMouseOut={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
+          (e.currentTarget as HTMLButtonElement).style.color = 'black';
+        }}
+        onClick={() => setShowPopup(true)} // Abre el popup al hacer clic
+      >
+        Comprar
+      </button>
+
+      {/* Popup de Entrega */}
+      {showPopup && (
+        <EntregaPopup
+          direccion="Calle Ejemplo 123"
+          nombre="Juan Pérez"
+          productos={productos}
+          subtotal={calcularSubtotal()}
+          metodoPago="Tarjeta de Crédito"
+          onConfirm={handleConfirmar}
+          onClose={() => setShowPopup(false)}
+        />
+      )}
     </div>
   );
 };
