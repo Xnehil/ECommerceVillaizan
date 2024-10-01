@@ -22,7 +22,7 @@ export default async function ProductPreview({
   region: Region
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-
+  // console.log("productPreview", productPreview)
   const pricedProduct = await axios.get(`${baseUrl}/admin/producto/${productPreview.id}`).then((response) => response.data)
 
 
@@ -41,15 +41,16 @@ export default async function ProductPreview({
   // })
 
   const cheapestPrice = pricedProduct.precio
+  const spacelessName = productPreview.nombre.replace(/\s/g, "-")
 
   return (
     <Link
-      href={`/products/${productPreview.nombre}`}
+      href={`/products/${spacelessName}`}
       className="group"
     >
       <div data-testid="product-wrapper">
         <Thumbnail
-          thumbnail={productPreview.urlImagen}
+          // thumbnail={productPreview.urlImagen}
           size="full"
           isFeatured={isFeatured}
         />

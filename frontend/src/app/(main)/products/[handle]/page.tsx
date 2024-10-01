@@ -18,30 +18,24 @@ type Props = {
 }
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 export async function generateStaticParams() {
-  const countryCodes = await listRegions().then((regions) =>
-    regions?.map((r) => r.countries.map((c) => c.iso_2)).flat()
-  )
+//   const countryCodes = await listRegions().then((regions) =>
+//     regions?.map((r) => r.countries.map((c) => c.iso_2)).flat()
+//   )
 
-  if (!countryCodes) {
-    return null
-  }
+//   if (!countryCodes) {
+//     return null
+//   }
 
-  const products = await Promise.all(
-    countryCodes.map((countryCode) => {
-      return getProductsList({ countryCode })
-    })
-  ).then((responses) =>
-    responses.map(({ response }) => response.products).flat()
-  )
-
-  const staticParams = countryCodes
-    ?.map((countryCode) =>
-      products.map((product) => ({
-        countryCode,
-        handle: product.handle,
-      }))
-    )
-    .flat()
+  const productos = await axios.get(
+    `${baseUrl}/producto`
+  ).then(({ data }) => data);
+  console.log("productos", productos)
+  const staticParams = productos.map((producto: Producto) => ({
+    params: {
+      handle: producto.id,
+      nombre: producto.nombre,
+    },
+  }))
 
   return staticParams
 }
@@ -49,9 +43,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = params
 
-  const { product } = await getProductByHandle(handle).then(
-    (product) => product
-  )
+  const { product } = await axios.get(
+    `${baseUrl}/producto/${handle}`
+  ).then(({ data }) => data);
+
 
   if (!product) {
     notFound()
@@ -60,30 +55,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${product.title} | Medusa Store`,
     description: `${product.title}`,
-    openGraph: {
-      title: `${product.title} | Medusa Store`,
-      description: `${product.title}`,
-      images: product.thumbnail ? [product.thumbnail] : [],
-    },
+    // openGraph: {
+    //   title: `${product.title} | Medusa Store`,
+    //   description: `${product.title}`,
+    //   images: product.thumbnail ? [product.thumbnail] : [],
+    // },
   }
 }
 
 const getPricedProductByHandle = async (handle: string, region: Region) => {
-  const { product } = await getProductByHandle(handle).then(
-    (product) => product
-  )
+  const producto = await axios.get(
+    `${baseUrl}/producto/${handle}`
+  ).then(({ data }) => data); 
 
-  if (!product || !product.id) {
+  if (!producto || !producto.id) {
     return null
   }
-
-  const pricedProduct = await retrievePricedProductById({
-    id: product.id,
-    regionId: region.id,
-  })
-
-  return pricedProduct
-}
+  return producto
+0}
 
 export default async function ProductPage({ params }: Props) {
 
