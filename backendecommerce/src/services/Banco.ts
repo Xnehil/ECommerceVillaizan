@@ -2,10 +2,10 @@ import { buildQuery, FindConfig, Selector, TransactionBaseService } from "@medus
 import { Banco } from "../models/Banco";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
-import bancoRepository from "src/repositories/Banco";
+import BancoRepository from "src/repositories/Banco";
 
 class BancoService extends TransactionBaseService {
-    protected bancoRepository_: typeof bancoRepository;
+    protected bancoRepository_: typeof BancoRepository;
 
     constructor(container) {
         super(container);
@@ -36,7 +36,7 @@ class BancoService extends TransactionBaseService {
         //console.log('Executing query with config:', config);
         //console.log('Generated query:', query);
 
-        const result = await bancoRepo.findAndCount(query);
+        // const result = await bancoRepo.findAndCount(query);
 
         //console.log('Query result:', result);
 
