@@ -83,9 +83,11 @@ export async function retrieveCart() {
 export async function addToCart({
   idProducto,
   cantidad,
+  precio,
 }: {
   idProducto: string
   cantidad: number
+  precio: number
 }) {
   const cart = await getOrSetCart()
 
@@ -98,7 +100,7 @@ export async function addToCart({
   }
 
   try {
-    // await addItem({ cartId: cart.id, idProducto, cantidad }) modificar esto
+    await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio})
     revalidateTag("cart")
   } catch (e) {
     return "Error adding item to cart"

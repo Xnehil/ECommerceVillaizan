@@ -4,9 +4,10 @@ import { PricedProduct } from "@medusajs/medusa/dist/types/pricing"
 import { getProductsList, getRegion } from "@lib/data"
 
 import ProductPreview from "../product-preview"
+import { Producto } from "types/PaqueteProducto"
 
 type RelatedProductsProps = {
-  product: PricedProduct
+  product: Producto
   countryCode: string
 }
 
@@ -32,13 +33,13 @@ export default async function RelatedProducts({
       params.currency_code = region.currency_code
     }
 
-    if (product.collection_id) {
-      params.collection_id = [product.collection_id]
-    }
+    // if (product.collection_id) {
+    //   params.collection_id = [product.collection_id]
+    // }
 
-    if (product.tags) {
-      params.tags = product.tags.map((t) => t.value)
-    }
+    // if (product.tags) {
+    //   params.tags = product.tags.map((t) => t.value)
+    // }
 
     params.is_giftcard = false
 

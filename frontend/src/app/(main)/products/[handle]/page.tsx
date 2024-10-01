@@ -10,11 +10,13 @@ import {
 } from "@lib/data"
 import { Region } from "@medusajs/medusa"
 import ProductTemplate from "@modules/products/templates"
+import axios from "axios"
+import { Producto } from "types/PaqueteProducto"
 
 type Props = {
-  params: { countryCode: string; handle: string }
+  params: { countryCode: string; handle: string ; id: string}
 }
-
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 export async function generateStaticParams() {
   const countryCodes = await listRegions().then((regions) =>
     regions?.map((r) => r.countries.map((c) => c.iso_2)).flat()
@@ -84,23 +86,24 @@ const getPricedProductByHandle = async (handle: string, region: Region) => {
 }
 
 export default async function ProductPage({ params }: Props) {
-  const region = await getRegion(params.countryCode)
 
-  if (!region) {
-    notFound()
+  try {
+    const producto: Producto = await axios.get(
+      `${baseUrl}/producto/${params.id}`
+    ).then(({ data }) => data);
+
+    if (!producto) {
+      notFound();
+    }
+
+    return (
+      <ProductTemplate
+        product={producto}
+        countryCode={params.countryCode}
+      />
+    );
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    notFound();
   }
-
-  const pricedProduct = await getPricedProductByHandle(params.handle, region)
-
-  if (!pricedProduct) {
-    notFound()
-  }
-
-  return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-    />
-  )
 }
