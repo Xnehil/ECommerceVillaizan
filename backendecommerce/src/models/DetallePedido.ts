@@ -46,5 +46,8 @@ export class DetallePedido extends EntidadBase{
     // @ManyToOne(() => Promocion, promocion => promocion.id)
     // @JoinColumn({ name: "id_promocion" })
     // promocion: Promocion;
-
+    @BeforeInsert()
+    private beforeInsert() {
+        this.id = generateEntityId(this.id, "detPed");
+    }
 }

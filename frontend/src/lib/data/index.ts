@@ -27,7 +27,7 @@ const emptyResponse = {
   response: { products: [], count: 0 },
   nextPage: null,
 }
-
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 /**
  * Function for getting custom headers for Medusa API requests, including the JWT token and cache revalidation tags.
  *
@@ -107,7 +107,7 @@ export async function addItem({
   //     return null
   //   })
   try{
-    const response = axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_API_URL}/admin/detallePedido`, {
+    const response = await axios.post(`${baseUrl}/admin/detallePedido`, {
       producto:{
         id: idProducto
       },
@@ -117,6 +117,7 @@ export async function addItem({
       },
       subtotal: precio*cantidad
     })
+    // console.log(response)
   } catch (e) {
     console.log(e)
     return null

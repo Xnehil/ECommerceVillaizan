@@ -46,14 +46,21 @@ export async function getOrSetCart() {
     const response = await axios.post(`${baseUrl}/admin/pedido`, {
       "estado": "carrito",
     })
-    cart = response.data
-    cart &&
-      cookies().set("_medusa_cart_id", cart.id, {
-        maxAge: 60 * 60 * 24 * 7,
+    cart = response.data.pedido
+    if (cart) {
+      // console.log('Setting cookie with cart ID:', cart.id); // Log the cart ID for debugging
+
+      cookies().set('_medusa_cart_id', cart.id, {
+        maxAge: 60 * 60 * 24 * 7, // 1 week
         httpOnly: true,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-      })
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+      });
+
+      // console.log('Cookie set successfully'); // Log success message
+    } else {
+      console.error('Cart is null or undefined'); // Log error if cart is null or undefined
+    }
     revalidateTag("cart")
   }
 
