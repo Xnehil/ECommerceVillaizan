@@ -1,0 +1,33 @@
+.breadcrumbs {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 2px;
+  margin-bottom: 1.5rem;
+}
+
+.breadcrumbs a {
+  color: var(--color-text-secondary, #71717a);
+  font-size: var(--font-size-text-sm, 14px);
+  font-style: normal;
+  font-weight: 500;
+}
+
+.breadcrumbs a:hover {
+  color: var(--color-text-primary, #09090b);
+}
+
+.breadcrumbs a.active {
+  color: var(--color-text-primary, #09090b);
+}
+
+.breadcrumbs a.root {
+  color: var(--color-text-secondary, #71717a);
+}
+
+.breadcrumb-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+}

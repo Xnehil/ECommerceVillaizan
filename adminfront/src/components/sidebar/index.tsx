@@ -3,7 +3,10 @@ import NavButton from "./navButton";
 
 const Sidebar = () => {
   const logoIcon = "/icons/logo.png";
-  const sidebarIcons = [{ name: "Productos", icon: "/icons/productos.png" }];
+  const sidebarIcons = [{ name: "Productos", icon: "/icons/productos.png", href: "/productos" }];
+
+  // const pathname
+
   return (
     <div className="sidebar">
       <div className="upper-section">
@@ -14,8 +17,9 @@ const Sidebar = () => {
               key={icon.name}
               icon={icon.icon}
               title={icon.name}
-              path={`/${icon.name.toLowerCase()}`}
+              path={icon.href}
               active={true}
+              // {pathname.startsWith(`/${icon.name.toLowerCase()}`)}
             />  
           ))}
         </div>

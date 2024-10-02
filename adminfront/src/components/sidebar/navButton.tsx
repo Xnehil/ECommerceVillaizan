@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 interface NavButtonProps {
   icon: string;
   title: string;
@@ -7,9 +9,11 @@ interface NavButtonProps {
 
 const NavButton: React.FC<NavButtonProps> = ({ icon, title, path, active }) => {
   return (
-    <div className={`nav-button ${active ? "active" : ""}`}>
-      <img src={icon} alt={title} className="h-6 w-6" title={title} />
-    </div>
+    <Link href={path} legacyBehavior>
+      <a className={`nav-button ${active ? "active" : ""}`}>
+        <img src={icon} alt={title} className="h-6 w-6" title={title} />
+      </a>
+    </Link>
   );
 };
 
