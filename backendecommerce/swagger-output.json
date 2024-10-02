@@ -2055,66 +2055,7 @@
         }
       }
     },
-    "/inventarioMotorizadoes": {
-      "get": {
-        "summary": "Lista todos los inventarioMotorizadoes con paginación",
-        "tags": [
-          "InventarioMotorizados"
-        ],
-        "responses": {
-          "200": {
-            "description": "Una lista de inventarioMotorizadoes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "inventarioMotorizadoes": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InventarioMotorizado"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Crea un nuevo inventarioMotorizado",
-        "tags": [
-          "InventarioMotorizados"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InventarioMotorizado"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "El inventarioMotorizado ha sido creado exitosamente.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventarioMotorizado"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Petición inválida"
-          }
-        }
-      }
-    },
-    "/inventarioMotorizadoes/{id}": {
+    "/inventarioMotorizado/{id}": {
       "get": {
         "summary": "Recupera un inventario motorizado por ID",
         "tags": [
@@ -2218,7 +2159,7 @@
         }
       }
     },
-    "/inventarioMotorizadoes/{id}/aumentar": {
+    "/inventarioMotorizado/{id}/aumentar": {
       "patch": {
         "summary": "Aumenta el stock de un inventario motorizado por ID",
         "tags": [
@@ -2271,7 +2212,7 @@
         }
       }
     },
-    "/inventarioMotorizadoes/{id}/disminuir": {
+    "/inventarioMotorizado/{id}/disminuir": {
       "patch": {
         "summary": "Disminuye el stock de un inventario motorizado por ID",
         "tags": [
@@ -2320,6 +2261,65 @@
           },
           "404": {
             "description": "Inventario motorizado no encontrado"
+          }
+        }
+      }
+    },
+    "/inventarioMotorizado": {
+      "get": {
+        "summary": "Lista todos los inventarioMotorizadoes con paginación",
+        "tags": [
+          "InventarioMotorizados"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de inventarioMotorizadoes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "inventarioMotorizadoes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InventarioMotorizado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo inventarioMotorizado",
+        "tags": [
+          "InventarioMotorizados"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventarioMotorizado"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El inventarioMotorizado ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioMotorizado"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
           }
         }
       }
@@ -3699,7 +3699,7 @@
         }
       }
     },
-    "/tipoproducto": {
+    "/tipoProducto": {
       "get": {
         "summary": "Lista todos los tipoProductos con paginación",
         "tags": [
@@ -4185,7 +4185,7 @@
       "description": "API para la gestión de inventarios de almacén"
     },
     {
-      "name": "InventarioMotorizadoes",
+      "name": "InventarioMotorizado",
       "description": "API para la gestión de inventarioMotorizadoes"
     },
     {

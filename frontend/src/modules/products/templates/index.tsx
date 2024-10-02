@@ -61,7 +61,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         data-testid="related-products-container"
       >
         <Suspense fallback={<SkeletonRelatedProducts />}>
-          <RelatedProducts product={product} countryCode={countryCode} />
+          {/* <RelatedProducts product={product} countryCode={countryCode} /> */}
         </Suspense>
       </div>
     </>
