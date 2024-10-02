@@ -13,10 +13,10 @@ interface ResumenCompraProps {
   costoEnvio: number;
   textoCustomizado: string;
   noCostoEnvio: boolean;  // Nuevo argumento
+  paymentAmount?: number | null;  // Nueva prop para el monto de pago
 }
 
-
-const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado, noCostoEnvio }) => {
+const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado, noCostoEnvio, paymentAmount }) => {
   const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
 
@@ -27,6 +27,10 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
   const calcularTotal = () => {
     return calcularSubtotal() - descuento + (noCostoEnvio ? 0 : costoEnvio);
   };
+
+  const calcularVuelto = () => {
+    return paymentAmount ? paymentAmount - calcularTotal() : 0;
+  }
   
 
   const toggleSeleccion = () => {
@@ -39,7 +43,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
   };
 
   return (
-    <div style={{ padding: '20px', borderRadius: '8px', width: '500px' }}> {/* Se eliminó el borde */}
+    <div style={{ padding: '20px', borderRadius: '8px', width: '500px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: '10px' }}>
         <span>Producto</span>
         <span>Subtotal</span>
@@ -54,7 +58,6 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
       ))}
 
       {/* Mostrar descuento y costo de envío */}
-      {/* Mostrar descuento solo si es mayor que 0 */}
       {descuento > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
           <span>Descuento</span>
@@ -68,11 +71,28 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
         </span>
       </div>
 
+      
+
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '5px' }}>
         <span style={{ color: 'black' }}>Total</span>
-        <span style={{ color: '#B88E2F' }}>S/. {calcularTotal().toFixed(2)}</span> {/* Monto total con color B88E2F */}
+        <span style={{ color: '#B88E2F' }}>S/. {calcularTotal().toFixed(2)}</span>
       </div>
       <hr style={{ margin: '10px 0' }} />
+      {/* Mostrar paymentAmount si está presente */}
+      {paymentAmount && (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+            <span>Monto a pagar</span>
+            <span>S/. {paymentAmount.toFixed(2)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+            <span>Vuelto</span>
+            <span>S/. {calcularVuelto().toFixed(2)}</span>
+          </div>
+          <hr style={{ margin: '10px 0' }} />
+        </>
+      )}
+      
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} onClick={toggleSeleccion}>
         <div
           style={{
@@ -85,10 +105,11 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
             cursor: 'pointer',
           }}
         />
-        <span>Términos y Condiciones</span>
+        <span style={{ cursor: 'pointer' }}>He leído y acepto los términos y condiciones</span>
       </div>
-      <p>{textoCustomizado}</p>
-      <hr style={{ margin: '10px 0' }} />
+      <div>
+        <small>{textoCustomizado}</small>
+      </div>
 
       {/* Botón Comprar */}
       <button
@@ -102,6 +123,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
           fontWeight: 'bold',
           cursor: 'pointer',
           transition: 'background-color 0.3s, color 0.3s',
+          marginTop: "10px"
         }}
         onMouseOver={(e) => {
           (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'black';

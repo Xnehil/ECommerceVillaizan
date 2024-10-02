@@ -33,6 +33,7 @@ export default function CartClient({ cart, customer }: CartClientProps) {
   const handlePopupClose = () => {
     setShowPopup(false);
     setSelectedImageId(null);
+    setPaymentAmount(null);
   };
 
   const productos = [
@@ -100,6 +101,7 @@ export default function CartClient({ cart, customer }: CartClientProps) {
             costoEnvio={5}
             textoCustomizado="Tu data personal será usada para mejorar tu experiencia en esta pagina, para otros propositos revisar el privacy policy."
             noCostoEnvio = {true}
+            paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null} // Pasar paymentAmount solo si pagoEfec está seleccionado
           />
         </div>
       </div>
@@ -114,6 +116,4 @@ export default function CartClient({ cart, customer }: CartClientProps) {
       )}
     </>
   );
-  
-  
 }
