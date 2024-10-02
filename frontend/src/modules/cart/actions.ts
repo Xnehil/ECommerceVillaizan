@@ -16,6 +16,7 @@ import {
   updateItem,
 } from "@lib/data"
 import axios from "axios"
+import { DetallePedido } from "types/PaquetePedido"
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 /**
@@ -179,46 +180,45 @@ export async function deleteLineItem(lineId: string) {
 }
 
 export async function enrichLineItems(
-  lineItems: LineItem[],
-  regionId: string
+  detalles: DetallePedido[],
 ): Promise<
-  | Omit<LineItem, "beforeInsert" | "beforeUpdate" | "afterUpdateOrLoad">[]
+  | Omit<DetallePedido, "beforeInsert" | "beforeUpdate" | "afterUpdateOrLoad">[]
   | undefined
 > {
   // Prepare query parameters
   const queryParams = {
-    ids: lineItems.map((lineItem) => lineItem.variant.product_id),
-    regionId: regionId,
+    ids: detalles.map((lineItem) => lineItem.id),
   }
 
   // Fetch products by their IDs
-  const products = await getProductsById(queryParams)
+  const response = queryParams.ids.map((id) => axios.get(`${baseUrl}/admin/detallePedido/${id}`))
+  const products = await Promise.all(response)
 
   // If there are no line items or products, return an empty array
-  if (!lineItems?.length || !products) {
+  if (!products?.length || !products) {
     return []
   }
 
   // Enrich line items with product and variant information
 
-  const enrichedItems = lineItems.map((item) => {
-    const product = products.find((p) => p.id === item.variant.product_id)
-    const variant = product?.variants.find((v) => v.id === item.variant_id)
+  // const enrichedItems = lineItems.map((item) => {
+  //   const product = products.find((p) => p.id === item.variant.product_id)
+  //   const variant = product?.variants.find((v) => v.id === item.variant_id)
 
-    // If product or variant is not found, return the original item
-    if (!product || !variant) {
-      return item
-    }
+  //   // If product or variant is not found, return the original item
+  //   if (!product || !variant) {
+  //     return item
+  //   }
 
-    // If product and variant are found, enrich the item
-    return {
-      ...item,
-      variant: {
-        ...variant,
-        product: omit(product, "variants"),
-      },
-    }
-  }) as LineItem[]
+  //   // If product and variant are found, enrich the item
+  //   return {
+  //     ...item,
+  //     variant: {
+  //       ...variant,
+  //       product: omit(product, "variants"),
+  //     },
+  //   }
+  // }) as LineItem[]
 
-  return enrichedItems
+  return []
 }

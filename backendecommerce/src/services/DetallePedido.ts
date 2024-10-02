@@ -61,6 +61,20 @@ class DetallePedidoService extends TransactionBaseService {
         return detallePedido;
     }
 
+    async recuperarEnriquecido(id: string): Promise<DetallePedido> {
+        const detallePedidoRepo = this.activeManager_.withRepository(this.detallePedidoRepository_);
+        const detallePedido = await detallePedidoRepo.findOne({
+            where: { id },
+            relations: ["producto"],
+        });
+
+        if (!detallePedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "DetallePedido no encontrado");
+        }
+
+        return detallePedido;
+    }
+
     async crear(detallePedido: DetallePedido): Promise<DetallePedido> {
         return this.atomicPhase_(async (manager) => {
             const detallePedidoRepo = manager.withRepository(this.detallePedidoRepository_);

@@ -5,6 +5,7 @@ import { getCategoriesList, getCollectionsList } from "@lib/data"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import MedusaCTA from "@modules/layout/components/medusa-cta"
 import Link from "next/link"
+import CartButton from "@modules/layout/components/cart-button"
 
 export default async function Footer() {
   // const { collections } = await getCollectionsList(0, 6)
@@ -59,6 +60,11 @@ export default async function Footer() {
     <footer className="border-t border-ui-border-base w-full">
       <div className="content-container flex flex-col w-full">
         <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-20">
+          <div>
+           <CartButton /> 
+          </div>
+        
+        
           <div>
             <Link
               href="/"
