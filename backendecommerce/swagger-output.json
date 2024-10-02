@@ -1006,7 +1006,7 @@
         }
       }
     },
-    "/bancos": {
+    "/banco": {
       "get": {
         "summary": "Lista todos los bancos con paginación",
         "tags": [
@@ -1065,7 +1065,7 @@
         }
       }
     },
-    "/bancos/{id}": {
+    "/banco/{id}": {
       "get": {
         "summary": "Recupera un banco por ID",
         "tags": [
@@ -1287,7 +1287,7 @@
         }
       }
     },
-    "/detallePedidos": {
+    "/detallePedido": {
       "get": {
         "summary": "Lista todos los detalles de pedidos con paginación",
         "tags": [
@@ -1348,7 +1348,7 @@
         }
       }
     },
-    "/detallePedidos/{id}": {
+    "/detallePedido/{id}": {
       "get": {
         "summary": "Recupera un detalle de pedido por ID",
         "tags": [
@@ -1587,7 +1587,7 @@
         }
       }
     },
-    "/igvs": {
+    "/igv": {
       "get": {
         "summary": "Lista todos los IGVs con paginación",
         "tags": [
@@ -1613,9 +1613,7 @@
             }
           }
         }
-      }
-    },
-    "/igv": {
+      },
       "post": {
         "summary": "Crea un nuevo IGV",
         "tags": [
@@ -1648,7 +1646,7 @@
         }
       }
     },
-    "/igvs/{id}": {
+    "/igv/{id}": {
       "get": {
         "summary": "Recupera un IGV por ID",
         "tags": [
@@ -2290,7 +2288,7 @@
         }
       }
     },
-    "/libroreclamaciones": {
+    "/libroReclamaciones": {
       "get": {
         "summary": "Lista todos los libros de reclamaciones con paginación",
         "tags": [
@@ -2316,9 +2314,7 @@
             }
           }
         }
-      }
-    },
-    "/libro-reclamaciones": {
+      },
       "post": {
         "summary": "Crea un nuevo libro de reclamaciones",
         "tags": [
@@ -2351,7 +2347,7 @@
         }
       }
     },
-    "/metodopagos": {
+    "/metodoPago": {
       "get": {
         "summary": "Lista todos los métodos de pago con paginación",
         "tags": [
@@ -2412,7 +2408,7 @@
         }
       }
     },
-    "/metodopagos/{id}": {
+    "/metodoPago/{id}": {
       "get": {
         "summary": "Recupera un método de pago por ID",
         "tags": [
@@ -2575,7 +2571,7 @@
         }
       }
     },
-    "/ordenseries": {
+    "/ordenSerie": {
       "get": {
         "summary": "Lista todas las series de órdenes con paginación",
         "tags": [
@@ -2636,7 +2632,7 @@
         }
       }
     },
-    "/ordenseries/{id}": {
+    "/ordenSerie/{id}": {
       "get": {
         "summary": "Recupera una serie de órdenes por ID",
         "tags": [
@@ -2740,7 +2736,7 @@
         }
       }
     },
-    "/pagos": {
+    "/pago": {
       "get": {
         "summary": "Lista todos los pagos con paginación",
         "tags": [
@@ -2766,9 +2762,7 @@
             }
           }
         }
-      }
-    },
-    "/pago": {
+      },
       "post": {
         "summary": "Crea un nuevo pago",
         "tags": [
@@ -2801,7 +2795,7 @@
         }
       }
     },
-    "/pagos/{id}": {
+    "/pago/{id}": {
       "get": {
         "summary": "Recupera un pago por ID",
         "tags": [
@@ -2905,7 +2899,7 @@
         }
       }
     },
-    "/pedidos": {
+    "/pedido": {
       "get": {
         "summary": "Lista todos los pedidos con paginación",
         "tags": [
@@ -2931,9 +2925,7 @@
             }
           }
         }
-      }
-    },
-    "/pedido": {
+      },
       "post": {
         "summary": "Crea un nuevo pedido",
         "tags": [
@@ -2966,7 +2958,7 @@
         }
       }
     },
-    "/pedidos/{id}": {
+    "/pedido/{id}": {
       "get": {
         "summary": "Recupera un pedido por ID",
         "tags": [
@@ -3070,7 +3062,7 @@
         }
       }
     },
-    "/personas": {
+    "/persona": {
       "get": {
         "summary": "Lista todas las personas con paginación",
         "tags": [
@@ -3096,9 +3088,7 @@
             }
           }
         }
-      }
-    },
-    "/persona": {
+      },
       "post": {
         "summary": "Crea una nueva persona",
         "tags": [
@@ -3131,7 +3121,7 @@
         }
       }
     },
-    "/personas/{id}": {
+    "/persona/{id}": {
       "get": {
         "summary": "Recupera una persona por ID",
         "tags": [
@@ -3471,7 +3461,7 @@
         }
       }
     },
-    "/usuarios": {
+    "/usuario": {
       "get": {
         "summary": "Lista todos los usuarios con paginación",
         "tags": [
@@ -3497,9 +3487,7 @@
             }
           }
         }
-      }
-    },
-    "/usuario": {
+      },
       "post": {
         "summary": "Crea un nuevo usuario",
         "tags": [
@@ -3532,7 +3520,7 @@
         }
       }
     },
-    "/usuarios/{id}": {
+    "/usuario/{id}": {
       "get": {
         "summary": "Recupera un usuario por ID",
         "tags": [
@@ -3636,7 +3624,7 @@
         }
       }
     },
-    "/ventas": {
+    "/venta": {
       "get": {
         "summary": "Lista todas las ventas con paginación",
         "tags": [
@@ -3662,9 +3650,7 @@
             }
           }
         }
-      }
-    },
-    "/venta": {
+      },
       "post": {
         "summary": "Crea una nueva venta",
         "tags": [
@@ -3697,7 +3683,7 @@
         }
       }
     },
-    "/ventas/{id}": {
+    "/venta/{id}": {
       "get": {
         "summary": "Recupera una venta por ID",
         "tags": [

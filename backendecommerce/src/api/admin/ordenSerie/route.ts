@@ -46,7 +46,7 @@ export const GET = async (
 
 /**
  * @swagger
- * /orden-serie:
+ * /ordenSerie:
  *   post:
  *     summary: Crea una nueva serie de órdenes
  *     tags: [OrdenSerie]

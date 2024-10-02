@@ -45,7 +45,7 @@ export const GET = async (
 };
 /**
  * @swagger
- * /metodo-pago:
+ * /metodoPago:
  *   post:
  *     summary: Crea un nuevo método de pago
  *     tags: [MetodoPago]

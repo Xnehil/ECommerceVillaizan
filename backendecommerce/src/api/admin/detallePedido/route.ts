@@ -46,7 +46,7 @@ export const GET = async (
 
 /**
  * @swagger
- * /detalles-pedido:
+ * /detallePedido:
  *   post:
  *     summary: Crea un nuevo detalle de pedido
  *     tags: [DetallesPedido]
