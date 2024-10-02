@@ -52,12 +52,12 @@ class DetallePedidoService extends TransactionBaseService {
     ): Promise<DetallePedido> {
         const detallePedidoRepo = this.activeManager_.withRepository(this.detallePedidoRepository_);
         const query = buildQuery({ id }, config);
-        const detallePedido = await detallePedidoRepo.findOne(query);
+        const detallePedido = await detallePedidoRepo.findOne({ ...query, relations: ["pedido"] });
 
         if (!detallePedido) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "DetallePedido no encontrado");
         }
-
+        
         return detallePedido;
     }
 

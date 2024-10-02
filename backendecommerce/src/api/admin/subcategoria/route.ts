@@ -9,16 +9,16 @@ import { Subcategoria } from "src/models/Subcategoria";
 /**
  * @swagger
  * tags:
- *   name: Subcategorias
+ *   name: Subcategoria
  *   description: API para subcategorías 
  */
 
 /**
  * @swagger
- * /subcategorias:
+ * /subcategoria:
  *   get:
  *     summary: Lista de subcategorias con paginación (20 elementos por página)
- *     tags: [Subcategorias]
+ *     tags: [Subcategoria]
  *     responses:
  *       200:
  *         description: A list of subcategorias
@@ -45,10 +45,10 @@ import { Subcategoria } from "src/models/Subcategoria";
 
   /**
  * @swagger
- * /subcategorias:
+ * /subcategoria:
  *   post:
  *     summary: Crear una subcategoria
- *     tags: [Subcategorias]
+ *     tags: [Subcategoria]
  *     requestBody:
  *       required: true
  *       content:

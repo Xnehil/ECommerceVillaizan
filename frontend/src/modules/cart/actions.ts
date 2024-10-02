@@ -30,7 +30,8 @@ export async function getOrSetCart() {
   let cart
 
   if (cartId) {
-    cart = await axios.get(`${baseUrl}/admin/pedido/${cartId}`).then((res) => res.data)
+    const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
+    cart = response.data
   }
 
   // const region = await getRegion(countryCode)
@@ -42,16 +43,24 @@ export async function getOrSetCart() {
   // const region_id = region.id
 
   if (!cart) {
-    cart = await axios.post(`${baseUrl}/admin/pedido`, {
+    const response = await axios.post(`${baseUrl}/admin/pedido`, {
       "estado": "carrito",
-    }).then((res) => res.data)
-    cart &&
-      cookies().set("_medusa_cart_id", cart.id, {
-        maxAge: 60 * 60 * 24 * 7,
+    })
+    cart = response.data.pedido
+    if (cart) {
+      // console.log('Setting cookie with cart ID:', cart.id); // Log the cart ID for debugging
+
+      cookies().set('_medusa_cart_id', cart.id, {
+        maxAge: 60 * 60 * 24 * 7, // 1 week
         httpOnly: true,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-      })
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+      });
+
+      // console.log('Cookie set successfully'); // Log success message
+    } else {
+      console.error('Cart is null or undefined'); // Log error if cart is null or undefined
+    }
     revalidateTag("cart")
   }
 
@@ -64,28 +73,40 @@ export async function getOrSetCart() {
   return cart
 }
 
-export async function retrieveCart() {
+export async function retrieveCart(productos: boolean = false) {
   const cartId = cookies().get("_medusa_cart_id")?.value
 
   if (!cartId) {
     return null
   }
 
-  try {
-    const cart = await axios.get(`${baseUrl}/admin/pedido/${cartId}`).then((res) => res.data)
-    return cart
-  } catch (e) {
-    console.log(e)
-    return null
+  if (productos) {
+    try {
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      return response.data.pedido
+    } catch (e) {
+      console.log(e)
+      return null
+    }
+  } else{
+      try {
+        const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
+        return response.data.pedido
+      } catch (e) {
+        console.log(e)
+        return null
+      }
   }
 }
 
 export async function addToCart({
   idProducto,
   cantidad,
+  precio,
 }: {
   idProducto: string
   cantidad: number
+  precio: number
 }) {
   const cart = await getOrSetCart()
 
@@ -98,7 +119,7 @@ export async function addToCart({
   }
 
   try {
-    // await addItem({ cartId: cart.id, idProducto, cantidad }) modificar esto
+    await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio}) //Esto ya está modificado
     revalidateTag("cart")
   } catch (e) {
     return "Error adding item to cart"

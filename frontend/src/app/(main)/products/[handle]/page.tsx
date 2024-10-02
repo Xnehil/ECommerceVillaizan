@@ -10,97 +10,101 @@ import {
 } from "@lib/data"
 import { Region } from "@medusajs/medusa"
 import ProductTemplate from "@modules/products/templates"
+import axios from "axios"
+import { Producto } from "types/PaqueteProducto"
 
 type Props = {
-  params: { countryCode: string; handle: string }
+  params: { countryCode: string; handle: string ; id: string}
 }
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
 export async function generateStaticParams() {
-  const countryCodes = await listRegions().then((regions) =>
-    regions?.map((r) => r.countries.map((c) => c.iso_2)).flat()
-  )
+  try {
+    const response = await axios.get(`${baseUrl}/admin/producto`);
+    const productos = response.data.productos;
 
-  if (!countryCodes) {
-    return null
+    if (!productos || !Array.isArray(productos)) {
+      return [];
+    }
+    // console.log("productos", productos)
+    const staticParams = productos.map((producto: Producto) => ({
+      handle: producto.id,
+      // nombre: producto.nombre,
+    }));
+
+    // console.log("staticParams", staticParams)
+    return staticParams;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Error fetching productos in generateStaticParams:', error.message);
+    } else {
+      console.error('Unknown error fetching productos');
+    }
+    return [];
   }
-
-  const products = await Promise.all(
-    countryCodes.map((countryCode) => {
-      return getProductsList({ countryCode })
-    })
-  ).then((responses) =>
-    responses.map(({ response }) => response.products).flat()
-  )
-
-  const staticParams = countryCodes
-    ?.map((countryCode) =>
-      products.map((product) => ({
-        countryCode,
-        handle: product.handle,
-      }))
-    )
-    .flat()
-
-  return staticParams
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // console.log("params", params)
   const { handle } = params
+  // console.log("handle", handle)
+  const response = await axios.get(
+    `${baseUrl}/admin/producto/${handle}`
+  );
+  const producto :Producto= response.data.producto;
+  // console.log("producto", producto)
 
-  const { product } = await getProductByHandle(handle).then(
-    (product) => product
-  )
-
-  if (!product) {
+  if (!producto) {
+    console.log("not found during metadata")
     notFound()
   }
 
   return {
-    title: `${product.title} | Medusa Store`,
-    description: `${product.title}`,
-    openGraph: {
-      title: `${product.title} | Medusa Store`,
-      description: `${product.title}`,
-      images: product.thumbnail ? [product.thumbnail] : [],
-    },
+    title: `${producto.nombre} | Medusa Store`,
+    description: `${producto.descripcion} | Paletas Villaizan`,
+    // openGraph: {
+    //   title: `${product.title} | Medusa Store`,
+    //   description: `${product.title}`,
+    //   images: product.thumbnail ? [product.thumbnail] : [],
+    // },
   }
 }
 
-const getPricedProductByHandle = async (handle: string, region: Region) => {
-  const { product } = await getProductByHandle(handle).then(
-    (product) => product
-  )
+// const getPricedProductByHandle = async (handle: string, region: Region) => {
+//   const producto = await axios.get(
+//     `${baseUrl}/producto/${handle}`
+//   ).then(({ data }) => data); 
 
-  if (!product || !product.id) {
-    return null
-  }
-
-  const pricedProduct = await retrievePricedProductById({
-    id: product.id,
-    regionId: region.id,
-  })
-
-  return pricedProduct
-}
+//   if (!producto || !producto.id) {
+//     return null
+//   }
+//   return producto
+// 0}
 
 export default async function ProductPage({ params }: Props) {
-  const region = await getRegion(params.countryCode)
 
-  if (!region) {
-    notFound()
+  try {
+    // console.log("params", params)
+    const response = await axios.get(
+      `${baseUrl}/admin/producto/${params.handle}`
+    );
+    const producto :Producto= response.data.producto
+    // console.log("producto", producto)
+    if (!producto) {
+      notFound();
+    }
+
+    return (
+      <ProductTemplate
+        product={producto}
+        countryCode={params.countryCode}
+      />
+    );
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Error fetching product in ProductPage:', error.message);
+    } else {
+      console.error('Unknown error fetching product');
+    }
   }
-
-  const pricedProduct = await getPricedProductByHandle(params.handle, region)
-
-  if (!pricedProduct) {
-    notFound()
-  }
-
-  return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-    />
-  )
 }

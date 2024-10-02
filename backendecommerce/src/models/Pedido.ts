@@ -7,13 +7,15 @@ import {
     ManyToMany,
     JoinTable,
     ManyToOne,
-    JoinColumn
+    JoinColumn,
+    OneToMany
 } from "typeorm"
 import { generateEntityId } from "@medusajs/medusa/dist/utils"
 import { EntidadBase } from "./EntidadBase"
 import { MetodoPago } from "./MetodoPago";
 import { Motorizado } from "./Motorizado";
 import { Direccion } from "./Direccion";
+import { DetallePedido } from "./DetallePedido";
 
 @Entity("vi_pedido")
 export class Pedido extends EntidadBase {
@@ -69,6 +71,9 @@ export class Pedido extends EntidadBase {
         }
     )
     metodosPago: MetodoPago[];
+
+    @OneToMany(() => DetallePedido, detallePedido => detallePedido.pedido)
+    detalles: DetallePedido[];
 
 
     @BeforeInsert()
