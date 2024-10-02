@@ -12,7 +12,7 @@ import { TipoProducto } from "src/models/TipoProducto";
  * /tipoProducto/{id}:
  *   get:
  *     summary: Recupera un tipoProducto por ID
- *     tags: [TipoProductos]
+ *     tags: [TipoProducto]
  *     parameters:
  *       - in: path
  *         name: id
@@ -52,7 +52,7 @@ export const GET = async (
  * /tipoProducto/{id}:
  *   put:
  *     summary: Actualiza un tipoProducto por ID
- *     tags: [TipoProductos]
+ *     tags: [TipoProducto]
  *     parameters:
  *       - in: path
  *         name: id
@@ -104,7 +104,7 @@ export const PUT = async (
  * /tipoProducto/{id}:
  *   delete:
  *     summary: Elimina un tipoProducto por ID
- *     tags: [TipoProductos]
+ *     tags: [TipoProducto]
  *     parameters:
  *       - in: path
  *         name: id

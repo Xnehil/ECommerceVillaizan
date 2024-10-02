@@ -3000,7 +3000,7 @@
         }
       }
     },
-    "/pedidos/{id}": {
+    "/pedido/{id}": {
       "get": {
         "summary": "Recupera un pedido por ID",
         "tags": [
@@ -3373,11 +3373,11 @@
         }
       }
     },
-    "/productos": {
+    "/producto": {
       "get": {
         "summary": "Lista todos los productos con paginación",
         "tags": [
-          "Productos"
+          "Producto"
         ],
         "responses": {
           "200": {
@@ -3403,7 +3403,7 @@
       "post": {
         "summary": "Crea un nuevo producto",
         "tags": [
-          "Productos"
+          "Producto"
         ],
         "requestBody": {
           "required": true,
@@ -3536,11 +3536,11 @@
         }
       }
     },
-    "/subcategorias": {
+    "/subcategoria": {
       "get": {
         "summary": "Lista de subcategorias con paginación (20 elementos por página)",
         "tags": [
-          "Subcategorias"
+          "Subcategoria"
         ],
         "responses": {
           "200": {
@@ -3566,7 +3566,7 @@
       "post": {
         "summary": "Crear una subcategoria",
         "tags": [
-          "Subcategorias"
+          "Subcategoria"
         ],
         "requestBody": {
           "required": true,
@@ -3599,7 +3599,7 @@
       "get": {
         "summary": "Recupera un tipoProducto por ID",
         "tags": [
-          "TipoProductos"
+          "TipoProducto"
         ],
         "parameters": [
           {
@@ -3631,7 +3631,7 @@
       "put": {
         "summary": "Actualiza un tipoProducto por ID",
         "tags": [
-          "TipoProductos"
+          "TipoProducto"
         ],
         "parameters": [
           {
@@ -3676,7 +3676,7 @@
       "delete": {
         "summary": "Elimina un tipoProducto por ID",
         "tags": [
-          "TipoProductos"
+          "TipoProducto"
         ],
         "parameters": [
           {
@@ -3699,11 +3699,11 @@
         }
       }
     },
-    "/tipoproductos": {
+    "/tipoproducto": {
       "get": {
         "summary": "Lista todos los tipoProductos con paginación",
         "tags": [
-          "TipoProductos"
+          "TipoProducto"
         ],
         "responses": {
           "200": {
@@ -3729,7 +3729,7 @@
       "post": {
         "summary": "Crea un nuevo tipoProducto",
         "tags": [
-          "TipoProductos"
+          "TipoProducto"
         ],
         "requestBody": {
           "required": true,
@@ -3817,7 +3817,7 @@
         }
       }
     },
-    "/usuarios": {
+    "/usuario": {
       "get": {
         "summary": "Lista todos los usuarios con paginación",
         "tags": [
@@ -3843,9 +3843,7 @@
             }
           }
         }
-      }
-    },
-    "/usuario": {
+      },
       "post": {
         "summary": "Crea un nuevo usuario",
         "tags": [
@@ -3878,7 +3876,7 @@
         }
       }
     },
-    "/usuarios/{id}": {
+    "/usuario/{id}": {
       "get": {
         "summary": "Recupera un usuario por ID",
         "tags": [
@@ -3910,7 +3908,9 @@
             "description": "Usuario no encontrado"
           }
         }
-      },
+      }
+    },
+    "/usuarios/{id}": {
       "put": {
         "summary": "Actualiza un usuario por ID",
         "tags": [
@@ -4217,11 +4217,11 @@
       "description": "API para la gestión de personas"
     },
     {
-      "name": "Productos",
+      "name": "Producto",
       "description": "API para la gestión de productos"
     },
     {
-      "name": "Subcategorias",
+      "name": "Subcategoria",
       "description": "API para subcategorías"
     },
     {

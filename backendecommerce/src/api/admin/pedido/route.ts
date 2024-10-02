@@ -87,7 +87,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /pedidos/{id}:
+ * /pedido/{id}:
  *   get:
  *     summary: Recupera un pedido por ID
  *     tags: [Pedidos]
@@ -126,7 +126,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /pedidos/{id}:
+ * /pedido/{id}:
  *   put:
  *     summary: Actualiza un pedido por ID
  *     tags: [Pedidos]
@@ -178,7 +178,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /pedidos/{id}:
+ * /pedido/{id}:
  *   delete:
  *     summary: Elimina un pedido por ID
  *     tags: [Pedidos]
