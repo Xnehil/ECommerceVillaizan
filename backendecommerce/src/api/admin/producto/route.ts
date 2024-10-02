@@ -8,16 +8,16 @@ import { Producto } from "src/models/Producto";
 /**
  * @swagger
  * tags:
- *   name: Productos
+ *   name: Producto
  *   description: API para la gestión de productos
  */
 
 /**
  * @swagger
- * /productos:
+ * /producto:
  *   get:
  *     summary: Lista todos los productos con paginación
- *     tags: [Productos]
+ *     tags: [Producto]
  *     responses:
  *       200:
  *         description: Una lista de productos
@@ -45,10 +45,10 @@ import { Producto } from "src/models/Producto";
 
   /**
  * @swagger
- * /productos:
+ * /producto:
  *   post:
  *     summary: Crea un nuevo producto
- *     tags: [Productos]
+ *     tags: [Producto]
  *     requestBody:
  *       required: true
  *       content:

@@ -17,36 +17,43 @@
         "properties": {
           "id": {
             "type": "string",
-            "example": "sub_01H8B4RD715N9ZYPE95KR76839"
+            "example": "sub_01H8B4RD715N9ZYPE95KR76839",
+            "readOnly": true
           },
           "creadoEn": {
             "type": "string",
             "format": "date-time",
-            "example": "2023-10-01T12:00:00Z"
+            "example": "2023-10-01T12:00:00Z",
+            "readOnly": true
           },
           "actualizadoEn": {
             "type": "string",
             "format": "date-time",
-            "example": "2023-10-01T12:00:00Z"
+            "example": "2023-10-01T12:00:00Z",
+            "readOnly": true
           },
           "desactivadoEn": {
             "type": "string",
             "format": "date-time",
             "nullable": true,
-            "example": null
+            "example": null,
+            "readOnly": true
           },
           "usuarioCreacion": {
             "type": "string",
-            "example": "admin_user"
+            "example": "admin_user",
+            "readOnly": true
           },
           "usuarioActualizacion": {
             "type": "string",
             "nullable": true,
-            "example": null
+            "example": null,
+            "readOnly": true
           },
           "estaActivo": {
             "type": "boolean",
-            "example": true
+            "example": true,
+            "readOnly": true
           }
         }
       },
@@ -65,6 +72,7 @@
               },
               "tipoProducto": {
                 "type": "array",
+                "nullable": true,
                 "items": {
                   "type": "object",
                   "properties": {
@@ -77,6 +85,7 @@
               },
               "productos": {
                 "type": "array",
+                "nullable": true,
                 "items": {
                   "type": "object",
                   "properties": {
@@ -106,6 +115,7 @@
               },
               "subcategorias": {
                 "type": "array",
+                "nullable": true,
                 "items": {
                   "type": "object",
                   "properties": {
@@ -118,6 +128,7 @@
               },
               "productos": {
                 "type": "array",
+                "nullable": true,
                 "items": {
                   "type": "object",
                   "properties": {
@@ -142,19 +153,22 @@
             "type": "object",
             "properties": {
               "tipoProducto": {
-                "$ref": "#/components/schemas/TipoProducto"
+                "$ref": "#/components/schemas/TipoProducto",
+                "nullable": true
               },
               "subcategorias": {
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/Subcategoria"
-                }
+                },
+                "nullable": true
               },
               "frutas": {
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/Fruta"
-                }
+                },
+                "nullable": true
               },
               "codigo": {
                 "type": "string",
@@ -167,17 +181,26 @@
               "precioA": {
                 "type": "number",
                 "format": "decimal",
-                "example": 100
+                "example": 100,
+                "nullable": true
               },
               "precioB": {
                 "type": "number",
                 "format": "decimal",
-                "example": 90
+                "example": 90,
+                "nullable": true
               },
               "precioC": {
                 "type": "number",
                 "format": "decimal",
-                "example": 80
+                "example": 80,
+                "nullable": true
+              },
+              "precioEcommerce": {
+                "type": "number",
+                "format": "decimal",
+                "example": 85,
+                "nullable": true
               }
             }
           }
@@ -196,13 +219,15 @@
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/Producto"
-                }
+                },
+                "nullable": true
               },
               "contenidosEducativos": {
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/ContenidoEducativo"
-                }
+                },
+                "nullable": true
               },
               "nombre": {
                 "type": "string",
@@ -236,7 +261,8 @@
             "type": "object",
             "properties": {
               "fruta": {
-                "$ref": "#/components/schemas/Fruta"
+                "$ref": "#/components/schemas/Fruta",
+                "nullable": true
               },
               "titulo": {
                 "type": "string",
@@ -295,10 +321,12 @@
                 "example": 100
               },
               "producto": {
-                "$ref": "#/components/schemas/Producto"
+                "$ref": "#/components/schemas/Producto",
+                "nullable": true
               },
               "almacen": {
-                "$ref": "#/components/schemas/Almacen"
+                "$ref": "#/components/schemas/Almacen",
+                "nullable": true
               }
             }
           }
@@ -325,6 +353,7 @@
               },
               "direcciones": {
                 "type": "array",
+                "nullable": true,
                 "items": {
                   "$ref": "#/components/schemas/Direccion"
                 }
@@ -344,14 +373,18 @@
             "properties": {
               "nombre": {
                 "type": "string",
-                "example": "New York"
+                "example": "Moyobamba"
+              },
+              "region": {
+                "type": "string",
+                "example": "San Martín"
               },
               "direcciones": {
                 "type": "array",
+                "nullable": true,
                 "items": {
                   "$ref": "#/components/schemas/Direccion"
-                },
-                "nullable": true
+                }
               }
             }
           }
@@ -375,16 +408,17 @@
               },
               "inventarios": {
                 "type": "array",
+                "nullable": true,
                 "items": {
                   "$ref": "#/components/schemas/InventarioMotorizado"
                 }
               },
               "pedidos": {
                 "type": "array",
+                "nullable": true,
                 "items": {
                   "$ref": "#/components/schemas/Pedido"
-                },
-                "nullable": true
+                }
               }
             }
           }
@@ -412,9 +446,9 @@
                 "nullable": true,
                 "example": "A"
               },
-              "region": {
+              "distrito": {
                 "type": "string",
-                "example": "Región Ejemplo"
+                "example": "distrito Ejemplo"
               },
               "codigoPostal": {
                 "type": "string",
@@ -1006,7 +1040,7 @@
         }
       }
     },
-    "/bancos": {
+    "/banco": {
       "get": {
         "summary": "Lista todos los bancos con paginación",
         "tags": [
@@ -1065,7 +1099,7 @@
         }
       }
     },
-    "/bancos/{id}": {
+    "/banco/{id}": {
       "get": {
         "summary": "Recupera un banco por ID",
         "tags": [
@@ -2966,7 +3000,7 @@
         }
       }
     },
-    "/pedidos/{id}": {
+    "/pedido/{id}": {
       "get": {
         "summary": "Recupera un pedido por ID",
         "tags": [
@@ -3235,11 +3269,115 @@
         }
       }
     },
-    "/productos": {
+    "/producto/{id}": {
+      "get": {
+        "summary": "Recupera un producto por ID",
+        "tags": [
+          "Productos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del producto"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del producto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Producto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Producto no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un producto por ID",
+        "tags": [
+          "Productos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del producto"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/producto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "producto actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/producto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "producto no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un producto por ID",
+        "tags": [
+          "Productos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del producto"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "producto eliminado exitosamente"
+          },
+          "404": {
+            "description": "producto no encontrado"
+          }
+        }
+      }
+    },
+    "/producto": {
       "get": {
         "summary": "Lista todos los productos con paginación",
         "tags": [
-          "Productos"
+          "Producto"
         ],
         "responses": {
           "200": {
@@ -3265,7 +3403,7 @@
       "post": {
         "summary": "Crea un nuevo producto",
         "tags": [
-          "Productos"
+          "Producto"
         ],
         "requestBody": {
           "required": true,
@@ -3294,11 +3432,115 @@
         }
       }
     },
-    "/subcategorias": {
+    "/subcategoria/{id}": {
+      "get": {
+        "summary": "Recupera un subcategoria por ID",
+        "tags": [
+          "Subcategorias"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del subcategoria"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del subcategoria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subcategoria"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Subcategoria no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un subcategoria por ID",
+        "tags": [
+          "Subcategorias"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del subcategoria"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/subcategoria"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "subcategoria actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/subcategoria"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "subcategoria no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un subcategoria por ID",
+        "tags": [
+          "Subcategorias"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del subcategoria"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "subcategoria eliminado exitosamente"
+          },
+          "404": {
+            "description": "subcategoria no encontrado"
+          }
+        }
+      }
+    },
+    "/subcategoria": {
       "get": {
         "summary": "Lista de subcategorias con paginación (20 elementos por página)",
         "tags": [
-          "Subcategorias"
+          "Subcategoria"
         ],
         "responses": {
           "200": {
@@ -3324,7 +3566,7 @@
       "post": {
         "summary": "Crear una subcategoria",
         "tags": [
-          "Subcategorias"
+          "Subcategoria"
         ],
         "requestBody": {
           "required": true,
@@ -3353,11 +3595,115 @@
         }
       }
     },
-    "/tipoproductos": {
+    "/tipoProducto/{id}": {
+      "get": {
+        "summary": "Recupera un tipoProducto por ID",
+        "tags": [
+          "TipoProducto"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del tipoProducto"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del tipoProducto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipoProducto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "TipoProducto no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un tipoProducto por ID",
+        "tags": [
+          "TipoProducto"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del tipoProducto"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/tipoProducto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "tipoProducto actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/tipoProducto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "tipoProducto no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un tipoProducto por ID",
+        "tags": [
+          "TipoProducto"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del tipoProducto"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "tipoProducto eliminado exitosamente"
+          },
+          "404": {
+            "description": "tipoProducto no encontrado"
+          }
+        }
+      }
+    },
+    "/tipoproducto": {
       "get": {
         "summary": "Lista todos los tipoProductos con paginación",
         "tags": [
-          "TipoProductos"
+          "TipoProducto"
         ],
         "responses": {
           "200": {
@@ -3383,7 +3729,7 @@
       "post": {
         "summary": "Crea un nuevo tipoProducto",
         "tags": [
-          "TipoProductos"
+          "TipoProducto"
         ],
         "requestBody": {
           "required": true,
@@ -3471,7 +3817,7 @@
         }
       }
     },
-    "/usuarios": {
+    "/usuario": {
       "get": {
         "summary": "Lista todos los usuarios con paginación",
         "tags": [
@@ -3497,9 +3843,7 @@
             }
           }
         }
-      }
-    },
-    "/usuario": {
+      },
       "post": {
         "summary": "Crea un nuevo usuario",
         "tags": [
@@ -3532,7 +3876,7 @@
         }
       }
     },
-    "/usuarios/{id}": {
+    "/usuario/{id}": {
       "get": {
         "summary": "Recupera un usuario por ID",
         "tags": [
@@ -3564,7 +3908,9 @@
             "description": "Usuario no encontrado"
           }
         }
-      },
+      }
+    },
+    "/usuarios/{id}": {
       "put": {
         "summary": "Actualiza un usuario por ID",
         "tags": [
@@ -3871,11 +4217,11 @@
       "description": "API para la gestión de personas"
     },
     {
-      "name": "Productos",
+      "name": "Producto",
       "description": "API para la gestión de productos"
     },
     {
-      "name": "Subcategorias",
+      "name": "Subcategoria",
       "description": "API para subcategorías"
     },
     {

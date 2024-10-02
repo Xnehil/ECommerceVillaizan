@@ -9,26 +9,26 @@ import { Producto } from "src/models/Producto";
 
 /**
  * @swagger
- * /banco/{id}:
+ * /producto/{id}:
  *   get:
- *     summary: Recupera un banco por ID
- *     tags: [Bancos]
+ *     summary: Recupera un producto por ID
+ *     tags: [Productos]
  *     parameters:
  *       - in: path
  *         name: id
  *         schema:
  *           type: string
  *         required: true
- *         description: ID del banco
+ *         description: ID del producto
  *     responses:
  *       200:
- *         description: Detalles del banco
+ *         description: Detalles del producto
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Banco'
+ *               $ref: '#/components/schemas/Producto'
  *       404:
- *         description: Banco no encontrado
+ *         description: Producto no encontrado
  */
 
 
