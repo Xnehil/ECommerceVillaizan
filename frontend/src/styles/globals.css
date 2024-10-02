@@ -1,6 +1,16 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+.imageWrapper:hover .hoverText {
+  visibility: visible;
+  opacity: 1;
+}
 
 @layer utilities {
   /* Chrome, Safari and Opera */
@@ -47,6 +57,19 @@
   input[type="search"]::-webkit-search-results-decoration {
     -webkit-appearance: none;
   }
+}
+
+:root {
+  --color-rojoVillaizan: #BD181E;
+  --color-titulos: #333333;
+  --color-cremaFondo: #F9F1E7;
+  --color-mostazaTexto: #B88E2F;
+  --color-azulLink: #0000EE;
+  --color-grisNoedit: #9F9F9F;
+  --color-verdeTag: #ABBD23;
+  --color-azulTag: #90BCBC;
+  --color-rosaTag: #EC9898;
+  --color-amarilloTag: #E8A73E;
 }
 
 @layer components {

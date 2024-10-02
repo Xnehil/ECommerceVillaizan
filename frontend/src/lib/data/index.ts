@@ -21,6 +21,7 @@ import { ProductCategoryWithChildren, ProductPreviewType } from "types/global"
 import { medusaClient } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { cookies } from "next/headers"
+import axios from "axios"
 
 const emptyResponse = {
   response: { products: [], count: 0 },
@@ -86,23 +87,40 @@ export const getCart = cache(async function (cartId: string) {
 })
 
 export async function addItem({
-  cartId,
-  variantId,
-  quantity,
+  idPedido,
+  idProducto,
+  cantidad,
+  precio
 }: {
-  cartId: string
-  variantId: string
-  quantity: number
+  idPedido: string
+  idProducto: string
+  cantidad: number
+  precio: number
 }) {
   const headers = getMedusaHeaders(["cart"])
 
-  return medusaClient.carts.lineItems
-    .create(cartId, { variant_id: variantId, quantity }, headers)
-    .then(({ cart }) => cart)
-    .catch((err) => {
-      console.log(err)
-      return null
+  // return medusaClient.carts.lineItems
+  //   .create(cartId, { variant_id: variantId, quantity }, headers)
+  //   .then(({ cart }) => cart)
+  //   .catch((err) => {
+  //     console.log(err)
+  //     return null
+  //   })
+  try{
+    const response = axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_API_URL}/admin/detallePedido`, {
+      producto:{
+        id: idProducto
+      },
+      cantidad: cantidad,
+      pedido: {
+        id: idPedido
+      },
+      subtotal: precio*cantidad
     })
+  } catch (e) {
+    console.log(e)
+    return null
+  }
 }
 
 export async function updateItem({
@@ -116,10 +134,17 @@ export async function updateItem({
 }) {
   const headers = getMedusaHeaders(["cart"])
 
-  return medusaClient.carts.lineItems
-    .update(cartId, lineId, { quantity }, headers)
-    .then(({ cart }) => cart)
-    .catch((err) => medusaError(err))
+  try{
+    const response = axios.put(`${process.env.NEXT_PUBLIC_MEDUSA_API_URL}/admin/detallePedido/${lineId}`, {
+      cantidad: quantity
+    })
+
+    return response
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+  
 }
 
 export async function removeItem({
@@ -131,13 +156,15 @@ export async function removeItem({
 }) {
   const headers = getMedusaHeaders(["cart"])
 
-  return medusaClient.carts.lineItems
-    .delete(cartId, lineId, headers)
-    .then(({ cart }) => cart)
-    .catch((err) => {
-      console.log(err)
-      return null
-    })
+  try {
+    const response = axios.delete(`${process.env.NEXT_PUBLIC_MEDUSA_API_URL}/admin/detallePedido/${lineId}`)
+
+    return response
+  }
+  catch (e) {
+    console.log(e)
+    return null
+  }
 }
 
 export async function deleteDiscount(cartId: string, code: string) {

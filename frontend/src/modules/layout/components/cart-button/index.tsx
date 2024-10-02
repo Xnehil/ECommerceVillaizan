@@ -17,6 +17,8 @@ const fetchCart = async () => {
 
 export default async function CartButton() {
   const cart = await fetchCart()
-
-  return <CartDropdown cart={cart} />
+  // Make it taller
+  return <div className="flex items-center justify-center bg-rojoVillaizan text-white  rounded-lg h-14">
+    <CartDropdown cart={cart} />
+    </div>
 }

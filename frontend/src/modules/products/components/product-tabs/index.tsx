@@ -7,9 +7,10 @@ import FastDelivery from "@modules/common/icons/fast-delivery"
 import Refresh from "@modules/common/icons/refresh"
 
 import Accordion from "./accordion"
+import { Producto } from "types/PaqueteProducto"
 
 type ProductTabsProps = {
-  product: PricedProduct
+  product: Producto
 }
 
 const ProductTabs = ({ product }: ProductTabsProps) => {
@@ -48,6 +49,10 @@ const ProductInfoTab = ({ product }: ProductTabsProps) => {
       <div className="grid grid-cols-2 gap-x-8">
         <div className="flex flex-col gap-y-4">
           <div>
+            <span className="font-semibold">Datos de producto</span>
+            <p>Por construir</p>
+          </div>
+          {/* <div>
             <span className="font-semibold">Material</span>
             <p>{product.material ? product.material : "-"}</p>
           </div>
@@ -72,14 +77,14 @@ const ProductInfoTab = ({ product }: ProductTabsProps) => {
                 ? `${product.length}L x ${product.width}W x ${product.height}H`
                 : "-"}
             </p>
-          </div>
+          </div> */}
         </div>
       </div>
-      {product.tags?.length ? (
+      {/* {product.tags?.length ? (
         <div>
           <span className="font-semibold">Tags</span>
         </div>
-      ) : null}
+      ) : null} */}
     </div>
   )
 }

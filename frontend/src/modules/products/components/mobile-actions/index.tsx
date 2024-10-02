@@ -13,13 +13,14 @@ import X from "@modules/common/icons/x"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { Region } from "@medusajs/medusa"
 import OptionSelect from "../option-select"
+import { Producto } from "types/PaqueteProducto"
 
 type MobileActionsProps = {
-  product: PricedProduct
+  product: Producto
   variant?: PricedVariant
-  region: Region
+  region?: Region
   options: Record<string, string>
-  updateOptions: (update: Record<string, string>) => void
+  updateOptions?: (update: Record<string, string>) => void
   inStock?: boolean
   handleAddToCart: () => void
   isAdding?: boolean
@@ -41,19 +42,15 @@ const MobileActions: React.FC<MobileActionsProps> = ({
 }) => {
   const { state, open, close } = useToggleState()
 
-  const price = getProductPrice({
-    product: product,
-    variantId: variant?.id,
-    region,
-  })
+  const price = product.precioEcommerce
 
   const selectedPrice = useMemo(() => {
     if (!price) {
       return null
     }
-    const { variantPrice, cheapestPrice } = price
+    // const { variantPrice, cheapestPrice } = price
 
-    return variantPrice || cheapestPrice || null
+    return price || null
   }, [price])
 
   return (
@@ -78,24 +75,24 @@ const MobileActions: React.FC<MobileActionsProps> = ({
             data-testid="mobile-actions"
           >
             <div className="flex items-center gap-x-2">
-              <span data-testid="mobile-title">{product.title}</span>
+              <span data-testid="mobile-title">{product.nombre}</span>
               <span>—</span>
               {selectedPrice ? (
                 <div className="flex items-end gap-x-2 text-ui-fg-base">
-                  {selectedPrice.price_type === "sale" && (
+                  {/* {selectedPrice.price_type === "sale" && (
                     <p>
                       <span className="line-through text-small-regular">
                         {selectedPrice.original_price}
                       </span>
                     </p>
-                  )}
+                  )} */}
                   <span
                     className={clx({
-                      "text-ui-fg-interactive":
-                        selectedPrice.price_type === "sale",
+                      // "text-ui-fg-interactive":
+                        // selectedPrice.price_type === "sale",
                     })}
                   >
-                    {selectedPrice.calculated_price}
+                    {selectedPrice}
                   </span>
                 </div>
               ) : (
@@ -174,7 +171,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                     </button>
                   </div>
                   <div className="bg-white px-6 py-12">
-                    {product.variants.length > 1 && (
+                    {/* {product.variants.length > 1 && (
                       <div className="flex flex-col gap-y-6">
                         {(product.options || []).map((option) => {
                           return (
@@ -190,7 +187,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                           )
                         })}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

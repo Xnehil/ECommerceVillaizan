@@ -5,7 +5,32 @@ import type {
   
 import  ProductoService  from "../../../services/Producto"
 import { Producto } from "src/models/Producto";
+/**
+ * @swagger
+ * tags:
+ *   name: Productos
+ *   description: API para la gestión de productos
+ */
 
+/**
+ * @swagger
+ * /productos:
+ *   get:
+ *     summary: Lista todos los productos con paginación
+ *     tags: [Productos]
+ *     responses:
+ *       200:
+ *         description: Una lista de productos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 productos:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Producto'
+ */
   export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse
@@ -17,6 +42,29 @@ import { Producto } from "src/models/Producto";
     })
   }
 
+
+  /**
+ * @swagger
+ * /productos:
+ *   post:
+ *     summary: Crea un nuevo producto
+ *     tags: [Productos]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Producto'
+ *     responses:
+ *       201:
+ *         description: El producto ha sido creado exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Producto'
+ *       400:
+ *         description: Petición inválida
+ */
   export const POST = async (
     req: MedusaRequest,
     res: MedusaResponse
@@ -30,9 +78,10 @@ import { Producto } from "src/models/Producto";
     const productoData = req.body as Producto;
     const producto = await productoService.crear(productoData);
 
-    res.json({
+    res.status(201).json({
       producto,
     });
   }
 
+  
   export const AUTHENTICATE = false

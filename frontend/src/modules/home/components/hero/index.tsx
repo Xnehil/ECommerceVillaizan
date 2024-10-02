@@ -1,5 +1,8 @@
 import { Github } from "@medusajs/icons"
 import { Button, Heading } from "@medusajs/ui"
+import CartButton from "@modules/layout/components/cart-button"
+import Link from "next/link"
+import { Suspense } from "react"
 
 const Hero = () => {
   return (
@@ -10,24 +13,29 @@ const Hero = () => {
             level="h1"
             className="text-3xl leading-10 text-ui-fg-base font-normal"
           >
-            Ecommerce Starter Template
+            Helados Villaizan
           </Heading>
           <Heading
             level="h2"
-            className="text-3xl leading-10 text-ui-fg-subtle font-normal"
+            className="text-3xl leading-10 text-ui-fg-subtle font-normal mb-4"
           >
-            Powered by Medusa and Next.js
+            El papá de las paletas
           </Heading>
+          <Suspense
+              fallback={
+                <Link
+                // border-radius: var(--spacing-2-5, 10px);
+                  className="hover:text-ui-fg-base flex gap-2 items-center"
+                  style={{ color: "#FFFEFE", fontFamily: "Inter", fontSize: "32px", fontStyle: "normal", fontWeight: 700, lineHeight: "normal" }}
+                  href="/cart"
+                >
+                  Comprar
+                </Link>
+              }
+            >
+              <CartButton />
+            </Suspense>
         </span>
-        <a
-          href="https://github.com/medusajs/nextjs-starter-medusa"
-          target="_blank"
-        >
-          <Button variant="secondary">
-            View on GitHub
-            <Github />
-          </Button>
-        </a>
       </div>
     </div>
   )

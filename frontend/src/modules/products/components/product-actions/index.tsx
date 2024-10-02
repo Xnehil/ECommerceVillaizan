@@ -14,10 +14,11 @@ import OptionSelect from "@modules/products/components/option-select"
 
 import MobileActions from "../mobile-actions"
 import ProductPrice from "../product-price"
+import { Producto } from "types/PaqueteProducto"
 
 type ProductActionsProps = {
-  product: PricedProduct
-  region: Region
+  product: Producto
+  region?: Region
   disabled?: boolean
 }
 
@@ -38,83 +39,82 @@ export default function ProductActions({
 
   const countryCode = useParams().countryCode as string
 
-  const variants = product.variants
 
-  // initialize the option state
-  useEffect(() => {
-    const optionObj: Record<string, string> = {}
+  // // initialize the option state
+  // useEffect(() => {
+  //   const optionObj: Record<string, string> = {}
 
-    for (const option of product.options || []) {
-      Object.assign(optionObj, { [option.id]: undefined })
-    }
+  //   for (const option of product.options || []) {
+  //     Object.assign(optionObj, { [option.id]: undefined })
+  //   }
 
-    setOptions(optionObj)
-  }, [product])
+  //   setOptions(optionObj)
+  // }, [product])
 
-  // memoized record of the product's variants
-  const variantRecord = useMemo(() => {
-    const map: Record<string, Record<string, string>> = {}
+  // // memoized record of the product's variants
+  // const variantRecord = useMemo(() => {
+  //   const map: Record<string, Record<string, string>> = {}
 
-    for (const variant of variants) {
-      if (!variant.options || !variant.id) continue
+  //   for (const variant of variants) {
+  //     if (!variant.options || !variant.id) continue
 
-      const temp: Record<string, string> = {}
+  //     const temp: Record<string, string> = {}
 
-      for (const option of variant.options) {
-        temp[option.option_id] = option.value
-      }
+  //     for (const option of variant.options) {
+  //       temp[option.option_id] = option.value
+  //     }
 
-      map[variant.id] = temp
-    }
+  //     map[variant.id] = temp
+  //   }
 
-    return map
-  }, [variants])
+  //   return map
+  // }, [variants])
 
   // memoized function to check if the current options are a valid variant
-  const variant = useMemo(() => {
-    let variantId: string | undefined = undefined
+  // const variant = useMemo(() => {
+  //   let variantId: string | undefined = undefined
 
-    for (const key of Object.keys(variantRecord)) {
-      if (isEqual(variantRecord[key], options)) {
-        variantId = key
-      }
-    }
+  //   for (const key of Object.keys(variantRecord)) {
+  //     if (isEqual(variantRecord[key], options)) {
+  //       variantId = key
+  //     }
+  //   }
 
-    return variants.find((v) => v.id === variantId)
-  }, [options, variantRecord, variants])
+  //   return variants.find((v) => v.id === variantId)
+  // }, [options, variantRecord, variants])
 
-  // if product only has one variant, then select it
-  useEffect(() => {
-    if (variants.length === 1 && variants[0].id) {
-      setOptions(variantRecord[variants[0].id])
-    }
-  }, [variants, variantRecord])
+  // // if product only has one variant, then select it
+  // useEffect(() => {
+  //   if (variants.length === 1 && variants[0].id) {
+  //     setOptions(variantRecord[variants[0].id])
+  //   }
+  // }, [variants, variantRecord])
 
-  // update the options when a variant is selected
-  const updateOptions = (update: Record<string, string>) => {
-    setOptions({ ...options, ...update })
-  }
+  // // update the options when a variant is selected
+  // const updateOptions = (update: Record<string, string>) => {
+  //   setOptions({ ...options, ...update })
+  // }
 
   // check if the selected variant is in stock
   const inStock = useMemo(() => {
     // If we don't manage inventory, we can always add to cart
-    if (variant && !variant.manage_inventory) {
-      return true
-    }
+    // if (variant && !variant.manage_inventory) {
+    //   return true
+    // }
 
-    // If we allow back orders on the variant, we can add to cart
-    if (variant && variant.allow_backorder) {
-      return true
-    }
+    // // If we allow back orders on the variant, we can add to cart
+    // if (variant && variant.allow_backorder) {
+    //   return true
+    // }
 
-    // If there is inventory available, we can add to cart
-    if (variant?.inventory_quantity && variant.inventory_quantity > 0) {
-      return true
-    }
+    // // If there is inventory available, we can add to cart
+    // if (variant?.inventory_quantity && variant.inventory_quantity > 0) {
+    //   return true
+    // }
 
     // Otherwise, we can't add to cart
-    return false
-  }, [variant])
+    return true
+  }, [product])
 
   const actionsRef = useRef<HTMLDivElement>(null)
 
@@ -122,14 +122,14 @@ export default function ProductActions({
 
   // add the selected variant to the cart
   const handleAddToCart = async () => {
-    if (!variant?.id) return null
+    if (!product?.id) return null
 
     setIsAdding(true)
 
     await addToCart({
-      variantId: variant.id,
-      quantity: 1,
-      countryCode,
+      cantidad: 1,
+      idProducto: product.id || "",
+      precio:  product.precioEcommerce
     })
 
     setIsAdding(false)
@@ -139,9 +139,9 @@ export default function ProductActions({
     <>
       <div className="flex flex-col gap-y-2" ref={actionsRef}>
         <div>
-          {product.variants.length > 1 && (
+          {product  && (
             <div className="flex flex-col gap-y-4">
-              {(product.options || []).map((option) => {
+              {/* {(product.options || []).map((option) => {
                 return (
                   <div key={option.id}>
                     <OptionSelect
@@ -154,23 +154,23 @@ export default function ProductActions({
                     />
                   </div>
                 )
-              })}
+              })} */}
               <Divider />
             </div>
           )}
         </div>
 
-        <ProductPrice product={product} variant={variant} region={region} />
+        <ProductPrice product={product}  region={region} />
 
         <Button
           onClick={handleAddToCart}
-          disabled={!inStock || !variant || !!disabled || isAdding}
+          disabled={!inStock || !!disabled || isAdding}
           variant="primary"
           className="w-full h-10"
           isLoading={isAdding}
           data-testid="add-product-button"
         >
-          {!variant
+          {!product
             ? "Select variant"
             : !inStock
             ? "Out of stock"
@@ -178,10 +178,9 @@ export default function ProductActions({
         </Button>
         <MobileActions
           product={product}
-          variant={variant}
           region={region}
           options={options}
-          updateOptions={updateOptions}
+          // updateOptions={updateOptions}
           inStock={inStock}
           handleAddToCart={handleAddToCart}
           isAdding={isAdding}

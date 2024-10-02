@@ -8,48 +8,59 @@ import { Region } from "@medusajs/medusa"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
 import PreviewPrice from "./price"
+import Link from "next/link"
+import { Producto } from "types/PaqueteProducto"
+import axios from "axios"
 
 export default async function ProductPreview({
   productPreview,
   isFeatured,
   region,
 }: {
-  productPreview: ProductPreviewType
+  productPreview: Producto
   isFeatured?: boolean
-  region: Region
+  region?: Region
 }) {
-  const pricedProduct = await retrievePricedProductById({
-    id: productPreview.id,
-    regionId: region.id,
-  }).then((product) => product)
+  const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+  // console.log("productPreview", productPreview)
+  const pricedProduct = await axios.get(`${baseUrl}/admin/producto/${productPreview.id}`).then((response) => response.data)
+
+
+  //  await retrievePricedProductById({
+  //   id: productPreview.id,
+  //   regionId: region.id,
+  // }).then((product) => product)
 
   if (!pricedProduct) {
     return null
   }
 
-  const { cheapestPrice } = getProductPrice({
-    product: pricedProduct,
-    region,
-  })
+  // const { cheapestPrice } = getProductPrice({
+  //   product: pricedProduct,
+  //   region,
+  // })
+
+  const cheapestPrice = pricedProduct.precio
+  const spacelessName = productPreview.nombre.replace(/\s/g, "-")
 
   return (
-    <LocalizedClientLink
-      href={`/products/${productPreview.handle}`}
+    <Link
+      href={`/products/${productPreview.id}`}
       className="group"
     >
       <div data-testid="product-wrapper">
         <Thumbnail
-          thumbnail={productPreview.thumbnail}
+          // thumbnail={productPreview.urlImagen}
           size="full"
           isFeatured={isFeatured}
         />
         <div className="flex txt-compact-medium mt-4 justify-between">
-          <Text className="text-ui-fg-subtle" data-testid="product-title">{productPreview.title}</Text>
+          <Text className="text-ui-fg-subtle" data-testid="product-title">{productPreview.nombre}</Text>
           <div className="flex items-center gap-x-2">
             {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
           </div>
         </div>
       </div>
-    </LocalizedClientLink>
+    </Link>
   )
 }

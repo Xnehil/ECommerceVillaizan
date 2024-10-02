@@ -6,23 +6,22 @@ import { clx } from "@medusajs/ui"
 
 import { getProductPrice } from "@lib/util/get-product-price"
 import { RegionInfo } from "types/global"
+import { Producto } from "types/PaqueteProducto"
 
 export default function ProductPrice({
   product,
-  variant,
   region,
 }: {
-  product: PricedProduct
-  variant?: PricedVariant
-  region: RegionInfo
+  product: Producto
+  region?: RegionInfo
 }) {
-  const { cheapestPrice, variantPrice } = getProductPrice({
-    product,
-    variantId: variant?.id,
-    region,
-  })
-
-  const selectedPrice = variant ? variantPrice : cheapestPrice
+  // const { cheapestPrice, variantPrice } = getProductPrice({
+  //   product,
+  //   variantId: variant?.id,
+  //   region,
+  // })
+  
+  const selectedPrice =  333
 
   if (!selectedPrice) {
     return <div className="block w-32 h-9 bg-gray-100 animate-pulse" />
@@ -30,7 +29,7 @@ export default function ProductPrice({
 
   return (
     <div className="flex flex-col text-ui-fg-base">
-      <span
+      {/* <span
         className={clx("text-xl-semi", {
           "text-ui-fg-interactive": selectedPrice.price_type === "sale",
         })}
@@ -59,7 +58,8 @@ export default function ProductPrice({
             -{selectedPrice.percentage_diff}%
           </span>
         </>
-      )}
+      )} */}
+      Lógica de precio
     </div>
   )
 }

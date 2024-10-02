@@ -34,6 +34,17 @@ module.exports = {
           80: "#1F2937",
           90: "#111827",
         },
+        // Add custom colors here
+        rojoVillaizan: "#BD181E",
+        negroTitulo: "#333333",
+        cremaFondo: "#F9F1E7",
+        mostazaTexto: "#B88E2F",
+        azulLink: "#0000EE",
+        grisNoedit: "#9F9F9F",
+        verdeTag: "#ABBD23",
+        azulTag: "#90BCBC",
+        rosaTag: "#EC9898",
+        amarilloTag: "#E8A73E",
       },
       borderRadius: {
         none: "0px",
@@ -69,6 +80,7 @@ module.exports = {
           "Ubuntu",
           "sans-serif",
         ],
+        poppins: ["Poppins", "sans-serif"],
       },
       keyframes: {
         ring: {
