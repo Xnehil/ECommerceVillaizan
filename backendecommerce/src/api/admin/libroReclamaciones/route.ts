@@ -15,7 +15,7 @@ import { LibroReclamaciones } from "src/models/LibroReclamaciones";
 
 /**
  * @swagger
- * /libroreclamaciones:
+ * /libroReclamaciones:
  *   get:
  *     summary: Lista todos los libros de reclamaciones con paginación
  *     tags: [LibroReclamaciones]
@@ -46,7 +46,7 @@ import { LibroReclamaciones } from "src/models/LibroReclamaciones";
 
 /**
  * @swagger
- * /libro-reclamaciones:
+ * /libroReclamaciones:
  *   post:
  *     summary: Crea un nuevo libro de reclamaciones
  *     tags: [LibroReclamaciones]

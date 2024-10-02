@@ -15,7 +15,7 @@ import { Pago } from "src/models/Pago";
 
 /**
  * @swagger
- * /pagos:
+ * /pago:
  *   get:
  *     summary: Lista todos los pagos con paginación
  *     tags: [Pagos]
@@ -85,7 +85,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /pagos/{id}:
+ * /pago/{id}:
  *   get:
  *     summary: Recupera un pago por ID
  *     tags: [Pagos]
@@ -124,7 +124,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /pagos/{id}:
+ * /pago/{id}:
  *   put:
  *     summary: Actualiza un pago por ID
  *     tags: [Pagos]
@@ -176,7 +176,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /pagos/{id}:
+ * /pago/{id}:
  *   delete:
  *     summary: Elimina un pago por ID
  *     tags: [Pagos]

@@ -15,7 +15,7 @@ import { Usuario } from "src/models/Usuario";
 
 /**
  * @swagger
- * /usuarios:
+ * /usuario:
  *   get:
  *     summary: Lista todos los usuarios con paginación
  *     tags: [Usuarios]
@@ -87,7 +87,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /usuarios/{id}:
+ * /usuario/{id}:
  *   get:
  *     summary: Recupera un usuario por ID
  *     tags: [Usuarios]
@@ -126,7 +126,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /usuarios/{id}:
+ * /usuario/{id}:
  *   put:
  *     summary: Actualiza un usuario por ID
  *     tags: [Usuarios]
@@ -178,7 +178,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /usuarios/{id}:
+ * /usuario/{id}:
  *   delete:
  *     summary: Elimina un usuario por ID
  *     tags: [Usuarios]
