@@ -36,21 +36,21 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
   };
 
   return (
-    <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px', width: '300px' }}>
+    <div style={{ padding: '20px', borderRadius: '8px', width: '500px' }}> {/* Se eliminó el borde */}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: '10px' }}>
         <span>Producto</span>
         <span>Subtotal</span>
       </div>
       {productos.map((producto, index) => (
         <div key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-          <span>{producto.nombre} x {producto.cantidad}</span>
-          <span>${(producto.precio * producto.cantidad).toFixed(2)}</span>
+          <span>{producto.nombre} <strong>x</strong> {producto.cantidad}</span>
+          <span>S/. {(producto.precio * producto.cantidad).toFixed(2)}</span>
         </div>
       ))}
       <hr style={{ margin: '10px 0' }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: 'yellow' }}>
-        <span>Total:</span>
-        <span>${calcularTotal().toFixed(2)}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
+        <span style={{ color: 'black' }}>Total:</span>
+        <span style={{ color: '#B88E2F' }}>S/. {calcularTotal().toFixed(2)}</span> {/* Monto total con color B88E2F */}
       </div>
       <hr style={{ margin: '10px 0' }} />
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} onClick={toggleSeleccion}>
@@ -68,6 +68,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
         <span>Términos y Condiciones</span>
       </div>
       <p>{textoCustomizado}</p>
+      <hr style={{ margin: '10px 0' }} />
 
       {/* Botón Comprar */}
       <button
