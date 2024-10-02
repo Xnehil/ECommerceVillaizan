@@ -104,6 +104,28 @@ class PedidoService extends TransactionBaseService {
         });
     }
 
+    async listarPorUsuario(idUsuario: string): Promise<Pedido[]> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedidos = await pedidoRepo.findByUsuarioId(idUsuario);
+
+        if (!pedidos) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedidos;
+    }
+
+    async listarPorMotorizado(idMotorizado: string): Promise<Pedido[]> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedidos = await pedidoRepo.findByMotorizadoId(idMotorizado);
+
+        if (!pedidos) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedidos;
+    }
+
 }
 
 export default PedidoService;

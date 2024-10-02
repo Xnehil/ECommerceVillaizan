@@ -351,8 +351,8 @@ CREATE TABLE vi_motorizado (
     placa VARCHAR(20) NOT NULL,
     id_almacen VARCHAR(50),
     CONSTRAINT fk_almacen FOREIGN KEY (id_almacen) REFERENCES vi_almacen(id),
-    --id_cuenta VARCHAR(50),
-    --CONSTRAINT fk_cuenta FOREIGN KEY (id_cuenta) REFERENCES vi_cuenta(id),
+    id_usuario VARCHAR(50),
+    CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES vi_usuario(id),
     --trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,
