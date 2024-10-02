@@ -14,7 +14,8 @@ type CustomRectangleProps = {
   width: string;
   height: string;
   onImageClick: (id: string) => void;
-  selectedImageId: string | null; // Prop para manejar la imagen seleccionada
+  selectedImageId: string | null;
+  setPaymentAmount: (amount: number | null) => void; // Add setPaymentAmount to props
 };
 
 const CustomRectangle: React.FC<CustomRectangleProps> = ({
@@ -23,7 +24,8 @@ const CustomRectangle: React.FC<CustomRectangleProps> = ({
   width = "100%",
   height = "auto",
   onImageClick,
-  selectedImageId: propSelectedImageId, // Recibimos la imagen seleccionada como prop
+  selectedImageId: propSelectedImageId,
+  setPaymentAmount, // Destructure the setPaymentAmount function from props
 }) => {
   const [isCircleSelected, setIsCircleSelected] = useState(false); // Estado para controlar la selección del círculo
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -47,6 +49,7 @@ const CustomRectangle: React.FC<CustomRectangleProps> = ({
     if (isCircleSelected) {
       setIsCircleSelected(false); // Cambiamos el estado del círculo al hacer clic
       setSelectedImageId(null); // Desseleccionamos la imagen
+      setPaymentAmount(null); // Aseguramos que se limpie el monto de pago
     } else {
       setIsCircleSelected(true); // Rellenar el círculo si no estaba seleccionado
     }

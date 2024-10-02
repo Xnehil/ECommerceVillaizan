@@ -15,7 +15,7 @@ import { OrdenSerie } from "src/models/OrdenSerie";
 
 /**
  * @swagger
- * /ordenseries:
+ * /ordenSerie:
  *   get:
  *     summary: Lista todas las series de órdenes con paginación
  *     tags: [OrdenSeries]
@@ -46,7 +46,7 @@ export const GET = async (
 
 /**
  * @swagger
- * /orden-serie:
+ * /ordenSerie:
  *   post:
  *     summary: Crea una nueva serie de órdenes
  *     tags: [OrdenSerie]
@@ -87,7 +87,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /ordenseries/{id}:
+ * /ordenSerie/{id}:
  *   get:
  *     summary: Recupera una serie de órdenes por ID
  *     tags: [OrdenSeries]
@@ -126,7 +126,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /ordenseries/{id}:
+ * /ordenSerie/{id}:
  *   put:
  *     summary: Actualiza una serie de órdenes por ID
  *     tags: [OrdenSeries]
@@ -178,7 +178,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /ordenseries/{id}:
+ * /ordenSerie/{id}:
  *   delete:
  *     summary: Elimina una serie de órdenes por ID
  *     tags: [OrdenSeries]

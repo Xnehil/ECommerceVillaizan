@@ -13,6 +13,7 @@ import { EntidadBase } from "./EntidadBase";
 import { Pedido } from "./Pedido";
 import { OrdenSerie } from "./OrdenSerie";
 
+
 @Entity("vi_venta")
 export class Venta extends EntidadBase {
 

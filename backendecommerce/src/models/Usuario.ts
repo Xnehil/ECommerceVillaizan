@@ -1,6 +1,7 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, BeforeInsert } from 'typeorm';
 import { Persona } from './Persona';
 import { EntidadBase } from './EntidadBase';
+import { generateEntityId } from '@medusajs/medusa';
 
 @Entity('vi_usuario')
 export class Usuario extends EntidadBase {
@@ -32,5 +33,10 @@ export class Usuario extends EntidadBase {
     @ManyToOne(() => Persona, persona => persona.id)
     @JoinColumn({ name: 'id_persona' })
     persona: Persona;
+
+    @BeforeInsert()
+    private beforeInsert() {
+        this.id = generateEntityId(this.id, "per")
+    }
 
 }

@@ -15,7 +15,7 @@ import { Igv } from "src/models/Igv";
 
 /**
  * @swagger
- * /igvs:
+ * /igv:
  *   get:
  *     summary: Lista todos los IGVs con paginación
  *     tags: [Igvs]
@@ -87,7 +87,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /igvs/{id}:
+ * /igv/{id}:
  *   get:
  *     summary: Recupera un IGV por ID
  *     tags: [Igvs]
@@ -126,7 +126,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /igvs/{id}:
+ * /igv/{id}:
  *   put:
  *     summary: Actualiza un IGV por ID
  *     tags: [Igvs]
@@ -178,7 +178,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /igvs/{id}:
+ * /igv/{id}:
  *   delete:
  *     summary: Elimina un IGV por ID
  *     tags: [Igvs]

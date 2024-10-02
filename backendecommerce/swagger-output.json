@@ -1321,7 +1321,7 @@
         }
       }
     },
-    "/detallePedidos": {
+    "/detallePedido": {
       "get": {
         "summary": "Lista todos los detalles de pedidos con paginación",
         "tags": [
@@ -1347,9 +1347,7 @@
             }
           }
         }
-      }
-    },
-    "/detalles-pedido": {
+      },
       "post": {
         "summary": "Crea un nuevo detalle de pedido",
         "tags": [
@@ -1382,7 +1380,7 @@
         }
       }
     },
-    "/detallePedidos/{id}": {
+    "/detallePedido/{id}": {
       "get": {
         "summary": "Recupera un detalle de pedido por ID",
         "tags": [
@@ -1621,7 +1619,7 @@
         }
       }
     },
-    "/igvs": {
+    "/igv": {
       "get": {
         "summary": "Lista todos los IGVs con paginación",
         "tags": [
@@ -1647,9 +1645,7 @@
             }
           }
         }
-      }
-    },
-    "/igv": {
+      },
       "post": {
         "summary": "Crea un nuevo IGV",
         "tags": [
@@ -1682,7 +1678,7 @@
         }
       }
     },
-    "/igvs/{id}": {
+    "/igv/{id}": {
       "get": {
         "summary": "Recupera un IGV por ID",
         "tags": [
@@ -2324,7 +2320,7 @@
         }
       }
     },
-    "/libroreclamaciones": {
+    "/libroReclamaciones": {
       "get": {
         "summary": "Lista todos los libros de reclamaciones con paginación",
         "tags": [
@@ -2350,9 +2346,7 @@
             }
           }
         }
-      }
-    },
-    "/libro-reclamaciones": {
+      },
       "post": {
         "summary": "Crea un nuevo libro de reclamaciones",
         "tags": [
@@ -2385,7 +2379,7 @@
         }
       }
     },
-    "/metodopagos": {
+    "/metodoPago": {
       "get": {
         "summary": "Lista todos los métodos de pago con paginación",
         "tags": [
@@ -2411,9 +2405,7 @@
             }
           }
         }
-      }
-    },
-    "/metodo-pago": {
+      },
       "post": {
         "summary": "Crea un nuevo método de pago",
         "tags": [
@@ -2446,7 +2438,7 @@
         }
       }
     },
-    "/metodopagos/{id}": {
+    "/metodoPago/{id}": {
       "get": {
         "summary": "Recupera un método de pago por ID",
         "tags": [
@@ -2609,7 +2601,7 @@
         }
       }
     },
-    "/ordenseries": {
+    "/ordenSerie": {
       "get": {
         "summary": "Lista todas las series de órdenes con paginación",
         "tags": [
@@ -2635,9 +2627,7 @@
             }
           }
         }
-      }
-    },
-    "/orden-serie": {
+      },
       "post": {
         "summary": "Crea una nueva serie de órdenes",
         "tags": [
@@ -2670,7 +2660,7 @@
         }
       }
     },
-    "/ordenseries/{id}": {
+    "/ordenSerie/{id}": {
       "get": {
         "summary": "Recupera una serie de órdenes por ID",
         "tags": [
@@ -2774,7 +2764,7 @@
         }
       }
     },
-    "/pagos": {
+    "/pago": {
       "get": {
         "summary": "Lista todos los pagos con paginación",
         "tags": [
@@ -2800,9 +2790,7 @@
             }
           }
         }
-      }
-    },
-    "/pago": {
+      },
       "post": {
         "summary": "Crea un nuevo pago",
         "tags": [
@@ -2835,7 +2823,7 @@
         }
       }
     },
-    "/pagos/{id}": {
+    "/pago/{id}": {
       "get": {
         "summary": "Recupera un pago por ID",
         "tags": [
@@ -2939,53 +2927,26 @@
         }
       }
     },
-    "/pedidos": {
+    "/pedido/{id}/conDetalle": {
       "get": {
-        "summary": "Lista todos los pedidos con paginación",
+        "summary": "Recupera un pedido por ID con detalles de productos",
         "tags": [
           "Pedidos"
         ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del pedido"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Una lista de pedidos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "pedidos": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Pedido"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/pedido": {
-      "post": {
-        "summary": "Crea un nuevo pedido",
-        "tags": [
-          "Pedido"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Pedido"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "El pedido ha sido creado exitosamente.",
+            "description": "Detalles del pedido",
             "content": {
               "application/json": {
                 "schema": {
@@ -2994,8 +2955,8 @@
               }
             }
           },
-          "400": {
-            "description": "Petición inválida"
+          "404": {
+            "description": "Pedido no encontrado"
           }
         }
       }
@@ -3104,7 +3065,66 @@
         }
       }
     },
-    "/personas": {
+    "/pedido": {
+      "get": {
+        "summary": "Lista todos los pedidos con paginación",
+        "tags": [
+          "Pedidos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de pedidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pedidos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Pedido"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo pedido",
+        "tags": [
+          "Pedido"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pedido"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El pedido ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pedido"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/persona": {
       "get": {
         "summary": "Lista todas las personas con paginación",
         "tags": [
@@ -3130,9 +3150,7 @@
             }
           }
         }
-      }
-    },
-    "/persona": {
+      },
       "post": {
         "summary": "Crea una nueva persona",
         "tags": [
@@ -3165,7 +3183,7 @@
         }
       }
     },
-    "/personas/{id}": {
+    "/persona/{id}": {
       "get": {
         "summary": "Recupera una persona por ID",
         "tags": [
@@ -3908,9 +3926,7 @@
             "description": "Usuario no encontrado"
           }
         }
-      }
-    },
-    "/usuarios/{id}": {
+      },
       "put": {
         "summary": "Actualiza un usuario por ID",
         "tags": [
@@ -3982,7 +3998,7 @@
         }
       }
     },
-    "/ventas": {
+    "/venta": {
       "get": {
         "summary": "Lista todas las ventas con paginación",
         "tags": [
@@ -4008,9 +4024,7 @@
             }
           }
         }
-      }
-    },
-    "/venta": {
+      },
       "post": {
         "summary": "Crea una nueva venta",
         "tags": [
@@ -4043,7 +4057,7 @@
         }
       }
     },
-    "/ventas/{id}": {
+    "/venta/{id}": {
       "get": {
         "summary": "Recupera una venta por ID",
         "tags": [

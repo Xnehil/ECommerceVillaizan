@@ -12,9 +12,11 @@ interface ResumenCompraProps {
   descuento: number;
   costoEnvio: number;
   textoCustomizado: string;
+  noCostoEnvio: boolean;  // Nuevo argumento
+  paymentAmount?: number | null;  // Nueva prop para el monto de pago
 }
 
-const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado }) => {
+const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado, noCostoEnvio, paymentAmount }) => {
   const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
 
@@ -23,8 +25,13 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
   };
 
   const calcularTotal = () => {
-    return calcularSubtotal() - descuento + costoEnvio;
+    return calcularSubtotal() - descuento + (noCostoEnvio ? 0 : costoEnvio);
   };
+
+  const calcularVuelto = () => {
+    return paymentAmount ? paymentAmount - calcularTotal() : 0;
+  }
+  
 
   const toggleSeleccion = () => {
     setSeleccionado(!seleccionado); // Cambia el estado entre true y false
@@ -36,23 +43,56 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
   };
 
   return (
-    <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px', width: '300px' }}>
+    <div style={{ padding: '20px', borderRadius: '8px', width: '500px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: '10px' }}>
         <span>Producto</span>
         <span>Subtotal</span>
       </div>
       {productos.map((producto, index) => (
         <div key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-          <span>{producto.nombre} x {producto.cantidad}</span>
-          <span>${(producto.precio * producto.cantidad).toFixed(2)}</span>
+          <span style={{ color: 'grey' }}>
+            {producto.nombre} <strong style={{ color: 'black' }}>x</strong> {producto.cantidad}
+          </span>
+          <span>S/. {(producto.precio * producto.cantidad).toFixed(2)}</span>
         </div>
       ))}
-      <hr style={{ margin: '10px 0' }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', color: 'yellow' }}>
-        <span>Total:</span>
-        <span>${calcularTotal().toFixed(2)}</span>
+
+      {/* Mostrar descuento y costo de envío */}
+      {descuento > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+          <span>Descuento</span>
+          <span>- S/. {descuento.toFixed(2)}</span>
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+        <span>Costo de envío</span>
+        <span style={{ color: noCostoEnvio ? 'grey' : 'black' }}>
+          {noCostoEnvio ? <s>S/. {costoEnvio.toFixed(2)}</s> : `S/. ${costoEnvio.toFixed(2)}`}
+        </span>
+      </div>
+
+      
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '5px' }}>
+        <span style={{ color: 'black' }}>Total</span>
+        <span style={{ color: '#B88E2F' }}>S/. {calcularTotal().toFixed(2)}</span>
       </div>
       <hr style={{ margin: '10px 0' }} />
+      {/* Mostrar paymentAmount si está presente */}
+      {paymentAmount && (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+            <span>Monto a pagar</span>
+            <span>S/. {paymentAmount.toFixed(2)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+            <span>Vuelto</span>
+            <span>S/. {calcularVuelto().toFixed(2)}</span>
+          </div>
+          <hr style={{ margin: '10px 0' }} />
+        </>
+      )}
+      
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} onClick={toggleSeleccion}>
         <div
           style={{
@@ -65,9 +105,11 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
             cursor: 'pointer',
           }}
         />
-        <span>Términos y Condiciones</span>
+        <span style={{ cursor: 'pointer' }}>He leído y acepto los términos y condiciones</span>
       </div>
-      <p>{textoCustomizado}</p>
+      <div>
+        <small>{textoCustomizado}</small>
+      </div>
 
       {/* Botón Comprar */}
       <button
@@ -81,6 +123,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
           fontWeight: 'bold',
           cursor: 'pointer',
           transition: 'background-color 0.3s, color 0.3s',
+          marginTop: "10px"
         }}
         onMouseOver={(e) => {
           (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'black';
