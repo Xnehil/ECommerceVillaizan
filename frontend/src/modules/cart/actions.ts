@@ -73,19 +73,29 @@ export async function getOrSetCart() {
   return cart
 }
 
-export async function retrieveCart() {
+export async function retrieveCart(productos: boolean = false) {
   const cartId = cookies().get("_medusa_cart_id")?.value
 
   if (!cartId) {
     return null
   }
 
-  try {
-    const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
-    return response.data
-  } catch (e) {
-    console.log(e)
-    return null
+  if (productos) {
+    try {
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      return response.data.pedido
+    } catch (e) {
+      console.log(e)
+      return null
+    }
+  } else{
+      try {
+        const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
+        return response.data.pedido
+      } catch (e) {
+        console.log(e)
+        return null
+      }
   }
 }
 

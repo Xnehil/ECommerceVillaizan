@@ -35,7 +35,7 @@ export class DetallePedido extends EntidadBase{
     //@Column({ type: "varchar", length: 50, nullable: true, name: "id_pedido" })
     //id_pedido: string;
 
-    @ManyToOne(() => Pedido, pedido => pedido.id)
+    @ManyToOne(() => Pedido, pedido => pedido.detalles)
     @JoinColumn({ name: "id_pedido" })
     pedido: Pedido;
 
