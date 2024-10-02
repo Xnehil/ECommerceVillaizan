@@ -14,10 +14,8 @@ export default async function ProductActionsWrapper({
   id: string
   region?: Region
 }) {
-  const producto: Producto = await axios.get(
-    `${baseUrl}/producto/${id}`
-  ).then(({ data }) => data);
-
+  const response = await axios.get(`${baseUrl}/admin/producto/${id}`)
+  const producto: Producto =  response.data.producto
   if (!producto) {
     return null
   }

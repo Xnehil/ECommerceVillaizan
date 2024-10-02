@@ -19,7 +19,7 @@ export default async function ProductPreview({
 }: {
   productPreview: Producto
   isFeatured?: boolean
-  region: Region
+  region?: Region
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   // console.log("productPreview", productPreview)
@@ -45,7 +45,7 @@ export default async function ProductPreview({
 
   return (
     <Link
-      href={`/products/${spacelessName}`}
+      href={`/products/${productPreview.id}`}
       className="group"
     >
       <div data-testid="product-wrapper">

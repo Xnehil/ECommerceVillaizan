@@ -29,11 +29,11 @@ export default async function PaginatedProducts({
   productsIds?: string[]
   countryCode: string
 }) {
-  const region = await getRegion(countryCode)
+  // const region = await getRegion(countryCode)
 
-  if (!region) {
-    return null
-  }
+  // if (!region) {
+  //   return null
+  // }
 
   const queryParams: PaginatedProductsParams = {
     limit: PRODUCT_LIMIT,
@@ -64,7 +64,7 @@ export default async function PaginatedProducts({
     );
   
 
-    console.log('API Response:', response);
+    // console.log('API Response:', response);
 
     if (!response || !response.data || !response.data.productos) {
       console.error('Invalid response structure:', response);
@@ -81,7 +81,7 @@ export default async function PaginatedProducts({
         {products.map((p:Producto) => {
           return (
             <li key={p.id}>
-              <ProductPreview productPreview={p} region={region} />
+              <ProductPreview productPreview={p}  />
             </li>
           )
         })}
