@@ -18,10 +18,13 @@ export default function CartClient({ cart, customer }: CartClientProps) {
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
 
-  const handleImageClick = (id: string) => {
+  const handleImageClick = (id: string | null) => {
     if (id === "pagoEfec") {
       setShowPopup(true);
       setSelectedImageId(id);
+    } else {
+      // Aquí manejas la lógica para el caso en que id sea null
+      setSelectedImageId(null);
     }
   };
 
@@ -104,6 +107,7 @@ export default function CartClient({ cart, customer }: CartClientProps) {
             textoCustomizado="Tu data personal será usada para mejorar tu experiencia en esta página, para otros propósitos revisar el privacy policy."
             noCostoEnvio = {true}
             paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null} // Pasar paymentAmount solo si pagoEfec está seleccionado
+            selectedImageId={selectedImageId}
           />
         </div>
       </div>
