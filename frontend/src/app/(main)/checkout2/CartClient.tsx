@@ -43,6 +43,7 @@ export default function CartClient({ cart, customer }: CartClientProps) {
     { nombre: 'Producto 1', cantidad: 2, precio: 50 },
     { nombre: 'Producto 2', cantidad: 1, precio: 30 },
   ];
+  
 
   return (
     <>
@@ -108,6 +109,7 @@ export default function CartClient({ cart, customer }: CartClientProps) {
             noCostoEnvio = {true}
             paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null} // Pasar paymentAmount solo si pagoEfec está seleccionado
             selectedImageId={selectedImageId}
+            
           />
         </div>
       </div>

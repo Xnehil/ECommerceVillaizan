@@ -8,6 +8,8 @@ interface EntregaPopupProps {
   metodoPago: string;
   onConfirm: () => void;
   onClose: () => void;
+  selectedImageId: string | null;
+  paymentAmount: number | null;
 }
 
 const EntregaPopup: React.FC<EntregaPopupProps> = ({
@@ -17,7 +19,9 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
   subtotal,
   metodoPago,
   onConfirm,
-  onClose
+  onClose,
+  selectedImageId,
+  paymentAmount,
 }) => {
   return (
     <div style={styles.overlay}>
@@ -43,9 +47,24 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
           <strong>S/. {subtotal.toFixed(2)}</strong>
         </p>
         <p style={{ textAlign: 'left' }}>Método de pago:</p>
-        <p style={{ textAlign: 'left' }}>
-          <strong>{metodoPago}</strong>
-        </p>
+        <div style={{ textAlign: 'left', display: 'flex', alignItems: 'center' }}>
+        <strong>{metodoPago}</strong>
+          {selectedImageId === 'pagoEfec' && (
+            <img src="/images/efectivo.png" alt="Efectivo" style={{ marginLeft: '10px', height: '30px' }} />
+          )}
+        </div>
+        {selectedImageId === 'pagoEfec' && paymentAmount !== null && (
+        <>
+          <p style={{ textAlign: 'left' }}>Monto a Pagar</p>
+          <p style={{ textAlign: 'left' }}>
+            <strong>S/. {paymentAmount.toFixed(2)}</strong>
+          </p>
+          <p style={{ textAlign: 'left' }}>Vuelto</p>
+          <p style={{ textAlign: 'left' }}>
+            <strong>S/. {(paymentAmount - subtotal).toFixed(2)}</strong>
+          </p>
+        </>
+      )}
         <div style={{ ...styles.buttonContainer, flexDirection: 'column', gap: '10px' }}>
           <button onClick={onConfirm} style={styles.confirmButton}>Confirmar</button>
           <button onClick={onClose} style={styles.cancelButton}>Volver</button>
@@ -90,7 +109,6 @@ const styles = {
   cancelButton: {
     padding: '10px 20px',
     borderRadius: '5px',
-    border: '1px solid black',
     cursor: 'pointer',
     backgroundColor: 'white',
     color: 'red',

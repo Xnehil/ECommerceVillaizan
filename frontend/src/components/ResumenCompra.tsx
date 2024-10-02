@@ -154,10 +154,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
           direccion="Calle Ejemplo 123"
           nombre="Juan Pérez"
           productos={productos}
-          subtotal={calcularSubtotal()}
-          metodoPago="Tarjeta de Crédito"
+          subtotal={calcularTotal()}
+          metodoPago="Pago a Efectivo"
           onConfirm={handleConfirmar}
           onClose={() => setShowPopup(false)}
+          selectedImageId={selectedImageId}
+          paymentAmount={paymentAmount ?? null} 
         />
       )}
     </div>
