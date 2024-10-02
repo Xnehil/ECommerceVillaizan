@@ -12,9 +12,11 @@ interface ResumenCompraProps {
   descuento: number;
   costoEnvio: number;
   textoCustomizado: string;
+  noCostoEnvio: boolean;  // Nuevo argumento
 }
 
-const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado }) => {
+
+const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado, noCostoEnvio }) => {
   const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
 
@@ -23,8 +25,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
   };
 
   const calcularTotal = () => {
-    return calcularSubtotal() - descuento + costoEnvio;
+    return calcularSubtotal() - descuento + (noCostoEnvio ? 0 : costoEnvio);
   };
+  
 
   const toggleSeleccion = () => {
     setSeleccionado(!seleccionado); // Cambia el estado entre true y false
@@ -43,13 +46,30 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
       </div>
       {productos.map((producto, index) => (
         <div key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-          <span>{producto.nombre} <strong>x</strong> {producto.cantidad}</span>
+          <span style={{ color: 'grey' }}>
+            {producto.nombre} <strong style={{ color: 'black' }}>x</strong> {producto.cantidad}
+          </span>
           <span>S/. {(producto.precio * producto.cantidad).toFixed(2)}</span>
         </div>
       ))}
-      <hr style={{ margin: '10px 0' }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
-        <span style={{ color: 'black' }}>Total:</span>
+
+      {/* Mostrar descuento y costo de envío */}
+      {/* Mostrar descuento solo si es mayor que 0 */}
+      {descuento > 0 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+          <span>Descuento</span>
+          <span>- S/. {descuento.toFixed(2)}</span>
+        </div>
+      )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+        <span>Costo de envío</span>
+        <span style={{ color: noCostoEnvio ? 'grey' : 'black' }}>
+          {noCostoEnvio ? <s>S/. {costoEnvio.toFixed(2)}</s> : `S/. ${costoEnvio.toFixed(2)}`}
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '5px' }}>
+        <span style={{ color: 'black' }}>Total</span>
         <span style={{ color: '#B88E2F' }}>S/. {calcularTotal().toFixed(2)}</span> {/* Monto total con color B88E2F */}
       </div>
       <hr style={{ margin: '10px 0' }} />

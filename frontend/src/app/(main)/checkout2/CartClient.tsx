@@ -99,6 +99,7 @@ export default function CartClient({ cart, customer }: CartClientProps) {
             descuento={10}
             costoEnvio={5}
             textoCustomizado="Tu data personal será usada para mejorar tu experiencia en esta pagina, para otros propositos revisar el privacy policy."
+            noCostoEnvio = {true}
           />
         </div>
       </div>

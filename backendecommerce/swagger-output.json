@@ -1347,9 +1347,7 @@
             }
           }
         }
-      }
-    },
-    "/detalles-pedido": {
+      },
       "post": {
         "summary": "Crea un nuevo detalle de pedido",
         "tags": [
@@ -2322,7 +2320,7 @@
         }
       }
     },
-    "/libroreclamaciones": {
+    "/libroReclamaciones": {
       "get": {
         "summary": "Lista todos los libros de reclamaciones con paginación",
         "tags": [
@@ -2407,9 +2405,7 @@
             }
           }
         }
-      }
-    },
-    "/metodo-pago": {
+      },
       "post": {
         "summary": "Crea un nuevo método de pago",
         "tags": [
@@ -2631,9 +2627,7 @@
             }
           }
         }
-      }
-    },
-    "/orden-serie": {
+      },
       "post": {
         "summary": "Crea una nueva serie de órdenes",
         "tags": [
@@ -2933,51 +2927,26 @@
         }
       }
     },
-    "/pedido": {
+    "/pedido/{id}/conDetalle": {
       "get": {
-        "summary": "Lista todos los pedidos con paginación",
+        "summary": "Recupera un pedido por ID con detalles de productos",
         "tags": [
           "Pedidos"
         ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del pedido"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Una lista de pedidos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "pedidos": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Pedido"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Crea un nuevo pedido",
-        "tags": [
-          "Pedido"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Pedido"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "El pedido ha sido creado exitosamente.",
+            "description": "Detalles del pedido",
             "content": {
               "application/json": {
                 "schema": {
@@ -2986,8 +2955,8 @@
               }
             }
           },
-          "400": {
-            "description": "Petición inválida"
+          "404": {
+            "description": "Pedido no encontrado"
           }
         }
       }
@@ -3092,6 +3061,65 @@
           },
           "404": {
             "description": "Pedido no encontrado"
+          }
+        }
+      }
+    },
+    "/pedido": {
+      "get": {
+        "summary": "Lista todos los pedidos con paginación",
+        "tags": [
+          "Pedidos"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de pedidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pedidos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Pedido"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo pedido",
+        "tags": [
+          "Pedido"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pedido"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El pedido ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pedido"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
           }
         }
       }
@@ -3898,9 +3926,7 @@
             "description": "Usuario no encontrado"
           }
         }
-      }
-    },
-    "/usuarios/{id}": {
+      },
       "put": {
         "summary": "Actualiza un usuario por ID",
         "tags": [
