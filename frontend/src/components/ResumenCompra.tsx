@@ -14,11 +14,15 @@ interface ResumenCompraProps {
   textoCustomizado: string;
   noCostoEnvio: boolean;  // Nuevo argumento
   paymentAmount?: number | null;  // Nueva prop para el monto de pago
+  selectedImageId: string | null;  // Nueva prop para el ID de la imagen seleccionada
 }
 
-const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado, noCostoEnvio, paymentAmount }) => {
+
+const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado, noCostoEnvio, paymentAmount,selectedImageId  }) => {
   const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
+  const isButtonDisabled = !selectedImageId || !seleccionado; // Deshabilitar el botón si no hay una imagen seleccionada
+
 
   const calcularSubtotal = () => {
     return productos.reduce((acc, producto) => acc + producto.precio * producto.cantidad, 0);
@@ -111,32 +115,38 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
         <small>{textoCustomizado}</small>
       </div>
 
-      {/* Botón Comprar */}
       <button
         style={{
           width: '100%',
           padding: '10px',
-          border: '2px solid black',
+          border: isButtonDisabled ? '2px lightgrey' : '2px solid black',
           borderRadius: '5px',
-          backgroundColor: 'transparent',
-          color: 'black',
+          backgroundColor: isButtonDisabled ? 'lightgrey' : 'transparent', // Cambia el color de fondo si está deshabilitado
+          color: isButtonDisabled ? 'darkgrey' : 'black', // Cambia el color del texto si está deshabilitado
           fontWeight: 'bold',
-          cursor: 'pointer',
+          cursor: isButtonDisabled ? 'not-allowed' : 'pointer', // Cambia el cursor si está deshabilitado
           transition: 'background-color 0.3s, color 0.3s',
           marginTop: "10px"
         }}
         onMouseOver={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'black';
-          (e.currentTarget as HTMLButtonElement).style.color = 'white';
+          if (!isButtonDisabled) {
+            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'black';
+            (e.currentTarget as HTMLButtonElement).style.color = 'white';
+          }
         }}
         onMouseOut={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent';
-          (e.currentTarget as HTMLButtonElement).style.color = 'black';
+          (e.currentTarget as HTMLButtonElement).style.backgroundColor = isButtonDisabled ? 'lightgrey' : 'transparent';
+          (e.currentTarget as HTMLButtonElement).style.color = isButtonDisabled ? 'darkgrey' : 'black';
         }}
-        onClick={() => setShowPopup(true)} // Abre el popup al hacer clic
+        onClick={() => {
+          if (!isButtonDisabled) {
+            setShowPopup(true); // Abre el popup al hacer clic solo si no está deshabilitado
+          }
+        }} 
       >
         Comprar
       </button>
+
 
       {/* Popup de Entrega */}
       {showPopup && (
