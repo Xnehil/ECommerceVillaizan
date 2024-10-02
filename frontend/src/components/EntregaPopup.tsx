@@ -10,36 +10,46 @@ interface EntregaPopupProps {
   onClose: () => void;
 }
 
-const EntregaPopup: React.FC<EntregaPopupProps> = ({ 
-  direccion, 
-  nombre, 
-  productos, 
-  subtotal, 
-  metodoPago, 
-  onConfirm, 
-  onClose 
+const EntregaPopup: React.FC<EntregaPopupProps> = ({
+  direccion,
+  nombre,
+  productos,
+  subtotal,
+  metodoPago,
+  onConfirm,
+  onClose
 }) => {
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
-      <p style={{ textAlign: 'left' }}>Entregar en:</p>
-      <p style={{ textAlign: 'left' }}><strong>{direccion}</strong></p>
-      <p style={{ textAlign: 'left' }}>Para:</p>
-      <p style={{ textAlign: 'left' }}><strong>{nombre}</strong></p>
-      <p style={{ textAlign: 'left' }}>Pedido:</p>
+        <p style={{ textAlign: 'left' }}>Entregar en:</p>
+        <p style={{ textAlign: 'left' }}>
+          <strong>{direccion}</strong>
+        </p>
+        <p style={{ textAlign: 'left' }}>Para:</p>
+        <p style={{ textAlign: 'left' }}>
+          <strong>{nombre}</strong>
+        </p>
+        <p style={{ textAlign: 'left' }}>Pedido:</p>
         {productos.map((producto, index) => (
           <p style={{ textAlign: 'left' }} key={index}>
-            <strong>{producto.cantidad} {producto.nombre}</strong>
+            <strong>
+              {producto.cantidad} {producto.nombre}
+            </strong>
           </p>
         ))}
-      <p style={{ textAlign: 'left' }}>Subtotal:</p>
-      <p style={{ textAlign: 'left' }}><strong>S/. {subtotal.toFixed(2)}</strong></p>
-      <p style={{ textAlign: 'left' }}>Método de pago:</p>
-      <p style={{ textAlign: 'left' }}><strong>{metodoPago}</strong></p>  
-      <div style={{ ...styles.buttonContainer, flexDirection: 'column', gap: '10px' }}>
-        <button onClick={onConfirm} style={styles.button}>Confirmar</button>
-        <button onClick={onClose} style={styles.button}>Volver</button>
-      </div>
+        <p style={{ textAlign: 'left' }}>Subtotal:</p>
+        <p style={{ textAlign: 'left' }}>
+          <strong>S/. {subtotal.toFixed(2)}</strong>
+        </p>
+        <p style={{ textAlign: 'left' }}>Método de pago:</p>
+        <p style={{ textAlign: 'left' }}>
+          <strong>{metodoPago}</strong>
+        </p>
+        <div style={{ ...styles.buttonContainer, flexDirection: 'column', gap: '10px' }}>
+          <button onClick={onConfirm} style={styles.confirmButton}>Confirmar</button>
+          <button onClick={onClose} style={styles.cancelButton}>Volver</button>
+        </div>
       </div>
     </div>
   );
@@ -69,13 +79,21 @@ const styles = {
     justifyContent: 'space-between',
     marginTop: '20px',
   },
-  button: {
+  confirmButton: {
     padding: '10px 20px',
     borderRadius: '5px',
     border: 'none',
     cursor: 'pointer',
     backgroundColor: 'black',
     color: 'white',
+  },
+  cancelButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: '1px solid black',
+    cursor: 'pointer',
+    backgroundColor: 'white',
+    color: 'red',
   },
 };
 
