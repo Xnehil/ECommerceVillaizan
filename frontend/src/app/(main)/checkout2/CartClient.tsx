@@ -65,7 +65,7 @@ export default function CartClient({ cart, customer }: CartClientProps) {
       </div>
   
       {/* Header for "Metodo Pago" */}
-      <h1 style={{ marginTop: "20px", fontSize: "24px", fontWeight: "bold", paddingLeft: "40px" }}>Metodo Pago</h1>
+      <h1 style={{ marginTop: "20px", fontSize: "24px", fontWeight: "bold", paddingLeft: "40px" }}>Método Pago</h1>
   
       {/* Dividir CustomRectangle y ResumenCompra en la misma línea */}
       <div
@@ -87,11 +87,13 @@ export default function CartClient({ cart, customer }: CartClientProps) {
               hoverText: "Pago en Efectivo",
             },
           ]}
-          width="45%" // Reduce width for more space
+          width="45%" 
           height="100px"
           onImageClick={handleImageClick}
           selectedImageId={selectedImageId}
+          setPaymentAmount={setPaymentAmount} // Pass the setPaymentAmount function
         />
+
   
         {/* Lado derecho: ResumenCompra con margen superior y margen derecho */}
         <div style={{ marginRight: "200px", marginTop: "-20px", marginBottom: "40px"}}> {/* Ajustar el marginTop para elevar ResumenCompra */}
@@ -99,7 +101,7 @@ export default function CartClient({ cart, customer }: CartClientProps) {
             productos={productos}
             descuento={10}
             costoEnvio={5}
-            textoCustomizado="Tu data personal será usada para mejorar tu experiencia en esta pagina, para otros propositos revisar el privacy policy."
+            textoCustomizado="Tu data personal será usada para mejorar tu experiencia en esta página, para otros propósitos revisar el privacy policy."
             noCostoEnvio = {true}
             paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null} // Pasar paymentAmount solo si pagoEfec está seleccionado
           />
