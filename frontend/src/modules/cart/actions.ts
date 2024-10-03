@@ -1,9 +1,6 @@
 "use server"
 
-import { LineItem } from "@medusajs/medusa"
-import { omit } from "lodash"
 import { revalidateTag } from "next/cache"
-import { cookies } from "next/headers"
 
 import {
   addItem,
@@ -17,6 +14,7 @@ import {
 } from "@lib/data"
 import axios from "axios"
 import { DetallePedido } from "types/PaquetePedido"
+import cookie from "cookie"
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 /**
@@ -27,36 +25,39 @@ const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
  * const cart = await getOrSetCart()
  */
 export async function getOrSetCart() {
-  const cartId = cookies().get("_medusa_cart_id")?.value
-  let cart
+  let cookies: { _medusa_cart_id?: string } = {};
+  if (typeof document !== "undefined") {
+    cookies = cookie.parse(document.cookie);
+  }
+  const cartId = cookies["_medusa_cart_id"];
+  let cart;
+
 
   if (cartId) {
-    const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
-    cart = response.data
+    try {
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
+      cart = response.data
+    } catch (e) {
+      cart = null
+    }
   }
-
-  // const region = await getRegion(countryCode)
-
-  // if (!region) {
-  //   return null
-  // }
-
-  // const region_id = region.id
 
   if (!cart) {
     const response = await axios.post(`${baseUrl}/admin/pedido`, {
       "estado": "carrito",
     })
     cart = response.data.pedido
-    if (cart) {
+    if (cart && typeof document !== "undefined") {
       // console.log('Setting cookie with cart ID:', cart.id); // Log the cart ID for debugging
-
-      cookies().set('_medusa_cart_id', cart.id, {
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-        httpOnly: true,
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
-      });
+        return {
+          cart,
+          cookie: cookie.serialize('_medusa_cart_id', cart.id, {
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production',
+          }),
+      };
 
       // console.log('Cookie set successfully'); // Log success message
     } else {
@@ -71,11 +72,16 @@ export async function getOrSetCart() {
   //   revalidateTag("cart")
   // }
 
-  return cart
+  return {cart, cookie: null}
 }
 
 export async function retrieveCart(productos: boolean = false) {
-  const cartId = cookies().get("_medusa_cart_id")?.value
+  let cookies: { _medusa_cart_id?: string } = {};
+  if (typeof document !== "undefined") {
+    cookies = cookie.parse(document.cookie);
+  }
+  const cartId = cookies["_medusa_cart_id"];
+
 
   if (!cartId) {
     return null
@@ -109,7 +115,7 @@ export async function addToCart({
   cantidad: number
   precio: number
 }) {
-  const cart = await getOrSetCart()
+  const cart = (await getOrSetCart()).cart
 
   if (!cart) {
     return "Missing cart ID"
@@ -134,7 +140,12 @@ export async function updateLineItem({
   lineId: string
   quantity: number
 }) {
-  const cartId = cookies().get("_medusa_cart_id")?.value
+  let cookies: { _medusa_cart_id?: string } = {};
+  if (typeof document !== "undefined") {
+    cookies = cookie.parse(document.cookie);
+  }
+  const cartId = cookies["_medusa_cart_id"];
+  
 
   if (!cartId) {
     return "Missing cart ID"
@@ -157,8 +168,12 @@ export async function updateLineItem({
 }
 
 export async function deleteLineItem(lineId: string) {
-  const cartId = cookies().get("_medusa_cart_id")?.value
-
+  let cookies: { _medusa_cart_id?: string } = {};
+  if (typeof document !== "undefined") {
+    cookies = cookie.parse(document.cookie);
+  }
+  const cartId = cookies["_medusa_cart_id"];
+  
   if (!cartId) {
     return "Missing cart ID"
   }

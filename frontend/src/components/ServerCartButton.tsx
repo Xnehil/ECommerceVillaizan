@@ -1,3 +1,5 @@
+"use server";
+
 import { LineItem } from "@medusajs/medusa"
 
 import { enrichLineItems, getOrSetCart, retrieveCart } from "@modules/cart/actions"
@@ -6,8 +8,8 @@ import CartDropdown from "@modules/layout/components/cart-dropdown";
 import { DetallePedido, Pedido } from "types/PaquetePedido"
 
 const fetchCart = async (): Promise<Pedido> => {
-  const cart: Pedido = await (await getOrSetCart()).cart;
-  console.log(cart)
+  const cart: Pedido = await getOrSetCart();
+
   if (cart && cart.detalles && cart.detalles.length > 0) {
     const enrichedItems = await enrichLineItems(cart.detalles);
     cart.detalles = enrichedItems as DetallePedido[];
