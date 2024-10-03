@@ -4,10 +4,11 @@ import { clx } from "@medusajs/ui"
 
 import { getPercentageDiff } from "@lib/util/get-precentage-diff"
 import { CalculatedVariant } from "types/medusa"
+import { DetallePedido } from "types/PaquetePedido"
 
 type LineItemPriceProps = {
-  item: Omit<LineItem, "beforeInsert">
-  region: Region
+  item: Omit<DetallePedido, "beforeInsert">
+  region?: Region
   style?: "default" | "tight"
 }
 
@@ -17,8 +18,8 @@ const LineItemPrice = ({
   style = "default",
 }: LineItemPriceProps) => {
   const originalPrice =
-    (item.variant as CalculatedVariant).original_price * item.quantity
-  const hasReducedPrice = (item.total || 0) < originalPrice
+    (item.producto.precioEcommerce) * (item.cantidad || 1)
+  const hasReducedPrice = (item.subtotal || 0) < originalPrice
 
   return (
     <div className="flex flex-col gap-x-2 text-ui-fg-subtle items-end">
@@ -39,7 +40,7 @@ const LineItemPrice = ({
             </p>
             {style === "default" && (
               <span className="text-ui-fg-interactive">
-                -{getPercentageDiff(originalPrice, item.total || 0)}%
+                -{getPercentageDiff(originalPrice, item.subtotal || 0)}%
               </span>
             )}
           </>
@@ -50,11 +51,7 @@ const LineItemPrice = ({
           })}
           data-testid="product-price"
         >
-          {formatAmount({
-            amount: item.total || 0,
-            region: region,
-            includeTaxes: false,
-          })}
+          {item.subtotal}
         </span>
       </div>
     </div>
