@@ -23,12 +23,12 @@ export default async function PaginatedProducts({
 }) {
   console.log("PaginatedProducts component loaded");
   try {
-    console.log("Base URL:", baseUrl);
-    console.log("Fetching products from API...");
+    // console.log("Base URL:", baseUrl);
+    // console.log("Fetching products from API...");
   
     const response = await axios.get(`${baseUrl}/admin/producto`);
   
-    console.log("API response:", response);  // Verifica la respuesta de la API
+    // console.log("API response:", response);  // Verifica la respuesta de la API
   
     if (!response || !response.data || !response.data.productos) {
       console.error('Invalid response structure:', response);

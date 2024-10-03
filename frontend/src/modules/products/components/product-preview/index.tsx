@@ -22,7 +22,7 @@ export default async function ProductPreview({
   region?: Region
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  console.log("productPreview", productPreview)
+  // console.log("productPreview", productPreview)
   const response = await axios.get(`${baseUrl}/admin/producto/${productPreview.id}`)
   const pricedProduct: Producto =  response.data.producto
 

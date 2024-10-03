@@ -14,6 +14,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Thumbnail from "@modules/products/components/thumbnail"
 import Link from "next/link"
 import { Pedido } from "types/PaquetePedido"
+import { Producto } from "types/PaqueteProducto"
 
 const CartDropdown = ({
   cart: cartState,
@@ -24,6 +25,29 @@ const CartDropdown = ({
     undefined
   )
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
+  const productoFake : Producto = {
+    id: "1",
+    nombre: "Helado de fresa",
+    urlImagen: "https://picsum.photos/200/300",
+    precioA: 1000,
+    precioB: 2000,
+    precioC: 3000,
+    precioEcommerce: 4000,
+    cantMinPed: 1,
+    cantMaxPed: 10,
+    seVendeEcommerce: true,
+    subcategorias: [],
+    frutas: [],
+    inventarios: [],
+    codigo: "123456",
+    creadoEn:  new Date(),
+    actualizadoEn: new Date(),
+    desactivadoEn: new Date(),
+    descripcion: "Helado de fresa",
+    usuarioActualizacion: "admin",
+    usuarioCreacion: "admin",
+    estaActivo: true,
+  }
 
   const open = () => setCartDropdownOpen(true)
   const close = () => setCartDropdownOpen(false)
@@ -34,7 +58,7 @@ const CartDropdown = ({
     }, 0) || 0
 
   const itemRef = useRef<number>(totalItems || 0)
-  const defaultUrl = "https://via.placeholder.com/150"
+  const defaultUrl = "https://picsum.photos/200/300"
   const timedOpen = () => {
     open()
 
@@ -53,7 +77,7 @@ const CartDropdown = ({
 
   // Clean up the timer when the component unmounts
   useEffect(() => {
-    console.log("Cart state:", cartState);
+    // console.log("Cart state:", cartState);
     return () => {
       if (activeTimer) {
         clearTimeout(activeTimer)
@@ -108,9 +132,13 @@ const CartDropdown = ({
                 <div className="overflow-y-scroll max-h-[402px] px-4 grid grid-cols-1 gap-y-8 no-scrollbar p-px">
                   {cartState.detalles
                     .sort((a, b) => {
-                      return a.creadoEn > b.creadoEn ? -1 : 1
+                      const dateA = a.creadoEn ?? 0;
+                      const dateB = b.creadoEn ?? 0;
+                      return dateA > dateB ? -1 : 1;
                     })
-                    .map((item) => (
+                    .map((item) => {
+                      item.producto = item.producto ?? productoFake;
+                      return (
                       <div
                         className="grid grid-cols-[122px_1fr] gap-x-4"
                         key={item.id}
@@ -158,11 +186,12 @@ const CartDropdown = ({
                             className="mt-1"
                             data-testid="cart-item-remove-button"
                           >
-                            Remove
+                            Quitar
                           </DeleteButton>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
                 </div>
                 <div className="p-4 flex flex-col gap-y-4 text-small-regular">
                   <div className="flex items-center justify-between">
@@ -181,15 +210,15 @@ const CartDropdown = ({
                       {cartState.total}
                     </span>
                   </div>
-                  <LocalizedClientLink href="/carrito" passHref>
+                  <Link href="/carrito" passHref>
                     <Button
                       className="w-full"
                       size="large"
                       data-testid="go-to-cart-button"
                     >
-                      Go to cart
+                      Ir al carrito
                     </Button>
-                  </LocalizedClientLink>
+                  </Link>
                 </div>
               </>
             ) : (

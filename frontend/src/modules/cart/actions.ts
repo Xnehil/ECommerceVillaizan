@@ -15,6 +15,7 @@ import {
 import axios from "axios"
 import { DetallePedido } from "types/PaquetePedido"
 import cookie from "cookie"
+import { cookies } from "next/headers"
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 /**
@@ -25,18 +26,17 @@ const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
  * const cart = await getOrSetCart()
  */
 export async function getOrSetCart() {
-  let cookies: { _medusa_cart_id?: string } = {};
-  if (typeof document !== "undefined") {
-    cookies = cookie.parse(document.cookie);
-  }
-  const cartId = cookies["_medusa_cart_id"];
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+  console.log("Cart ID sacado de la cookie: ", cartId)
   let cart;
-
+  let cookieValue ="alreadysaved"
 
   if (cartId) {
     try {
-      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
-      cart = response.data
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      cart = response.data.pedido
+      // console.log("Cart sacado de la cookie: ", cart)
     } catch (e) {
       cart = null
     }
@@ -48,39 +48,32 @@ export async function getOrSetCart() {
     })
     cart = response.data.pedido
     if (cart) {
-      // console.log('Setting cookie with cart ID:', cart.id); // Log the cart ID for debugging
+      console.log('Setting cookie with cart ID:', cart.id, " and cookie")
+      cookies().set("_medusa_cart_id", cart.id, {
+        maxAge: 60 * 60 * 24 * 7, // 1 week
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production',
+      })
         return {
           cart,
-          cookie: cookie.serialize('_medusa_cart_id', cart.id, {
-            maxAge: 60 * 60 * 24 * 7, // 1 week
-            httpOnly: true,
-            sameSite: 'strict',
-            secure: process.env.NODE_ENV === 'production',
-          }),
+          cookie: cart.id,
       };
 
-      // console.log('Cookie set successfully'); // Log success message
+
     } else {
       console.error('Cart is null or undefined'); // Log error if cart is null or undefined
     }
-    revalidateTag("cart")
   }
-
-  // Esto es para temas de cambio de region. De momento no se usa
-  // if (cart && cart?.region_id !== region_id) {
-  //   await updateCart(cart.id, { region_id })
-  //   revalidateTag("cart")
-  // }
-
-  return {cart, cookie: null}
+  return {
+    cart,
+    cookie: cookieValue,
+  }
+  revalidateTag("cart")
 }
 
 export async function retrieveCart(productos: boolean = false) {
-  let cookies: { _medusa_cart_id?: string } = {};
-  if (typeof document !== "undefined") {
-    cookies = cookie.parse(document.cookie);
-  }
-  const cartId = cookies["_medusa_cart_id"];
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
 
 
   if (!cartId) {
@@ -115,7 +108,7 @@ export async function addToCart({
   cantidad: number
   precio: number
 }) {
-  const cart = (await getOrSetCart()).cart
+  const cart = (await getOrSetCart())?.cart
 
   if (!cart) {
     return "Missing cart ID"
@@ -141,11 +134,8 @@ export async function updateLineItem({
   lineId: string
   quantity: number
 }) {
-  let cookies: { _medusa_cart_id?: string } = {};
-  if (typeof document !== "undefined") {
-    cookies = cookie.parse(document.cookie);
-  }
-  const cartId = cookies["_medusa_cart_id"];
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
   
 
   if (!cartId) {
@@ -169,11 +159,8 @@ export async function updateLineItem({
 }
 
 export async function deleteLineItem(lineId: string) {
-  let cookies: { _medusa_cart_id?: string } = {};
-  if (typeof document !== "undefined") {
-    cookies = cookie.parse(document.cookie);
-  }
-  const cartId = cookies["_medusa_cart_id"];
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
   
   if (!cartId) {
     return "Missing cart ID"
