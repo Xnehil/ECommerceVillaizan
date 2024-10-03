@@ -16,8 +16,6 @@ export interface Producto extends EntidadBase {
     precioC: number;
     precioEcommerce: number;
     urlImagen: string;
-    cantMinPed: number;
-    cantMaxPed: number;
     descripcion?: string; // Optional field
     informacionNutricional?: string; // Optional field
     razonEliminacion?: string; // Optional field

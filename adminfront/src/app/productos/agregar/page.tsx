@@ -39,7 +39,8 @@ const AgregarPage: React.FC = () => {
     setIsLoading(true);
     console.log("Saving product");
     // create a codigo for the product
-    producto.current.codigo = Math.random().toString(36).substring(7);
+    producto.current.seVendeEcommerce = true;
+
     console.log(producto.current);
     try {
       const response = await axios.post(
