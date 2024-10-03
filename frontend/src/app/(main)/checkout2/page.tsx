@@ -10,11 +10,14 @@ import { getCheckoutStep } from "@lib/util/get-checkout-step"
 import { CartWithCheckoutStep } from "types/global"
 import { getCart, getCustomer } from "@lib/data"
 import CustomRectangle from "components/CustomRectangle"
-import CartClient from "./CartClient"
+import MetodoPagoClient from "./MetodoPagoClient"
+import { DetallePedido, Pedido } from "types/PaquetePedido"
+import { Usuario } from "types/PaqueteUsuario"
+import { Direccion } from "types/PaqueteEnvio"
 
 export const metadata: Metadata = {
-  title: "Cart",
-  description: "View your cart",
+  title: "Metodo de Pago",
+  description: "Revisa tu metodo de pago",
 }
 
 const fetchCart = async () => {
@@ -32,19 +35,136 @@ const fetchCart = async () => {
     return null
   }
 
-  if (cart?.items.length) {
+  /*if (cart?.items.length) {
     const enrichedItems = await enrichLineItems(cart?.items, cart?.region_id)
     cart.items = enrichedItems as LineItem[]
-  }
+  }*/
 
   cart.checkout_step = cart && getCheckoutStep(cart)
 
   return cart
 }
 
-export default async function Cart() {
+export default async function MetodoPago() {
   const cart = await fetchCart()
   const customer = await getCustomer()
+  const detallesPedido: DetallePedido[] = [
+    {
+      cantidad: 20,
+      subtotal: 100,
+      producto: {
+        id: "1",
+        nombre: "Paleta de Fresa",
+        precioC: 2.5,
+        codigo: "SKU-1",
+        descripcion: "Descripción del producto 1",
+        tipoProducto: undefined,
+        subcategorias: [],
+        frutas: [],
+        inventarios: [],
+        precioA: 0,
+        precioB: 0,
+        precioEcommerce: 0,
+        urlImagen: "",
+        cantMinPed: 0,
+        cantMaxPed: 0,
+        seVendeEcommerce: false,
+        creadoEn: new Date(),
+        actualizadoEn: new Date(),
+        desactivadoEn: null,
+        usuarioCreacion: "",
+        usuarioActualizacion: "",
+        estaActivo: false
+      },
+      pedido: undefined,
+      id: "",
+      creadoEn: undefined,
+      actualizadoEn: undefined,
+      desactivadoEn: null,
+      usuarioCreacion: "",
+      usuarioActualizacion: "",
+      estaActivo: false
+    },
+    {
+      cantidad: 10,
+      subtotal: 100,
+      producto: {
+        id: "1",
+        nombre: "Paleta de Banana",
+        precioC: 2.5,
+        codigo: "SKU-2",
+        descripcion: "Descripción del producto 2",
+        tipoProducto: undefined,
+        subcategorias: [],
+        frutas: [],
+        inventarios: [],
+        precioA: 0,
+        precioB: 0,
+        precioEcommerce: 0,
+        urlImagen: "",
+        cantMinPed: 0,
+        cantMaxPed: 0,
+        seVendeEcommerce: false,
+        creadoEn: new Date(),
+        actualizadoEn: new Date(),
+        desactivadoEn: null,
+        usuarioCreacion: "",
+        usuarioActualizacion: "",
+        estaActivo: false
+      },
+      pedido: undefined,
+      id: "",
+      creadoEn: undefined,
+      actualizadoEn: undefined,
+      desactivadoEn: null,
+      usuarioCreacion: "",
+      usuarioActualizacion: "",
+      estaActivo: false
+    },
+  ];
+  const pedido : Pedido = {
+    estado: "En proceso",
+    total: 100,
+    puntosOtorgados: 10,
+    metodosPago: [],
+    detalles: detallesPedido,
+    id: "",
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  }
 
-  return <CartClient cart={cart} customer={customer} />
+  const usuario : Usuario = {
+    nombre: "Juan",
+    apellido: "Perez",
+    conCuenta: true,
+    correo: "",
+    contrasena: "",
+    persona: undefined,
+    id: "",
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  }
+
+  const direccion: Direccion = {
+    id: "",
+    calle: "Av. Siempre Viva",
+    numeroExterior: "742",
+    distrito: "Springfield",
+    codigoPostal: "12345",
+    ciudad: undefined,
+    ubicacion: undefined,
+    envios: [],
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  };
+
+
+
+  return <MetodoPagoClient pedido={pedido} usuario={usuario} direccion={direccion}/>
 }

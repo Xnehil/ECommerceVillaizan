@@ -44,7 +44,6 @@
     "react": "^18.2.0",
     "react-country-flag": "^3.0.2",
     "react-dom": "^18.2.0",
-    "react-feather": "^2.0.10",
     "react-instantsearch-hooks-web": "^6.29.0",
     "react-intersection-observer": "^9.3.4",
     "tailwindcss-radix": "^2.8.0",
