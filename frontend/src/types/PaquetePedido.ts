@@ -26,6 +26,7 @@ export interface Motorizado extends EntidadBase { // Placeholder, replace if nec
 
 
 export interface MetodoPago extends EntidadBase { // Placeholder, replace if necessary
+    nombre: string;
     pedidos: Pedido[]; // Many-to-many relationship
 }
 

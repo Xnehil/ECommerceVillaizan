@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import EntregaPopup from './EntregaPopup'; // Asegúrate de importar el componente EntregaPopup
 import BuscandoPopup from './BuscandoPopup';
 import Link from "next/link"
-import { DetallePedido } from 'types/PaquetePedido';
+import { DetallePedido, MetodoPago, Pedido } from 'types/PaquetePedido';
 import { Direccion } from 'types/PaqueteEnvio';
 import { Usuario } from 'types/PaqueteUsuario';
-
+import axios from "axios"
 
 interface ResumenCompraProps {
   descuento: number;
@@ -14,12 +14,17 @@ interface ResumenCompraProps {
   noCostoEnvio: boolean;
   paymentAmount: number | null;
   selectedImageId: string | null;
-  onTotalChange: React.Dispatch<React.SetStateAction<number>>;
-  onVueltoChange: React.Dispatch<React.SetStateAction<number>>;
-  // Add detallePedidos here
-  detalles: DetallePedido[];
+  total: number;  
+  vuelto: number;
   direccion: Direccion;
   usuario: Usuario;
+  pedido: Pedido;
+}
+
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+
+if (!baseUrl) {
+  console.error("NEXT_PUBLIC_MEDUSA_BACKEND_URL is not defined");
 }
 
 const ResumenCompra: React.FC<ResumenCompraProps> = ({
@@ -28,16 +33,17 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   noCostoEnvio,
   paymentAmount,
   selectedImageId,
-  onTotalChange,
-  onVueltoChange,
-  detalles,
+  total,
+  vuelto,
   direccion,
-  usuario
+  usuario,
+  pedido
 }) => {
   const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
   const [showBuscandoPopup, setShowBuscandoPopup] = useState(false);
   const isButtonDisabled = !selectedImageId || !seleccionado; // Deshabilitar el botón si no hay una imagen seleccionada
+  const detalles: DetallePedido[] = pedido ? pedido.detalles : [];
 
 
   const calcularSubtotal = () => {
@@ -61,10 +67,65 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
     setSeleccionado(!seleccionado); // Cambia el estado entre true y false
   };
 
-  const handleConfirmar = () => {
-    // Lógica adicional al confirmar, si es necesario
+  const buscarPedido = async (id: string) => {
+    const response = await axios.get(`${baseUrl}/admin/pedido/${id}`);
+    const pedido = response.data.pedido;
+    if(pedido){
+      console.log("Pedido encontrado");
+      console.log(pedido);
+      return pedido;
+    }
+    console.log("Pedido no encontrado");
+    return null
+  }
+
+  const crearPedido = async () => {
+    const response = await axios.post(`${baseUrl}/admin/pedido`, pedido);
+    const pedidoRespuesta = response.data.pedido;
+    console.log("Pedido creado correctamente");
+    console.log(pedidoRespuesta);
+    return pedidoRespuesta;
+  }
+
+  const handleConfirmar = async () => {
+
     setShowPopup(false);
     setShowBuscandoPopup(true);
+    /*
+    const {detalles, ...pedidoSinDetalles} = pedido;
+    const pedido2 = {...pedidoSinDetalles, detalles: []};
+    console.log("Pedido a confirmar", pedido2);
+    let pedidoBD = null;
+    if (pedido && pedido.id) {
+      const idBuscar = pedido.id;
+      pedidoBD = await buscarPedido(idBuscar);
+    } else {
+      pedidoBD = await crearPedido();
+    }
+    pedidoBD.estado = "solicitado";
+    const metodoPago : MetodoPago = {
+      id: "mp_01J99CS1H128G2P7486ZB5YACH",
+      nombre: '',
+      pedidos: [],
+      desactivadoEn: null,
+      usuarioCreacion: '',
+      usuarioActualizacion: '',
+      estaActivo: false
+    };
+    // Ensure metodoPago is defined
+    if (!pedidoBD.metodosPago) {
+      pedidoBD.metodosPago = {metodoPago};
+    }
+    pedidoBD.montoEfectivoPagar = paymentAmount;
+    pedidoBD.codigoSeguimiento = "123456";
+    console.log("Pedido ha guardar", pedidoBD);
+    const response = await axios.put(`${baseUrl}/admin/pedido/${pedidoBD.id}`, pedidoBD);
+    if(response.data){
+      //setShowBuscandoPopup(false);
+      console.log("Pedido creado correctamente");
+      console.log(response.data);
+    }
+      */
   };
 
   const handleCloseBuscandoPopup = () => {
@@ -110,7 +171,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
 
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '5px' }}>
         <span style={{ color: 'black' }}>Total</span>
-        <span style={{ color: '#B88E2F' }}>S/. {calcularTotal().toFixed(2)}</span>
+        <span style={{ color: '#B88E2F' }}>S/. {total.toFixed(2)}</span>
       </div>
       <hr style={{ margin: '10px 0' }} />
       {/* Mostrar paymentAmount si está presente */}
@@ -122,7 +183,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
             <span>Vuelto</span>
-            <span>S/. {calcularVuelto().toFixed(2)}</span>
+            <span>S/. {vuelto.toFixed(2)}</span>
           </div>
           <hr style={{ margin: '10px 0' }} />
         </>

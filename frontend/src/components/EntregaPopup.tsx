@@ -4,7 +4,6 @@ import { DetallePedido } from 'types/PaquetePedido';
 interface EntregaPopupProps {
   direccion: string;
   nombre: string;
-  //productos: { nombre: string; cantidad: number }[];
   detalles: DetallePedido[];
   subtotal: number;
   metodoPago: string;
@@ -98,7 +97,7 @@ const styles = {
     backgroundColor: 'white',
     borderRadius: '15px',
     padding: '20px',
-    width: '300px',
+    width: '350px', // Definimos la anchura aquí
     textAlign: 'center' as 'center',
   },
   buttonContainer: {

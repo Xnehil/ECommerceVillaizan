@@ -19,8 +19,9 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
   const [showPopup, setShowPopup] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
-  const [total, setTotal] = useState<number>(0);
-  const [vuelto, setVuelto] = useState<number>(0);
+  const descuento = 10;
+  const costoEnvio = 5;
+  const noCostoEnvio = true;
 
   const handleImageClick = (id: string | null) => {
     if (id === "pagoEfec") {
@@ -45,6 +46,21 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
   const handleBackClick = () => {
     window.history.back();
   };
+
+  const calcularTotal = () => {
+    return calcularSubtotal() - descuento + (noCostoEnvio ? 0 : costoEnvio);
+  };
+
+  const calcularSubtotal = () => {
+    return pedido.detalles.reduce((acc, detalle) => acc + detalle.producto.precioC * detalle.cantidad, 0);
+  };
+
+  const calcularVuelto = () => {
+    return paymentAmount ? paymentAmount - calcularTotal() : 0;
+  }
+
+  const total = calcularTotal();
+  const vuelto = calcularVuelto();
 
   return (
     <>
@@ -81,16 +97,16 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
 
         <div style={{ marginRight: "180px", marginTop: "-20px", marginBottom: "40px" }}>
           <ResumenCompra
-            descuento={10}
-            costoEnvio={5}
-            noCostoEnvio={true}
+            descuento={descuento}
+            costoEnvio={costoEnvio}
+            noCostoEnvio={noCostoEnvio}
             paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null}
             selectedImageId={selectedImageId}
-            onTotalChange={setTotal}
-            onVueltoChange={setVuelto}
-            detalles = {pedido.detalles}
+            total={total}
+            vuelto={vuelto}
             direccion={direccion}
             usuario={usuario}
+            pedido={pedido}
           />
         </div>
       </div>
