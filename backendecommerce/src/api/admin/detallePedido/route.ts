@@ -3,7 +3,7 @@ import type {
     MedusaResponse,
 } from "@medusajs/medusa";
 
-import DetallePedidoService from "../../../services/DetallePedido";
+import DetallePedidoService from "@services/DetallePedido";
 import { DetallePedido } from "src/models/DetallePedido";
 
 /**
@@ -15,7 +15,7 @@ import { DetallePedido } from "src/models/DetallePedido";
 
 /**
  * @swagger
- * /detallePedidos:
+ * /detallePedido:
  *   get:
  *     summary: Lista todos los detalles de pedidos con paginación
  *     tags: [DetallePedidos]
@@ -46,7 +46,7 @@ export const GET = async (
 
 /**
  * @swagger
- * /detalles-pedido:
+ * /detallePedido:
  *   post:
  *     summary: Crea un nuevo detalle de pedido
  *     tags: [DetallesPedido]
@@ -87,7 +87,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /detallePedidos/{id}:
+ * /detallePedido/{id}:
  *   get:
  *     summary: Recupera un detalle de pedido por ID
  *     tags: [DetallePedidos]
@@ -126,7 +126,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /detallePedidos/{id}:
+ * /detallePedido/{id}:
  *   put:
  *     summary: Actualiza un detalle de pedido por ID
  *     tags: [DetallePedidos]
@@ -178,7 +178,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /detallePedidos/{id}:
+ * /detallePedido/{id}:
  *   delete:
  *     summary: Elimina un detalle de pedido por ID
  *     tags: [DetallePedidos]

@@ -15,7 +15,7 @@ import { Persona } from "src/models/Persona";
 
 /**
  * @swagger
- * /personas:
+ * /persona:
  *   get:
  *     summary: Lista todas las personas con paginación
  *     tags: [Personas]
@@ -87,7 +87,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /personas/{id}:
+ * /persona/{id}:
  *   get:
  *     summary: Recupera una persona por ID
  *     tags: [Personas]
@@ -126,7 +126,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /personas/{id}:
+ * /persona/{id}:
  *   put:
  *     summary: Actualiza una persona por ID
  *     tags: [Personas]
@@ -178,7 +178,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /personas/{id}:
+ * /persona/{id}:
  *   delete:
  *     summary: Elimina una persona por ID
  *     tags: [Personas]

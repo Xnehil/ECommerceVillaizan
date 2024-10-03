@@ -15,7 +15,7 @@ import { MetodoPago } from "src/models/MetodoPago";
 
 /**
  * @swagger
- * /metodopagos:
+ * /metodoPago:
  *   get:
  *     summary: Lista todos los métodos de pago con paginación
  *     tags: [MetodoPagos]
@@ -45,7 +45,7 @@ export const GET = async (
 };
 /**
  * @swagger
- * /metodo-pago:
+ * /metodoPago:
  *   post:
  *     summary: Crea un nuevo método de pago
  *     tags: [MetodoPago]
@@ -85,7 +85,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /metodopagos/{id}:
+ * /metodoPago/{id}:
  *   get:
  *     summary: Recupera un método de pago por ID
  *     tags: [MetodoPagos]
@@ -124,7 +124,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /metodopagos/{id}:
+ * /metodoPago/{id}:
  *   put:
  *     summary: Actualiza un método de pago por ID
  *     tags: [MetodoPagos]
@@ -176,7 +176,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /metodopagos/{id}:
+ * /metodoPago/{id}:
  *   delete:
  *     summary: Elimina un método de pago por ID
  *     tags: [MetodoPagos]

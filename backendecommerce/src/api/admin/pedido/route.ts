@@ -15,7 +15,7 @@ import { Pedido } from "src/models/Pedido";
 
 /**
  * @swagger
- * /pedidos:
+ * /pedido:
  *   get:
  *     summary: Lista todos los pedidos con paginación
  *     tags: [Pedidos]

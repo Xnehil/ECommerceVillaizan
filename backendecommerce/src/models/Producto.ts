@@ -64,12 +64,6 @@ export class Producto extends EntidadBase {
     @Column({name: "urlimagen"})
     urlImagen: string
 
-    @Column({ type: "int" , name: "cantminped"})
-    cantMinPed: number
-
-    @Column({ type: "int" , name: "cantmaxped"})
-    cantMaxPed: number
-
     @Column("text", { nullable: true })
     descripcion: string
 

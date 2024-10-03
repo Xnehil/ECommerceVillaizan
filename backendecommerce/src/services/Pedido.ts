@@ -61,6 +61,18 @@ class PedidoService extends TransactionBaseService {
         return pedido;
     }
 
+    async recuperarConDetalle(id: string): Promise<Pedido> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const query = buildQuery({ id }, { relations: ["detalles"] });
+        const pedido = await pedidoRepo.findOne(query);
+
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedido;
+    }
+
     async crear(pedido: Pedido): Promise<Pedido> {
         return this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
@@ -90,6 +102,28 @@ class PedidoService extends TransactionBaseService {
             pedido.desactivadoEn = new Date();
             return await pedidoRepo.save(pedido);
         });
+    }
+
+    async listarPorUsuario(idUsuario: string): Promise<Pedido[]> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedidos = await pedidoRepo.findByUsuarioId(idUsuario);
+
+        if (!pedidos) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedidos;
+    }
+
+    async listarPorMotorizado(idMotorizado: string): Promise<Pedido[]> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedidos = await pedidoRepo.findByMotorizadoId(idMotorizado);
+
+        if (!pedidos) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedidos;
     }
 
 }

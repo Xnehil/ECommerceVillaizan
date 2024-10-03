@@ -171,6 +171,7 @@ const options = {
                 codigo: {
                   type: 'string',
                   example: 'PROD12345',
+                  nullable: true,
                 },
                 nombre: {
                   type: 'string',

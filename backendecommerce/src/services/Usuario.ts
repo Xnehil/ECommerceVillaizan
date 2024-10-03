@@ -3,13 +3,20 @@ import { Usuario } from "../models/Usuario";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import usuarioRepository from "src/repositories/Usuario";
+import MotorizadoRepository from "@repositories/Motorizado";
+import PedidoRepository from "@repositories/Pedido";
+import { Pedido } from "../models/Pedido";
 
 class UsuarioService extends TransactionBaseService {
     protected usuarioRepository_: typeof usuarioRepository;
+    protected motorizadoRepository_: typeof MotorizadoRepository;
+    protected pedidoRepository_: typeof PedidoRepository;
 
     constructor(container) {
         super(container);
         this.usuarioRepository_ = container.usuarioRepository;
+        this.motorizadoRepository_ = container.motorizadoRepository;
+        this.pedidoRepository_ = container.pedidoRepository;
     }
 
     getMessage() {
@@ -91,6 +98,21 @@ class UsuarioService extends TransactionBaseService {
             return await usuarioRepo.save(usuario);
         });
     }
+
+    async listarPedidosRepartidor(id_usuario: string): Promise<Pedido[]> {
+        const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const motorizado = await motorizadoRepo.findByUsuarioId(id_usuario);
+        if (!motorizado) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
+        }
+        const pedidos = await pedidoRepo.findByMotorizadoId(motorizado.id);
+        if (!pedidos) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedidos no encontrados");
+        }
+        return pedidos;
+    }
+
 }
 
 export default UsuarioService;

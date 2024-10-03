@@ -7,13 +7,16 @@ import {
     ManyToMany,
     JoinTable,
     ManyToOne,
-    JoinColumn
+    JoinColumn,
+    OneToMany
 } from "typeorm"
 import { generateEntityId } from "@medusajs/medusa/dist/utils"
 import { EntidadBase } from "./EntidadBase"
 import { MetodoPago } from "./MetodoPago";
 import { Motorizado } from "./Motorizado";
 import { Direccion } from "./Direccion";
+import { DetallePedido } from "./DetallePedido";
+import { Usuario } from "./Usuario";
 
 @Entity("vi_pedido")
 export class Pedido extends EntidadBase {
@@ -56,9 +59,9 @@ export class Pedido extends EntidadBase {
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_usuario" })
     // idUsuario: string
 
-    // @ManyToOne(() => Usuario, usuario => usuario.id)
-    // @JoinColumn({ name: "id_usuario" })
-    // usuario: Usuario;
+    @ManyToOne(() => Usuario, usuario => usuario.id)
+    @JoinColumn({ name: "id_usuario" })
+    usuario: Usuario;
 
     @ManyToMany(() => MetodoPago, metodoPago => metodoPago.pedidos)
     @JoinTable(
@@ -69,6 +72,9 @@ export class Pedido extends EntidadBase {
         }
     )
     metodosPago: MetodoPago[];
+
+    @OneToMany(() => DetallePedido, detallePedido => detallePedido.pedido)
+    detalles: DetallePedido[];
 
 
     @BeforeInsert()

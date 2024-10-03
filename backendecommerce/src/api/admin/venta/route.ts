@@ -15,7 +15,7 @@ import { Venta } from "src/models/Venta";
 
 /**
  * @swagger
- * /ventas:
+ * /venta:
  *   get:
  *     summary: Lista todas las ventas con paginación
  *     tags: [Ventas]
@@ -87,7 +87,7 @@ export const POST = async (
 
 /**
  * @swagger
- * /ventas/{id}:
+ * /venta/{id}:
  *   get:
  *     summary: Recupera una venta por ID
  *     tags: [Ventas]
@@ -126,7 +126,7 @@ export const GET_BY_ID = async (
 
 /**
  * @swagger
- * /ventas/{id}:
+ * /venta/{id}:
  *   put:
  *     summary: Actualiza una venta por ID
  *     tags: [Ventas]
@@ -178,7 +178,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /ventas/{id}:
+ * /venta/{id}:
  *   delete:
  *     summary: Elimina una venta por ID
  *     tags: [Ventas]
