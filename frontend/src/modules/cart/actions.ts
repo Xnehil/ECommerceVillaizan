@@ -47,7 +47,7 @@ export async function getOrSetCart() {
       "estado": "carrito",
     })
     cart = response.data.pedido
-    if (cart && typeof document !== "undefined") {
+    if (cart) {
       // console.log('Setting cookie with cart ID:', cart.id); // Log the cart ID for debugging
         return {
           cart,
@@ -128,6 +128,7 @@ export async function addToCart({
   try {
     await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio}) //Esto ya está modificado
     revalidateTag("cart")
+    console.log("Item ", idProducto, " added to cart")
   } catch (e) {
     return "Error adding item to cart"
   }
