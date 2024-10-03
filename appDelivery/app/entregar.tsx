@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import SwipeButton from "rn-swipe-button";
+import axios from 'axios';
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import TabBarIcon from "@/components/StyledIcon";
 
@@ -17,9 +18,11 @@ type Producto = {
   cantidad: number;
 };
 
-const EntregarPedido = () => {
+const EntregarPedido = async () => {
   const route = useRoute();
   const { pedido } = route.params as { pedido: string };
+
+
 
   const parsedPedido = JSON.parse(decodeURIComponent(pedido));
 

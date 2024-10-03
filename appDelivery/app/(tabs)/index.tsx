@@ -10,6 +10,7 @@ import {
 import { MaterialIcons } from "@expo/vector-icons"; // Asegúrate de tener esta librería instalada
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Link, useNavigation } from "@react-navigation/native";
+import axios from "axios";
 
 function Icon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -32,6 +33,21 @@ function Icon(props: {
 
 export default function TabOneScreen() {
   const [isConnected, setIsConnected] = useState(false);
+  const [motorizado, setMotorizado] = useState({});
+  const [loading, setLoading] = useState(true); 
+
+  const obtenerMotorizado = async () => {
+    try {
+      const response = await axios.get('http://localhost:9000/admin/motorizado/');
+      // Extrae el primer motorizado
+      const repartidor = response.data.motorizadoes[0];
+      setMotorizado(repartidor); 
+    } catch (error) {
+      console.error('Error al obtener motorizado:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleSwitch = () => setIsConnected((previousState) => !previousState);
 
@@ -146,7 +162,7 @@ const styles = StyleSheet.create({
   },
   card_inside: {
     flexDirection: "row",
-    flex:0,
+    flex: 1,
   },
   cardText: {
     marginHorizontal: 10,
