@@ -10,6 +10,7 @@ interface InputWithLabelProps {
   // value: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   accept?: string;
+  required?: boolean;
 }
 
 const InputWithLabel: React.FC<InputWithLabelProps> = ({
@@ -18,10 +19,13 @@ const InputWithLabel: React.FC<InputWithLabelProps> = ({
   placeholder,
   onChange,
   accept,
+  required = false,
 }) => {
   return (
     <div className="grid w-full max-w-sm items-center space-y-2">
-      <Label>{label}</Label>
+      <Label>
+        {label} {required && <span className="text-red-500"> *</span>}
+      </Label>
       <Input
         type={type}
         placeholder={placeholder}

@@ -10,18 +10,22 @@ interface TextAreaWithLabelProps {
   placeholder?: string;
   maxLength?: number;
   // value: string;
-  // onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
 const TextAreaWithLabel: React.FC<TextAreaWithLabelProps> = ({
   label,
   placeholder,
   maxLength = 300,
+  onChange,
 }) => {
   const [currentValue, setCurrentValue] = useState("");
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCurrentValue(event.target.value);
+    if (onChange) {
+      onChange(event);
+    }
   };
   return (
     <div className="grid w-full max-w-sm items-center space-y-2">
