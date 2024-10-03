@@ -1,70 +1,160 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Switch,
+  Pressable,
+} from "react-native";
+import { MaterialIcons } from "@expo/vector-icons"; // Asegúrate de tener esta librería instalada
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Link, useNavigation } from "@react-navigation/native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
-export default function HomeScreen() {
+function Icon(props: {
+  name: React.ComponentProps<typeof Ionicons>["name"];
+  color: string;
+  imgSize: number;
+  marginVertical: number;
+  marginHorizontal: number;
+}) {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <Ionicons
+      size={props.imgSize}
+      style={{
+        marginVertical: props.marginVertical,
+        marginHorizontal: props.marginHorizontal,
+      }}
+      {...props}
+    />
+  );
+}
+
+export default function TabOneScreen() {
+  const [isConnected, setIsConnected] = useState(false);
+
+  const toggleSwitch = () => setIsConnected((previousState) => !previousState);
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Icon
+          name="menu"
+          color={"white"}
+          imgSize={24}
+          marginVertical={0}
+          marginHorizontal={0}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <Text style={styles.statusText}>
+          Estás {isConnected ? "conectado" : "desconectado"}
+        </Text>
+        <Switch
+          value={isConnected}
+          onValueChange={toggleSwitch}
+          thumbColor={isConnected ? "#E0AC00" : "#000"}
+          trackColor={{ false: "#e4e4e4", true: "#E0AC00" }}
+        />
+      </View>
+
+      <Text style={styles.greeting}>Hola Santiago Castro!</Text>
+      <Text style={styles.instructions}>
+        Ten en cuenta estos datos, son muy importantes para la asignación de
+        órdenes
+      </Text>
+
+      <Link to={"/deliverys"} style={styles.card}>
+        <Pressable style={styles.card_inside}>
+          <MaterialIcons name="list-alt" size={24} color="white" />
+          <View style={styles.cardText}>
+            <Text style={[styles.cardTitle, styles.cardContent]}>
+              Ver mis entregas
+            </Text>
+            <Text style={styles.cardContent}>
+              Ver tus entregas activas y todos los disponibles
+            </Text>
+          </View>
+        </Pressable>
+      </Link>
+      <TouchableOpacity style={styles.card}>
+        <MaterialIcons name="directions-car" size={24} color="white" />
+        <View style={styles.cardText}>
+          <Text style={[styles.cardTitle, styles.cardContent]}>
+            Definir vehículo
+          </Text>
+          <Text style={styles.cardContent}>
+            Define el vehículo de la empresa con el que repartirás los pedidos
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.card}>
+        <MaterialIcons name="inventory" size={24} color="white" />
+        <View style={styles.cardText}>
+          <Text style={[styles.cardTitle, styles.cardContent]}>
+            Actualizar Inventario
+          </Text>
+          <Text style={styles.cardContent}>
+            Ingresa la cantidad disponible de cada producto
+          </Text>
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#f7f7f7", // Fondo claro
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  cardContent: {
+    color: "#fff",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#aa0000", // Color de fondo del encabezado
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  statusText: {
+    color: "#ffffff", // Color del texto del estado
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  greeting: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  instructions: {
+    marginBottom: 20,
+    fontSize: 16,
+    color: "#555",
+  },
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#aa0000",
+    padding: 15,
+    borderRadius: 10,
+    elevation: 3,
+    marginBottom: 15,
+  },
+  card_inside: {
+    flexDirection: "row",
+    flex:0,
+  },
+  cardText: {
+    marginHorizontal: 10,
+    flex: 1,
+    color: "#000000",
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
