@@ -34,9 +34,9 @@ const PaymentPopup: React.FC<PaymentPopupProps> = ({ totalPagar, onConfirm, onCl
           onChange={(e) => setPaymentAmount(Number(e.target.value))} 
           style={styles.input}
         />
-        <div style={styles.buttonContainer}>
-          <button onClick={onClose} style={styles.button}>Volver</button>
-          <button onClick={handleConfirm} style={styles.button}>Confirmar</button>
+        <div style={{ ...styles.buttonContainer, flexDirection: 'column', gap: '10px' }}>
+          <button onClick={handleConfirm} style={styles.confirmButton}>Confirmar</button>
+          <button onClick={onClose} style={styles.cancelButton}>Volver</button>
         </div>
       </div>
     </div>
@@ -77,11 +77,20 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
   },
-  button: {
+  confirmButton: {
     padding: '10px 20px',
     borderRadius: '5px',
     border: 'none',
     cursor: 'pointer',
+    backgroundColor: 'black',
+    color: 'white',
+  },
+  cancelButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    backgroundColor: 'white',
+    color: 'red',
   },
 };
 

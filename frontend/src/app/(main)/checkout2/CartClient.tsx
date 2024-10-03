@@ -105,7 +105,6 @@ export default function CartClient({ cart, customer }: CartClientProps) {
             productos={productos}
             descuento={10}
             costoEnvio={5}
-            textoCustomizado="Tu data personal será usada para mejorar tu experiencia en esta página, para otros propósitos revisar el privacy policy."
             noCostoEnvio = {true}
             paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null} // Pasar paymentAmount solo si pagoEfec está seleccionado
             selectedImageId={selectedImageId}

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+
 import EntregaPopup from './EntregaPopup'; // Asegúrate de importar el componente EntregaPopup
+import BuscandoPopup from './BuscandoPopup';
+import Link from "next/link"
 
 interface Producto {
   nombre: string;
@@ -11,16 +14,15 @@ interface ResumenCompraProps {
   productos: Producto[];
   descuento: number;
   costoEnvio: number;
-  textoCustomizado: string;
   noCostoEnvio: boolean;  // Nuevo argumento
   paymentAmount?: number | null;  // Nueva prop para el monto de pago
   selectedImageId: string | null;  // Nueva prop para el ID de la imagen seleccionada
 }
 
-
-const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, textoCustomizado, noCostoEnvio, paymentAmount,selectedImageId  }) => {
+const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, noCostoEnvio, paymentAmount, selectedImageId }) => {
   const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
+  const [showBuscandoPopup, setShowBuscandoPopup] = useState(false);
   const isButtonDisabled = !selectedImageId || !seleccionado; // Deshabilitar el botón si no hay una imagen seleccionada
 
 
@@ -35,7 +37,6 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
   const calcularVuelto = () => {
     return paymentAmount ? paymentAmount - calcularTotal() : 0;
   }
-  
 
   const toggleSeleccion = () => {
     setSeleccionado(!seleccionado); // Cambia el estado entre true y false
@@ -44,6 +45,19 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
   const handleConfirmar = () => {
     // Lógica adicional al confirmar, si es necesario
     setShowPopup(false);
+    setShowBuscandoPopup(true);
+  };
+
+  const handleCloseBuscandoPopup = () => {
+    setShowBuscandoPopup(false);
+  };
+
+  const handleRedirect = () => {
+    //history.push('/terminos/page');
+    return (
+      <Link href="/terminos">
+      </Link>
+    );
   };
 
   return (
@@ -75,8 +89,6 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
         </span>
       </div>
 
-      
-
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '5px' }}>
         <span style={{ color: 'black' }}>Total</span>
         <span style={{ color: '#B88E2F' }}>S/. {calcularTotal().toFixed(2)}</span>
@@ -96,8 +108,8 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
           <hr style={{ margin: '10px 0' }} />
         </>
       )}
-      
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} onClick={toggleSeleccion}>
+
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }} >
         <div
           style={{
             width: '20px',
@@ -108,11 +120,18 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
             backgroundColor: seleccionado ? 'black' : 'transparent',
             cursor: 'pointer',
           }}
+          onClick={toggleSeleccion}
         />
-        <span style={{ cursor: 'pointer' }}>He leído y acepto los términos y condiciones</span>
+        <span>He leído y acepto los&nbsp;</span>
+        <Link href="/terminos" passHref>
+          <span style={{ cursor: 'pointer', textDecoration: 'underline' }}>términos y condiciones</span>
+        </Link>
       </div>
-      <div>
-        <small>{textoCustomizado}</small>
+      <div style ={{marginTop: "20px",marginBottom: "20px"}}>
+        <span>Tu data personal será usada para mejorar tu experiencia en esta página, para otros propósitos revisar la </span>
+        <Link href="/terminos" passHref>
+          <span style={{ cursor: 'pointer', textDecoration: 'underline' }}>Política de Privacidad</span>
+        </Link>
       </div>
 
       <button
@@ -142,11 +161,10 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
           if (!isButtonDisabled) {
             setShowPopup(true); // Abre el popup al hacer clic solo si no está deshabilitado
           }
-        }} 
+        }}
       >
         Comprar
       </button>
-
 
       {/* Popup de Entrega */}
       {showPopup && (
@@ -159,7 +177,13 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
           onConfirm={handleConfirmar}
           onClose={() => setShowPopup(false)}
           selectedImageId={selectedImageId}
-          paymentAmount={paymentAmount ?? null} 
+          paymentAmount={paymentAmount ?? null}
+        />
+      )}
+      {showBuscandoPopup && (
+        <BuscandoPopup
+          onClose={handleCloseBuscandoPopup}
+          customText="¡Buscando repartidor!"
         />
       )}
     </div>

@@ -162,7 +162,7 @@ export const PUT = async (
 
 /**
  * @swagger
- * /libroreclamaciones/{id}:
+ * /libroReclamaciones/{id}:
  *   delete:
  *     summary: Eliminar libro de reclamaciones
  *     description: Elimina un libro de reclamaciones específico por su ID.
