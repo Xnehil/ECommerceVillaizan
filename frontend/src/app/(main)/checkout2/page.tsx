@@ -16,8 +16,8 @@ import { Usuario } from "types/PaqueteUsuario"
 import { Direccion } from "types/PaqueteEnvio"
 
 export const metadata: Metadata = {
-  title: "Cart",
-  description: "View your cart",
+  title: "Metodo de Pago",
+  description: "Revisa tu metodo de pago",
 }
 
 const fetchCart = async () => {
@@ -45,7 +45,7 @@ const fetchCart = async () => {
   return cart
 }
 
-export default async function Cart() {
+export default async function MetodoPago() {
   const cart = await fetchCart()
   const customer = await getCustomer()
   const detallesPedido: DetallePedido[] = [

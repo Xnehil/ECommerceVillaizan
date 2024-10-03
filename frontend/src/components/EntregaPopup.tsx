@@ -37,13 +37,19 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
           <strong>{nombre}</strong>
         </p>
         <p style={{ textAlign: 'left' }}>Pedido:</p>
-        {detalles.map((detalle, index) => (
-          <p style={{ textAlign: 'left' }} key={index}>
-            <strong>
-              {detalle.cantidad} {detalle.producto.nombre}
-            </strong>
-          </p>
-        ))}
+        {detalles.map((detalle, index) => {
+          let nombreProducto = detalle.producto.nombre;
+          if (detalle.cantidad > 1 && nombreProducto.includes("Paleta")) {
+            nombreProducto = nombreProducto.replace("Paleta", "Paletas");
+          }
+          return (
+            <p style={{ textAlign: 'left' }} key={index}>
+              <strong>
+                {detalle.cantidad} {nombreProducto}
+              </strong>
+            </p>
+          );
+        })}
         <p style={{ textAlign: 'left' }}>Subtotal:</p>
         <p style={{ textAlign: 'left' }}>
           <strong>S/. {subtotal.toFixed(2)}</strong>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import CustomRectangle from "components/CustomRectangle";
 import PaymentPopup from "components/PaymentPopup";
 import ResumenCompra from "components/ResumenCompra";
+import BackButton from "components/BackButton";
 import { Pedido } from "types/PaquetePedido";
 import { Usuario } from "types/PaqueteUsuario";
 import { Direccion } from "types/PaqueteEnvio";
@@ -41,28 +42,14 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
     setPaymentAmount(null);
   };
 
-  const productos = [
-    { nombre: 'Producto 1', cantidad: 2, precio: 50 },
-    { nombre: 'Producto 2', cantidad: 1, precio: 30 },
-  ];
+  const handleBackClick = () => {
+    window.history.back();
+  };
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "80px" }}>
-        {/*<button
-          style={{
-            display: "flex",
-            alignItems: "center",
-            backgroundColor: "transparent",
-            border: "none",
-            color: "#0070f3",
-            cursor: "pointer",
-          }}
-          onClick={() => window.history.back()}
-        >
-          <ArrowLeft size={16} style={{ marginRight: "8px" }} />
-          Volver
-        </button>*/}
+      <div style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "60px" }}>
+          <BackButton onClick={handleBackClick} />
       </div>
 
       <h1 style={{ marginTop: "20px", fontSize: "24px", fontWeight: "bold", paddingLeft: "80px" }}>Método Pago</h1>
