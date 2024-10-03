@@ -16,6 +16,7 @@ import { MetodoPago } from "./MetodoPago";
 import { Motorizado } from "./Motorizado";
 import { Direccion } from "./Direccion";
 import { DetallePedido } from "./DetallePedido";
+import { Usuario } from "./Usuario";
 
 @Entity("vi_pedido")
 export class Pedido extends EntidadBase {
@@ -58,9 +59,9 @@ export class Pedido extends EntidadBase {
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_usuario" })
     // idUsuario: string
 
-    // @ManyToOne(() => Usuario, usuario => usuario.id)
-    // @JoinColumn({ name: "id_usuario" })
-    // usuario: Usuario;
+    @ManyToOne(() => Usuario, usuario => usuario.id)
+    @JoinColumn({ name: "id_usuario" })
+    usuario: Usuario;
 
     @ManyToMany(() => MetodoPago, metodoPago => metodoPago.pedidos)
     @JoinTable(
