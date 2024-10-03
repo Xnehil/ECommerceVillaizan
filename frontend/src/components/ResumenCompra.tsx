@@ -1,25 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import EntregaPopup from './EntregaPopup'; // Asegúrate de importar el componente EntregaPopup
 import BuscandoPopup from './BuscandoPopup';
 import Link from "next/link"
+import { DetallePedido } from 'types/PaquetePedido';
+import { Direccion } from 'types/PaqueteEnvio';
+import { Usuario } from 'types/PaqueteUsuario';
 
-interface Producto {
-  nombre: string;
-  cantidad: number;
-  precio: number;
-}
 
 interface ResumenCompraProps {
-  productos: Producto[];
   descuento: number;
   costoEnvio: number;
-  noCostoEnvio: boolean;  // Nuevo argumento
-  paymentAmount?: number | null;  // Nueva prop para el monto de pago
-  selectedImageId: string | null;  // Nueva prop para el ID de la imagen seleccionada
+  noCostoEnvio: boolean;
+  paymentAmount: number | null;
+  selectedImageId: string | null;
+  onTotalChange: React.Dispatch<React.SetStateAction<number>>;
+  onVueltoChange: React.Dispatch<React.SetStateAction<number>>;
+  // Add detallePedidos here
+  detalles: DetallePedido[];
+  direccion: Direccion;
+  usuario: Usuario;
 }
 
-const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, costoEnvio, noCostoEnvio, paymentAmount, selectedImageId }) => {
+const ResumenCompra: React.FC<ResumenCompraProps> = ({
+  descuento,
+  costoEnvio,
+  noCostoEnvio,
+  paymentAmount,
+  selectedImageId,
+  onTotalChange,
+  onVueltoChange,
+  detalles,
+  direccion,
+  usuario
+}) => {
   const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
   const [showBuscandoPopup, setShowBuscandoPopup] = useState(false);
@@ -27,7 +41,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
 
 
   const calcularSubtotal = () => {
-    return productos.reduce((acc, producto) => acc + producto.precio * producto.cantidad, 0);
+    return detalles.reduce((acc, detalle) => acc + detalle.producto.precioC * detalle.cantidad, 0);
   };
 
   const calcularTotal = () => {
@@ -37,6 +51,11 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
   const calcularVuelto = () => {
     return paymentAmount ? paymentAmount - calcularTotal() : 0;
   }
+
+  useEffect(() => {
+    calcularTotal();
+    calcularVuelto();
+  }, [detalles, descuento, costoEnvio, noCostoEnvio, paymentAmount]);
 
   const toggleSeleccion = () => {
     setSeleccionado(!seleccionado); // Cambia el estado entre true y false
@@ -66,12 +85,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
         <span>Producto</span>
         <span>Subtotal</span>
       </div>
-      {productos.map((producto, index) => (
+      {detalles.map((detalle, index) => (
         <div key={index} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
           <span style={{ color: 'grey' }}>
-            {producto.nombre} <strong style={{ color: 'black' }}>x</strong> {producto.cantidad}
+            {detalle.producto.nombre} <strong style={{ color: 'black' }}>x</strong> {detalle.cantidad}
           </span>
-          <span>S/. {(producto.precio * producto.cantidad).toFixed(2)}</span>
+          <span>S/. {(detalle.producto.precioC * detalle.cantidad).toFixed(2)}</span>
         </div>
       ))}
 
@@ -169,9 +188,10 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({ productos, descuento, cos
       {/* Popup de Entrega */}
       {showPopup && (
         <EntregaPopup
-          direccion="Calle Ejemplo 123"
-          nombre="Juan Pérez"
-          productos={productos}
+          direccion={`${direccion.calle ?? ''} ${direccion.numeroExterior ?? ''}${direccion.numeroInterior ? `, ${direccion.numeroInterior}` : ''}, ${direccion.distrito ?? ''}, ${direccion.ciudad?.nombre ?? ''}`.trim().replace(/,\s*$/, '')}
+          nombre= {`${usuario.nombre} ${usuario.apellido}` }
+          detalles = {detalles}
+          //productos={productos}
           subtotal={calcularTotal()}
           metodoPago="Pago a Efectivo"
           onConfirm={handleConfirmar}

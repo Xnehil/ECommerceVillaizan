@@ -5,7 +5,7 @@ import { EntidadBase } from "./EntidadBase";
 // Define the Producto interface for frontend use
 export interface Producto extends EntidadBase {
     id: string;
-    tipoProducto: TipoProducto;
+    tipoProducto?: TipoProducto;
     subcategorias: Subcategoria[];
     frutas: Fruta[];
     inventarios: InventarioMotorizado[];

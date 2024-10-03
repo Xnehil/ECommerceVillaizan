@@ -1,4 +1,5 @@
 import { EntidadBase } from "./EntidadBase";
+import { Direccion } from "./PaqueteEnvio";
 import { Producto } from "./PaqueteProducto";
 
 
@@ -23,16 +24,13 @@ export interface Motorizado extends EntidadBase { // Placeholder, replace if nec
     pedidos: Pedido[]; // One-to-many relationship
 }
 
-export interface Direccion extends EntidadBase { // Placeholder, replace if necessary
-    pedidos: Pedido[]; // One-to-many relationship
-}
 
 export interface MetodoPago extends EntidadBase { // Placeholder, replace if necessary
     pedidos: Pedido[]; // Many-to-many relationship
 }
 
 export interface DetallePedido extends EntidadBase { // Placeholder, replace if necessary
-    pedido: Pedido; // Many-to-one relationship
+    pedido?: Pedido; // Many-to-one relationship
     cantidad: number;
     subtotal: number;
     producto: Producto; // Many-to-one relationship

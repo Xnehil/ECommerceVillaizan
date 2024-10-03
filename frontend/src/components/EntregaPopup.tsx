@@ -1,9 +1,11 @@
 import React from 'react';
+import { DetallePedido } from 'types/PaquetePedido';
 
 interface EntregaPopupProps {
   direccion: string;
   nombre: string;
-  productos: { nombre: string; cantidad: number }[];
+  //productos: { nombre: string; cantidad: number }[];
+  detalles: DetallePedido[];
   subtotal: number;
   metodoPago: string;
   onConfirm: () => void;
@@ -15,7 +17,7 @@ interface EntregaPopupProps {
 const EntregaPopup: React.FC<EntregaPopupProps> = ({
   direccion,
   nombre,
-  productos,
+  detalles,
   subtotal,
   metodoPago,
   onConfirm,
@@ -35,10 +37,10 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
           <strong>{nombre}</strong>
         </p>
         <p style={{ textAlign: 'left' }}>Pedido:</p>
-        {productos.map((producto, index) => (
+        {detalles.map((detalle, index) => (
           <p style={{ textAlign: 'left' }} key={index}>
             <strong>
-              {producto.cantidad} {producto.nombre}
+              {detalle.cantidad} {detalle.producto.nombre}
             </strong>
           </p>
         ))}
