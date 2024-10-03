@@ -24,7 +24,8 @@
         "googleMaps": {
           "apiKey": "AIzaSyBb8WcfGgMC1It9edm94cOT5E05cqJIC2M"
         }
-      }
+      },
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
     },
     "web": {
       "bundler": "metro",

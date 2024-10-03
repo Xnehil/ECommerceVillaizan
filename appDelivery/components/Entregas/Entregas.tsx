@@ -101,7 +101,7 @@ export default function Entregas() {
       <View style={styles.pedidoAceptadoContainer}>
         <Text style={styles.address}>{pedido.address}</Text>
         <Text style={styles.cliente}>Cliente: {pedido.cliente.nombre}</Text>
-        <View>
+        <View style={styles.buttonsContainer}>
           <Link
             href={{
               pathname: "/entregar",

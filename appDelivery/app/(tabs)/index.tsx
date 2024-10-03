@@ -62,8 +62,8 @@ export default function TabOneScreen() {
         órdenes
       </Text>
 
-      <Link to={"/deliverys"}>
-        <Pressable style={styles.card}>
+      <Link to={"/deliverys"} style={styles.card}>
+        <Pressable style={styles.card_inside}>
           <MaterialIcons name="list-alt" size={24} color="white" />
           <View style={styles.cardText}>
             <Text style={[styles.cardTitle, styles.cardContent]}>
@@ -144,8 +144,12 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 15,
   },
+  card_inside: {
+    flexDirection: "row",
+    flex:0,
+  },
   cardText: {
-    marginLeft: 10,
+    marginHorizontal: 10,
     flex: 1,
     color: "#000000",
   },
