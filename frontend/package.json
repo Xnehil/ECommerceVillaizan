@@ -33,7 +33,6 @@
     "@paypal/react-paypal-js": "^7.8.1",
     "@stripe/react-stripe-js": "^1.7.2",
     "@stripe/stripe-js": "^1.29.0",
-    "@types/styled-components": "^5.1.34",
     "algoliasearch": "^4.20.0",
     "axios": "^1.6.7",
     "lodash": "^4.17.21",
@@ -44,10 +43,8 @@
     "react": "^18.2.0",
     "react-country-flag": "^3.0.2",
     "react-dom": "^18.2.0",
-    "react-feather": "^2.0.10",
     "react-instantsearch-hooks-web": "^6.29.0",
     "react-intersection-observer": "^9.3.4",
-    "styled-components": "^6.1.13",
     "tailwindcss-radix": "^2.8.0",
     "webpack": "^5"
   },
