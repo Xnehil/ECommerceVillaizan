@@ -15,7 +15,7 @@ import { Motorizado } from "src/models/Motorizado";
 
 /**
  * @swagger
- * /motorizadoes:
+ * /motorizado:
  *   get:
  *     summary: Lista todos los motorizadoes con paginación
  *     tags: [Motorizados]
