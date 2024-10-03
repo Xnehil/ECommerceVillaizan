@@ -14,10 +14,10 @@ import { TipoProducto } from "src/models/TipoProducto";
 
 /**
  * @swagger
- * /tipoproductos:
+ * /tipoProducto:
  *   get:
  *     summary: Lista todos los tipoProductos con paginación
- *     tags: [TipoProductos]
+ *     tags: [TipoProducto]
  *     responses:
  *       200:
  *         description: Una lista de tipoProductos
@@ -44,10 +44,10 @@ import { TipoProducto } from "src/models/TipoProducto";
 
   /**
  * @swagger
- * /tipoproductos:
+ * /tipoProducto:
  *   post:
  *     summary: Crea un nuevo tipoProducto
- *     tags: [TipoProductos]
+ *     tags: [TipoProducto]
  *     requestBody:
  *       required: true
  *       content:

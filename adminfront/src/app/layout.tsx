@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Sidebar from "@/components/sidebar";
+import Breadcrumbs from "@/components/breadcrumbs";
+
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,9 +29,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className="min-h-screen flex">
+      <body className="min-h-screen max-h-screen flex overflow-hidden">
         <Sidebar />
-        {children}
+        <main className="flex-1 flex flex-col p-8 overflow-hidden">
+          <Breadcrumbs />
+          {children}
+        </main>
       </body>
     </html>
   );

@@ -2,10 +2,10 @@ import { Text, clx } from "@medusajs/ui"
 
 import { PriceType } from "../product-actions"
 
-export default async function PreviewPrice({ price }: { price: PriceType }) {
+export default async function PreviewPrice({ price }: { price: number }) {
   return (
     <>
-      {price.price_type === "sale" && (
+      {/* {price.price_type === "sale" && (
         <Text className="line-through text-ui-fg-muted" data-testid="original-price">
           {price.original_price}
         </Text>
@@ -17,7 +17,7 @@ export default async function PreviewPrice({ price }: { price: PriceType }) {
         data-testid="price"
       >
         {price.calculated_price}
-      </Text>
+      </Text> */}
     </>
   )
 }

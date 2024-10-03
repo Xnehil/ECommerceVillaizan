@@ -6,4 +6,4 @@ export const BancoRepository = dataSource
   .extend({
   })
 
-export default BancoRepository
+export default BancoRepository;

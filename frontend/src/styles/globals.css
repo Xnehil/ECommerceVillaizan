@@ -3,6 +3,14 @@
 @import "tailwindcss/utilities";
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+.imageWrapper:hover .hoverText {
+  visibility: visible;
+  opacity: 1;
+}
 
 @layer utilities {
   /* Chrome, Safari and Opera */

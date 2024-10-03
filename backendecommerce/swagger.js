@@ -22,35 +22,42 @@ const options = {
             id: {
               type: 'string',
               example: 'sub_01H8B4RD715N9ZYPE95KR76839',
+              readOnly: true,
             },
             creadoEn: {
               type: 'string',
               format: 'date-time',
               example: '2023-10-01T12:00:00Z',
+              readOnly: true,
             },
             actualizadoEn: {
               type: 'string',
               format: 'date-time',
               example: '2023-10-01T12:00:00Z',
+              readOnly: true,
             },
             desactivadoEn: {
               type: 'string',
               format: 'date-time',
               nullable: true,
               example: null,
+              readOnly: true,
             },
             usuarioCreacion: {
               type: 'string',
               example: 'admin_user',
+              readOnly: true,
             },
             usuarioActualizacion: {
               type: 'string',
               nullable: true,
               example: null,
+              readOnly: true,
             },
             estaActivo: {
               type: 'boolean',
               example: true,
+              readOnly: true,
             },
           },
         },
@@ -67,6 +74,7 @@ const options = {
                 },
                 tipoProducto: {
                   type: 'array',
+                  nullable: true,
                   items: {
                     type: 'object',
                     properties: {
@@ -79,6 +87,7 @@ const options = {
                 },
                 productos: {
                   type: 'array',
+                  nullable: true,
                   items: {
                     type: 'object',
                     properties: {
@@ -106,6 +115,7 @@ const options = {
                 },
                 subcategorias: {
                   type: 'array',
+                  nullable: true,
                   items: {
                     type: 'object',
                     properties: {
@@ -118,6 +128,7 @@ const options = {
                 },
                 productos: {
                   type: 'array',
+                  nullable: true,
                   items: {
                     type: 'object',
                     properties: {
@@ -141,22 +152,26 @@ const options = {
               properties: {
                 tipoProducto: {
                   $ref: '#/components/schemas/TipoProducto',
+                  nullable: true,
                 },
                 subcategorias: {
                   type: 'array',
                   items: {
                     $ref: '#/components/schemas/Subcategoria',
                   },
+                  nullable: true,
                 },
                 frutas: {
                   type: 'array',
                   items: {
                     $ref: '#/components/schemas/Fruta',
                   },
+                  nullable: true,
                 },
                 codigo: {
                   type: 'string',
                   example: 'PROD12345',
+                  nullable: true,
                 },
                 nombre: {
                   type: 'string',
@@ -166,16 +181,25 @@ const options = {
                   type: 'number',
                   format: 'decimal',
                   example: 100.0,
+                  nullable: true,
                 },
                 precioB: {
                   type: 'number',
                   format: 'decimal',
                   example: 90.0,
+                  nullable: true,
                 },
                 precioC: {
                   type: 'number',
                   format: 'decimal',
                   example: 80.0,
+                  nullable: true,
+                },
+                precioEcommerce: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 85.0,
+                  nullable: true,
                 },
               },
             },
@@ -193,12 +217,14 @@ const options = {
                   items: {
                     $ref: '#/components/schemas/Producto',
                   },
+                  nullable: true,
                 },
                 contenidosEducativos: {
                   type: 'array',
                   items: {
                     $ref: '#/components/schemas/ContenidoEducativo',
                   },
+                  nullable: true,
                 },
                 nombre: {
                   type: 'string',
@@ -231,6 +257,7 @@ const options = {
               properties: {
                 fruta: {
                   $ref: '#/components/schemas/Fruta',
+                  nullable: true,
                 },
                 titulo: {
                   type: 'string',
@@ -286,9 +313,11 @@ const options = {
                 },
                 producto: {
                   $ref: '#/components/schemas/Producto',
+                  nullable: true,
                 },
                 almacen: {
                   $ref: '#/components/schemas/Almacen',
+                  nullable: true,
                 },
               },
             },
@@ -313,6 +342,7 @@ const options = {
                 },
                 direcciones: {
                   type: 'array',
+                  nullable: true,
                   items: {
                     $ref: '#/components/schemas/Direccion',
                   },
@@ -330,10 +360,15 @@ const options = {
               properties: {
                 nombre: {
                   type: 'string',
-                  example: 'New York',
+                  example: 'Moyobamba',
+                },
+                region: {
+                  type: 'string',
+                  example: 'San Martín',
                 },
                 direcciones: {
                   type: 'array',
+                  nullable: true,
                   items: {
                     $ref: '#/components/schemas/Direccion',
                   },
@@ -359,12 +394,14 @@ const options = {
                 },
                 inventarios: {
                   type: 'array',
+                  nullable: true,
                   items: {
                     $ref: '#/components/schemas/InventarioMotorizado',
                   },
                 },
                 pedidos: {
                   type: 'array',
+                  nullable: true,
                   items: {
                     $ref: '#/components/schemas/Pedido',
                   },
@@ -394,9 +431,9 @@ const options = {
                   nullable: true,
                   example: 'A',
                 },
-                region: {
+                distrito: {
                   type: 'string',
-                  example: 'Región Ejemplo',
+                  example: 'distrito Ejemplo',
                 },
                 codigoPostal: {
                   type: 'string',

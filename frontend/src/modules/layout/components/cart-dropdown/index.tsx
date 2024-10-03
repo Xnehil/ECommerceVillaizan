@@ -13,29 +13,28 @@ import LineItemPrice from "@modules/common/components/line-item-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "@modules/products/components/thumbnail"
 import Link from "next/link"
+import { Pedido } from "types/PaquetePedido"
 
 const CartDropdown = ({
   cart: cartState,
 }: {
-  cart?: Omit<Cart, "beforeInsert" | "afterLoad"> | null
+  cart?: Omit<Pedido, "beforeInsert" | "afterLoad"> | null
 }) => {
   const [activeTimer, setActiveTimer] = useState<NodeJS.Timer | undefined>(
     undefined
   )
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
 
-  const { countryCode } = useParams()
-
   const open = () => setCartDropdownOpen(true)
   const close = () => setCartDropdownOpen(false)
 
   const totalItems =
-    cartState?.items?.reduce((acc, item) => {
-      return acc + item.quantity
+    cartState?.detalles?.reduce((acc, item) => {
+      return acc + item.cantidad
     }, 0) || 0
 
   const itemRef = useRef<number>(totalItems || 0)
-
+  const defaultUrl = "https://via.placeholder.com/150"
   const timedOpen = () => {
     open()
 
@@ -54,23 +53,24 @@ const CartDropdown = ({
 
   // Clean up the timer when the component unmounts
   useEffect(() => {
+    console.log("Cart state:", cartState);
     return () => {
       if (activeTimer) {
         clearTimeout(activeTimer)
       }
     }
-  }, [activeTimer])
+  }, [activeTimer, cartState])
 
   const pathname = usePathname()
 
   // open cart dropdown when modifying the cart items, but only if we're not on the cart page
   useEffect(() => {
-    if (itemRef.current !== totalItems && !pathname.includes("/cart")) {
+    if (itemRef.current !== totalItems && !pathname.includes("/carrito")) {
       timedOpen()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalItems, itemRef.current])
-
+  
   return (
     <div
       className="h-full z-50"
@@ -103,12 +103,12 @@ const CartDropdown = ({
             <div className="p-4 flex items-center justify-center">
               <h3 className="text-large-semi">Carrito</h3>
             </div>
-            {cartState && cartState.items?.length ? (
+            {cartState && cartState.detalles?.length ? (
               <>
                 <div className="overflow-y-scroll max-h-[402px] px-4 grid grid-cols-1 gap-y-8 no-scrollbar p-px">
-                  {cartState.items
+                  {cartState.detalles
                     .sort((a, b) => {
-                      return a.created_at > b.created_at ? -1 : 1
+                      return a.creadoEn > b.creadoEn ? -1 : 1
                     })
                     .map((item) => (
                       <div
@@ -116,39 +116,37 @@ const CartDropdown = ({
                         key={item.id}
                         data-testid="cart-item"
                       >
-                        <LocalizedClientLink
-                          href={`/products/${item.variant.product.handle}`}
+                        <Link
+                          href={`/products/${item.id}`}
                           className="w-24"
                         >
-                          <Thumbnail thumbnail={item.thumbnail} size="square" />
-                        </LocalizedClientLink>
+                          <Thumbnail thumbnail={item.producto.urlImagen} size="square" />
+                        </Link>
                         <div className="flex flex-col justify-between flex-1">
                           <div className="flex flex-col flex-1">
                             <div className="flex items-start justify-between">
                               <div className="flex flex-col overflow-ellipsis whitespace-nowrap mr-4 w-[180px]">
                                 <h3 className="text-base-regular overflow-hidden text-ellipsis">
                                   <LocalizedClientLink
-                                    href={`/products/${item.variant.product.handle}`}
+                                    href={`/products/${item.producto.urlImagen || defaultUrl}`}
                                     data-testid="product-link"
                                   >
-                                    {item.title}
+                                    {item.producto.nombre}
                                   </LocalizedClientLink>
                                 </h3>
                                 <LineItemOptions
-                                  variant={item.variant}
+                                  variant={item.producto}
                                   data-testid="cart-item-variant"
-                                  data-value={item.variant}
                                 />
                                 <span
                                   data-testid="cart-item-quantity"
-                                  data-value={item.quantity}
+                                  data-value={item.cantidad}
                                 >
-                                  Quantity: {item.quantity}
+                                  Cantidad: {item.cantidad}
                                 </span>
                               </div>
                               <div className="flex justify-end">
                                 <LineItemPrice
-                                  region={cartState.region}
                                   item={item}
                                   style="tight"
                                 />
@@ -170,21 +168,20 @@ const CartDropdown = ({
                   <div className="flex items-center justify-between">
                     <span className="text-ui-fg-base font-semibold">
                       Subtotal{" "}
-                      <span className="font-normal">(excl. taxes)</span>
+                      {/* <span className="font-normal">(excl. taxes)</span> */}
                     </span>
                     <span
                       className="text-large-semi"
                       data-testid="cart-subtotal"
-                      data-value={cartState.subtotal || 0}
+                      data-value={cartState.detalles.reduce(
+                        (acc, item) => acc + item.subtotal,
+                        0
+                      )}
                     >
-                      {formatAmount({
-                        amount: cartState.subtotal || 0,
-                        region: cartState.region,
-                        includeTaxes: false,
-                      })}
+                      {cartState.total}
                     </span>
                   </div>
-                  <LocalizedClientLink href="/cart" passHref>
+                  <LocalizedClientLink href="/carrito" passHref>
                     <Button
                       className="w-full"
                       size="large"
@@ -200,7 +197,7 @@ const CartDropdown = ({
                 <div className="flex flex-col gap-y-4 items-center justify-center p-2">
                   <span>Tu carrito está vacío. Añade más helados y disfruta el sabor de la auténtica fruta</span>
                   <div className="mb-4">
-                    <Link href="/store">
+                    <Link href="/comprar">
                       <>
                         <span className="sr-only">Ir al catálogo</span>
                         <Button onClick={close}>Explora nuestros helados</Button>

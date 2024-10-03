@@ -190,7 +190,7 @@ export const computeAmount = ({
 
 type FormatAmountParams = {
   amount: number
-  region: RegionInfo
+  region?: RegionInfo
   includeTaxes?: boolean
   minimumFractionDigits?: number
   maximumFractionDigits?: number
@@ -206,15 +206,11 @@ export const formatAmount = ({
   includeTaxes = true,
   ...rest
 }: FormatAmountParams) => {
-  const taxAwareAmount = computeAmount({
-    amount,
-    region,
-    includeTaxes,
-  })
+  const taxAwareAmount = 0;
 
   return convertToLocale({
     amount: taxAwareAmount,
-    currency_code: region.currency_code,
+    currency_code: "PEN",
     ...rest,
   })
 }

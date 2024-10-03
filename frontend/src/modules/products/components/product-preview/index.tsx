@@ -9,43 +9,54 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Thumbnail from "../thumbnail"
 import PreviewPrice from "./price"
 import Link from "next/link"
+import { Producto } from "types/PaqueteProducto"
+import axios from "axios"
 
 export default async function ProductPreview({
   productPreview,
   isFeatured,
   region,
 }: {
-  productPreview: ProductPreviewType
+  productPreview: Producto
   isFeatured?: boolean
-  region: Region
+  region?: Region
 }) {
-  const pricedProduct = await retrievePricedProductById({
-    id: productPreview.id,
-    regionId: region.id,
-  }).then((product) => product)
+  const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+  console.log("productPreview", productPreview)
+  const response = await axios.get(`${baseUrl}/admin/producto/${productPreview.id}`)
+  const pricedProduct: Producto =  response.data.producto
+
+
+  //  await retrievePricedProductById({
+  //   id: productPreview.id,
+  //   regionId: region.id,
+  // }).then((product) => product)
 
   if (!pricedProduct) {
     return null
   }
 
-  const { cheapestPrice } = getProductPrice({
-    product: pricedProduct,
-    region,
-  })
+  // const { cheapestPrice } = getProductPrice({
+  //   product: pricedProduct,
+  //   region,
+  // })
+
+  const cheapestPrice = pricedProduct.precioEcommerce
+  const spacelessName = productPreview.nombre.replace(/\s/g, "-")
 
   return (
     <Link
-      href={`/products/${productPreview.handle}`}
+      href={`/products/${productPreview.id}`}
       className="group"
     >
       <div data-testid="product-wrapper">
         <Thumbnail
-          thumbnail={productPreview.thumbnail}
+          // thumbnail={productPreview.urlImagen}
           size="full"
           isFeatured={isFeatured}
         />
         <div className="flex txt-compact-medium mt-4 justify-between">
-          <Text className="text-ui-fg-subtle" data-testid="product-title">{productPreview.title}</Text>
+          <Text className="text-ui-fg-subtle" data-testid="product-title">{productPreview.nombre}</Text>
           <div className="flex items-center gap-x-2">
             {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
           </div>

@@ -58,14 +58,11 @@ export class Producto extends EntidadBase {
     @Column("decimal", { precision: 10, scale: 2, name: "precioc" })
     precioC: number
 
+    @Column("decimal", { precision: 10, scale: 2 , name: "precioecommerce"})
+    precioEcommerce: number
+
     @Column({name: "urlimagen"})
     urlImagen: string
-
-    @Column({ type: "int" , name: "cantminped"})
-    cantMinPed: number
-
-    @Column({ type: "int" , name: "cantmaxped"})
-    cantMaxPed: number
 
     @Column("text", { nullable: true })
     descripcion: string
