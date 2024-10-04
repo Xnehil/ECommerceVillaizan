@@ -18,7 +18,7 @@ type Producto = {
   cantidad: number;
 };
 
-const EntregarPedido = async () => {
+const EntregarPedido = () => {
   const route = useRoute();
   const { pedido } = route.params as { pedido: string };
 
@@ -28,7 +28,6 @@ const EntregarPedido = async () => {
 
   return (
     <View style={styles.container}>
-      {/* Sección Datos del cliente */}
       <View style={styles.clienteContainer}>
         <View style={styles.tituloContainer}>
           <Text style={styles.titulo}>Datos del cliente</Text>
@@ -53,13 +52,12 @@ const EntregarPedido = async () => {
                 color="green"
                 size={30}
                 style={{ marginRight: 10 }}
-              />{" "}
+              />
             </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      {/* Sección Datos del pedido */}
       <View style={styles.pedidoContainer}>
         <Text style={styles.titulo}>Datos del pedido</Text>
         <View style={styles.pedidoRow}>
@@ -85,7 +83,6 @@ const EntregarPedido = async () => {
         </View>
       </View>
 
-      {/* Sección Datos del pago */}
       <View style={styles.pagoContainer}>
         <Text style={styles.titulo}>Datos del pago</Text>
         <View style={styles.detallesPago}>
@@ -99,7 +96,6 @@ const EntregarPedido = async () => {
               </Text>
             </View>
           </View>
-
           <View style={styles.metodoPagoColumn}>
             <View style={styles.columnTitle}>
               <Text style={styles.metodoPagoTitulo}>Metodo(s) de pago</Text>
@@ -107,14 +103,12 @@ const EntregarPedido = async () => {
             <View style={styles.metodosListado}>
               <View style={styles.metodoInfo}>
                 <View style={styles.leftInfo}>
-                  {/*source={{ uri: parsedPedido.metodosPago[0]?.icono || 'default_icon_uri' }}*/}
                   <View style={{ justifyContent: "center" }}>
                     <Image
                       source={require("../assets/images/yape.png")}
                       style={styles.iconoPago}
                     />
                   </View>
-
                   <Text style={styles.metodoNombre}>
                     {parsedPedido.metodosPago[0]?.nombre ||
                       "Método de pago no especificado"}
@@ -140,8 +134,6 @@ const EntregarPedido = async () => {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Swipe Button para confirmar entrega */}
       <View style={styles.swipeButtonContainer}>
         <SwipeButton
           thumbIconBackgroundColor="#FFFFFF"
