@@ -1,25 +1,41 @@
 import { Spinner, Trash } from "@medusajs/icons"
 import { clx } from "@medusajs/ui"
-import { useState } from "react"
+import React, { useState } from "react"
 
 import { deleteLineItem } from "@modules/cart/actions"
+import axios from "axios"
+import { Pedido } from "types/PaquetePedido"
 
 const DeleteButton = ({
   id,
   children,
   className,
+  cart,
+  setCart,
 }: {
   id: string
   children?: React.ReactNode
-  className?: string
+  className?: string,
+  cart?: Pedido,
+  setCart?: any
 }) => {
   const [isDeleting, setIsDeleting] = useState(false)
+  const urlBase = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
   const handleDelete = async (id: string) => {
     setIsDeleting(true)
-    await deleteLineItem(id).catch((err) => {
+    try {
+      if (cart && setCart) {
+        const updatedCart = cart.detalles.filter((item) => item.id !== id)
+        setCart({ ...cart, detalles: updatedCart }) 
+      }
+      const response = await axios.delete(`${urlBase}/admin/detallePedido/${id}`)
+      console.log("Deleted item:", response)
+    } catch (error) {
+      console.error("Error deleting item:", error)
+    } finally {
       setIsDeleting(false)
-    })
+    }
   }
 
   return (

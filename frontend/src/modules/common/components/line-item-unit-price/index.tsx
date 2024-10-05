@@ -4,25 +4,25 @@ import { clx } from "@medusajs/ui"
 
 import { getPercentageDiff } from "@lib/util/get-precentage-diff"
 import { CalculatedVariant } from "types/medusa"
+import { DetallePedido } from "types/PaquetePedido"
 
 type LineItemUnitPriceProps = {
-  item: Omit<LineItem, "beforeInsert">
-  region: Region
+  item: Omit<DetallePedido, "beforeInsert">
   style?: "default" | "tight"
 }
 
 const LineItemUnitPrice = ({
   item,
-  region,
   style = "default",
 }: LineItemUnitPriceProps) => {
-  const originalPrice = (item.variant as CalculatedVariant).original_price
-  const hasReducedPrice = (originalPrice * item.quantity || 0) > item.total!
-  const reducedPrice = (item.total || 0) / item.quantity!
+  const originalPrice = item.producto.precioEcommerce 
+  const hasReducedPrice = false
+  // const hasReducedPrice = (originalPrice * item.quantity || 0) > item.total!
+  // const reducedPrice = (item.total || 0) / item.quantity!
 
   return (
     <div className="flex flex-col text-ui-fg-muted justify-center h-full">
-      {hasReducedPrice && (
+      {/* {hasReducedPrice && (
         <>
           <p>
             {style === "default" && (
@@ -42,18 +42,12 @@ const LineItemUnitPrice = ({
             </span>
           )}
         </>
-      )}
+      )} */}
       <span
-        className={clx("text-base-regular", {
-          "text-ui-fg-interactive": hasReducedPrice,
-        })}
+        className="text-poppins text-black text-base font-normal"
         data-testid="product-unit-price"
       >
-        {formatAmount({
-          amount: reducedPrice || item.unit_price || 0,
-          region: region,
-          includeTaxes: false,
-        })}
+        {"S/ " + Number(originalPrice).toFixed(2)}
       </span>
     </div>
   )

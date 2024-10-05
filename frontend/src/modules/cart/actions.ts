@@ -128,11 +128,11 @@ export async function addToCart({
 }
 
 export async function updateLineItem({
-  lineId,
-  quantity,
+  detallePedidoId,
+  cantidad,
 }: {
-  lineId: string
-  quantity: number
+  detallePedidoId: string
+  cantidad: number
 }) {
   const cookieValues = cookies()
   const cartId = cookieValues.get("_medusa_cart_id")?.value
@@ -142,7 +142,7 @@ export async function updateLineItem({
     return "Missing cart ID"
   }
 
-  if (!lineId) {
+  if (!detallePedidoId) {
     return "Missing lineItem ID"
   }
 
@@ -151,7 +151,9 @@ export async function updateLineItem({
   }
 
   try {
-    // await updateItem({ cartId, lineId, quantity }) modificar esto
+    const response = await axios.put(`${baseUrl}/admin/detallePedido/${detallePedidoId}`, {
+      cantidad: cantidad,
+    })
     revalidateTag("cart")
   } catch (e: any) {
     return e.toString()
@@ -184,10 +186,9 @@ export async function deleteLineItem(lineId: string) {
 
 export async function enrichLineItems(
   detalles: DetallePedido[],
-): Promise<
-  | Omit<DetallePedido, "beforeInsert" | "beforeUpdate" | "afterUpdateOrLoad">[]
-  | undefined
+): Promise<DetallePedido[]
 > {
+  // console.log("Entrando en enrichLineItems")
   // Prepare query parameters
   const queryParams = {
     ids: detalles.map((lineItem) => lineItem.id),
@@ -197,31 +198,18 @@ export async function enrichLineItems(
   const response = queryParams.ids.map((id) => axios.get(`${baseUrl}/admin/detallePedido/${id}`))
   const products = await Promise.all(response)
 
+  const productData = products.map((product) => product.data);
+
+  // console.log("Products Data:", productData)
+
   // If there are no line items or products, return an empty array
-  if (!products?.length || !products) {
+  if (!productData?.length || !productData) {
     return []
   }
 
-  // Enrich line items with product and variant information
-
-  // const enrichedItems = lineItems.map((item) => {
-  //   const product = products.find((p) => p.id === item.variant.product_id)
-  //   const variant = product?.variants.find((v) => v.id === item.variant_id)
-
-  //   // If product or variant is not found, return the original item
-  //   if (!product || !variant) {
-  //     return item
-  //   }
-
-  //   // If product and variant are found, enrich the item
-  //   return {
-  //     ...item,
-  //     variant: {
-  //       ...variant,
-  //       product: omit(product, "variants"),
-  //     },
-  //   }
-  // }) as LineItem[]
-
-  return []
+  return productData.map((product) => {
+    product.detallePedido.producto.precioEcommerce = Number(product.detallePedido.producto.precioEcommerce)
+    product.detallePedido.cantidad = Number(product.detallePedido.cantidad)
+    return product.detallePedido
+  }) as DetallePedido[]
 }

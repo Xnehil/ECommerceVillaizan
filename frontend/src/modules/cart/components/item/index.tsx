@@ -14,26 +14,27 @@ import Spinner from "@modules/common/icons/spinner"
 import { useState } from "react"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { DetallePedido } from "types/PaquetePedido"
+import Link from "next/link"
 
 type ItemProps = {
-  item: Omit<LineItem, "beforeInsert">
-  region: Region
+  item: Omit<DetallePedido, "beforeInsert">
   type?: "full" | "preview"
 }
 
-const Item = ({ item, region, type = "full" }: ItemProps) => {
+const Item = ({ item,  type = "full" }: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { handle } = item.variant.product
+  const handle  = item.producto.id
 
   const changeQuantity = async (quantity: number) => {
     setError(null)
     setUpdating(true)
 
     const message = await updateLineItem({
-      lineId: item.id,
-      quantity,
+      detallePedidoId: item.id,
+      cantidad: quantity,
     })
       .catch((err) => {
         return err.message
@@ -48,59 +49,55 @@ const Item = ({ item, region, type = "full" }: ItemProps) => {
   return (
     <Table.Row className="w-full" data-testid="product-row">
       <Table.Cell className="!pl-0 p-4 w-24">
-        <LocalizedClientLink
+        <Link
           href={`/products/${handle}`}
           className={clx("flex", {
             "w-16": type === "preview",
             "small:w-24 w-12": type === "full",
           })}
         >
-          <Thumbnail thumbnail={item.thumbnail} size="square" />
-        </LocalizedClientLink>
+          <Thumbnail thumbnail={item.producto.urlImagen} size="square" />
+        </Link>
       </Table.Cell>
 
       <Table.Cell className="text-left">
-        <Text className="txt-medium-plus text-ui-fg-base" data-testid="product-title">{item.title}</Text>
-        <LineItemOptions variant={item.variant} data-testid="product-variant" />
+        <Text className="text-[#9f9f9f] text-base font-normal font-poppins" data-testid="product-title">{item.producto.nombre}</Text>
+        {/* <LineItemOptions variant={item.variant} data-testid="product-variant" /> */}
       </Table.Cell>
 
-      {type === "full" && (
-        <Table.Cell>
-          <div className="flex gap-2 items-center w-28">
-            <DeleteButton id={item.id} data-testid="product-delete-button" />
-            <CartItemSelect
-              value={item.quantity}
-              onChange={(value) => changeQuantity(parseInt(value.target.value))}
-              className="w-14 h-10 p-4"
-              data-testid="product-select-button"
-            >
-              {Array.from(
-                {
-                  length: Math.min(
-                    item.variant.inventory_quantity > 0
-                      ? item.variant.inventory_quantity
-                      : 10,
-                    10
-                  ),
-                },
-                (_, i) => (
-                  <option value={i + 1} key={i}>
-                    {i + 1}
-                  </option>
-                )
-              )}
-            </CartItemSelect>
-            {updating && <Spinner />}
-          </div>
-          <ErrorMessage error={error} data-testid="product-error-message" />
-        </Table.Cell>
-      )}
+      
 
       {type === "full" && (
         <Table.Cell className="hidden small:table-cell">
-          <LineItemUnitPrice item={item} region={region} style="tight" />
+          <LineItemUnitPrice item={item} style="tight" />
         </Table.Cell>
       )}
+
+      {type === "full" && (
+              <Table.Cell>
+                <div className="flex gap-2 items-center w-full justify-center">
+                <button
+                  className="w-8 h-8 flex items-center justify-center bg-cremaFondo rounded text-black font-black cursor-pointer"
+                  onClick={() => changeQuantity(item.cantidad - 1)}
+                  disabled={item.cantidad <= 1}
+                >
+                  -
+                </button>
+                <div className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded">
+                  {item.cantidad}
+                </div>
+                <button
+                  className="w-8 h-8 flex items-center justify-center bg-cremaFondo rounded text-black font-black cursor-pointer"
+                  onClick={() => changeQuantity(item.cantidad + 1)}
+                  disabled={item.cantidad >= 20} 
+                >
+                  +
+                </button>
+                {updating && <Spinner />}
+                </div>
+                <ErrorMessage error={error} data-testid="product-error-message" />
+              </Table.Cell>
+            )}
 
       <Table.Cell className="!pr-0">
         <span
@@ -110,12 +107,16 @@ const Item = ({ item, region, type = "full" }: ItemProps) => {
         >
           {type === "preview" && (
             <span className="flex gap-x-1 ">
-              <Text className="text-ui-fg-muted">{item.quantity}x </Text>
-              <LineItemUnitPrice item={item} region={region} style="tight" />
+              <Text className="text-ui-fg-muted">{item.cantidad}x </Text>
+              <LineItemUnitPrice item={item}  style="tight" />
             </span>
           )}
-          <LineItemPrice item={item} region={region} style="tight" />
+          <LineItemPrice item={item}  />
         </span>
+      </Table.Cell>
+
+      <Table.Cell className="!pr-0 justify-end pl-2">  
+        <DeleteButton id={item.id} />
       </Table.Cell>
     </Table.Row>
   )

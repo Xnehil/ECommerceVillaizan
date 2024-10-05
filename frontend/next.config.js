@@ -28,7 +28,15 @@ const nextConfig = withStoreConfig({
       {
         protocol: "https",
         hostname: "picsum.photos",
-      }
+      },
+      {
+        protocol: "https",
+        hostname: "example.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
     ],
   },
 })
