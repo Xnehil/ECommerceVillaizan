@@ -111,8 +111,8 @@ const CartDropdown = ({
           <Link
             className="hover:text-ui-fg-base text-sans"
             style={{ color: "#FFFEFE", fontSize: "28px", fontStyle: "normal", fontWeight: 600, lineHeight: "normal" }}
-            href="/cart"
-          >{`Comprar (${totalItems})`}</Link>
+            href="/carrito"
+          >{`Comprar`}</Link>
         </Popover.Button>
         }
         <Transition

@@ -130,9 +130,11 @@ export async function addToCart({
 export async function updateLineItem({
   detallePedidoId,
   cantidad,
+  subtotal,
 }: {
   detallePedidoId: string
   cantidad: number
+  subtotal: number
 }) {
   const cookieValues = cookies()
   const cartId = cookieValues.get("_medusa_cart_id")?.value
@@ -153,6 +155,7 @@ export async function updateLineItem({
   try {
     const response = await axios.put(`${baseUrl}/admin/detallePedido/${detallePedidoId}`, {
       cantidad: cantidad,
+      subtotal: subtotal
     })
     revalidateTag("cart")
   } catch (e: any) {
@@ -188,8 +191,9 @@ export async function enrichLineItems(
   detalles: DetallePedido[],
 ): Promise<DetallePedido[]
 > {
-  // console.log("Entrando en enrichLineItems")
-  // Prepare query parameters
+  if (!detalles?.length) {
+    return []
+  }
   const queryParams = {
     ids: detalles.map((lineItem) => lineItem.id),
   }

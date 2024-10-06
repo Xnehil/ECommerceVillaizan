@@ -12,12 +12,14 @@ const DeleteButton = ({
   className,
   cart,
   setCart,
+  onDelete
 }: {
   id: string
   children?: React.ReactNode
-  className?: string,
+  className?: string
   cart?: Pedido,
   setCart?: any
+  onDelete?: () => void
 }) => {
   const [isDeleting, setIsDeleting] = useState(false)
   const urlBase = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
@@ -28,6 +30,9 @@ const DeleteButton = ({
       if (cart && setCart) {
         const updatedCart = cart.detalles.filter((item) => item.id !== id)
         setCart({ ...cart, detalles: updatedCart }) 
+      } 
+      if (onDelete) {
+        onDelete
       }
       const response = await axios.delete(`${urlBase}/admin/detallePedido/${id}`)
       console.log("Deleted item:", response)
@@ -49,7 +54,7 @@ const DeleteButton = ({
         className="flex gap-x-1 text-ui-fg-subtle hover:text-ui-fg-base cursor-pointer"
         onClick={() => handleDelete(id)}
       >
-        {isDeleting ? <Spinner className="animate-spin" /> : <Trash />}
+        {isDeleting ? <Spinner className="animate-spin" /> : <Trash color="#B88E2F" />}
         <span>{children}</span>
       </button>
     </div>

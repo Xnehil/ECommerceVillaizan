@@ -14,33 +14,39 @@ import Spinner from "@modules/common/icons/spinner"
 import { useState } from "react"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { DetallePedido } from "types/PaquetePedido"
+import { DetallePedido, Pedido } from "types/PaquetePedido"
 import Link from "next/link"
 
 type ItemProps = {
   item: Omit<DetallePedido, "beforeInsert">
   type?: "full" | "preview"
+  onDelete: () => void
 }
 
-const Item = ({ item,  type = "full" }: ItemProps) => {
+const Item = ({ item,  type = "full", onDelete}: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handle  = item.producto.id
 
-  const changeQuantity = async (quantity: number) => {
+  const changeQuantity = async (nuevaCantidad: number) => {
     setError(null)
     setUpdating(true)
 
     const message = await updateLineItem({
       detallePedidoId: item.id,
-      cantidad: quantity,
+      cantidad: nuevaCantidad,
+      subtotal: nuevaCantidad * item.producto.precioEcommerce
     })
       .catch((err) => {
+        setError(err.message)
         return err.message
       })
       .finally(() => {
         setUpdating(false)
+        console.log("Se actualizó la cantidad del producto, ", item.producto , " a ", nuevaCantidad, " el nuevo subtotal es ", nuevaCantidad * item.producto.precioEcommerce)
+        item.cantidad = nuevaCantidad
+        item.subtotal = nuevaCantidad  * item.producto.precioEcommerce
       })
 
     message && setError(message)
@@ -83,7 +89,11 @@ const Item = ({ item,  type = "full" }: ItemProps) => {
                 >
                   -
                 </button>
-                <div className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded">
+                <div
+                  className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded"
+                  style={{ userSelect: 'none' }}
+                  title="Usa los botones para cambiar la cantidad"
+                >
                   {item.cantidad}
                 </div>
                 <button
@@ -116,7 +126,7 @@ const Item = ({ item,  type = "full" }: ItemProps) => {
       </Table.Cell>
 
       <Table.Cell className="!pr-0 justify-end pl-2">  
-        <DeleteButton id={item.id} />
+        <DeleteButton id={item.id}  onDelete={onDelete} />
       </Table.Cell>
     </Table.Row>
   )

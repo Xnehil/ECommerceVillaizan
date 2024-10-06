@@ -3,17 +3,30 @@ import { Heading, Table } from "@medusajs/ui"
 
 import Item from "@modules/cart/components/item"
 import SkeletonLineItem from "@modules/skeletons/components/skeleton-line-item"
-import { DetallePedido } from "types/PaquetePedido"
+import { useEffect, useState } from "react"
+import { DetallePedido, Pedido } from "types/PaquetePedido"
 
 type ItemsTemplateProps = {
-  items?: Omit<DetallePedido, "beforeInsert">[]
+  carrito: Pedido
 }
 
-const ItemsTemplate = ({ items }: ItemsTemplateProps) => {
+const ItemsTemplate = ({  carrito }: ItemsTemplateProps) => {
+  const [refresh, setRefresh] = useState(false);
+  const [items, setItems] = useState(carrito.detalles || []);
+
+
+  const deleteItem = (itemId:string) => {
+    // Your deletion logic here
+    const updatedItems = items.filter(item => item.id !== itemId);
+    console.log("se quitó el item con id: ", itemId);
+    setItems(updatedItems);
+    setRefresh(!refresh); 
+  };
+
   return (
     <div>
       <div className="pb-3 flex items-center">
-        <Heading className="text-[2rem] leading-[2.75rem]">Carrito</Heading>
+        <Heading className="text-[2rem] leading-[2.75rem]">Carrito de Compras</Heading>
       </div>
       <Table>
         <Table.Header className="border-t-0 bg-cremaFondo" >
@@ -31,13 +44,13 @@ const ItemsTemplate = ({ items }: ItemsTemplateProps) => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {items 
+          {items
             ? items
                 .sort((a, b) => {
                   return (a.creadoEn ?? 0) > (b.creadoEn ?? 0) ? -1 : 1
                 })
                 .map((item) => {
-                  return <Item key={item.id} item={item}/>
+                  return <Item key={item.id} item={item} onDelete = {() =>  deleteItem(item.id)} />
                 })
             : Array.from(Array(5).keys()).map((i) => {
                 return <SkeletonLineItem key={i} />

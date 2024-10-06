@@ -1,3 +1,5 @@
+"use client"
+
 import ItemsTemplate from "./items"
 import Summary from "./summary"
 import EmptyCartMessage from "../components/empty-cart-message"
@@ -26,7 +28,7 @@ const CartTemplate = ({
                   <Divider />
                 </>
               )} */}
-              <ItemsTemplate items={cart?.detalles} />
+              <ItemsTemplate carrito={cart} />
             </div>
             <div className="relative">
               <div className="flex flex-col gap-y-8 sticky top-12">
