@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import SwipeButton from "rn-swipe-button";
+import axios from 'axios';
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import TabBarIcon from "@/components/StyledIcon";
 
@@ -21,11 +22,12 @@ const EntregarPedido = () => {
   const route = useRoute();
   const { pedido } = route.params as { pedido: string };
 
+
+
   const parsedPedido = JSON.parse(decodeURIComponent(pedido));
 
   return (
     <View style={styles.container}>
-      {/* Sección Datos del cliente */}
       <View style={styles.clienteContainer}>
         <View style={styles.tituloContainer}>
           <Text style={styles.titulo}>Datos del cliente</Text>
@@ -50,13 +52,12 @@ const EntregarPedido = () => {
                 color="green"
                 size={30}
                 style={{ marginRight: 10 }}
-              />{" "}
+              />
             </TouchableOpacity>
           </View>
         </View>
       </View>
 
-      {/* Sección Datos del pedido */}
       <View style={styles.pedidoContainer}>
         <Text style={styles.titulo}>Datos del pedido</Text>
         <View style={styles.pedidoRow}>
@@ -82,7 +83,6 @@ const EntregarPedido = () => {
         </View>
       </View>
 
-      {/* Sección Datos del pago */}
       <View style={styles.pagoContainer}>
         <Text style={styles.titulo}>Datos del pago</Text>
         <View style={styles.detallesPago}>
@@ -96,7 +96,6 @@ const EntregarPedido = () => {
               </Text>
             </View>
           </View>
-
           <View style={styles.metodoPagoColumn}>
             <View style={styles.columnTitle}>
               <Text style={styles.metodoPagoTitulo}>Metodo(s) de pago</Text>
@@ -104,14 +103,12 @@ const EntregarPedido = () => {
             <View style={styles.metodosListado}>
               <View style={styles.metodoInfo}>
                 <View style={styles.leftInfo}>
-                  {/*source={{ uri: parsedPedido.metodosPago[0]?.icono || 'default_icon_uri' }}*/}
                   <View style={{ justifyContent: "center" }}>
                     <Image
                       source={require("../assets/images/yape.png")}
                       style={styles.iconoPago}
                     />
                   </View>
-
                   <Text style={styles.metodoNombre}>
                     {parsedPedido.metodosPago[0]?.nombre ||
                       "Método de pago no especificado"}
@@ -137,8 +134,6 @@ const EntregarPedido = () => {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Swipe Button para confirmar entrega */}
       <View style={styles.swipeButtonContainer}>
         <SwipeButton
           thumbIconBackgroundColor="#FFFFFF"

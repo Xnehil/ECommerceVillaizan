@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 import { MaterialIcons } from "@expo/vector-icons"; // Asegúrate de tener esta librería instalada
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Link, useNavigation } from "@react-navigation/native";
+import axios from "axios";
 
 function Icon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -30,8 +31,50 @@ function Icon(props: {
   );
 }
 
+interface Usuario {
+  id: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  desactivadoEn: string | null;
+  usuarioCreacion: string;
+  usuarioActualizacion: string | null;
+  estaActivo: boolean;
+  nombre: string;
+  apellido: string;
+  conCuenta: boolean;
+  numeroTelefono: string;
+  correo: string;
+  contrasena: string;
+  fechaUltimoLogin: string | null;
+}
+
+interface UsuariosResponse {
+  usuarios: Usuario[];
+}
+
 export default function TabOneScreen() {
   const [isConnected, setIsConnected] = useState(false);
+  const [motorizado, setMotorizado] = useState<Usuario | null>(null);
+  const [loading, setLoading] = useState(true); 
+
+  const obtenerMotorizado = async () => {
+    try {
+      const response = await axios.get<UsuariosResponse>('http://localhost:9000/admin/usuario/');
+
+      // Extrae el primer motorizado
+      const repartidor = response.data.usuarios[0];
+      console.log('Motorizado:', repartidor.id);
+      setMotorizado(repartidor); 
+    } catch (error) {
+      console.error('Error al obtener motorizado:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    obtenerMotorizado();
+  }, []);
 
   const toggleSwitch = () => setIsConnected((previousState) => !previousState);
 
@@ -55,8 +98,7 @@ export default function TabOneScreen() {
           trackColor={{ false: "#e4e4e4", true: "#E0AC00" }}
         />
       </View>
-
-      <Text style={styles.greeting}>Hola Santiago Castro!</Text>
+      <Text style={styles.greeting}>Hola {motorizado?.nombre || "Motorizado"}!</Text> 
       <Text style={styles.instructions}>
         Ten en cuenta estos datos, son muy importantes para la asignación de
         órdenes
@@ -146,7 +188,7 @@ const styles = StyleSheet.create({
   },
   card_inside: {
     flexDirection: "row",
-    flex:0,
+    flex: 1,
   },
   cardText: {
     marginHorizontal: 10,
