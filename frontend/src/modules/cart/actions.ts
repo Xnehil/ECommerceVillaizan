@@ -25,12 +25,16 @@ const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
  * @example
  * const cart = await getOrSetCart()
  */
-export async function getOrSetCart() {
+export async function getOrSetCart(only_get=false) {
   const cookieValues = cookies()
   const cartId = cookieValues.get("_medusa_cart_id")?.value
-  console.log("Cart ID sacado de la cookie: ", cartId)
+  // console.log("Cart ID sacado de la cookie: ", cartId)
   let cart;
   let cookieValue ="alreadysaved"
+
+  if (only_get && !cartId) {
+    return null
+  }
 
   if (cartId) {
     try {

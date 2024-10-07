@@ -1,19 +1,13 @@
-import { LineItem } from "@medusajs/medusa"
 import { Metadata } from "next"
-import { cookies } from "next/headers"
-
-import CartTemplate from "@modules/cart/templates"
 import 'styles/globals.css'
 
-import { enrichLineItems } from "@modules/cart/actions"
-import { getCheckoutStep } from "@lib/util/get-checkout-step"
-import { CartWithCheckoutStep } from "types/global"
-import { getCart, getCustomer } from "@lib/data"
-import CustomRectangle from "components/CustomRectangle"
+import { enrichLineItems, getOrSetCart } from "@modules/cart/actions"
 import MetodoPagoClient from "./MetodoPagoClient"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
 import { Usuario } from "types/PaqueteUsuario"
 import { Direccion } from "types/PaqueteEnvio"
+import Checkout from "./Checkout"
+import { notFound } from "next/navigation"
 
 export const metadata: Metadata = {
   title: "Metodo de Pago",
@@ -21,33 +15,20 @@ export const metadata: Metadata = {
 }
 
 const fetchCart = async () => {
-  const cartId = cookies().get("_medusa_cart_id")?.value
-
-  if (!cartId) {
-    return null
+  const respuesta = await getOrSetCart();
+  if (!respuesta) {
+    return null;
   }
-
-  const cart = await getCart(cartId).then(
-    (cart) => cart as CartWithCheckoutStep
-  )
-
-  if (!cart) {
-    return null
-  }
-
-  /*if (cart?.items.length) {
-    const enrichedItems = await enrichLineItems(cart?.items, cart?.region_id)
-    cart.items = enrichedItems as LineItem[]
-  }*/
-
-  cart.checkout_step = cart && getCheckoutStep(cart)
-
+  let cart:Pedido= respuesta?.cart;
+  const enrichedItems = await enrichLineItems(cart.detalles);
+  // console.log("Detalles enriquecidos:", enrichedItems);
+  cart.detalles = enrichedItems;
   return cart
 }
 
 export default async function MetodoPago() {
   const cart = await fetchCart()
-  const customer = await getCustomer()
+  // const customer = await getCustomer() Para cuando se implemente el login
   const detallesPedido: DetallePedido[] = [
     {
       cantidad: 20,
@@ -163,8 +144,8 @@ export default async function MetodoPago() {
     usuarioActualizacion: "",
     estaActivo: false
   };
-
-
-
-  return <MetodoPagoClient pedido={pedido} usuario={usuario} direccion={direccion}/>
+  if (!cart) {
+    return notFound()
+  }
+  return <Checkout pedido={cart} usuario={usuario} direccion={direccion} />
 }
