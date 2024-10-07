@@ -9,6 +9,7 @@ import Divider from "@modules/common/components/divider"
 import { Customer } from "@medusajs/medusa"
 import { Pedido } from "types/PaquetePedido"
 import { useState } from "react"
+import BackButton from "@components/BackButton"
 
 const CartTemplate = ({
   cart,
@@ -18,10 +19,18 @@ const CartTemplate = ({
   customer?: Omit<Customer, "password_hash"> | null
 }) => {
   const [carritoState, setCarritoState] = useState<Pedido>(cart)
-
+  const handleBackClick = () => {
+    //Enviar a /comprar
+    window.history.back()
+  }
 
   return (
-    <div className="py-12">
+    
+    <div className="py-6">
+      <div style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "60px" }}>
+          <BackButton onClick={handleBackClick} />
+      </div>
+
       <div className="content-container" data-testid="cart-container">
         {cart?.detalles.length ? (
           <div className="grid grid-cols-1 small:grid-cols-[1fr_360px] gap-x-40">

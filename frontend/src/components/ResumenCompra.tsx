@@ -44,10 +44,10 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const [showBuscandoPopup, setShowBuscandoPopup] = useState(false);
   const isButtonDisabled = !selectedImageId || !seleccionado; // Deshabilitar el botón si no hay una imagen seleccionada
   const detalles: DetallePedido[] = pedido ? pedido.detalles : [];
-
+    
 
   const calcularSubtotal = () => {
-    return detalles.reduce((acc, detalle) => acc + detalle.producto.precioC * detalle.cantidad, 0);
+    return detalles.reduce((acc, detalle) => acc + detalle.producto.precioEcommerce * detalle.cantidad, 0);
   };
 
   const calcularTotal = () => {
@@ -120,12 +120,21 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
     pedidoBD.codigoSeguimiento = "123456";
     console.log("Pedido ha guardar", pedidoBD);
     const response = await axios.put(`${baseUrl}/admin/pedido/${pedidoBD.id}`, pedidoBD);
+    const response = await axios.put(`${baseUrl}/admin/pedido/${pedidoBD.id}?asignarRepartidor=true`, pedidoBD); // Harvy agregó esto, un parámetro extra que el back leería para saber que se debe asignar un repartidor
     if(response.data){
       //setShowBuscandoPopup(false);
       console.log("Pedido creado correctamente");
       console.log(response.data);
     }
       */
+
+    //Luego de 3 segundos, se cierra el popup de "Buscando repartidor". Solo para desarrollo
+    setTimeout(() => {
+      setShowBuscandoPopup(false);
+      //Redirigir a la página de seguimiento
+      let codigoSeguimiento = "123456";
+      window.location.href = `/seguimiento?codigo=${codigoSeguimiento}`;
+    }, 3000);
   };
 
   const handleCloseBuscandoPopup = () => {
@@ -151,7 +160,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           <span style={{ color: 'grey' }}>
             {detalle.producto.nombre} <strong style={{ color: 'black' }}>x</strong> {detalle.cantidad}
           </span>
-          <span>S/. {(detalle.producto.precioC * detalle.cantidad).toFixed(2)}</span>
+          <span>S/. {(detalle.producto.precioEcommerce * detalle.cantidad).toFixed(2)}</span>
         </div>
       ))}
 

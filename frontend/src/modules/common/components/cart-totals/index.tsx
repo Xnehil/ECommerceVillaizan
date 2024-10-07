@@ -87,7 +87,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data }) => {
           {getAmount(total)}
         </span>
       </div>
-      <div className="h-px w-full border-b border-gray-400 mt-4" />
+      <div className="h-px w-full border-b border-gray-300 mt-4" />
     </div>
   )
 }
