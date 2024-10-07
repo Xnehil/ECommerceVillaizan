@@ -44,13 +44,23 @@ const Item = ({ item,  type = "full", onDelete}: ItemProps) => {
       })
       .finally(() => {
         setUpdating(false)
-        console.log("Se actualizó la cantidad del producto, ", item.producto , " a ", nuevaCantidad, " el nuevo subtotal es ", nuevaCantidad * item.producto.precioEcommerce)
+        // console.log("Se actualizó la cantidad del producto, ", item.producto , " a ", nuevaCantidad, " el nuevo subtotal es ", nuevaCantidad * item.producto.precioEcommerce)
         item.cantidad = nuevaCantidad
         item.subtotal = nuevaCantidad  * item.producto.precioEcommerce
       })
 
     message && setError(message)
   }
+
+  const [cantidad, setCantidad] = useState(item.cantidad);
+
+  const handleChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    if (value >= 1 && value <= 30) {
+      setCantidad(value);
+      changeQuantity(value);
+    }
+  };
 
   return (
     <Table.Row className="w-full" data-testid="product-row">
@@ -83,23 +93,24 @@ const Item = ({ item,  type = "full", onDelete}: ItemProps) => {
               <Table.Cell>
                 <div className="flex gap-2 items-center w-full justify-center">
                 <button
-                  className="w-8 h-8 flex items-center justify-center bg-cremaFondo rounded text-black font-black cursor-pointer"
+                  className={`w-8 h-8 flex items-center justify-center bg-cremaFondo rounded text-black font-black ${item.cantidad <= 1 ? 'pointer-events-none opacity-50' : ''}`}
                   onClick={() => changeQuantity(item.cantidad - 1)}
                   disabled={item.cantidad <= 1}
                 >
                   -
                 </button>
-                <div
-                  className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded"
-                  style={{ userSelect: 'none' }}
-                  title="Usa los botones para cambiar la cantidad"
-                >
-                  {item.cantidad}
-                </div>
+                <input
+                  type="number"
+                  value={cantidad}
+                  onChange={handleChange}
+                  min="1"
+                  max="30"
+                  className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded text-center no-spinner"
+                />
                 <button
                   className="w-8 h-8 flex items-center justify-center bg-cremaFondo rounded text-black font-black cursor-pointer"
                   onClick={() => changeQuantity(item.cantidad + 1)}
-                  disabled={item.cantidad >= 20} 
+                  disabled={item.cantidad >= 30} 
                 >
                   +
                 </button>

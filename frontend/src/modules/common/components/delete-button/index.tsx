@@ -32,10 +32,10 @@ const DeleteButton = ({
         setCart({ ...cart, detalles: updatedCart }) 
       } 
       if (onDelete) {
-        onDelete
+        onDelete()
       }
       const response = await axios.delete(`${urlBase}/admin/detallePedido/${id}`)
-      console.log("Deleted item:", response)
+      // console.log("Deleted item:", response)
     } catch (error) {
       console.error("Error deleting item:", error)
     } finally {

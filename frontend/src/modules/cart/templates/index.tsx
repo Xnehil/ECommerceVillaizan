@@ -8,14 +8,18 @@ import SignInPrompt from "../components/sign-in-prompt"
 import Divider from "@modules/common/components/divider"
 import { Customer } from "@medusajs/medusa"
 import { Pedido } from "types/PaquetePedido"
+import { useState } from "react"
 
 const CartTemplate = ({
   cart,
   customer,
 }: {
-  cart: Pedido | null
+  cart: Pedido 
   customer?: Omit<Customer, "password_hash"> | null
 }) => {
+  const [carritoState, setCarritoState] = useState<Pedido>(cart)
+
+
   return (
     <div className="py-12">
       <div className="content-container" data-testid="cart-container">
@@ -28,14 +32,14 @@ const CartTemplate = ({
                   <Divider />
                 </>
               )} */}
-              <ItemsTemplate carrito={cart} />
+              <ItemsTemplate carrito={carritoState} setCarrito={setCarritoState} />
             </div>
             <div className="relative">
               <div className="flex flex-col gap-y-8 sticky top-12">
                 {cart  && (
                   <>
                     <div className="bg-white py-6">
-                      {/* <Summary cart={cart} /> */}
+                      <Summary carrito={carritoState} />
                     </div>
                   </>
                 )}

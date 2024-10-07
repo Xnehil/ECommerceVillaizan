@@ -8,9 +8,10 @@ import { DetallePedido, Pedido } from "types/PaquetePedido"
 
 type ItemsTemplateProps = {
   carrito: Pedido
+  setCarrito: (carrito: Pedido) => void
 }
 
-const ItemsTemplate = ({  carrito }: ItemsTemplateProps) => {
+const ItemsTemplate = ({  carrito, setCarrito }: ItemsTemplateProps) => {
   const [refresh, setRefresh] = useState(false);
   const [items, setItems] = useState(carrito.detalles || []);
 
@@ -18,7 +19,9 @@ const ItemsTemplate = ({  carrito }: ItemsTemplateProps) => {
   const deleteItem = (itemId:string) => {
     // Your deletion logic here
     const updatedItems = items.filter(item => item.id !== itemId);
-    console.log("se quitó el item con id: ", itemId);
+    //Refresh carrito so the other components can update
+    setCarrito({...carrito, detalles: updatedItems});
+
     setItems(updatedItems);
     setRefresh(!refresh); 
   };
