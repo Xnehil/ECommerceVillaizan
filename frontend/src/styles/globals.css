@@ -133,3 +133,19 @@ body {
     @apply text-[32px] leading-[44px] font-semibold;
   }
 }
+
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* CSS para animar el clic */
+.h1:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}

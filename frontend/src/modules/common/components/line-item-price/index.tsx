@@ -22,9 +22,9 @@ const LineItemPrice = ({
   const hasReducedPrice = (item.subtotal || 0) < originalPrice
 
   return (
-    <div className="flex flex-col gap-x-2 text-ui-fg-subtle items-end">
+    <div className="flex flex-col gap-x-2 text-ui-fg-subtle items-end pr-4">
       <div className="text-left">
-        {hasReducedPrice && (
+        {/* {hasReducedPrice && (
           <>
             <p>
               {style === "default" && (
@@ -44,14 +44,13 @@ const LineItemPrice = ({
               </span>
             )}
           </>
-        )}
+        )} */}
         <span
-          className={clx("text-base-regular", {
-            "text-ui-fg-interactive": hasReducedPrice,
-          })}
+          className={"text-black font-poppins text-base not-italic font-normal leading-normal pr-1"}
+          style={{ fontWeight: 550 }}
           data-testid="product-price"
         >
-          {item.subtotal}
+          {"S/ " + Number(item.subtotal).toFixed(2)}
         </span>
       </div>
     </div>

@@ -20,6 +20,19 @@ import { Producto } from "src/models/Producto";
  *           type: string
  *         required: true
  *         description: ID del producto
+ *       - in: query
+ *         name: enriquecido
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe recuperar el producto enriquecido
+ *      - in: query
+ *        name: nombre
+ *       schema:
+ *        type: boolean
+ *        required: false
+ *        description: Si realmente el id es el nombre del producto
+ * 
  *     responses:
  *       200:
  *         description: Detalles del producto
@@ -38,9 +51,12 @@ export const GET = async (
 ) => {
     const productoService: ProductoService = req.scope.resolve("productoService");
     const id = req.params.id;
-
+    const enriquecido = req.query.enriquecido === 'true';
+    const nombre = req.query.nombre === 'true';
+    const relations = enriquecido ? ["tipoProducto", "subcategorias", "frutas"] : [];
+    const attribute = nombre ? { nombre: id } : { id };
     try {
-        const producto = await productoService.recuperar(id);
+        const producto = await productoService.recuperar(attribute, { relations});
         res.json({ producto });
     } catch (error) {
         res.status(404).json({ error: "producto no encontrado" });

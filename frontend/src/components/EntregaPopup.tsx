@@ -1,9 +1,10 @@
 import React from 'react';
+import { DetallePedido } from 'types/PaquetePedido';
 
 interface EntregaPopupProps {
   direccion: string;
   nombre: string;
-  productos: { nombre: string; cantidad: number }[];
+  detalles: DetallePedido[];
   subtotal: number;
   metodoPago: string;
   onConfirm: () => void;
@@ -15,7 +16,7 @@ interface EntregaPopupProps {
 const EntregaPopup: React.FC<EntregaPopupProps> = ({
   direccion,
   nombre,
-  productos,
+  detalles,
   subtotal,
   metodoPago,
   onConfirm,
@@ -35,13 +36,19 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
           <strong>{nombre}</strong>
         </p>
         <p style={{ textAlign: 'left' }}>Pedido:</p>
-        {productos.map((producto, index) => (
-          <p style={{ textAlign: 'left' }} key={index}>
-            <strong>
-              {producto.cantidad} {producto.nombre}
-            </strong>
-          </p>
-        ))}
+        {detalles.map((detalle, index) => {
+          let nombreProducto = detalle.producto.nombre;
+          if (detalle.cantidad > 1 && nombreProducto.includes("Paleta")) {
+            nombreProducto = nombreProducto.replace("Paleta", "Paletas");
+          }
+          return (
+            <p style={{ textAlign: 'left' }} key={index}>
+              <strong>
+                {detalle.cantidad} {nombreProducto}
+              </strong>
+            </p>
+          );
+        })}
         <p style={{ textAlign: 'left' }}>Subtotal:</p>
         <p style={{ textAlign: 'left' }}>
           <strong>S/. {subtotal.toFixed(2)}</strong>
@@ -90,7 +97,7 @@ const styles = {
     backgroundColor: 'white',
     borderRadius: '15px',
     padding: '20px',
-    width: '300px',
+    width: '350px', // Definimos la anchura aquí
     textAlign: 'center' as 'center',
   },
   buttonContainer: {

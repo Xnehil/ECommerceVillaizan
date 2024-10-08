@@ -50,6 +50,29 @@ CREATE TABLE vi_persona (
     usuarioactualizacion VARCHAR(50)
 );
 
+CREATE TABLE vi_permiso (
+    id VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    eliminadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_rol (
+	id VARCHAR(50) PRIMARY KEY,
+	nombre VARCHAR(100) NOT NULL,
+	--trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
+
 CREATE TABLE vi_usuario (
     id VARCHAR(50) PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
@@ -59,18 +82,35 @@ CREATE TABLE vi_usuario (
     correo VARCHAR(150) NOT NULL UNIQUE,
     contrasena VARCHAR(255) NOT NULL,
     fechaultimologin TIMESTAMP,
-    id_persona VARCHAR(50),
-    CONSTRAINT fk_persona FOREIGN KEY (id_persona) REFERENCES vi_persona(id),
-    --trazabilidad
+	id_persona VARCHAR(50),  -- Relación con Persona
+    -- Nuevas relaciones
+    id_rol VARCHAR(50),  -- Relación con la tabla Rol
+    -- Trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,
     creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     usuariocreacion VARCHAR(50) NOT NULL,
-    usuarioactualizacion VARCHAR(50)
+    usuarioactualizacion VARCHAR(50),
+    CONSTRAINT fk_persona FOREIGN KEY (id_persona) REFERENCES vi_persona(id),
+    CONSTRAINT fk_rol FOREIGN KEY (idRol) REFERENCES vi_rol(id),
 );
 
-
+CREATE TABLE vi_notificacion (
+    idNotificacion VARCHAR(50) PRIMARY KEY,
+    asunto VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    tipoNotificacion VARCHAR(100),
+    leido BOOLEAN DEFAULT FALSE NOT NULL,
+    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
+    eliminadoEn TIMESTAMP,
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuarioCreacion VARCHAR(50) NOT NULL,
+    usuarioActualizacion VARCHAR(50),
+    idUsuario VARCHAR(50),  -- Relación con la tabla Usuario
+    CONSTRAINT fk_usuario FOREIGN KEY (idUsuario) REFERENCES vi_usuario(id)
+);
 
 -- Libro de Reclamaciones
 
@@ -174,7 +214,9 @@ create table vi_producto (
     actualizadoen timestamp default current_timestamp not null,
     desactivadoen timestamp null,
 	id_tipoproducto VARCHAR(50),
-	CONSTRAINT fk_tipo_producto FOREIGN KEY (id_tipoproducto) REFERENCES vi_tipoproducto(id)
+	CONSTRAINT fk_tipo_producto FOREIGN KEY (id_tipoproducto) REFERENCES vi_tipoproducto(id),
+	id_igv VARCHAR(50),
+	CONSTRAINT fk_igb FOREIGN KEY (id_igv) REFERENCES vi_igv(id)
 );
 
 create table vi_fruta (
@@ -419,9 +461,12 @@ CREATE TABLE vi_detallepedido (
 	cantidad INT NOT NULL,
     subtotal DECIMAL(10, 2) NOT NULL,
     id_producto VARCHAR(50),
+	precioEcommerce decimal(10, 2),
 	CONSTRAINT fk_producto FOREIGN KEY (id_producto) REFERENCES vi_producto(id),
 	id_pedido VARCHAR(50),
 	CONSTRAINT fk_pedido FOREIGN KEY (id_pedido) REFERENCES vi_pedido(id),
+	id_igv VARCHAR(50),
+	CONSTRAINT fk_igb FOREIGN KEY (id_igv) REFERENCES vi_igv(id),
 	--TO DO id_promocion VARCHAR(50),
 	--TO DO CONSTRAINT fk_promocion FOREIGN KEY (id_promocion) REFERENCES vi_promocion(id),
     --trazabilidad
@@ -544,6 +589,17 @@ CREATE TABLE vi_categoria (
     estaActivo BOOLEAN DEFAULT TRUE NOT NULL
 );
 
+--2A
+
+CREATE TABLE vi_tipo_publicacion (
+    id INT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL
+);
+
+
 CREATE TABLE vi_etiqueta (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
@@ -553,29 +609,67 @@ CREATE TABLE vi_etiqueta (
     estaActivo BOOLEAN DEFAULT TRUE NOT NULL
 );
 
+CREATE TABLE vi_estado_publicacion (
+    id INT PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    color VARCHAR(20),
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL
+);
+
+CREATE TABLE vi_categoria_publicacion (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    color VARCHAR(20),
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL
+);
+
+CREATE TABLE vi_etiqueta_publicacion (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT,
+    fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    color VARCHAR(20),
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL
+);
+
+
 CREATE TABLE vi_publicacion (
-    idPublicacion SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     titulo VARCHAR(255) NOT NULL,
     urlImagen VARCHAR(255),
     descripcion TEXT NOT NULL,
-    fechaCreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    fechaPublicacion TIMESTAMP,
-    fechaUltimaModificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
-    idCategoria INT,  -- Relación con la tabla Categoria
-    idTipoPublicacion INT, -- Relación con la tabla TipoPublicacion
-    idEstadoPublicacion INT, -- Relación con la tabla EstadoPublicacion
-    CONSTRAINT fk_categoria FOREIGN KEY (idCategoria) REFERENCES vi_categoria(id),
-    CONSTRAINT fk_tipo_publicacion FOREIGN KEY (idTipoPublicacion) REFERENCES vi_tipopublicacion(id),
-    CONSTRAINT fk_estado_publicacion FOREIGN KEY (idEstadoPublicacion) REFERENCES vi_estadopublicacion(id)
+    fechacreacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    fechapublicacion TIMESTAMP,
+    fechaultimaModificacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    id_categoria_publicacion INT,  -- Relación con la tabla Categoria
+    id_tipo_publicacion INT, -- Relación con la tabla TipoPublicacion
+    id_estado_publicacion INT, -- Relación con la tabla EstadoPublicacion
+    id_usuario VARCHAR(50),  -- Relación con la tabla Usuario
+    CONSTRAINT fk_categoria FOREIGN KEY (id_categoria_publicacion) REFERENCES vi_categoria_publicacion(id),
+    CONSTRAINT fk_tipo_publicacion FOREIGN KEY (id_tipo_publicacion) REFERENCES vi_tipo_publicacion(id),
+    CONSTRAINT fk_estado_publicacion FOREIGN KEY (id_estado_publicacion) REFERENCES vi_estado_publicacion(id),
+    CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES vi_usuario(id) -- Nueva relación con Usuario
 );
 
-CREATE TABLE vi_publicacion_etiqueta (
-    idPublicacion INT,  -- Relación con la tabla Publicacion
-    idEtiqueta INT,     -- Relación con la tabla Etiqueta
-    PRIMARY KEY (idPublicacion, idEtiqueta), -- Clave primaria compuesta
-    CONSTRAINT fk_publicacion FOREIGN KEY (idPublicacion) REFERENCES vi_publicacion(idPublicacion),
-    CONSTRAINT fk_etiqueta FOREIGN KEY (idEtiqueta) REFERENCES vi_etiqueta(id)
+CREATE TABLE vi_publicacion_x_etiqueta (
+    id_publicacion INT,  -- Relación con la tabla Publicacion
+    id_etiqueta_publicacion INT,     -- Relación con la tabla Etiqueta
+    PRIMARY KEY (id_publicacion, id_etiqueta_publicacion), -- Clave primaria compuesta
+    CONSTRAINT fk_publicacion FOREIGN KEY (id_publicacion) REFERENCES vi_publicacion(id),
+    CONSTRAINT fk_etiqueta FOREIGN KEY (id_etiqueta_publicacion) REFERENCES vi_etiqueta_publicacion(id)
 );
 
-
+CREATE TABLE vi_rol_permiso (
+    id_rol VARCHAR(50),  -- Clave foránea hacia la tabla Rol
+    id_permiso VARCHAR(50),  -- Clave foránea hacia la tabla Permiso
+    creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT fk_rol FOREIGN KEY (id_rol) REFERENCES vi_rol(id),
+    CONSTRAINT fk_permiso FOREIGN KEY (id_permiso) REFERENCES vi_permiso(id),
+    PRIMARY KEY (id_rol, id_permiso)  -- La clave primaria es la combinación de ambas claves foráneas
+);

@@ -1,50 +1,151 @@
-import { LineItem } from "@medusajs/medusa"
 import { Metadata } from "next"
-import { cookies } from "next/headers"
-
-import CartTemplate from "@modules/cart/templates"
 import 'styles/globals.css'
 
-import { enrichLineItems } from "@modules/cart/actions"
-import { getCheckoutStep } from "@lib/util/get-checkout-step"
-import { CartWithCheckoutStep } from "types/global"
-import { getCart, getCustomer } from "@lib/data"
-import CustomRectangle from "components/CustomRectangle"
-import CartClient from "./CartClient"
+import { enrichLineItems, getOrSetCart } from "@modules/cart/actions"
+import MetodoPagoClient from "./MetodoPagoClient"
+import { DetallePedido, Pedido } from "types/PaquetePedido"
+import { Usuario } from "types/PaqueteUsuario"
+import { Direccion } from "types/PaqueteEnvio"
+import Checkout from "./Checkout"
+import { notFound } from "next/navigation"
 
 export const metadata: Metadata = {
-  title: "Cart",
-  description: "View your cart",
+  title: "Metodo de Pago",
+  description: "Revisa tu metodo de pago",
 }
 
 const fetchCart = async () => {
-  const cartId = cookies().get("_medusa_cart_id")?.value
-
-  if (!cartId) {
-    return null
+  const respuesta = await getOrSetCart();
+  if (!respuesta) {
+    return null;
   }
-
-  const cart = await getCart(cartId).then(
-    (cart) => cart as CartWithCheckoutStep
-  )
-
-  if (!cart) {
-    return null
-  }
-
-  if (cart?.items.length) {
-    const enrichedItems = await enrichLineItems(cart?.items, cart?.region_id)
-    cart.items = enrichedItems as LineItem[]
-  }
-
-  cart.checkout_step = cart && getCheckoutStep(cart)
-
+  let cart:Pedido= respuesta?.cart;
+  const enrichedItems = await enrichLineItems(cart.detalles);
+  // console.log("Detalles enriquecidos:", enrichedItems);
+  cart.detalles = enrichedItems;
   return cart
 }
 
-export default async function Cart() {
+export default async function MetodoPago() {
   const cart = await fetchCart()
-  const customer = await getCustomer()
+  // const customer = await getCustomer() Para cuando se implemente el login
+  const detallesPedido: DetallePedido[] = [
+    {
+      cantidad: 20,
+      subtotal: 100,
+      producto: {
+        id: "1",
+        nombre: "Paleta de Fresa",
+        precioC: 2.5,
+        codigo: "SKU-1",
+        descripcion: "Descripción del producto 1",
+        tipoProducto: undefined,
+        subcategorias: [],
+        frutas: [],
+        inventarios: [],
+        precioA: 0,
+        precioB: 0,
+        precioEcommerce: 0,
+        urlImagen: "",
+        cantMinPed: 0,
+        cantMaxPed: 0,
+        seVendeEcommerce: false,
+        creadoEn: new Date(),
+        actualizadoEn: new Date(),
+        desactivadoEn: null,
+        usuarioCreacion: "",
+        usuarioActualizacion: "",
+        estaActivo: false
+      },
+      pedido: undefined,
+      id: "",
+      creadoEn: undefined,
+      actualizadoEn: undefined,
+      desactivadoEn: null,
+      usuarioCreacion: "",
+      usuarioActualizacion: "",
+      estaActivo: false
+    },
+    {
+      cantidad: 10,
+      subtotal: 100,
+      producto: {
+        id: "1",
+        nombre: "Paleta de Banana",
+        precioC: 2.5,
+        codigo: "SKU-2",
+        descripcion: "Descripción del producto 2",
+        tipoProducto: undefined,
+        subcategorias: [],
+        frutas: [],
+        inventarios: [],
+        precioA: 0,
+        precioB: 0,
+        precioEcommerce: 0,
+        urlImagen: "",
+        cantMinPed: 0,
+        cantMaxPed: 0,
+        seVendeEcommerce: false,
+        creadoEn: new Date(),
+        actualizadoEn: new Date(),
+        desactivadoEn: null,
+        usuarioCreacion: "",
+        usuarioActualizacion: "",
+        estaActivo: false
+      },
+      pedido: undefined,
+      id: "",
+      creadoEn: undefined,
+      actualizadoEn: undefined,
+      desactivadoEn: null,
+      usuarioCreacion: "",
+      usuarioActualizacion: "",
+      estaActivo: false
+    },
+  ];
+  const pedido : Pedido = {
+    estado: "En proceso",
+    total: 100,
+    puntosOtorgados: 10,
+    metodosPago: [],
+    detalles: detallesPedido,
+    id: "",
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  }
 
-  return <CartClient cart={cart} customer={customer} />
+  const usuario : Usuario = {
+    nombre: "Juan",
+    apellido: "Perez",
+    conCuenta: true,
+    correo: "",
+    contrasena: "",
+    persona: undefined,
+    id: "",
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  }
+
+  const direccion: Direccion = {
+    id: "",
+    calle: "Av. Siempre Viva",
+    numeroExterior: "742",
+    distrito: "Springfield",
+    codigoPostal: "12345",
+    ciudad: undefined,
+    ubicacion: undefined,
+    envios: [],
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  };
+  if (!cart) {
+    return notFound()
+  }
+  return <Checkout pedido={cart} usuario={usuario} direccion={direccion} />
 }

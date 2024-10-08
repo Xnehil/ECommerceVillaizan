@@ -65,6 +65,17 @@ class TipoProductoService extends TransactionBaseService {
       async crear(tipoProducto: TipoProducto): Promise<TipoProducto> {
         return this.atomicPhase_(async (manager) => {
           const tipoProductoRepo = manager.withRepository(this.tipoProductoRepository_);
+
+          // Check if a tipoProducto with the same nombre (lowercased) already exists
+          const existingTipoProducto = await tipoProductoRepo.createQueryBuilder('tipoProducto')
+          .where('LOWER(tipoProducto.nombre) = LOWER(:nombre)', { nombre: tipoProducto.nombre })
+          .getOne();
+
+      
+          if (existingTipoProducto) {
+            return existingTipoProducto;
+          }
+      
           const tipoProductoCreado = tipoProductoRepo.create(tipoProducto);
           const result = await tipoProductoRepo.save(tipoProductoCreado);
           return result;
