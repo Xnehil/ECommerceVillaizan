@@ -1,17 +1,6 @@
 "use server"
 
 import { revalidateTag } from "next/cache"
-
-import {
-  addItem,
-  createCart,
-  getCart,
-  getProductsById,
-  getRegion,
-  removeItem,
-  updateCart,
-  updateItem,
-} from "@lib/data"
 import axios from "axios"
 import { DetallePedido } from "types/PaquetePedido"
 import cookie from "cookie"
@@ -123,9 +112,10 @@ export async function addToCart({
   }
 
   try {
-    await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio}) //Esto ya está modificado
-    revalidateTag("cart")
+    const response=await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio}) //Esto ya está modificado
+    // revalidateTag("cart")
     console.log("Item ", idProducto, " added to cart")
+    return response
   } catch (e) {
     return "Error adding item to cart"
   }
@@ -220,4 +210,86 @@ export async function enrichLineItems(
     product.detallePedido.cantidad = Number(product.detallePedido.cantidad)
     return product.detallePedido
   }) as DetallePedido[]
+}
+
+export async function addItem({
+  idPedido,
+  idProducto,
+  cantidad,
+  precio
+}: {
+  idPedido: string
+  idProducto: string
+  cantidad: number
+  precio: number
+}) {
+
+  // return medusaClient.carts.lineItems
+  //   .create(cartId, { variant_id: variantId, quantity }, headers)
+  //   .then(({ cart }) => cart)
+  //   .catch((err) => {
+  //     console.log(err)
+  //     return null
+  //   })
+  try{
+    console.log("Adding item to cart")
+    const response = await axios.post(`${baseUrl}/admin/detallePedido`, {
+      producto:{
+        id: idProducto
+      },
+      cantidad: cantidad,
+      pedido: {
+        id: idPedido
+      },
+      subtotal: precio*cantidad
+    })
+    console.log(response)
+    return response
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+}
+
+export async function updateItem({
+  cartId,
+  lineId,
+  quantity,
+  precio
+}: {
+  cartId: string
+  lineId: string
+  quantity: number
+  precio: number
+}) {
+  try{
+    const response = axios.put(`${process.env.NEXT_PUBLIC_MEDUSA_API_URL}/admin/detallePedido/${lineId}`, {
+      cantidad: quantity,
+      subtotal: precio*quantity
+    })
+
+    return response
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+  
+}
+
+export async function removeItem({
+  cartId,
+  lineId,
+}: {
+  cartId: string
+  lineId: string
+}) {
+  try {
+    const response = axios.delete(`${process.env.NEXT_PUBLIC_MEDUSA_API_URL}/admin/detallePedido/${lineId}`)
+
+    return response
+  }
+  catch (e) {
+    console.log(e)
+    return null
+  }
 }

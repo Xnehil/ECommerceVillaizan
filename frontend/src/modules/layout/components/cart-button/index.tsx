@@ -17,30 +17,35 @@ const fetchCart = async (): Promise<{ cart: Pedido; cookieValue?: string }> => {
   return { cart, cookieValue };
 };
 
-export default function CartButton() {
+interface CartButtonProps {
+  carrito: Pedido | null;
+  setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>;
+}
+
+const CartButton: React.FC<CartButtonProps> = ({ carrito, setCarrito }) => {
   const [cart, setCart] = useState<Pedido | null>(null);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
     // Fetch the cart data when the component is mounted
     const getCart = async () => {
+      // console.log("Fetching cart...");
       const { cart } = await fetchCart();
       const enrichedItems = await enrichLineItems(cart.detalles);
       // console.log("Detalles enriquecidos:", enrichedItems);
       cart.detalles = enrichedItems;
-      setCart(cart);
+      setCarrito(cart);
     };
-    if(cart === null) getCart();
+    if(carrito == null) getCart();
   }, []);
 
   useEffect(() => {
-    if (cart) {
+    if (carrito && !done) {
       setDone(true);
-      console.log("Carrito cargado:", cart);
+      console.log("Carrito cargado:", carrito);
     }
-
   }
-  , [cart]);
+  , [carrito]);
 
 
   if (!done) {
@@ -54,9 +59,10 @@ export default function CartButton() {
   } else {
     return (
       <div className="flex items-center justify-center bg-rojoVillaizan text-white rounded-lg h-14">
-        <CartDropdown cart={cart} setCart={setCart} />
+        <CartDropdown cart={carrito} setCart={setCarrito} />
       </div>
     );
   }
   
 }
+export default CartButton;
