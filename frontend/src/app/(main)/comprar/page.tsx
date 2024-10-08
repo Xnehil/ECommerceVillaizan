@@ -31,7 +31,6 @@ export default async function StorePage({ searchParams, params }: Params) {
           height: 'auto',
         }}
       />
-
       {/* Contenido de la tienda */}
       <StoreTemplate
         sortBy={sortBy}
