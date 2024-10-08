@@ -65,8 +65,19 @@ class SubcategoriaService extends TransactionBaseService {
       async crear(subcategoria: Subcategoria): Promise<Subcategoria> {
         return this.atomicPhase_(async (manager) => {
           const subcategoriaRepo = manager.withRepository(this.subcategoriaRepository_);
-          const subcategoriaCreado = subcategoriaRepo.create(subcategoria);
-          const result = await subcategoriaRepo.save(subcategoriaCreado);
+
+          // Check if a tipoProducto with the same nombre (lowercased) already exists
+          const existingSubcategoria = await subcategoriaRepo.createQueryBuilder('subcategoria')
+          .where('LOWER(subcategoria.nombre) = LOWER(:nombre)', { nombre: subcategoria.nombre })
+          .getOne();
+
+      
+          if (existingSubcategoria) {
+            return existingSubcategoria;
+          }
+      
+          const subcategoriaCreada = subcategoriaRepo.create(subcategoria);
+          const result = await subcategoriaRepo.save(subcategoriaCreada);
           return result;
         });
       }
