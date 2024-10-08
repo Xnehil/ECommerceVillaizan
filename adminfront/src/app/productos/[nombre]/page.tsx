@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import "@/styles/general.css";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import InformacionGeneral from "./informacionGeneral";
-import InformacionAdicional from "./informacionAdicional";
-import Image from "next/image";
+import InformacionGeneral from "../agregar/informacionGeneral";
+import InformacionAdicional from "../agregar/informacionAdicional";
 import { Input } from "@/components/ui/input";
 import { Producto } from "@/types/PaqueteProducto";
 import axios from "axios";
@@ -15,18 +14,36 @@ import Loading from "@/components/Loading";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 
-const AgregarPage: React.FC = () => {
+interface ProductoPageProps {
+  params: {
+    nombre: string;
+  };
+}
+
+const ProductoPage: React.FC<ProductoPageProps> = ({ params: { nombre } }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [isEditingName, setIsEditingName] = useState(false);
-  const [productName, setProductName] = useState("");
+  const [productName, setProductName] = useState<string | string[]>(
+    decodeURIComponent(nombre)
+  );
   const [isLoading, setIsLoading] = useState(false);
   const producto = useRef<Producto>({} as Producto);
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    const edit = searchParams.get("edit");
+    if (edit === "true") {
+      setIsEditing(true);
+    }
+  }, [searchParams]);
 
   const { toast } = useToast();
 
   const handleCancel = () => {
-    router.back();
+    setIsEditing(false);
+    // router.back();
   };
   const handleEditClick = () => {
     setIsEditingName(true);
@@ -35,10 +52,6 @@ const AgregarPage: React.FC = () => {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setProductName(event.target.value);
     producto.current.nombre = event.target.value;
-  };
-
-  const handleInputBlur = () => {
-    setIsEditingName(false);
   };
 
   const handleSave = async () => {
@@ -143,4 +156,4 @@ const AgregarPage: React.FC = () => {
   );
 };
 
-export default AgregarPage;
+export default ProductoPage;

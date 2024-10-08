@@ -7,9 +7,11 @@ interface InputWithLabelProps {
   label: string;
   type?: string;
   placeholder?: string;
-  // value: string;
+  value?: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   accept?: string;
+  required?: boolean;
+  disabled?: boolean;
 }
 
 const InputWithLabel: React.FC<InputWithLabelProps> = ({
@@ -18,6 +20,9 @@ const InputWithLabel: React.FC<InputWithLabelProps> = ({
   placeholder,
   onChange,
   accept,
+  required = false,
+  disabled = false,
+  value,
 }) => {
   return (
     <div className="grid w-full max-w-sm items-center space-y-2">
@@ -27,6 +32,8 @@ const InputWithLabel: React.FC<InputWithLabelProps> = ({
         placeholder={placeholder}
         onChange={onChange}
         accept={accept}
+        disabled={disabled}
+        value={value}
       />
     </div>
   );

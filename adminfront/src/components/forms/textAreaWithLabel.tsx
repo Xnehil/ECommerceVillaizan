@@ -10,13 +10,16 @@ interface TextAreaWithLabelProps {
   placeholder?: string;
   maxLength?: number;
   // value: string;
-  // onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  disabled?: boolean;
 }
 
 const TextAreaWithLabel: React.FC<TextAreaWithLabelProps> = ({
   label,
   placeholder,
   maxLength = 300,
+  onChange,
+  disabled = false,
 }) => {
   const [currentValue, setCurrentValue] = useState("");
 
@@ -31,10 +34,13 @@ const TextAreaWithLabel: React.FC<TextAreaWithLabelProps> = ({
         maxLength={maxLength}
         onChange={handleChange}
         className="w-full max-h-64 overflow-y-auto"
+        disabled={disabled}
       />
-      <p className="text-sm text-muted-foreground text-right">
-        {maxLength - currentValue.length} caracteres restantes
-      </p>
+      {!disabled && (
+        <p className="text-sm text-muted-foreground text-right">
+          {maxLength - currentValue.length} caracteres restantes
+        </p>
+      )}
     </div>
   );
 };
