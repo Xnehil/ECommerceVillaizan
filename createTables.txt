@@ -395,10 +395,13 @@ CREATE TABLE vi_banco (
 CREATE TABLE vi_motorizado (
     id VARCHAR(50) PRIMARY KEY,
     placa VARCHAR(20) NOT NULL,
+	disponible BOOLEAN,
     id_almacen VARCHAR(50),
     CONSTRAINT fk_almacen FOREIGN KEY (id_almacen) REFERENCES vi_almacen(id),
     id_usuario VARCHAR(50),
     CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES vi_usuario(id),
+	id_ciudad VARCHAR(50),
+    CONSTRAINT fk_ciudad FOREIGN KEY (id_ciudad) REFERENCES vi_ciudad(id),
     --trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,
@@ -672,4 +675,23 @@ CREATE TABLE vi_rol_permiso (
     CONSTRAINT fk_rol FOREIGN KEY (id_rol) REFERENCES vi_rol(id),
     CONSTRAINT fk_permiso FOREIGN KEY (id_permiso) REFERENCES vi_permiso(id),
     PRIMARY KEY (id_rol, id_permiso)  -- La clave primaria es la combinación de ambas claves foráneas
+);
+
+CREATE TABLE vi_historialrepartidor(
+	id VARCHAR(50) PRIMARY KEY,
+    estado VARCHAR(50),
+    razonDeRechazo VARCHAR(255),
+    id_motorizado VARCHAR(50),
+    CONSTRAINT fk_motorizado FOREIGN KEY (id_motorizado) REFERENCES vi_motorizado(id),
+    id_usuario VARCHAR(50),
+    CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES vi_usuario(id),
+	id_pedido VARCHAR(50),
+    CONSTRAINT fk_pedido FOREIGN KEY (id_pedido) REFERENCES vi_pedido(id), 
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
 );
