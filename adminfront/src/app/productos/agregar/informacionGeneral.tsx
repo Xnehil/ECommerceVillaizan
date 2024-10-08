@@ -2,7 +2,7 @@
 
 import InputWithLabel from "@/components/forms/inputWithLabel";
 import { Label } from "@radix-ui/react-label";
-import React, { MutableRefObject, MutableRefObject, useRef, useState } from "react";
+import React, { MutableRefObject, useRef, useState } from "react";
 import "@/styles/general.css";
 import { Producto } from "@/types/PaqueteProducto";
 

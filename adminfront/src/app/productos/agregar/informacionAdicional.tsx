@@ -10,25 +10,16 @@ import "@/styles/general.css";
 import { Producto, Subcategoria, TipoProducto } from "@/types/PaqueteProducto";
 import { Skeleton } from "@/components/ui/skeleton";
 import axios from "axios";
-<<<<<<< HEAD
 import { useToast } from "@/hooks/use-toast";
 
 interface InformacionAdicionalProps {
   producto: MutableRefObject<Producto>;
   isEditing: boolean;
-=======
-
-interface InformacionAdicionalProps {
-  producto: MutableRefObject<Producto>;
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
 }
 
 const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   producto,
-<<<<<<< HEAD
   isEditing,
-=======
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
 }) => {
   const [isNewCategory, setIsNewCategory] = useState<boolean>(false);
   const [newCategoryName, setNewCategoryName] = useState<string>("");
@@ -36,15 +27,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   const [isNewSubcategory, setIsNewSubcategory] = useState<boolean>(false);
   const [newSubcategoryName, setNewSubcategoryName] = useState<string>("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
-  const categories = useRef<{ value: string; label: string }[]>([]);
 
-<<<<<<< HEAD
-  const subcategories = useRef<{ value: string; label: string }[]>([]);
-
-  const a = useRef(0);
-
-  const { toast } = useToast();
-=======
   const [isLoading, setIsLoading] = useState(true);
 
   const categories = useRef<{ value: string; label: string }[]>([]);
@@ -52,7 +35,8 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   const subcategories = useRef<{ value: string; label: string }[]>([]);
 
   const a = useRef(0);
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
+
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -106,11 +90,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   }, []);
 
   const handleCategoryChange = (value: string) => {
-<<<<<<< HEAD
-=======
-    setSelectedCategory(value);
-    producto.current.tipoProducto = { id: value } as TipoProducto;
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
     if (value === "Nueva categoría") {
       setIsNewCategory(true);
     } else {
@@ -121,14 +100,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   };
 
   const handleSubcategoryChange = (value: string) => {
-<<<<<<< Updated upstream
-    setSelectedSubcategory(value);
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
-=======
-    producto.current.subcategorias = [{ id: value } as Subcategoria];
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
     if (value === "Nueva subcategoría") {
       setIsNewSubcategory(true);
     } else {
@@ -162,12 +133,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         }
       );
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    setSelectedCategory(newCategoryName);
-=======
-=======
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
       if (response.status !== 201) {
         throw new Error("Failed to save new category");
       }
@@ -187,7 +152,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       setIsLoading(false);
       setIsNewCategory(false);
       setSelectedCategory(newCategory.id);
-<<<<<<< HEAD
 
       producto.current.tipoProducto = { id: newCategory.id } as TipoProducto;
 
@@ -204,12 +168,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       });
       setIsLoading(false);
     }
->>>>>>> Stashed changes
-=======
-    } catch (error) {
-      console.error("Error saving new category:", error);
-    }
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
   };
 
   const handleCancelNewSubcategory = () => {
@@ -235,14 +193,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         }
       );
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    setSelectedSubcategory(newSubcategoryName);
-=======
-      if (response.status !== 200) {
-=======
       if (response.status !== 201) {
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
         throw new Error("Failed to save new subcategory");
       }
 
@@ -261,7 +212,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       setIsLoading(false);
       setIsNewSubcategory(false);
       setSelectedSubcategory(newSubcategory.id);
-<<<<<<< HEAD
 
       producto.current.subcategorias = [
         { id: newSubcategory.id } as Subcategoria,
@@ -279,10 +229,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
           "Ocurrió un error al guardar la nueva subcategoría. Por favor, intente de nuevo.",
       });
       setIsLoading(false);
-=======
-    } catch (error) {
-      console.error("Error saving new subcategory:", error);
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
     }
   };
 
@@ -291,10 +237,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   ) => {
     producto.current.informacionNutricional = event.target.value;
     // console.log(producto.current);
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
   };
 
   return (
@@ -379,15 +321,8 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         label="Información nutricional"
         placeholder="Agregar una breve reseña"
         maxLength={800}
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
         onChange={handleNutritionalInfoChange}
         disabled={!isEditing}
->>>>>>> Stashed changes
-=======
-        onChange={handleNutritionalInfoChange}
->>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
       />
     </div>
   );
