@@ -53,8 +53,8 @@ const AgregarPage: React.FC = () => {
         `${process.env.NEXT_PUBLIC_BASE_URL}producto`,
         producto.current
       );
-      if (!response) {
-        throw new Error("Failed to save product");
+      if (response.status !== 201) {
+        throw new Error("Error al guardar producto.");
       }
       console.log("Product saved", response.data);
       setIsEditing(false);
@@ -64,14 +64,23 @@ const AgregarPage: React.FC = () => {
       toast({
         description: "El producto se guardó correctamente.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving product", error);
       setIsLoading(false);
+
+      let description =
+        "Ocurrió un error al guardar el producto. Por favor, intente de nuevo.";
+      if (
+        error?.response?.data?.error &&
+        error.response.data.error.includes("ya existe")
+      ) {
+        description = error.response.data.error;
+      }
+
       toast({
         variant: "destructive",
         title: "Error",
-        description:
-          "Ocurrió un error al guardar el producto. Por favor, intente de nuevo.",
+        description,
       });
     }
   };
