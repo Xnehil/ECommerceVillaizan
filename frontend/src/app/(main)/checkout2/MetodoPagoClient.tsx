@@ -20,6 +20,7 @@ export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: Meto
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
   const descuento = 10;
+  const hayDescuento = false;
   const costoEnvio = 5;
   const noCostoEnvio = true;
 
@@ -77,11 +78,13 @@ export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: Meto
   };
 
   const calcularTotal = () => {
-    return calcularSubtotal() - descuento + (noCostoEnvio ? 0 : costoEnvio);
+    return calcularSubtotal() - (hayDescuento? descuento: 0) + (noCostoEnvio ? 0 : costoEnvio);
   };
 
   const calcularSubtotal = () => {
-    return pedido.detalles.reduce((acc, detalle) => acc + detalle.producto.precioC * detalle.cantidad, 0);
+    return pedido.detalles.reduce((acc:number , item) => {
+      return acc + Number(item.subtotal) || 0
+    } , 0)
   };
 
   const calcularVuelto = () => {
@@ -129,6 +132,7 @@ export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: Meto
             descuento={descuento}
             costoEnvio={costoEnvio}
             noCostoEnvio={noCostoEnvio}
+            hayDescuento={hayDescuento}
             paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null}
             selectedImageId={selectedImageId}
             total={total}

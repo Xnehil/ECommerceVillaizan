@@ -61,6 +61,20 @@ class MetodoPagoService extends TransactionBaseService {
         return metodoPago;
     }
 
+    async recuperarPorNombre(
+        nombre: string,
+        config?: FindConfig<MetodoPago>
+    ): Promise<MetodoPago> {
+        const metodoPagoRepo = this.activeManager_.withRepository(this.metodoPagoRepository_);
+        const metodoPago = await metodoPagoRepo.buscarPorNombre(nombre);
+
+        if (!metodoPago) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "MetodoPago no encontrado");
+        }
+
+        return metodoPago
+    }
+
     async crear(metodoPago: MetodoPago): Promise<MetodoPago> {
         return this.atomicPhase_(async (manager) => {
             const metodoPagoRepo = manager.withRepository(this.metodoPagoRepository_);
