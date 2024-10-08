@@ -96,11 +96,20 @@ class SubcategoriaService extends TransactionBaseService {
     
       async eliminar(id: string): Promise<void> {
         return await this.atomicPhase_(async (manager) => {
-          const subcategoriaRepo = manager.withRepository(this.subcategoriaRepository_);
-          const subcategoria = await this.recuperar(id);
-          await subcategoriaRepo.remove([subcategoria]);
+            const subcategoriaRepo = manager.withRepository(this.subcategoriaRepository_);
+            const productos = await manager.query(
+              'SELECT * FROM vi_producto_subcategoria WHERE id_subcategoria = $1',
+              [id]
+          );
+
+            if (productos.length > 0) {
+                throw new MedusaError(MedusaError.Types.NOT_ALLOWED, "productos asociados");
+            }
+    
+            const subcategoria = await this.recuperar(id);
+            await subcategoriaRepo.update(id, { estaActivo: true, desactivadoEn: new Date() });
         });
-      }
+    }
 }
 
 export default SubcategoriaService;

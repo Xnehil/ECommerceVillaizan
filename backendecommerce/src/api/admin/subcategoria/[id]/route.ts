@@ -117,6 +117,8 @@ export const PUT = async (
  *         description: subcategoria eliminado exitosamente
  *       404:
  *         description: subcategoria no encontrado
+ *      406:
+ *        description: Hay productos asociados a esta subcategoría
  */
 
 export const DELETE = async (
@@ -129,8 +131,12 @@ export const DELETE = async (
     try {
         await subcategoriaService.eliminar(id);
         res.status(200).json({ message: "subcategoria eliminado exitosamente" });
-    } catch (error) {
-        res.status(404).json({ error: "subcategoria no encontrado" });
+    } catch (error ) {
+        console.log("Error: ", error.message);
+        if (error.message === "productos asociados") {
+            return res.status(406).json({ error: "Hay productos asociados a esta subcategoría" });
+        }
+        return res.status(404).json({ error: "subcategoria no encontrado" });
     }
 };
 

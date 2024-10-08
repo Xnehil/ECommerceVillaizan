@@ -86,7 +86,7 @@ class MotorizadoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const motorizadoRepo = manager.withRepository(this.motorizadoRepository_);
             const motorizado = await this.recuperar(id);
-            await motorizadoRepo.remove([motorizado]);
+            await motorizadoRepo.update(id, { estaActivo: false , desactivadoEn: new Date() });
         });
     }
 

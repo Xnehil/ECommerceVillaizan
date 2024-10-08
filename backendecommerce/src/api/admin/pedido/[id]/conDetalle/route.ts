@@ -35,11 +35,13 @@ export const GET = async (
     res: MedusaResponse
 ) => {
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
-    const { id } = req.params;
+    const id  = req.params.id;
+    const  pedido  = req.query.pedido === 'true';
+    const relations = pedido ? ["motorizado", "direccion"] : [];
 
     try {
-        const pedido = await pedidoService.recuperarConDetalle(id);
-        res.json({ pedido });
+        const pedidoData = await pedidoService.recuperarConDetalle(id, { relations });
+        res.json({ pedido: pedidoData });
     } catch (error) {
         res.status(404).json({ error: "Pedido no encontrado" });
     }
