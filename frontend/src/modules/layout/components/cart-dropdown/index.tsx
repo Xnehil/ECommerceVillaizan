@@ -167,7 +167,7 @@ const CartDropdown = ({
                                   >
                                     {item.producto.nombre} 
                                     <br />
-                                    {"S/ " + item.producto.precioEcommerce.toFixed(2) + " c/u"}
+                                    {"S/ " + Number(item.producto.precioEcommerce).toFixed(2) + " c/u"}
                                   </Link>
                                 </h3>
                                 {/* <LineItemOptions
