@@ -10,12 +10,23 @@ interface InformacionGeneralProps {
   producto: MutableRefObject<Producto>;
 }
 
+interface InformacionGeneralProps {
+  producto: MutableRefObject<Producto>;
+  isEditing: boolean;
+}
+
 const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   producto,
+  isEditing,
 }) => {
   const [previewSrc, setPreviewSrc] = useState(
     "https://placehold.co/200?text=Vista+previa"
   );
+
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    // setProductName(event.target.value);
+    producto.current.nombre = event.target.value;
+  };
 
   const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     producto.current.precioEcommerce = parseFloat(event.target.value);
@@ -47,14 +58,22 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   return (
     <div className="info-side-container">
       <h5>Información general</h5>
+      {/* <InputWithLabel
+        label="Nombre"
+        placeholder="Nombre del producto"
+        type="text"
+        onChange={handleNameChange}
+        disabled={!isEditing}
+      /> */}
       <div className="w-full max-w-sm flex space-x-2">
         <div className="flex-1">
           <InputWithLabel
             label="Precio (S/.)"
             placeholder="0.00"
             type="number"
-            required={true}
+            required={isEditing ? true : false}
             onChange={handlePriceChange}
+            disabled={!isEditing}
           />
         </div>
         <div className="flex-1">
@@ -63,6 +82,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
             placeholder="Ej. H1234"
             type="text"
             onChange={handleCodeChange}
+            disabled={!isEditing}
           />
         </div>
       </div>
@@ -70,16 +90,21 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         label="Descripción"
         placeholder="Ej. Descripción corta"
         onChange={handleDescriptionChange}
+        disabled={!isEditing}
       />
-      <InputWithLabel
-        label="Imagen"
-        placeholder=""
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-      />
+      {isEditing && (
+        <InputWithLabel
+          label="Imagen"
+          placeholder=""
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+        />
+      )}
       <>
-        <Label>Vista previa</Label>
+        <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          {isEditing ? "Vista previa" : "Imagen"}
+        </Label>
         <div className="flex w-full justify-center">
           <img
             src={previewSrc}
