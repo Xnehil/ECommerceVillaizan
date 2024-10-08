@@ -77,6 +77,8 @@ import { Producto } from "src/models/Producto";
  *               $ref: '#/components/schemas/Producto'
  *       400:
  *         description: Petición inválida
+ *      405:
+ *        description: Ya existe un producto con ese nombre
  */
   export const POST = async (
     req: MedusaRequest,
@@ -89,11 +91,15 @@ import { Producto } from "src/models/Producto";
       return;
     }
     const productoData = req.body as Producto;
-    const producto = await productoService.crear(productoData);
+    try { 
+      const producto = await productoService.crear(productoData);
+      res.status(201).json({
+        producto,
+      });
+    } catch (error) {
+      res.status(405).json({ error: error.message });
+    }
 
-    res.status(201).json({
-      producto,
-    });
   }
 
   

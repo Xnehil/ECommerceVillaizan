@@ -48,23 +48,30 @@ class ProductoService extends TransactionBaseService {
       }
     
       async recuperar(
-        id: string,
+        attribute: Partial<Producto>,
         config?: FindConfig<Producto>
       ): Promise<Producto> {
         const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
-        const query = buildQuery({ id }, config);
+        const query = buildQuery(attribute, config);
         const producto = await productoRepo.findOne(query);
     
         if (!producto) {
           throw new MedusaError(MedusaError.Types.NOT_FOUND, "Producto no encontrado");
         }
-    
         return producto;
       }
+      
     
       async crear(producto: Producto): Promise<Producto> {
         return this.atomicPhase_(async (manager) => {
           const productoRepo = manager.withRepository(this.productoRepository_);
+
+          const existingProducto = await productoRepo.createQueryBuilder("producto")
+          .where("LOWER(producto.nombre) = LOWER(:nombre)", { nombre: producto.nombre })
+          .getOne();
+          if (existingProducto) {
+            throw new Error(`Producto com nombre "${producto.nombre}" ya existe.`);
+          }
           const productoCreado = productoRepo.create(producto);
           const result = await productoRepo.save(productoCreado);
           return result;
@@ -77,7 +84,7 @@ class ProductoService extends TransactionBaseService {
       ): Promise<Producto> {
         return await this.atomicPhase_(async (manager) => {
           const productoRepo = manager.withRepository(this.productoRepository_);
-          const producto = await this.recuperar(id);
+          const producto = await this.recuperar({ id });
           Object.assign(producto, data);
           return await productoRepo.save(producto);
         });
@@ -86,7 +93,7 @@ class ProductoService extends TransactionBaseService {
       async eliminar(id: string): Promise<void> {
         return await this.atomicPhase_(async (manager) => {
           const productoRepo = manager.withRepository(this.productoRepository_);
-          const producto = await this.recuperar(id);
+          const producto = await this.recuperar({ id });
           await productoRepo.remove([producto]);
         });
       }
