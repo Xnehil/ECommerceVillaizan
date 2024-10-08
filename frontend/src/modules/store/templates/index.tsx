@@ -4,6 +4,7 @@ import PaginatedProducts from "./paginated-products"
 import CartButton from "@modules/layout/components/cart-button"
 import { Suspense, useState } from "react"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
+import { Pedido } from "types/PaquetePedido";
 
 const StoreTemplate = ({
   sortBy,
@@ -18,6 +19,8 @@ const StoreTemplate = ({
 
   // Estado para la búsqueda de texto
   const [searchText, setSearchText] = useState("")
+  const [carritoState, setCarritoState] = useState<Pedido | null>(null)
+  
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value.toLowerCase())
@@ -48,7 +51,7 @@ const StoreTemplate = ({
           />
         </div>
 
-        {/*<CartButton />*/}
+        <CartButton carrito={carritoState} setCarrito={setCarritoState} />
 
         <Suspense fallback={<SkeletonProductGrid />}>
           <PaginatedProducts
@@ -56,6 +59,8 @@ const StoreTemplate = ({
             page={pageNumber}
             countryCode={countryCode}
             searchText={searchText}  
+            carrito={carritoState}
+            setCarrito={setCarritoState}
           />
         </Suspense>
       </div>

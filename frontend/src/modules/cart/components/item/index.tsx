@@ -48,7 +48,7 @@ const Item = ({ item,  type = "full", onDelete}: ItemProps) => {
         item.cantidad = nuevaCantidad
         item.subtotal = nuevaCantidad  * item.producto.precioEcommerce
       })
-
+    setCantidad(nuevaCantidad)
     message && setError(message)
   }
 

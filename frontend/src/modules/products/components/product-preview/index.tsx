@@ -36,46 +36,37 @@ export default function ProductPreview({
   
       if (detalleAnterior) {
         const cantidad = detalleAnterior.cantidad + 1;
-        console.log("Linea b");
         await updateLineItem({ detallePedidoId: detalleAnterior.id, cantidad: cantidad, subtotal: productPreview.precioEcommerce * cantidad });
-        console.log("Linea c");
         nuevoDetalle = { ...detalleAnterior, cantidad: cantidad, subtotal: productPreview.precioEcommerce * cantidad };
-        console.log("Linea d");
       } else {
-        console.log("Linea e");
         const response = await addItem({
           cantidad: 1,
           idProducto: productPreview.id || "",
           precio: productPreview.precioEcommerce,
           idPedido: carrito?.id || "",
         });
-        console.log("Linea f");
         if (response && typeof response === 'object' && 'detallePedido' in response) {
           console.log("Linea g");
           nuevoDetalle = response.detallePedido as DetallePedido; // Type assertion here
+          nuevoDetalle.producto = productPreview;
         } else {
           console.error("Error adding item to cart:", response);
         }
       }
-  
-      console.log("Linea h");
+
       if (nuevoDetalle) {
-        console.log("Linea i");
         const nuevosDetalles = carrito?.detalles.map((detalle) => 
           detalle.producto.id === productPreview.id ? nuevoDetalle : detalle
         ) || [];
-        console.log("Linea j");
         if (!detalleAnterior) {
           nuevosDetalles.push(nuevoDetalle);
         }
-        console.log("Linea k");
         setCarrito((prevCarrito) => ({
           ...prevCarrito,
           detalles: nuevosDetalles,
           estado: prevCarrito?.estado || "", // Ensure estado is a string
           // Add other properties with default values if necessary
         } as Pedido));
-        console.log("Linea l");
       }
     } catch (error) {
       console.error("Error in handleAddToCart:", error);

@@ -224,13 +224,6 @@ export async function addItem({
   precio: number
 }) {
 
-  // return medusaClient.carts.lineItems
-  //   .create(cartId, { variant_id: variantId, quantity }, headers)
-  //   .then(({ cart }) => cart)
-  //   .catch((err) => {
-  //     console.log(err)
-  //     return null
-  //   })
   try{
     console.log("Adding item to cart")
     const response = await axios.post(`${baseUrl}/admin/detallePedido`, {
@@ -243,8 +236,9 @@ export async function addItem({
       },
       subtotal: precio*cantidad
     })
-    console.log(response)
-    return response
+    // console.log(response)
+    console.log("Item added to cart")
+    return response.data
   } catch (e) {
     console.log(e)
     return null

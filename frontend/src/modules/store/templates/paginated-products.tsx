@@ -5,6 +5,7 @@ import ProductPreview from "@modules/products/components/product-preview";
 import { Pagination } from "@modules/store/components/pagination";
 import axios from "axios";
 import { Producto } from "types/PaqueteProducto";
+import { Pedido } from "types/PaquetePedido";
 
 const PRODUCT_LIMIT = 12;
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
@@ -14,11 +15,15 @@ export default function PaginatedProducts({
   page,
   countryCode,
   searchText,  // Recibir el texto de búsqueda
+  carrito,
+  setCarrito,
 }: {
   sortBy?: string;
   page: number;
   countryCode: string;
   searchText: string; // Recibir el texto de búsqueda
+  carrito: Pedido | null;
+  setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>
 }) {
   const [products, setProducts] = useState<Producto[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -73,7 +78,7 @@ export default function PaginatedProducts({
       <ul className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8" data-testid="products-list">
         {filteredProducts.map((p: Producto) => (
           <li key={p.id}>
-            {/*<ProductPreview productPreview={p} />*/}
+            <ProductPreview productPreview={p} carrito={carrito} setCarrito={setCarrito} />
           </li>
         ))}
       </ul>
