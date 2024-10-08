@@ -1,11 +1,10 @@
-import Link from "next/link"
+import Link from "next/link";
 
 export default async function Nav() {
   return (
     <div className="sticky top-0 inset-x-0 z-50 bg-rojoVillaizan">
       <header className="relative h-16 mx-auto border-b border-ui-border-base bg-rojoVillaizan">
         <nav className="content-container text-ui-fg-subtle flex items-center justify-between w-full h-full px-6">
-          
           {/* Logo */}
           <div className="flex items-center h-full">
             <Link href="/" className="flex items-center">
@@ -33,8 +32,18 @@ export default async function Nav() {
             </Link>
           </div>
 
-          {/* Botón de sesión */}
+          {/* Carrito de compras y Botón de sesión */}
           <div className="flex items-center gap-x-4">
+            {/* Carrito de compras */}
+            <Link href="/carrito" className="flex items-center">
+              <img
+                src="/images/carritoCompras.png" // Aquí coloca la ruta correcta del ícono del carrito
+                alt="Carrito de Compras"
+                className="h-8" // Ajusta el tamaño del ícono según sea necesario
+              />
+            </Link>
+
+            {/* Botón de sesión */}
             <Link href="/account" className="hover:text-ui-fg-base text-white flex items-center">
               Inicia sesión y accede a promociones
             </Link>
@@ -43,5 +52,5 @@ export default async function Nav() {
         </nav>
       </header>
     </div>
-  )
+  );
 }
