@@ -25,6 +25,9 @@ const TextAreaWithLabel: React.FC<TextAreaWithLabelProps> = ({
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCurrentValue(event.target.value);
+    if (onChange) {
+      onChange(event);
+    }
   };
   return (
     <div className="grid w-full max-w-sm items-center space-y-2">

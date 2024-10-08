@@ -4,22 +4,31 @@ import InputWithLabel from "@/components/forms/inputWithLabel";
 import SelectWithLabel from "@/components/forms/selectWithLabel";
 import TextAreaWithLabel from "@/components/forms/textAreaWithLabel";
 import { Button } from "@/components/ui/button";
-import React, { useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
 
 import { Producto, Subcategoria, TipoProducto } from "@/types/PaqueteProducto";
 import { Skeleton } from "@/components/ui/skeleton";
 import axios from "axios";
+<<<<<<< HEAD
 import { useToast } from "@/hooks/use-toast";
 
 interface InformacionAdicionalProps {
   producto: MutableRefObject<Producto>;
   isEditing: boolean;
+=======
+
+interface InformacionAdicionalProps {
+  producto: MutableRefObject<Producto>;
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
 }
 
 const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   producto,
+<<<<<<< HEAD
   isEditing,
+=======
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
 }) => {
   const [isNewCategory, setIsNewCategory] = useState<boolean>(false);
   const [newCategoryName, setNewCategoryName] = useState<string>("");
@@ -29,11 +38,21 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
   const categories = useRef<{ value: string; label: string }[]>([]);
 
+<<<<<<< HEAD
   const subcategories = useRef<{ value: string; label: string }[]>([]);
 
   const a = useRef(0);
 
   const { toast } = useToast();
+=======
+  const [isLoading, setIsLoading] = useState(true);
+
+  const categories = useRef<{ value: string; label: string }[]>([]);
+
+  const subcategories = useRef<{ value: string; label: string }[]>([]);
+
+  const a = useRef(0);
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -87,6 +106,11 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   }, []);
 
   const handleCategoryChange = (value: string) => {
+<<<<<<< HEAD
+=======
+    setSelectedCategory(value);
+    producto.current.tipoProducto = { id: value } as TipoProducto;
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
     if (value === "Nueva categoría") {
       setIsNewCategory(true);
     } else {
@@ -99,8 +123,12 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   const handleSubcategoryChange = (value: string) => {
 <<<<<<< Updated upstream
     setSelectedSubcategory(value);
+<<<<<<< HEAD
 =======
 >>>>>>> Stashed changes
+=======
+    producto.current.subcategorias = [{ id: value } as Subcategoria];
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
     if (value === "Nueva subcategoría") {
       setIsNewSubcategory(true);
     } else {
@@ -116,16 +144,30 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
     // setSelectedCategory("");
   };
 
-  const handleSaveNewCategory = () => {
-    setIsNewCategory(false);
-    const newCategory = { value: newCategoryName, label: newCategoryName };
-    // Add new category to the list of categories
-    categories.current.push(newCategory);
-    console.log(categories);
+  const handleSaveNewCategory = async () => {
+    setIsLoading(true);
+    // Make POST request to save new category
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto`,
+        {
+          nombre: newCategoryName,
+          subcategorias: [],
+          productos: [],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     setSelectedCategory(newCategoryName);
 =======
+=======
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
       if (response.status !== 201) {
         throw new Error("Failed to save new category");
       }
@@ -145,6 +187,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       setIsLoading(false);
       setIsNewCategory(false);
       setSelectedCategory(newCategory.id);
+<<<<<<< HEAD
 
       producto.current.tipoProducto = { id: newCategory.id } as TipoProducto;
 
@@ -162,6 +205,11 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       setIsLoading(false);
     }
 >>>>>>> Stashed changes
+=======
+    } catch (error) {
+      console.error("Error saving new category:", error);
+    }
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
   };
 
   const handleCancelNewSubcategory = () => {
@@ -170,20 +218,31 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
     // setSelectedSubcategory("");
   };
 
-  const handleSaveNewSubcategory = () => {
-    setIsNewSubcategory(false);
-    const newSubcategory = {
-      value: newSubcategoryName,
-      label: newSubcategoryName,
-    };
-    // Add new subcategory to the list of subcategories
-    subcategories.current.push(newSubcategory);
-    console.log(subcategories);
+  const handleSaveNewSubcategory = async () => {
+    setIsLoading(true);
+    // Make POST request to save new subcategory
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}subcategoria`,
+        {
+          nombre: newSubcategoryName,
+          productos: [],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     setSelectedSubcategory(newSubcategoryName);
 =======
       if (response.status !== 200) {
+=======
+      if (response.status !== 201) {
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
         throw new Error("Failed to save new subcategory");
       }
 
@@ -202,6 +261,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       setIsLoading(false);
       setIsNewSubcategory(false);
       setSelectedSubcategory(newSubcategory.id);
+<<<<<<< HEAD
 
       producto.current.subcategorias = [
         { id: newSubcategory.id } as Subcategoria,
@@ -219,6 +279,10 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
           "Ocurrió un error al guardar la nueva subcategoría. Por favor, intente de nuevo.",
       });
       setIsLoading(false);
+=======
+    } catch (error) {
+      console.error("Error saving new subcategory:", error);
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
     }
   };
 
@@ -227,14 +291,22 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   ) => {
     producto.current.informacionNutricional = event.target.value;
     // console.log(producto.current);
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
   };
 
   return (
     <div className="info-side-container">
       <h5>Información adicional</h5>
       <>
-        {isNewCategory ? (
+        {isLoading && !isNewSubcategory ? (
+          <div className="grid gap-1">
+            <Skeleton className="h-6 w-64" />
+            <Skeleton className="h-8 w-64" />
+          </div>
+        ) : isNewCategory ? (
           <>
             <InputWithLabel
               label="Categoría"
@@ -265,7 +337,12 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         )}
       </>
       <>
-        {isNewSubcategory ? (
+        {isLoading && !isNewCategory ? (
+          <div className="grid gap-1">
+            <Skeleton className="h-6 w-64" />
+            <Skeleton className="h-8 w-64" />
+          </div>
+        ) : isNewSubcategory ? (
           <>
             <InputWithLabel
               label="Subcategoría"
@@ -302,11 +379,15 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         label="Información nutricional"
         placeholder="Agregar una breve reseña"
         maxLength={800}
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
         onChange={handleNutritionalInfoChange}
         disabled={!isEditing}
 >>>>>>> Stashed changes
+=======
+        onChange={handleNutritionalInfoChange}
+>>>>>>> aa6c81360fe5b47c1254c7acf189aaa728a5654e
       />
     </div>
   );

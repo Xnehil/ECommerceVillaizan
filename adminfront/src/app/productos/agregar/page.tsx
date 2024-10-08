@@ -29,7 +29,7 @@ const AgregarPage: React.FC = () => {
     router.back();
   };
   const handleEditClick = () => {
-    setIsEditingName(true);
+    setIsEditing(true);
   };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,7 +38,7 @@ const AgregarPage: React.FC = () => {
   };
 
   const handleInputBlur = () => {
-    setIsEditingName(false);
+    setIsEditing(false);
   };
 
   const handleSave = async () => {
@@ -49,7 +49,6 @@ const AgregarPage: React.FC = () => {
 
     console.log(producto.current);
     try {
-      // await new Promise((resolve) => setTimeout(resolve, 3000));
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}producto`,
         producto.current

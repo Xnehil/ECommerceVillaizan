@@ -58,12 +58,7 @@ const ProductosPage: React.FC = () => {
   };
 
   return (
-    <div className="content-container">
-      <h4>Productos</h4>
-      <p>
-        Administra los productos que aparecen en el e-commerce , sus
-        descripciones, categorías, etc.
-      </p>
+    <>
       <div className="header">
         <div className="buttons-container">
           <Button variant="default" onClick={handleAddProductClick}>

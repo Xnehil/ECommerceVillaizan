@@ -5,8 +5,7 @@ import Sidebar from "@/components/sidebar";
 import Breadcrumbs from "@/components/breadcrumbs";
 import { Toaster } from "@/components/ui/toaster";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://localhost:8000"
-
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
