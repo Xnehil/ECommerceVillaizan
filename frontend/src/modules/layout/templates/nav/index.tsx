@@ -36,9 +36,10 @@ export default async function Nav() {
           {/* Botón de sesión */}
           <div className="flex items-center gap-x-4">
             <Link href="/account" className="hover:text-ui-fg-base text-white flex items-center">
-              Inicia sesión y accede a promociones!!
+              Inicia sesión y accede a promociones
             </Link>
           </div>
+          
         </nav>
       </header>
     </div>
