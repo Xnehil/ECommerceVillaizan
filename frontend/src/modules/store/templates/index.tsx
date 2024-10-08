@@ -48,7 +48,7 @@ const StoreTemplate = ({
           />
         </div>
 
-        <CartButton />
+        {/*<CartButton />*/}
 
         <Suspense fallback={<SkeletonProductGrid />}>
           <PaginatedProducts

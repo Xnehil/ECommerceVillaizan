@@ -26,6 +26,7 @@ export default function CollectionTemplate({
         <div className="mb-8 text-2xl-semi">
           <h1>{collection.title}</h1>
         </div>
+        {/*
         <Suspense fallback={<SkeletonProductGrid />}>
           <PaginatedProducts
             sortBy={sortBy || "created_at"}
@@ -33,7 +34,7 @@ export default function CollectionTemplate({
             collectionId={collection.id}
             countryCode={countryCode}
           />
-        </Suspense>
+        </Suspense>*/}
       </div>
     </div>
   )

@@ -1,18 +1,23 @@
 "use client"
 
-import { LineItem, Region } from "@medusajs/medusa"
+import { Region } from "@medusajs/medusa"
+import { DetallePedido, Pedido } from "types/PaquetePedido"
 import { Table, clx } from "@medusajs/ui"
 
 import Item from "@modules/cart/components/item"
 import SkeletonLineItem from "@modules/skeletons/components/skeleton-line-item"
 
 type ItemsTemplateProps = {
-  items?: Omit<LineItem, "beforeInsert">[]
+  items?: Omit<DetallePedido, "beforeInsert">[]
   region?: Region
 }
 
 const ItemsPreviewTemplate = ({ items, region }: ItemsTemplateProps) => {
   const hasOverflow = items && items.length > 4
+  const deleteItem = (itemId:string) => {
+    // Your deletion logic here
+    
+  };
 
   return (
     <div
@@ -25,16 +30,15 @@ const ItemsPreviewTemplate = ({ items, region }: ItemsTemplateProps) => {
         <Table.Body data-testid="items-table">
           {items && region
             ? items
-                .sort((a, b) => {
+                /*.sort((a, b) => {
                   return a.created_at > b.created_at ? -1 : 1
-                })
+                })*/
                 .map((item) => {
                   return (
                     <Item
                       key={item.id}
                       item={item}
-                      region={region}
-                      type="preview"
+                      onDelete = {() =>  deleteItem(item.id)}
                     />
                   )
                 })

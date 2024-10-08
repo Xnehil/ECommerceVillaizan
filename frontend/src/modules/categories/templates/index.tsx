@@ -65,6 +65,7 @@ export default function CategoryTemplate({
             </ul>
           </div>
         )}
+        {/*
         <Suspense fallback={<SkeletonProductGrid />}>
           <PaginatedProducts
             sortBy={sortBy || "created_at"}
@@ -73,6 +74,7 @@ export default function CategoryTemplate({
             countryCode={countryCode}
           />
         </Suspense>
+        */}
       </div>
     </div>
   )

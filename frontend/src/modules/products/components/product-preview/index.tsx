@@ -6,7 +6,6 @@ import { useState } from "react"
 import { addItem, addToCart, updateLineItem } from "@modules/cart/actions"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
 
-
 export default function ProductPreview({
   productPreview,
   isFeatured,
@@ -32,7 +31,7 @@ export default function ProductPreview({
       // Agregar al carritoState para que se actualice el carrito visualmente
       const detalleAnterior = carrito?.detalles.find((detalle) => detalle.producto.id === productPreview.id);
       console.log("Detalle anterior:", detalleAnterior);
-      let nuevoDetalle = null;
+      let nuevoDetalle: DetallePedido | null = null;
       console.log("Linea a");
   
       if (detalleAnterior) {
@@ -53,7 +52,7 @@ export default function ProductPreview({
         console.log("Linea f");
         if (response && typeof response === 'object' && 'detallePedido' in response) {
           console.log("Linea g");
-          nuevoDetalle = response.detallePedido;
+          nuevoDetalle = response.detallePedido as DetallePedido; // Type assertion here
         } else {
           console.error("Error adding item to cart:", response);
         }

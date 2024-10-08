@@ -73,7 +73,7 @@ export default function PaginatedProducts({
       <ul className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8" data-testid="products-list">
         {filteredProducts.map((p: Producto) => (
           <li key={p.id}>
-            <ProductPreview productPreview={p} />
+            {/*<ProductPreview productPreview={p} />*/}
           </li>
         ))}
       </ul>

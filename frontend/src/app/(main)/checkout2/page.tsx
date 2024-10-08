@@ -16,19 +16,26 @@ export const metadata: Metadata = {
 
 const fetchCart = async () => {
   const respuesta = await getOrSetCart();
-  if (!respuesta) {
-    return null;
-  }
   let cart:Pedido= respuesta?.cart;
+  let cookieValue = respuesta?.cookie;
+  let aux = cart.detalles;
+
   const enrichedItems = await enrichLineItems(cart.detalles);
   // console.log("Detalles enriquecidos:", enrichedItems);
   cart.detalles = enrichedItems;
+
+
+  let state ="carrito"
+  if (cart.direccion === null){
+    state = "direccion"
+  }
   return cart
 }
 
 export default async function MetodoPago() {
   const cart = await fetchCart()
   // const customer = await getCustomer() Para cuando se implemente el login
+  /*
   const detallesPedido: DetallePedido[] = [
     {
       cantidad: 20,
@@ -144,8 +151,8 @@ export default async function MetodoPago() {
     usuarioActualizacion: "",
     estaActivo: false
   };
-  if (!cart) {
-    return notFound()
-  }
-  return <Checkout pedido={cart} usuario={usuario} direccion={direccion} />
+  */
+
+
+  return <Checkout pedido={cart}/* usuario={usuario} direccion={direccion}*/ />
 }

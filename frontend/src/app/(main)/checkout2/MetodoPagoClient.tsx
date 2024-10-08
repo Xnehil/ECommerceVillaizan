@@ -11,17 +11,46 @@ import { Direccion } from "types/PaqueteEnvio";
 
 type MetodoPagoClientProps = {
   pedido: Pedido;
-  usuario: Usuario;
-  direccion: Direccion;
+  /*usuario: Usuario;
+  direccion: Direccion;*/
 };
 
-export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPagoClientProps) {
+export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: MetodoPagoClientProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
   const descuento = 10;
   const costoEnvio = 5;
   const noCostoEnvio = true;
+
+  const usuario : Usuario = {
+    nombre: "Juan",
+    apellido: "Perez",
+    conCuenta: true,
+    correo: "",
+    contrasena: "",
+    persona: undefined,
+    id: "",
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  }
+
+  const direccion: Direccion = {
+    id: "",
+    calle: "Av. Siempre Viva",
+    numeroExterior: "742",
+    distrito: "Springfield",
+    codigoPostal: "12345",
+    ciudad: undefined,
+    ubicacion: undefined,
+    envios: [],
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  };
 
   const handleImageClick = (id: string | null) => {
     if (id === "pagoEfec") {
