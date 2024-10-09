@@ -141,6 +141,16 @@ class InventarioMotorizadoService extends TransactionBaseService {
             return await inventarioMotorizadoRepo.save(inventarioMotorizado);
         });
     }
+
+    async findByMotorizadoId(motorizadoId: string) {
+        const inventarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);
+        const inventarioMotorizado = await inventarioMotorizadoRepo.findByMotorizadoId(motorizadoId);
+        if (!inventarioMotorizado) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Inventario Motorizado no encontrado");
+        }
+        return inventarioMotorizado;
+    }
+
 }
 
 export default InventarioMotorizadoService;
