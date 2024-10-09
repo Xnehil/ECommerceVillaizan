@@ -159,6 +159,7 @@ export default function MetodoPagoClient({ pedido, setStep}: MetodoPagoClientPro
           totalPagar={total}
           onConfirm={handlePaymentConfirm}
           onClose={handlePopupClose}
+          montoMaximoDeVuelto = {100}
         />
       )}
     </>
