@@ -1,58 +1,61 @@
-const express = require("express")
+const express = require("express");
 const { GracefulShutdownServer } = require("medusa-core-utils");
-const swaggerJSDoc = require("swagger-jsdoc");
-const swaggerUi = require("swagger-ui-express");
-const fs = require("fs");
+// const setupWebSocket = require("./src/websocket/index.js");
 
-const loaders = require("@medusajs/medusa/dist/loaders/index").default
+const loaders = require("@medusajs/medusa/dist/loaders/index").default;
 
-;(async() => {
+(async () => {
   async function start() {
-    const app = express()
-    const directory = process.cwd()
-
+    const app = express();
+    const directory = process.cwd();
+    console.log("Starting server... with directory", directory);
     try {
       const { container } = await loaders({
         directory,
-        expressApp: app
-      })
-      const configModule = container.resolve("configModule")
-      const port = process.env.PORT ?? configModule.projectConfig.port ?? 9000
+        expressApp: app,
+      });
+      const configModule = container.resolve("configModule");
+      const port = process.env.PORT ?? configModule.projectConfig.port ?? 9000;
 
-      const server = GracefulShutdownServer.create(
-        app.listen(port, (err) => {
-          if (err) {
-            return
-          }
-          console.log(`Server is ready on port: ${port}`)
-        })
-      )
+      // Start the HTTP server
+      console.log("Starting HTTP server...");
+      const server = app.listen(port, (err) => {
+        if (err) {
+          console.error("Error starting HTTP server", err);
+          return;
+        }
+        console.log(`HTTP Server is ready on port: ${port}`);
 
-      const swaggerDocs = swaggerJSDoc(swaggerOptions)
-      fs.writeFileSync('./swagger-output.json', JSON.stringify(swaggerDocs, null, 2), 'utf-8')
-      console.log('Swagger JSON has been generated and saved to swagger-output.json')
+        // WebSocket setup (after HTTP server starts)
+        // console.log("Setting up WebSocket...");
+        // setupWebSocket(server);
+        // console.log("WebSocket setup complete.");
+      });
 
+      // Wrap server with graceful shutdown
+      const gracefulServer = GracefulShutdownServer.create(server);
 
       // Handle graceful shutdown
       const gracefulShutDown = () => {
-        server
+        gracefulServer
           .shutdown()
           .then(() => {
-            console.info("Gracefully stopping the server.")
-            process.exit(0)
+            console.info("Gracefully stopping the server.");
+            process.exit(0);
           })
           .catch((e) => {
-            console.error("Error received when shutting down the server.", e)
-            process.exit(1)
-          })
-      }
-      process.on("SIGTERM", gracefulShutDown)
-      process.on("SIGINT", gracefulShutDown)
+            console.error("Error received when shutting down the server.", e);
+            process.exit(1);
+          });
+      };
+
+      process.on("SIGTERM", gracefulShutDown);
+      process.on("SIGINT", gracefulShutDown);
     } catch (err) {
-      console.error("Error starting server", err)
-      process.exit(1)
+      console.error("Error starting server", err);
+      process.exit(1);
     }
   }
 
-  await start()
-})()
+  await start();
+})();
