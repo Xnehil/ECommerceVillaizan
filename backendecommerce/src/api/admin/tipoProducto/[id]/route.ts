@@ -91,6 +91,10 @@ export const PUT = async (
         const tipoProducto = await tipoProductoService.actualizar(id, tipoProductoData);
         res.json({ tipoProducto });
     } catch (error) {
+        if (error.message.includes("Tipo de producto con nombre")) {
+            res.status(404).json({ error: "Tipo de producto con ese nombre ya existe" });
+            return;
+        }
         if (error.message === "tipoProducto no encontrado") {
             res.status(404).json({ error: "tipoProducto no encontrado" });
         } else {
