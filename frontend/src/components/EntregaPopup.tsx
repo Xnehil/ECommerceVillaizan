@@ -51,10 +51,11 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
         </p>
         <p style={{ textAlign: 'left' }}>Método de pago:</p>
         <div style={{ textAlign: 'left', display: 'flex', alignItems: 'center' }}>
-        <strong>{metodoPago}</strong>
+        
           {selectedImageId === 'pagoEfec' && (
-            <img src="/images/efectivo.png" alt="Efectivo" style={{ marginLeft: '10px', height: '30px' }} />
+            <img src="/images/efectivo.png" alt="Efectivo" style={{ marginLeft: '5px', height: '35px' }} />
           )}
+          <strong style={{ marginLeft: '5px'}}>{metodoPago}</strong>
         </div>
         {selectedImageId === 'pagoEfec' && paymentAmount !== null && (
         <>

@@ -11,11 +11,10 @@ import { Direccion } from "types/PaqueteEnvio";
 
 type MetodoPagoClientProps = {
   pedido: Pedido;
-  /*usuario: Usuario;
-  direccion: Direccion;*/
+  setStep: (step: string) => void;
 };
 
-export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: MetodoPagoClientProps) {
+export default function MetodoPagoClient({ pedido, setStep}: MetodoPagoClientProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
@@ -74,7 +73,8 @@ export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: Meto
   };
 
   const handleBackClick = () => {
-    window.history.back();
+    //window.history.back();
+    setStep("direccion")
   };
 
   const calcularTotal = () => {
@@ -96,6 +96,15 @@ export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: Meto
 
   return (
     <>
+      {/* Banner debajo del header */}
+      <img
+          src="/images/bannerFlujoCompra.png"
+          alt="Promociones en Villaizan"
+          style={{
+            width: '100%',
+            height: 'auto',
+          }}
+        />
       <div style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "60px" }}>
           <BackButton onClick={handleBackClick} />
       </div>
@@ -125,6 +134,7 @@ export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: Meto
           onImageClick={handleImageClick}
           selectedImageId={selectedImageId}
           setPaymentAmount={setPaymentAmount}
+          hideCircle = {true}
         />
 
         <div style={{ marginRight: "180px", marginTop: "-20px", marginBottom: "40px" }}>

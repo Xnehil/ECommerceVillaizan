@@ -25,7 +25,7 @@ interface CheckoutProps {
       case 'direccion':
         return <StepDireccion setStep={setStep} />;
       case 'pago':
-        return <MetodoPagoClient pedido={pedido} /*usuario={usuario} direccion={direccion}*//>
+        return <MetodoPagoClient pedido={pedido} setStep={setStep}/>
       default:
         return <div>Seleccione un paso válido</div>;
     }

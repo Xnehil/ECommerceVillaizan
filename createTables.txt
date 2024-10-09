@@ -394,7 +394,8 @@ CREATE TABLE vi_banco (
 
 CREATE TABLE vi_motorizado (
     id VARCHAR(50) PRIMARY KEY,
-    placa VARCHAR(20) NOT NULL,
+    placa VARCHAR(20) NOT NULL UNIQUE,
+	disponible BOOLEAN,
     urlImagen VARCHAR(255),
     id_almacen VARCHAR(50),
     CONSTRAINT fk_almacen FOREIGN KEY (id_almacen) REFERENCES vi_almacen(id),

@@ -6,7 +6,7 @@ import {
 export const PedidoRepository = dataSource
   .getRepository(Pedido) 
   .extend({
-    async findByUsuarioId(id_usuario: string): Promise<Pedido[]> {
+    async encontrarPorUsuarioId(id_usuario: string): Promise<Pedido[]> {
       return this.createQueryBuilder("pedido")
         .leftJoinAndSelect("pedido.usuario", "usuario")
         .where("usuario.id = :id_usuario", { id_usuario })

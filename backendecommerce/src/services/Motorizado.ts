@@ -92,7 +92,16 @@ class MotorizadoService extends TransactionBaseService {
 
     async listarPorUsuarioId(id_usuario: string): Promise<Motorizado> {
         const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
-        const motorizado = await motorizadoRepo.findByUsuarioId(id_usuario);
+        const motorizado = await motorizadoRepo.encontrarPorUsuarioId(id_usuario);
+        if (!motorizado) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
+        }
+        return motorizado;
+    }
+
+    async encontrarPorPlaca(placa: string): Promise<Motorizado> {
+        const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
+        const motorizado = await motorizadoRepo.encontrarPorPlaca(placa);
         if (!motorizado) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
         }

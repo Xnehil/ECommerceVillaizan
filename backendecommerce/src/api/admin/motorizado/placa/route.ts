@@ -15,7 +15,7 @@ import { Motorizado } from "src/models/Motorizado";
 
 /**
  * @swagger
- * /motorizado/usuario:
+ * /motorizado/placa:
  *   post:
  *     summary: Recupera un motorizado por ID
  *     tags: [Motorizados]
@@ -26,9 +26,9 @@ import { Motorizado } from "src/models/Motorizado";
  *           schema:
  *             type: object
  *             properties:
- *               id_usuario:
+ *               placa:
  *                 type: string
- *                 description: ID del motorizado
+ *                 description: placa del motorizado
  *                 example: "12345"
  *     responses:
  *       200:
@@ -41,7 +41,7 @@ import { Motorizado } from "src/models/Motorizado";
  *         description: Motorizado no encontrado
  */
 interface MetodoPagoRequestBody {
-    id_usuario: string;
+    placa: string;
 }
 
 export const POST = async (
@@ -49,7 +49,7 @@ export const POST = async (
     res: MedusaResponse
 ) => {
     const motorizadoService: MotorizadoService = req.scope.resolve("motorizadoService");
-    const { id_usuario } = req.body;
+    const { placa } = req.body;
 
     if (!req.body) {
         res.status(400).json({ error: "Petición inválida" });
@@ -57,7 +57,7 @@ export const POST = async (
     }
 
     try {
-        const motorizado = await motorizadoService.listarPorUsuarioId(id_usuario
+        const motorizado = await motorizadoService.encontrarPorPlaca(placa
         );
         res.json({ motorizado });
     } catch (error) {
