@@ -102,7 +102,7 @@ class UsuarioService extends TransactionBaseService {
     async listarPedidosRepartidor(id_usuario: string): Promise<Pedido[]> {
         const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
-        const motorizado = await motorizadoRepo.findByUsuarioId(id_usuario);
+        const motorizado = await motorizadoRepo.encontrarPorUsuarioId(id_usuario);
         if (!motorizado) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
         }

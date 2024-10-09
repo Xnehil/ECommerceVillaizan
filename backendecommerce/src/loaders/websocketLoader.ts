@@ -43,14 +43,14 @@ export default async (
     ws.on("message", (message) => {
       console.info(`Received message from ${rol} (${id}): ${message}`);
       let parsedMessage;
-      try{
-        parsedMessage = JSON.parse(message);
+      try {
+        parsedMessage = JSON.parse(message.toString()); // Convert RawData to string
       } catch (error) {
         console.error(`Error parsing message: ${error}`);
-        ws.send(JSON.stringify({ error: 'Error parseando mensaje' }));
+        ws.send(JSON.stringify({ error: 'Error parsing message' }));
         return;
       }
-
+    
       // Handle messages based on role
       if (rol === 'delivery') {
         handleDeliveryMessage(ws, parsedMessage, id, ubicacionesDelivery);

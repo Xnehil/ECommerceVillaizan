@@ -134,7 +134,7 @@ class PedidoService extends TransactionBaseService {
 
     async listarPorUsuario(idUsuario: string): Promise<Pedido[]> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
-        const pedidos = await pedidoRepo.findByUsuarioId(idUsuario);
+        const pedidos = await pedidoRepo.encontrarPorUsuarioId(idUsuario);
 
         if (!pedidos) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");

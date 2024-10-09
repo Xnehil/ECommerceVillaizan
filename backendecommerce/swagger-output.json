@@ -3121,6 +3121,46 @@
         }
       }
     },
+    "/motorizado/placa": {
+      "post": {
+        "summary": "Recupera un motorizado por ID",
+        "tags": [
+          "Motorizados"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "placa": {
+                    "type": "string",
+                    "description": "placa del motorizado",
+                    "example": "12345"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Detalles del motorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Motorizado"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Motorizado no encontrado"
+          }
+        }
+      }
+    },
     "/motorizado": {
       "get": {
         "summary": "Lista todos los motorizadoes con paginación",
