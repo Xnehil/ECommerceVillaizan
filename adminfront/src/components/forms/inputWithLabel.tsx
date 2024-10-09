@@ -12,6 +12,7 @@ interface InputWithLabelProps {
   accept?: string;
   required?: boolean;
   disabled?: boolean;
+  onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 const InputWithLabel: React.FC<InputWithLabelProps> = ({
@@ -23,6 +24,7 @@ const InputWithLabel: React.FC<InputWithLabelProps> = ({
   required = false,
   disabled = false,
   value,
+  onBlur,
 }) => {
   return (
     <div className="grid w-full max-w-sm items-center space-y-2">
@@ -36,6 +38,7 @@ const InputWithLabel: React.FC<InputWithLabelProps> = ({
         accept={accept}
         disabled={disabled}
         value={value}
+        onBlur={onBlur}
       />
     </div>
   );

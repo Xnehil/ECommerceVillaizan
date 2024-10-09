@@ -11,6 +11,24 @@ import { Producto, Subcategoria, TipoProducto } from "@/types/PaqueteProducto";
 import { Skeleton } from "@/components/ui/skeleton";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface InformacionAdicionalProps {
   producto: MutableRefObject<Producto>;
@@ -22,9 +40,11 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   isEditing,
 }) => {
   const [isNewCategory, setIsNewCategory] = useState<boolean>(false);
+  const [editCategory, setEditCategory] = useState<boolean>(false);
   const [newCategoryName, setNewCategoryName] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [isNewSubcategory, setIsNewSubcategory] = useState<boolean>(false);
+  const [editSubcategory, setEditSubcategory] = useState<boolean>(false);
   const [newSubcategoryName, setNewSubcategoryName] = useState<string>("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
 
@@ -41,6 +61,8 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   const a = useRef(0);
 
   const { toast } = useToast();
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -104,9 +126,13 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   useEffect(() => {
     if (producto.current?.tipoProducto?.id) {
       setSelectedCategory(producto.current.tipoProducto.id);
+    } else {
+      setSelectedCategory("");
     }
     if (producto.current?.subcategorias?.[0]?.id) {
       setSelectedSubcategory(producto.current.subcategorias[0].id);
+    } else {
+      setSelectedSubcategory("");
     }
     setDescripcion(producto.current.informacionNutricional || "");
   }, [isEditing]);
@@ -133,6 +159,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
 
   const handleCancelNewCategory = () => {
     setIsNewCategory(false);
+    setEditCategory(false);
     setNewCategoryName("");
     // setSelectedCategory("");
   };
@@ -154,6 +181,19 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
           },
         }
       );
+
+      if (response.status === 222) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "La categoría ya existe.",
+        });
+        setSelectedCategory(response.data.tipoProducto.id);
+        setIsNewCategory(false);
+        setNewCategoryName("");
+        setIsLoading(false);
+        return;
+      }
 
       if (response.status !== 201) {
         throw new Error("Failed to save new category");
@@ -194,6 +234,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
 
   const handleCancelNewSubcategory = () => {
     setIsNewSubcategory(false);
+    setEditSubcategory(false);
     setNewSubcategoryName("");
     // setSelectedSubcategory("");
   };
@@ -215,6 +256,18 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         }
       );
 
+      if (response.status === 222) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "La subcategoría ya existe.",
+        });
+        setSelectedSubcategory(response.data.subcategoria.id);
+        setIsNewSubcategory(false);
+        setNewSubcategoryName("");
+        setIsLoading(false);
+        return;
+      }
       if (response.status !== 201) {
         throw new Error("Failed to save new subcategory");
       }
@@ -262,6 +315,241 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
     // console.log(producto.current);
   };
 
+  const handleEditCategory = () => {
+    setEditCategory(true);
+    setNewCategoryName(
+      categories.current.find((c) => c.value === selectedCategory)?.label || ""
+    );
+  };
+
+  const handleSaveEditCategory = async () => {
+    setIsLoading(true);
+    // Make PUT request to save edited category
+
+    try {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto/${selectedCategory}`,
+        {
+          nombre: newCategoryName,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 222) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "La categoría ya existe.",
+        });
+        setEditCategory(false);
+        setNewCategoryName("");
+        setIsLoading(false);
+        return;
+      }
+
+      if (response.status !== 200) {
+        throw new Error("Failed to save edited category");
+      }
+
+      const data = response.data;
+      console.log("Edited category saved:", data);
+
+      // create a TipoProducto object from the response (it will have all the fields)
+      const editedCategory: TipoProducto = data.tipoProducto;
+
+      // Update category in the list of categories
+      const index = categories.current.findIndex(
+        (category) => category.value === editedCategory.id
+      );
+      categories.current[index] = {
+        value: editedCategory.id,
+        label: editedCategory.nombre,
+      };
+      setEditCategory(false);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error saving edited category:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          "Ocurrió un error al guardar la categoría editada. Por favor, intente de nuevo.",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditSubcategory = () => {
+    setEditSubcategory(true);
+    setNewSubcategoryName(
+      subcategories.current.find((c) => c.value === selectedSubcategory)
+        ?.label || ""
+    );
+  };
+
+  const handleSaveEditSubcategory = async () => {
+    setIsLoading(true);
+    // Make PUT request to save edited subcategory
+
+    try {
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}subcategoria/${selectedSubcategory}`,
+        {
+          nombre: newSubcategoryName,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 222) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "La subcategoría ya existe.",
+        });
+        setEditSubcategory(false);
+        setNewSubcategoryName("");
+        setIsLoading(false);
+        return;
+      }
+
+      if (response.status !== 200) {
+        throw new Error("Failed to save edited subcategory");
+      }
+
+      const data = response.data;
+      console.log("Edited subcategory saved:", data);
+
+      // create a Subcategoria object from the response (it will have all the fields)
+      const editedSubcategory: Subcategoria = data.subcategoria;
+
+      // Update subcategory in the list of subcategories
+      const index = subcategories.current.findIndex(
+        (subcategory) => subcategory.value === editedSubcategory.id
+      );
+      subcategories.current[index] = {
+        value: editedSubcategory.id,
+        label: editedSubcategory.nombre,
+      };
+
+      toast({
+        description: "La subcategoría ha sido editada exitosamente.",
+      });
+
+      
+      setEditSubcategory(false);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error saving edited subcategory:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          "Ocurrió un error al guardar la subcategoría editada. Por favor, intente de nuevo.",
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    setIsLoading(true);
+    // Make DELETE request to delete category
+    setIsDialogOpen(false);
+
+    try {
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto/${selectedCategory}`
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Failed to delete category");
+      }
+
+      // Remove category from the list of categories
+      categories.current = categories.current.filter(
+        (category) => category.value !== selectedCategory
+      );
+
+      toast({
+        description: "La categoría ha sido eliminada exitosamente.",
+      });
+
+      document.body.style.pointerEvents = "auto";
+
+      setSelectedCategory("");
+      setIsLoading(false);
+    } catch (error: any) {
+      console.error("Error deleting category:", error);
+
+      let description =
+        "Ocurrió un error al eliminar la categoría. Por favor, intente de nuevo.";
+
+      if (error.response.status === 406) {
+        description =
+          "La categoría no puede ser eliminada porque tiene productos asociados.";
+      }
+
+      document.body.style.pointerEvents = "auto";
+
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: description,
+      });
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteSubcategory = async () => {
+    setIsLoading(true);
+    // Make DELETE request to delete subcategory
+    try {
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_BASE_URL}subcategoria/${selectedSubcategory}`
+      );
+
+      if (response.status !== 200) {
+        throw new Error("Failed to delete subcategory");
+      }
+
+      // Remove subcategory from the list of subcategories
+      subcategories.current = subcategories.current.filter(
+        (subcategory) => subcategory.value !== selectedSubcategory
+      );
+
+      toast({
+        description: "La subcategoría ha sido eliminada exitosamente.",
+      });
+
+      document.body.style.pointerEvents = "auto";
+
+      setSelectedSubcategory("");
+      setIsLoading(false);
+    } catch (error: any) {
+      console.error("Error deleting subcategory:", error);
+      let description =
+        "Ocurrió un error al eliminar la subcategoría. Por favor, intente de nuevo.";
+      if (error.response.status === 406) {
+        description =
+          "La subcategoría no puede ser eliminada porque tiene productos asociados.";
+      }
+      document.body.style.pointerEvents = "auto";
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: description,
+      });
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="info-side-container">
       <h5>Información adicional</h5>
@@ -271,7 +559,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
             <Skeleton className="h-6 w-64" />
             <Skeleton className="h-8 w-64" />
           </div>
-        ) : isNewCategory ? (
+        ) : isNewCategory || editCategory ? (
           <>
             <InputWithLabel
               label="Categoría"
@@ -285,20 +573,81 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
               <Button variant={"secondary"} onClick={handleCancelNewCategory}>
                 Cancelar
               </Button>
-              <Button onClick={handleSaveNewCategory}>Guardar</Button>
+              <Button
+                onClick={
+                  isNewCategory ? handleSaveNewCategory : handleSaveEditCategory
+                }
+              >
+                Guardar
+              </Button>
             </div>
           </>
         ) : (
-          <SelectWithLabel
-            label="Categoría"
-            options={categories.current.concat({
-              value: "Nueva categoría",
-              label: "Nueva categoría",
-            })}
-            onChange={handleCategoryChange}
-            {...(selectedCategory !== "" && { value: selectedCategory })}
-            disabled={!isEditing}
-          />
+          <div className="w-full flex flex-column">
+            <SelectWithLabel
+              label="Categoría"
+              options={categories.current.concat({
+                value: "Nueva categoría",
+                label: "Nueva categoría",
+              })}
+              onChange={handleCategoryChange}
+              {...(selectedCategory !== "" && { value: selectedCategory })}
+              disabled={!isEditing}
+            />
+            {isEditing && selectedCategory != "" && (
+              <div className="h-full flex flex-row justify-end items-end">
+                <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleEditCategory}>
+                        Editar
+                      </DropdownMenuItem>
+
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            ¿Estás seguro de que deseas eliminar esta categoría?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará
+                            permanentemente la categoría de
+                            nuestros servidores.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>
+                            <Button>Cancelar</Button>
+                          </AlertDialogCancel>
+                          <AlertDialogCancel>
+                            <Button
+                              variant={"destructive"}
+                              onClick={handleDeleteCategory}
+                            >
+                              Eliminar
+                            </Button>
+                          </AlertDialogCancel>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </AlertDialog>
+              </div>
+            )}
+          </div>
         )}
       </>
       <>
@@ -307,7 +656,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
             <Skeleton className="h-6 w-64" />
             <Skeleton className="h-8 w-64" />
           </div>
-        ) : isNewSubcategory ? (
+        ) : isNewSubcategory || editSubcategory ? (
           <>
             <InputWithLabel
               label="Subcategoría"
@@ -324,20 +673,83 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
               >
                 Cancelar
               </Button>
-              <Button onClick={handleSaveNewSubcategory}>Guardar</Button>
+              <Button
+                onClick={
+                  isNewSubcategory
+                    ? handleSaveNewSubcategory
+                    : handleSaveEditSubcategory
+                }
+              >
+                Guardar
+              </Button>
             </div>
           </>
         ) : (
-          <SelectWithLabel
-            label="Subcategoría"
-            options={subcategories.current.concat({
-              value: "Nueva subcategoría",
-              label: "Nueva subcategoría",
-            })}
-            onChange={handleSubcategoryChange}
-            value={selectedSubcategory}
-            disabled={!isEditing}
-          />
+          <div className="w-full flex flex-column">
+            <SelectWithLabel
+              label="Subcategoría"
+              options={subcategories.current.concat({
+                value: "Nueva subcategoría",
+                label: "Nueva subcategoría",
+              })}
+              onChange={handleSubcategoryChange}
+              value={selectedSubcategory}
+              disabled={!isEditing}
+            />
+            {isEditing && selectedSubcategory != "" && (
+              <div className="h-full flex flex-row justify-end items-end">
+                <AlertDialog>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={handleEditSubcategory}>
+                        Editar
+                      </DropdownMenuItem>
+
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            ¿Estás seguro de que deseas eliminar esta subcategoría?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta acción no se puede deshacer. Esto eliminará
+                            permanentemente la subcategoría de
+                            nuestros servidores.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>
+                            <Button>Cancelar</Button>
+                          </AlertDialogCancel>
+                          <AlertDialogCancel>
+                            <Button
+                              variant={"destructive"}
+                              onClick={handleDeleteSubcategory}
+                            >
+                              Eliminar
+                            </Button>
+                          </AlertDialogCancel>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </AlertDialog>
+              </div>
+            )}
+          </div>
         )}
       </>
       <TextAreaWithLabel
