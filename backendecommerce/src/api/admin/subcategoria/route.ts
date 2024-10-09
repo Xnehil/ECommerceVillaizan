@@ -76,8 +76,16 @@ import { Subcategoria } from "src/models/Subcategoria";
       return;
     }
     const subcategoriaData = req.body as Subcategoria;
-    const subcategoria = await subcategoriaService.crear(subcategoriaData);
+    const respuesta = await subcategoriaService.crear(subcategoriaData);
+    if (respuesta.alreadyExists) {
+      res.status(222).json({ 
+        subcategoria: respuesta.subcategoria,
+        message: "La subcategoria ya existe",
+      })
+      return;
+    }
 
+    const subcategoria = respuesta.subcategoria;
     res.status(201).json({
       subcategoria,
     });

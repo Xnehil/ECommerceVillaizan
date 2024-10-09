@@ -62,7 +62,7 @@ class SubcategoriaService extends TransactionBaseService {
         return subcategoria;
       }
     
-      async crear(subcategoria: Subcategoria): Promise<Subcategoria> {
+      async crear(subcategoria: Subcategoria): Promise<{ subcategoria: Subcategoria, alreadyExists: boolean }> {
         return this.atomicPhase_(async (manager) => {
           const subcategoriaRepo = manager.withRepository(this.subcategoriaRepository_);
 
@@ -73,12 +73,12 @@ class SubcategoriaService extends TransactionBaseService {
 
       
           if (existingSubcategoria) {
-            return existingSubcategoria;
+            return {subcategoria: existingSubcategoria, alreadyExists: true};
           }
       
           const subcategoriaCreada = subcategoriaRepo.create(subcategoria);
           const result = await subcategoriaRepo.save(subcategoriaCreada);
-          return result;
+          return {subcategoria: result, alreadyExists: false};
         });
       }
     

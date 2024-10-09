@@ -58,25 +58,24 @@ class TipoProductoService extends TransactionBaseService {
         return tipoProducto;
       }
     
-      async crear(tipoProducto: TipoProducto): Promise<TipoProducto> {
+      async crear(tipoProducto: TipoProducto): Promise<{ tipoProducto: TipoProducto, alreadyExists: boolean }> {
         return this.atomicPhase_(async (manager) => {
-          const tipoProductoRepo = manager.withRepository(this.tipoProductoRepository_);
-
-          // Check if a tipoProducto with the same nombre (lowercased) already exists
-          const existingTipoProducto = await tipoProductoRepo.createQueryBuilder('tipoProducto')
-          .where('LOWER(tipoProducto.nombre) = LOWER(:nombre)', { nombre: tipoProducto.nombre })
-          .getOne();
-
-      
-          if (existingTipoProducto) {
-            return existingTipoProducto;
-          }
-      
-          const tipoProductoCreado = tipoProductoRepo.create(tipoProducto);
-          const result = await tipoProductoRepo.save(tipoProductoCreado);
-          return result;
+            const tipoProductoRepo = manager.withRepository(this.tipoProductoRepository_);
+    
+            // Check if a tipoProducto with the same nombre (lowercased) already exists
+            const existingTipoProducto = await tipoProductoRepo.createQueryBuilder('tipoProducto')
+                .where('LOWER(tipoProducto.nombre) = LOWER(:nombre)', { nombre: tipoProducto.nombre })
+                .getOne();
+    
+            if (existingTipoProducto) {
+                return { tipoProducto: existingTipoProducto, alreadyExists: true };
+            }
+    
+            const tipoProductoCreado = tipoProductoRepo.create(tipoProducto);
+            const result = await tipoProductoRepo.save(tipoProductoCreado);
+            return { tipoProducto: result, alreadyExists: false };
         });
-      }
+    }
     
       async actualizar(
         id: string,
