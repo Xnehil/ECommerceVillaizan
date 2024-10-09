@@ -28,6 +28,10 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   const [newSubcategoryName, setNewSubcategoryName] = useState<string>("");
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
 
+  const [descripcion, setDescripcion] = useState<string>(
+    producto.current.informacionNutricional || ""
+  );
+
   const [isLoading, setIsLoading] = useState(true);
 
   const categories = useRef<{ value: string; label: string }[]>([]);
@@ -86,8 +90,26 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       }
     };
 
-    if (a.current === 0) fetchCategories();
+    if (a.current === 0) {
+      fetchCategories();
+    }
+    if (producto.current?.tipoProducto?.id) {
+      setSelectedCategory(producto.current.tipoProducto.id);
+    }
+    if (producto.current?.subcategorias?.[0]?.id) {
+      setSelectedSubcategory(producto.current.subcategorias[0].id);
+    }
   }, []);
+
+  useEffect(() => {
+    if (producto.current?.tipoProducto?.id) {
+      setSelectedCategory(producto.current.tipoProducto.id);
+    }
+    if (producto.current?.subcategorias?.[0]?.id) {
+      setSelectedSubcategory(producto.current.subcategorias[0].id);
+    }
+    setDescripcion(producto.current.informacionNutricional || "");
+  }, [isEditing]);
 
   const handleCategoryChange = (value: string) => {
     if (value === "Nueva categoría") {
@@ -235,6 +257,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   const handleNutritionalInfoChange = (
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
+    setDescripcion(event.target.value);
     producto.current.informacionNutricional = event.target.value;
     // console.log(producto.current);
   };
@@ -323,6 +346,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         maxLength={800}
         onChange={handleNutritionalInfoChange}
         disabled={!isEditing}
+        value={descripcion}
       />
     </div>
   );
