@@ -15,23 +15,21 @@ import { Motorizado } from "src/models/Motorizado";
 
 /**
  * @swagger
- * /motorizado/usuario/{id_usuario}:
- *   get:
+ * /motorizado/usuario:
+ *   post:
  *     summary: Recupera un motorizado por ID
  *     tags: [Motorizados]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID del motorizado
- *       - in: query
- *         name: enriquecido
- *         schema:
- *           type: boolean
- *         required: false
- *         description: Si se debe recuperar el producto enriquecido
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id_usuario:
+ *                 type: string
+ *                 description: ID del motorizado
+ *                 example: "12345"
  *     responses:
  *       200:
  *         description: Detalles del motorizado
@@ -52,9 +50,12 @@ export const POST = async (
 ) => {
     const motorizadoService: MotorizadoService = req.scope.resolve("motorizadoService");
     const { id_usuario } = req.body;
-    //const enriquecido = req.query.enriquecido === 'true';
-    //log de la solicitud
-    console.log("Solicitud", req.body);
+
+    if (!req.body) {
+        res.status(400).json({ error: "Petición inválida" });
+        return;
+    }
+
     try {
         const motorizado = await motorizadoService.listarPorUsuarioId(id_usuario
         );
