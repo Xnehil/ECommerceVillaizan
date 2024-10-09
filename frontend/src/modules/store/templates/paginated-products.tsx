@@ -70,13 +70,13 @@ export default function PaginatedProducts({
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           console.error(
-            "Error fetching products:",
+            "Los productos no se encuentran disponibles en ese momento por favor intentalo de nuevo",
             error.response ? error.response.data : error.message
           );
         } else {
-          console.error("Error fetching products:", error);
+          console.error("Los productos no se encuentran disponibles en ese momento por favor intentalo de nuevo", error);
         }
-        setError("Error fetching products");
+        setError("Los productos no se encuentran disponibles en ese momento por favor intentalo de nuevo");
       } finally {
         setLoading(false);
       }
@@ -143,14 +143,14 @@ export default function PaginatedProducts({
         </select>
       </div>
       <div>
-        <label htmlFor="type-filter">Filtrar por Tipo de Producto:</label>
+        <label htmlFor="type-filter">Filtrar por Categoria:</label>
         <select
           id="type-filter"
           value={selectedProductType}
           onChange={(e) => setSelectedProductType(e.target.value)}
           className="border p-2 rounded"
         >
-          <option value="">Todos los Tipos</option>
+          <option value="">Todas las Categorias</option>
           {productTypes.map((type, index) => (
             <option key={index} value={type}>
               {type}
