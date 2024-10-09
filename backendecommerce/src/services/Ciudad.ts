@@ -86,7 +86,7 @@ class CiudadService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const ciudadRepo = manager.withRepository(this.ciudadRepository_);
             const ciudad = await this.recuperar(id);
-            await ciudadRepo.remove([ciudad]);
+            await ciudadRepo.update(id, { estaActivo:false, desactivadoEn: new Date() });
         });
     }
 }

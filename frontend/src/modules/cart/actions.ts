@@ -92,6 +92,34 @@ export async function retrieveCart(productos: boolean = false) {
   }
 }
 
+export async function retrievePedido(productos: boolean = false) {
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+
+
+  if (!cartId) {
+    return null
+  }
+
+  if (productos) {
+    try {
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      return response.data.pedido
+    } catch (e) {
+      console.log(e)
+      return null
+    }
+  } else{
+      try {
+        const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
+        return response.data.pedido
+      } catch (e) {
+        console.log(e)
+        return null
+      }
+  }
+}
+
 export async function addToCart({
   idProducto,
   cantidad,

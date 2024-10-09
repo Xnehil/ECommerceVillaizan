@@ -87,7 +87,7 @@ class FrutaService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
           const frutaRepo = manager.withRepository(this.frutaRepository_);
           const fruta = await this.recuperar(id);
-          await frutaRepo.remove([fruta]);
+          await frutaRepo.update(id, { desactivadoEn: new Date() , estaActivo: false})
         });
       }
 }

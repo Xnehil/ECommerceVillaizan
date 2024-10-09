@@ -75,8 +75,16 @@ import { TipoProducto } from "src/models/TipoProducto";
       return;
     }
     const tipoProductoData = req.body as TipoProducto;
-    const tipoProducto = await tipoProductoService.crear(tipoProductoData);
+    const respuesta = await tipoProductoService.crear(tipoProductoData);
+    if (respuesta.alreadyExists) {
+      res.status(222).json({
+        tipoProducto: respuesta.tipoProducto,
+        message: "El tipoProducto ya existe",
+      });
+      return;
+    }
 
+    const tipoProducto = respuesta.tipoProducto;
     res.status(201).json({
       tipoProducto,
     });

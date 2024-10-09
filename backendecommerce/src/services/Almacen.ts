@@ -87,7 +87,7 @@ class AlmacenService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
           const almacenRepo = manager.withRepository(this.almacenRepository_);
           const almacen = await this.recuperar(id);
-          await almacenRepo.remove([almacen]);
+          await almacenRepo.update(id, {estaActivo: false, desactivadoEn: new Date()})
         });
       }
 }

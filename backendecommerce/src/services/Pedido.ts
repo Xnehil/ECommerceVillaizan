@@ -61,18 +61,19 @@ class PedidoService extends TransactionBaseService {
         return pedido;
     }
 
-    async recuperarConDetalle(id: string): Promise<Pedido> {
+    async recuperarConDetalle(id: string, options: FindConfig<Pedido> = {}): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
-        const query = buildQuery({ id }, { relations: ["detalles"] });
+        const relations = ["detalles", ...(options.relations || [])];
+        const query = buildQuery({ id }, { relations });
         const pedido = await pedidoRepo.findOne(query);
-
+    
         if (!pedido) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
         }
-
+    
         return pedido;
     }
-
+    
     async crear(pedido: Pedido): Promise<Pedido> {
         return this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
