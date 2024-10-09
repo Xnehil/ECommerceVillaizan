@@ -5,6 +5,9 @@ import { Label } from "@radix-ui/react-label";
 import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
 import { Producto } from "@/types/PaqueteProducto";
+import { toast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import CheckboxWithLabel from "@/components/forms/checkboxWithLabel";
 
 interface InformacionGeneralProps {
   producto: MutableRefObject<Producto>;
@@ -19,34 +22,80 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
     producto.current.precioEcommerce?.toString() || ""
   );
   const [codigo, setCodigo] = useState(producto.current.codigo || "");
+  const [seVendeEcommerce, setSeVendeEcommerce] = useState(
+    producto.current.seVendeEcommerce || false
+  );
   const [descripcion, setDescripcion] = useState(
     producto.current.descripcion || ""
   );
   const [previewSrc, setPreviewSrc] = useState(
-    "https://placehold.co/200?text=Vista+previa"
+    "https://placehold.co/150?text=Vista+previa"
   );
 
   useEffect(() => {
     setPrecioEcommerce(producto.current.precioEcommerce?.toString() || "");
     setCodigo(producto.current.codigo || "");
+    setSeVendeEcommerce(producto.current.seVendeEcommerce || false);
     setDescripcion(producto.current.descripcion || "");
   }, [isEditing]);
 
   const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPrecioEcommerce(event.target.value);
-    producto.current.precioEcommerce = parseFloat(event.target.value);
+    const value = event.target.value;
+    // Allow only numbers and up to 2 decimal places
+    const regex = /^\d*\.?\d{0,2}$/;
+    if (regex.test(value) || value === "") {
+      setPrecioEcommerce(value);
+    }
+  };
+
+  const handlePriceBlur = () => {
+    let numericValue = parseFloat(precioEcommerce);
+    if (isNaN(numericValue)) {
+      numericValue = 0;
+    }
+    if (numericValue > 50) {
+      toast({
+        variant: "destructive",
+        description: "El precio no puede ser mayor a S/ 50.00",
+      });
+      numericValue = 50;
+    }
+    const formattedValue = numericValue.toFixed(2);
+    setPrecioEcommerce(formattedValue);
+    producto.current.precioEcommerce = numericValue;
   };
 
   const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setCodigo(event.target.value);
-    producto.current.codigo = event.target.value;
+    const value = event.target.value;
+    if (value.length <= 50) {
+      setCodigo(value);
+      producto.current.codigo = value;
+    } else {
+      toast({
+        variant: "destructive",
+        description: "El código no puede tener más de 50 caracteres",
+      });
+    }
+  };
+
+  const handleCheckboxChange = (checked: boolean) => {
+    setSeVendeEcommerce(checked);
+    producto.current.seVendeEcommerce = checked;
   };
 
   const handleDescriptionChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setDescripcion(event.target.value);
-    producto.current.descripcion = event.target.value;
+    const value = event.target.value;
+    if (value.length <= 100) {
+      setDescripcion(value);
+      producto.current.descripcion = value;
+    } else {
+      toast({
+        variant: "destructive",
+        description: "La descripción no puede tener más de 100 caracteres",
+      });
+    }
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,6 +126,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
             type="number"
             required={isEditing ? true : false}
             onChange={handlePriceChange}
+            onBlur={handlePriceBlur}
             disabled={!isEditing}
             value={precioEcommerce}
           />
@@ -92,6 +142,13 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
           />
         </div>
       </div>
+      <CheckboxWithLabel
+        id="venta"
+        label="Mostrar en ecommerce"
+        disabled={!isEditing}
+        checked={seVendeEcommerce}
+        onChange={handleCheckboxChange}
+      />
       <InputWithLabel
         label="Descripción"
         placeholder="Ej. Descripción corta"
