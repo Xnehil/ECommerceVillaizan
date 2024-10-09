@@ -8,10 +8,10 @@ import { Pedido } from 'types/PaquetePedido';
 
 interface MapaTrackingProps {
     pedido: Pedido | null;
+    driverPosition: LatLngExpression;
 }
 
-const MapaTracking: React.FC<MapaTrackingProps> = ({ pedido }) => {
-    const [driverPosition, setDriverPosition] = useState<[number, number]>([-6.476, -76.361]);
+const MapaTracking: React.FC<MapaTrackingProps> = ({ pedido, driverPosition }) => {
     if (!pedido) {
         return null;
     }

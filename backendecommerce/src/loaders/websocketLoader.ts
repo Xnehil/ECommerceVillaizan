@@ -6,7 +6,7 @@ import {
 import WebSocket from "ws";
 
 
-export const ubicacionesDelivery = new Map<string, { lat: number, lng: number }>();
+export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, pedidoId: string | null }>();
 export default async (
   container: MedusaContainer,
   config: ConfigModule
@@ -30,6 +30,10 @@ export default async (
     const rol = params.get('rol'); // Si es delivery o cliente
     const id = params.get('id');
 
+    if (id && rol === 'delivery') {
+      ubicacionesDelivery.set(id, { lat: 0, lng: 0, pedidoId: null });
+    }
+
     if (!rol || !id) {
       ws.send(JSON.stringify({ error: 'Parámetros incorrectos' }));
       ws.close();
@@ -51,7 +55,7 @@ export default async (
       if (rol === 'delivery') {
         handleDeliveryMessage(ws, parsedMessage, id, ubicacionesDelivery);
       } else if (rol === 'cliente') {
-        handleClientMessage(ws, parsedMessage, ubicacionesDelivery);
+        handleClientMessage(ws, parsedMessage, id, ubicacionesDelivery);
       }
     });
 
@@ -80,13 +84,14 @@ const handleDeliveryMessage = (
   ws: WebSocket,
   message: any,
   userId: string,
-  deliveryLocations: Map<string, { lat: number, lng: number }>
+  deliveryLocations: Map<string, { lat: number, lng: number, pedidoId: string | null }>
 ) => {
   switch (message.type) {
     case 'ubicacion':
-      console.info(`Actualización de ubicación de ${userId}: ${JSON.stringify(message.data)}`);
+      // console.info(`Actualización de ubicación de ${userId}: ${JSON.stringify(message.data)}`);
       // Update the location in the map
-      deliveryLocations.set(userId, message.data);
+      const currentData = deliveryLocations.get(userId) || { lat: 0, lng: 0, pedidoId: null };
+      deliveryLocations.set(userId, { ...currentData, ...message.data });
       break;
     case 'orderStatus':
       console.info(`Order status update from ${userId}: ${JSON.stringify(message.data)}`);
@@ -95,13 +100,15 @@ const handleDeliveryMessage = (
     default:
       console.warn(`Unknown message type from delivery: ${message.type}`);
   }
+  console.info(`Ubicaciones de repartidores: ${JSON.stringify(Array.from(deliveryLocations.entries()))}`);
 };
 
 // Handle messages from clients
 const handleClientMessage = (
   ws: WebSocket,
   message: any,
-  deliveryLocations: Map<string, { lat: number, lng: number }>
+  idPedido: string,
+  deliveryLocations: Map<string, { lat: number, lng: number, pedidoId: string | null }>
 ) => {
   switch (message.type) {
     case 'ubicacion':
@@ -109,9 +116,13 @@ const handleClientMessage = (
       // Retrieve the location of the requested delivery person
       const deliveryId = message.data.deliveryId;
       const location = deliveryLocations.get(deliveryId);
-      if (location) {
+      const enEntrega = location?.pedidoId === idPedido;
+      if (location && enEntrega) {
         ws.send(JSON.stringify({ type: 'locationResponse', data: location }));
-      } else {
+      } else if (location && !enEntrega) {
+        ws.send(JSON.stringify({ type: 'notYetResponse', data: 'Repartidor atendiendo otros pedido' }));
+      } 
+      else {
         ws.send(JSON.stringify({ type: 'locationResponse', error: 'Location not found' }));
       }
       break;

@@ -3,6 +3,7 @@
 import { LoadingSpinner } from '@components/LoadingSpinner';
 // import MapaTracking from '@components/MapaTracking';
 import SeguimientoHeader from '@components/SeguimientoHeader';
+import { connectWebSocket } from '@lib/util/websocketUtils';
 import { enrichLineItems,  retrieveCart, retrievePedido } from '@modules/cart/actions';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
@@ -11,7 +12,7 @@ import { Pedido } from 'types/PaquetePedido';
 
 const MapaTracking = dynamic(() => import('@components/MapaTracking'), { ssr: false });
 
-const fetchCart = async () => {
+const fetchCart = async ( setDriverPosition: (position: [number, number]) => void) => {
     const respuesta = await retrievePedido(true);
     let cart:Pedido= respuesta;
     let aux = cart.detalles;
@@ -24,7 +25,27 @@ const fetchCart = async () => {
         // cart.motorizado = motorizado
     }
     //Conectar a websocket para recibir actualizaciones en tiempo real
-
+    if (cart.motorizado) {
+        // Conectar a websocket para recibir actualizaciones en tiempo real
+        const ws = connectWebSocket(
+            cart.motorizado.id, // idRepartidor
+            cart.id, // idPedido
+            (data) => {
+                if (data.type === 'locationResponse') {
+                    // Actualizar la posición del motorizado
+                    setDriverPosition([data.data.location.lat, data.data.location.lng]);
+                } else if (data.type === 'notYetResponse') {
+                    // Actualizar el estado del pedido
+                    console.log(data.data);
+                }
+            },
+            () => {
+                // Handle WebSocket connection close
+            }
+        );
+    } else {
+        console.error("Motorizado is undefined");
+    }
     
 
     return cart
@@ -37,10 +58,11 @@ const TrackingPage: React.FC = () => {
     const search = useSearchParams();
     const [codigo, setCodigo] = React.useState<string | null>(search.get('codigo'));
     const [loading, setLoading] = React.useState<boolean>(true);
+    const [driverPosition, setDriverPosition] = React.useState<[number, number]>([-6.476, -76.361]);
     const mapRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        fetchCart().then((cart) => {
+        fetchCart(setDriverPosition).then((cart) => {
             // console.log(cart);
             setPedido(cart);
             setLoading(false);
@@ -115,7 +137,7 @@ const TrackingPage: React.FC = () => {
                             </div>
 
                             <div style={{ marginTop: '40px', height: '64vh', border: '1px solid #ccc' }} >
-                                <MapaTracking pedido={pedido} />
+                                <MapaTracking pedido={pedido} driverPosition={driverPosition} />
                             </div>
                         </>
                     )}
