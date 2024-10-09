@@ -9,8 +9,9 @@ import { Usuario } from "./PaqueteUsuario";
 export interface Motorizado extends EntidadBase { // Placeholder, replace if necessary
     pedidos: Pedido[]; // One-to-many relationship
     placa: string;
-    usuario: Usuario;
-    almacen: Almacen;
+    urlImagen : string;
+    usuario?: Usuario;
+    almacen?: Almacen;
     inventarios: InventarioMotorizado[]; // One-to-many relationship
 }
 
@@ -28,13 +29,13 @@ export interface Direccion extends EntidadBase { // Placeholder, replace if nece
 
 export interface Ciudad extends EntidadBase { // Placeholder, replace if necessary
     nombre: string;
-    direcciones: Direccion[]; // One-to-many relationship
+    direcciones?: Direccion[]; // One-to-many relationship
 }
 
 export interface Ubicacion extends EntidadBase { // Placeholder, replace if necessary
     latitud: number;
     longitud: number;
-    direcciones: Direccion[]; // One-to-many relationship
+    direcciones?: Direccion[]; // One-to-many relationship
 }
 
 export interface InventarioMotorizado extends EntidadBase {

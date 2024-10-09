@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
@@ -9,7 +9,7 @@ interface TextAreaWithLabelProps {
   label: string;
   placeholder?: string;
   maxLength?: number;
-  // value: string;
+  value?: string;
   onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   disabled?: boolean;
 }
@@ -20,8 +20,9 @@ const TextAreaWithLabel: React.FC<TextAreaWithLabelProps> = ({
   maxLength = 300,
   onChange,
   disabled = false,
+  value,
 }) => {
-  const [currentValue, setCurrentValue] = useState("");
+  const [currentValue, setCurrentValue] = useState(value || "");
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCurrentValue(event.target.value);
@@ -29,6 +30,11 @@ const TextAreaWithLabel: React.FC<TextAreaWithLabelProps> = ({
       onChange(event);
     }
   };
+
+  useEffect(() => {
+    setCurrentValue(value || "");
+  }, [value]);
+  
   return (
     <div className="grid w-full max-w-sm items-center space-y-2">
       <Label>{label}</Label>
@@ -38,6 +44,7 @@ const TextAreaWithLabel: React.FC<TextAreaWithLabelProps> = ({
         onChange={handleChange}
         className="w-full max-h-64 overflow-y-auto"
         disabled={disabled}
+        value={currentValue}
       />
       {!disabled && (
         <p className="text-sm text-muted-foreground text-right">

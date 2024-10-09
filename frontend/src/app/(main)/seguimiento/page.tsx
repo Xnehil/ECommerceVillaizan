@@ -1,13 +1,59 @@
 "use client";
 
+import { LoadingSpinner } from '@components/LoadingSpinner';
+// import MapaTracking from '@components/MapaTracking';
 import SeguimientoHeader from '@components/SeguimientoHeader';
-import React from 'react';
+import { enrichLineItems,  retrieveCart, retrievePedido } from '@modules/cart/actions';
+import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
+import React, { useEffect, useRef } from 'react';
 import { Pedido } from 'types/PaquetePedido';
+
+const MapaTracking = dynamic(() => import('@components/MapaTracking'), { ssr: false });
+
+const fetchCart = async () => {
+    const respuesta = await retrievePedido(true);
+    let cart:Pedido= respuesta;
+    let aux = cart.detalles;
+    const enrichedItems = await enrichLineItems(cart.detalles);
+    // console.log("Detalles enriquecidos:", enrichedItems);
+    cart.detalles = enrichedItems;
+    return cart
+  }
+
 
 const TrackingPage: React.FC = () => {
     const [pedido, setPedido] = React.useState<Pedido | null>(null);
+    //Extract ?codigo= from URL
+    const search = useSearchParams();
+    const [codigo, setCodigo] = React.useState<string | null>(search.get('codigo'));
+    const [loading, setLoading] = React.useState<boolean>(true);
+    const mapRef = useRef<HTMLDivElement>(null);
 
+    useEffect(() => {
+        fetchCart().then((cart) => {
+            // console.log(cart);
+            setPedido(cart);
+            setLoading(false);
+        });
+    }, []);
 
+    useEffect(() => {
+        if (pedido) {
+            setLoading(false);
+            mapRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            window.scrollBy(0, -30); // Adjust the value (-50) to scroll a bit higher
+        }
+    }, [pedido]);
+
+    const handleSubmit = (event: React.FormEvent) => {
+        event.preventDefault();
+        const inputCodigo = (event.target as HTMLFormElement).elements.namedItem('codigo') as HTMLInputElement;
+        const codigoValue = inputCodigo.value;
+        if (codigoValue) {
+            window.location.href = `?codigo=${codigoValue}`;
+        }
+    };
 
     return (
         <div>
@@ -23,19 +69,50 @@ const TrackingPage: React.FC = () => {
                />
 
             <div style={{ padding: '20px' }}>
-                <h1>Order Tracking</h1>
-                <p>Enter your order number to track your shipment:</p>
-                <form>
-                    <input type="text" placeholder="Order Number" style={{ marginRight: '10px' }} />
-                    <button type="submit">Track</button>
-                </form>
-                <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-                    <SeguimientoHeader />
-                </div>
-                <div style={{ marginTop: '40px', height: '500px', border: '1px solid #ccc' }}>
-                    {/* Tracking map will be displayed here */}
-                    <p>Tracking Map Placeholder</p>
-                </div>
+                {!codigo ? (
+                    <>
+                    <div className="flex flex-col items-center mt-8">
+                        <h1 className="text-2xl font-semibold text-gray-800 mb-4">
+                            Ingresa el código de seguimiento de tu pedido
+                        </h1>
+                        <form className="w-full max-w-sm" onSubmit={handleSubmit}>
+                            <div className="flex items-center border-b border-b-2 border-rojoVillaizan py-2">
+                                <input
+                                    type="text"
+                                    name='codigo'
+                                    placeholder="Código de seguimiento"
+                                    className="appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none"
+                                />
+                                <button
+                                    type="submit"
+                                    className="flex-shrink-0 bg-rojoVillaizan hover:bg-rojoVillaizan-700 border-gray-200 hover:border-gray-400 text-sm border-4 text-white py-1 px-2 rounded"
+                                >
+                                    Rastrear
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </>
+                ) : (
+                    <>
+                    {loading ? (
+                        <div className='flex justify-center items-center' style={{ height: '500px' }}>
+                            <LoadingSpinner />
+                        </div>
+                    ) : (
+                        <>
+                            <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }} ref={mapRef}>
+                                <SeguimientoHeader pedido={pedido} />
+                            </div>
+
+                            <div style={{ marginTop: '40px', height: '64vh', border: '1px solid #ccc' }} >
+                                <MapaTracking pedido={pedido} />
+                            </div>
+                        </>
+                    )}
+                </>
+                )}
+                
             </div>
         </div>
     );

@@ -87,7 +87,7 @@ class ContenidoEducativoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
           const contenidoEducativoRepo = manager.withRepository(this.contenidoEducativoRepository_);
           const contenidoEducativo = await this.recuperar(id);
-          await contenidoEducativoRepo.remove([contenidoEducativo]);
+          await contenidoEducativoRepo.update(id, { desactivadoEn: new Date() , estaActivo: false})
         });
       }
 }

@@ -130,7 +130,11 @@ export const DELETE = async (
         await tipoProductoService.eliminar(id);
         res.status(200).json({ message: "tipoProducto eliminado exitosamente" });
     } catch (error) {
-        res.status(404).json({ error: "tipoProducto no encontrado" });
+        console.log("Error: ", error.message);
+        if (error.message === "No se puede eliminar este tipo de producto porque tiene productos asociados") {
+            return res.status(406).json({ error: "No se puede eliminar este tipo de producto porque tiene productos asociados" });
+        }
+        return res.status(404).json({ error: "tipoProducto no encontrado" });
     }
 };
 

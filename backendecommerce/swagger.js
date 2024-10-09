@@ -389,6 +389,10 @@ const options = {
                   type: 'string',
                   example: 'ABC-1234',
                 },
+                urlImagen: {
+                  type: 'string',
+                  example: 'http://example.com/imagen.jpg',
+                },
                 almacen: {
                   $ref: '#/components/schemas/Almacen',
                 },
