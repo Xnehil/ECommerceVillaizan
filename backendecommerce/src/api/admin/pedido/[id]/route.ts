@@ -88,18 +88,14 @@ export const PUT = async (
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const { id } = req.params;
     const pedidoData = req.body as Partial<Pedido>;
-    const asignarRepartidor = req.query.asignarRepartidor === 'true';
 
     try {
-        const pedido = await pedidoService.actualizar(id, pedidoData, asignarRepartidor);
+        const pedido = await pedidoService.actualizar(id, pedidoData);
         res.json({ pedido });
     } catch (error) {
         if (error.message === "Pedido no encontrado") {
             res.status(404).json({ error: "Pedido no encontrado" });
-        } else if (error.message === "No hay motorizados disponibles") {
-            res.status(503).json({ error: "No hay motorizados" });
-        } 
-        else {
+        } else {
             res.status(400).json({ error: "Petición inválida" });
         }
     }

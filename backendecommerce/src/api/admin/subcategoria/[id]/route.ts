@@ -91,10 +91,6 @@ export const PUT = async (
         const subcategoria = await subcategoriaService.actualizar(id, subcategoriaData);
         res.json({ subcategoria });
     } catch (error) {
-        if (error.message.includes("Subcategoria con nombre")) {
-            res.status(404).json({ error: "Subcategoria con ese nombre ya existe" });
-            return;
-        }
         if (error.message === "subcategoria no encontrado") {
             res.status(404).json({ error: "subcategoria no encontrado" });
         } else {

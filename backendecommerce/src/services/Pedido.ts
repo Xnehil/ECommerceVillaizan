@@ -3,17 +3,13 @@ import { Pedido } from "../models/Pedido";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
-import { ubicacionesDelivery } from "../loaders/websocketLoader";
-import MotorizadoRepository from "@repositories/Motorizado";
 
 class PedidoService extends TransactionBaseService {
     protected pedidoRepository_: typeof pedidoRepository;
-    protected motorizadoRepository_: typeof MotorizadoRepository;
 
     constructor(container) {
         super(container);
         this.pedidoRepository_ = container.pedidoRepository;
-        this.motorizadoRepository_ = container.motorizadoRepository;
     }
 
     getMessage() {
@@ -89,33 +85,11 @@ class PedidoService extends TransactionBaseService {
 
     async actualizar(
         id: string,
-        data: Omit<Partial<Pedido>, "id">,
-        asignarRepartidor: boolean = false
+        data: Omit<Partial<Pedido>, "id">
     ): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
             const pedido = await this.recuperar(id);
-
-            if (asignarRepartidor) {
-                const motorizadoRepo = manager.withRepository(this.motorizadoRepository_);
-                // console.log("Ubicaciones disponibles:", ubicacionesDelivery);
-                if(ubicacionesDelivery.size > 0){
-                    // console.log("Motorizados disponibles:", ubicacionesDelivery);
-                    const motorizadoId = ubicacionesDelivery.values().next().value; //Lógica de asignación
-                    const dataMotorizado = await motorizadoRepo.findOne(motorizadoId);
-                    console.log("Motorizado asignado:", dataMotorizado);
-                    if(dataMotorizado){
-                        data.motorizado = dataMotorizado;
-                        // Last 3 digits of id + last 3 chars of dataMotorizado.id
-                        data.codigoSeguimiento = id.slice(-3) + dataMotorizado.id.slice(-3);
-                    } else{
-                        throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
-                    }
-                } else{
-                    throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles");
-                }
-            }
-
             Object.assign(pedido, data);
             return await pedidoRepo.save(pedido);
         });
