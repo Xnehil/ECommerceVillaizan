@@ -45,7 +45,7 @@ import { Motorizado } from "src/models/Motorizado";
 
   /**
  * @swagger
- * /motorizadoes:
+ * /motorizado:
  *   post:
  *     summary: Crea un nuevo  motorizado
  *     tags: [Motorizados]

@@ -21,7 +21,9 @@ const Breadcrumbs = () => {
         const href = "/" + pathSegments.slice(0, index + 1).join("/");
 
         // Capitalize each breadcrumb segment
-        const segmentName = segment.charAt(0).toUpperCase() + segment.slice(1);
+        const decodedSegment = decodeURIComponent(segment);
+        const segmentName =
+          decodedSegment.charAt(0).toUpperCase() + decodedSegment.slice(1);
 
         return (
           <div className="breadcrumb-item" key={href}>

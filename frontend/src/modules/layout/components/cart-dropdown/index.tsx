@@ -4,7 +4,7 @@ import { Popover, Transition } from "@headlessui/react"
 import { Cart } from "@medusajs/medusa"
 import { Button } from "@medusajs/ui"
 import { useParams, usePathname } from "next/navigation"
-import { Fragment, useEffect, useRef, useState } from "react"
+import { Dispatch, Fragment, SetStateAction, useEffect, useRef, useState } from "react"
 
 import { formatAmount } from "@lib/util/prices"
 import DeleteButton from "@modules/common/components/delete-button"
@@ -18,8 +18,10 @@ import { Producto } from "types/PaqueteProducto"
 
 const CartDropdown = ({
   cart: cartState,
+  setCart
 }: {
-  cart?: Omit<Pedido, "beforeInsert" | "afterLoad"> | null
+  cart?: Omit<Pedido, "beforeInsert" | "afterLoad"> | null,
+  setCart: Dispatch<SetStateAction<Pedido | null>>
 }) => {
   const [activeTimer, setActiveTimer] = useState<NodeJS.Timer | undefined>(
     undefined
@@ -56,6 +58,9 @@ const CartDropdown = ({
     cartState?.detalles?.reduce((acc, item) => {
       return acc + item.cantidad
     }, 0) || 0
+  const total = cartState?.detalles?.reduce((acc, item) => {
+    return acc + Number(item.subtotal);
+  }, 0) || 0;
 
   const itemRef = useRef<number>(totalItems || 0)
   const defaultUrl = "https://picsum.photos/200/300"
@@ -102,13 +107,13 @@ const CartDropdown = ({
       onMouseLeave={close}
     >
       <Popover className="relative h-full">
-        {/*<Popover.Button className="h-full">
+        {<Popover.Button className="h-full">
           <Link
             className="hover:text-ui-fg-base text-sans"
             style={{ color: "#FFFEFE", fontSize: "28px", fontStyle: "normal", fontWeight: 600, lineHeight: "normal" }}
-            href="/cart"
-          >{`Comprar (${totalItems})`}</Link>
-        </Popover.Button>*/
+            href="/carrito"
+          >{`Comprar`}</Link>
+        </Popover.Button>
         }
         <Transition
           show={cartDropdownOpen}
@@ -122,7 +127,7 @@ const CartDropdown = ({
         >
           <Popover.Panel
             static
-            className="hidden small:block absolute top-[calc(100%+1px)] right-0 bg-cremaFondo border-x border-b border-gray-200 w-[420px] text-ui-fg-base"
+            className="hidden small:block absolute top-[calc(100%+1px)] right-0 bg-white border-x border-b border-gray-200 w-[460px] text-ui-fg-base"
             data-testid="nav-cart-dropdown"
           >
             <div className="p-4 flex items-center justify-center">
@@ -146,7 +151,7 @@ const CartDropdown = ({
                         data-testid="cart-item"
                       >
                         <Link
-                          href={`/products/${item.id}`}
+                          href={`/products/${item.producto.id}`}
                           className="w-24"
                         >
                           <Thumbnail thumbnail={item.producto.urlImagen} size="square" />
@@ -156,17 +161,19 @@ const CartDropdown = ({
                             <div className="flex items-start justify-between">
                               <div className="flex flex-col overflow-ellipsis whitespace-nowrap mr-4 w-[180px]">
                                 <h3 className="text-base-regular overflow-hidden text-ellipsis">
-                                  <LocalizedClientLink
-                                    href={`/products/${item.producto.urlImagen || defaultUrl}`}
+                                  <Link
+                                    href={`/products/${item.producto.id || defaultUrl}`}
                                     data-testid="product-link"
                                   >
-                                    {item.producto.nombre}
-                                  </LocalizedClientLink>
+                                    {item.producto.nombre} 
+                                    <br />
+                                    {"S/ " + Number(item.producto.precioEcommerce).toFixed(2) + " c/u"}
+                                  </Link>
                                 </h3>
-                                <LineItemOptions
+                                {/* <LineItemOptions
                                   variant={item.producto}
                                   data-testid="cart-item-variant"
-                                />
+                                /> */}
                                 <span
                                   data-testid="cart-item-quantity"
                                   data-value={item.cantidad}
@@ -174,7 +181,7 @@ const CartDropdown = ({
                                   Cantidad: {item.cantidad}
                                 </span>
                               </div>
-                              <div className="flex justify-end">
+                              <div className="flex pr-4">
                                 <LineItemPrice
                                   item={item}
                                   style="tight"
@@ -186,6 +193,8 @@ const CartDropdown = ({
                             id={item.id}
                             className="mt-1"
                             data-testid="cart-item-remove-button"
+                            cart={cartState}
+                            setCart = {setCart}
                           >
                             Quitar
                           </DeleteButton>
@@ -208,7 +217,7 @@ const CartDropdown = ({
                         0
                       )}
                     >
-                      {cartState.total}
+                      {"S/ " + total.toFixed(2)}
                     </span>
                   </div>
                   <Link href="/carrito" passHref>

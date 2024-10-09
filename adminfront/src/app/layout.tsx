@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Sidebar from "@/components/sidebar";
 import Breadcrumbs from "@/components/breadcrumbs";
+import { Toaster } from "@/components/ui/toaster";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -35,6 +36,7 @@ export default function RootLayout({
           <Breadcrumbs />
           {children}
         </main>
+        <Toaster />
       </body>
     </html>
   );

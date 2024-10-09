@@ -45,7 +45,8 @@
     "prism-react-renderer": "^2.0.4",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "typeorm": "0.3.16"
+    "typeorm": "0.3.16",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.3",

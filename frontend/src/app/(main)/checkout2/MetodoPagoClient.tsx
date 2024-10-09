@@ -11,17 +11,47 @@ import { Direccion } from "types/PaqueteEnvio";
 
 type MetodoPagoClientProps = {
   pedido: Pedido;
-  usuario: Usuario;
-  direccion: Direccion;
+  /*usuario: Usuario;
+  direccion: Direccion;*/
 };
 
-export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPagoClientProps) {
+export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: MetodoPagoClientProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
   const descuento = 10;
+  const hayDescuento = false;
   const costoEnvio = 5;
   const noCostoEnvio = true;
+
+  const usuario : Usuario = {
+    nombre: "Juan",
+    apellido: "Perez",
+    conCuenta: true,
+    correo: "",
+    contrasena: "",
+    persona: undefined,
+    id: "",
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  }
+
+  const direccion: Direccion = {
+    id: "",
+    calle: "Av. Siempre Viva",
+    numeroExterior: "742",
+    distrito: "Springfield",
+    codigoPostal: "12345",
+    ciudad: undefined,
+    ubicacion: undefined,
+    envios: [],
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: "",
+    estaActivo: false
+  };
 
   const handleImageClick = (id: string | null) => {
     if (id === "pagoEfec") {
@@ -48,11 +78,13 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
   };
 
   const calcularTotal = () => {
-    return calcularSubtotal() - descuento + (noCostoEnvio ? 0 : costoEnvio);
+    return calcularSubtotal() - (hayDescuento? descuento: 0) + (noCostoEnvio ? 0 : costoEnvio);
   };
 
   const calcularSubtotal = () => {
-    return pedido.detalles.reduce((acc, detalle) => acc + detalle.producto.precioC * detalle.cantidad, 0);
+    return pedido.detalles.reduce((acc:number , item) => {
+      return acc + Number(item.subtotal) || 0
+    } , 0)
   };
 
   const calcularVuelto = () => {
@@ -100,6 +132,7 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
             descuento={descuento}
             costoEnvio={costoEnvio}
             noCostoEnvio={noCostoEnvio}
+            hayDescuento={hayDescuento}
             paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null}
             selectedImageId={selectedImageId}
             total={total}

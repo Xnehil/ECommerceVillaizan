@@ -15,7 +15,7 @@ import { Ciudad } from "src/models/Ciudad";
 
 /**
  * @swagger
- * /ciudades:
+ * /ciudad:
  *   get:
  *     summary: Lista todas los ciudades con paginación
  *     tags: [Ciudades]
@@ -45,7 +45,7 @@ import { Ciudad } from "src/models/Ciudad";
 
   /**
  * @swagger
- * /ciudades:
+ * /ciudad:
  *   post:
  *     summary: Crea una nueva ciudad
  *     tags: [Ciudades]

@@ -44,6 +44,7 @@ const FilterRadioGroup = ({
               id={i.value}
               value={i.value}
             />
+            {/*
             <Label
               placeholder={i.label}
               htmlFor={i.value}
@@ -57,7 +58,7 @@ const FilterRadioGroup = ({
               data-active={i.value === value}
             >
               {i.label}
-            </Label>
+            </Label>*/}
           </div>
         ))}
       </RadioGroup>

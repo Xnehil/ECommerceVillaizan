@@ -43,18 +43,17 @@ const plugins = [
       upload_dir: "uploads",
     },
   },
-  '@medusajs/admin'
-  // {
-    // resolve: "@medusajs/admin",
-    // /** @type {import('@medusajs/admin').PluginOptions} */
-    // options: {
-    //   autoRebuild: true,
-    //   develop: {
-    //     open: process.env.OPEN_BROWSER !== "false",
-    //   },
-    //   serve: false,
-    // },
-  // },
+  {
+    resolve: "@medusajs/admin",
+    /** @type {import('@medusajs/admin').PluginOptions} */
+    options: {
+      autoRebuild: true,
+      develop: {
+        open: false,
+      },
+      serve: false,
+    },
+  },
 ];
 
 const modules = {
