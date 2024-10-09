@@ -20,13 +20,15 @@ export default function ProductPreview({
   setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>
 }) {
   const [isAdding, setIsAdding] = useState(false)  // Estado para manejar la acción de agregar
+  const [error, setError] = useState<string | null>(null)  // Estado para manejar errores
   const cheapestPrice = productPreview.precioEcommerce;
 
   // Función handleAddToCart para agregar al carrito
   const handleAddToCart = async () => {
     if (!productPreview?.id) return null;
     setIsAdding(true);
-  
+    setError(null);  // Limpiar cualquier error anterior
+
     try {
       // Agregar al carritoState para que se actualice el carrito visualmente
       const detalleAnterior = carrito?.detalles.find((detalle) => detalle.producto.id === productPreview.id);
@@ -50,7 +52,7 @@ export default function ProductPreview({
           nuevoDetalle = response.detallePedido as DetallePedido; // Type assertion here
           nuevoDetalle.producto = productPreview;
         } else {
-          console.error("Error adding item to cart:", response);
+          throw new Error("Error al agregar el producto al carrito.");
         }
       }
 
@@ -64,12 +66,13 @@ export default function ProductPreview({
         setCarrito((prevCarrito) => ({
           ...prevCarrito,
           detalles: nuevosDetalles,
-          estado: prevCarrito?.estado || "", // Ensure estado is a string
-          // Add other properties with default values if necessary
+          estado: prevCarrito?.estado || "", // Asegurarse que estado sea una cadena
+          // Agregar otras propiedades con valores predeterminados si es necesario
         } as Pedido));
       }
     } catch (error) {
       console.error("Error in handleAddToCart:", error);
+      setError("No se pudo añadir este producto al carrito. Por favor, inténtalo de nuevo más tarde.");
     } finally {
       setIsAdding(false);
     }
@@ -86,12 +89,19 @@ export default function ProductPreview({
 
       {/* Botón Agregar */}
       <button
-        onClick={handleAddToCart}  // Ahora el botón ejecuta handleAddToCart para agregar directamente al carrito
+        onClick={handleAddToCart}  // Ejecuta handleAddToCart
         disabled={isAdding}  // Deshabilita el botón mientras se está añadiendo al carrito
         className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-yellow-500 text-white font-bold py-2 px-4 rounded"
       >
         {isAdding ? "Añadiendo..." : "Agregar"}
       </button>
+
+      {/* Mensaje de error */}
+      {error && (
+        <div className="mt-2 text-red-500 text-sm">
+          {error}
+        </div>
+      )}
 
       {/* Información del producto */}
       <div className="flex txt-compact-medium mt-4 justify-between">
