@@ -32,7 +32,10 @@ export default function ProductPreview({
     try {
       // Agregar al carritoState para que se actualice el carrito visualmente
       const detalleAnterior = carrito?.detalles.find((detalle) => detalle.producto.id === productPreview.id);
-      let nuevoDetalle = null;
+      console.log("Detalle anterior:", detalleAnterior);
+      let nuevoDetalle: DetallePedido | null = null;
+      console.log("Linea a");
+  
       if (detalleAnterior) {
         const cantidad = detalleAnterior.cantidad + 1;
         await updateLineItem({ detallePedidoId: detalleAnterior.id, cantidad: cantidad, subtotal: productPreview.precioEcommerce * cantidad });
@@ -45,7 +48,8 @@ export default function ProductPreview({
           idPedido: carrito?.id || "",
         });
         if (response && typeof response === 'object' && 'detallePedido' in response) {
-          nuevoDetalle = response.detallePedido;
+          console.log("Linea g");
+          nuevoDetalle = response.detallePedido as DetallePedido; // Type assertion here
           nuevoDetalle.producto = productPreview;
         } else {
           throw new Error("Error al agregar el producto al carrito.");

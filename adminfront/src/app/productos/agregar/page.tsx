@@ -15,6 +15,27 @@ import Loading from "@/components/Loading";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 const AgregarPage: React.FC = () => {
   const router = useRouter();
   const [isEditingName, setIsEditingName] = useState(false);
@@ -28,17 +49,30 @@ const AgregarPage: React.FC = () => {
   const handleCancel = () => {
     router.back();
   };
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setProductName(event.target.value);
-    producto.current.nombre = event.target.value;
-  };
+    const value = event.target.value;
+    const regex = /^[a-zA-Z0-9\s]*$/;
 
-  const handleInputBlur = () => {
-    setIsEditing(false);
+    if (!regex.test(value)) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El nombre del producto no puede contener puntuación.",
+      });
+      return;
+    }
+    if (value.length <= 50) {
+      setProductName(value);
+      producto.current.nombre = value;
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          "El nombre del producto no puede tener más de 50 caracteres.",
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -46,6 +80,26 @@ const AgregarPage: React.FC = () => {
     console.log("Saving product");
     // create a codigo for the product
     producto.current.seVendeEcommerce = true;
+
+    if (producto.current.nombre === "") {
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El nombre del producto es requerido.",
+      });
+      return;
+    }
+
+    if (producto.current.precioEcommerce === 0) {
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El precio del producto es requerido.",
+      });
+      return;
+    }
 
     console.log(producto.current);
     try {
@@ -133,17 +187,52 @@ const AgregarPage: React.FC = () => {
         <InformacionAdicional producto={producto} isEditing={isEditing} />
         <div className="buttons-side-container">
           <div className="lower-buttons-container">
-            {isEditing && (
-              <Button variant="secondary" onClick={handleCancel}>
-                Cancelar
+            {isEditing ? (
+              <>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="secondary">Cancelar</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>¿Estás seguro de cancelar?</DialogTitle>
+                      <DialogDescription>
+                        Se perderán los cambios realizados.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                      <Button onClick={handleCancel}>Confirmar</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="default">Guardar</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        ¿Estás seguro de guardar?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Se guardarán los cambios realizados.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleSave}>
+                        Guardar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </>
+            ) : (
+              <Button variant="default" onClick={handleEdit}>
+                Editar
               </Button>
             )}
-            <Button
-              variant="default"
-              onClick={isEditing ? handleSave : handleEdit}
-            >
-              {isEditing ? "Guardar" : "Editar"}
-            </Button>
           </div>
         </div>
       </div>

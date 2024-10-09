@@ -3,7 +3,7 @@
 import { revalidateTag } from "next/cache"
 import axios from "axios"
 import { DetallePedido } from "types/PaquetePedido"
-import cookie from "cookie"
+/*import cookie from "cookie"*/
 import { cookies } from "next/headers"
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
@@ -65,6 +65,34 @@ export async function getOrSetCart(only_get=false) {
 }
 
 export async function retrieveCart(productos: boolean = false) {
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+
+
+  if (!cartId) {
+    return null
+  }
+
+  if (productos) {
+    try {
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      return response.data.pedido
+    } catch (e) {
+      console.log(e)
+      return null
+    }
+  } else{
+      try {
+        const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
+        return response.data.pedido
+      } catch (e) {
+        console.log(e)
+        return null
+      }
+  }
+}
+
+export async function retrievePedido(productos: boolean = false) {
   const cookieValues = cookies()
   const cartId = cookieValues.get("_medusa_cart_id")?.value
 

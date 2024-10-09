@@ -12,7 +12,7 @@ import { getCart } from "@lib/data"
 export const metadata: Metadata = {
   title: "Checkout",
 }
-
+/*
 const fetchCart = async () => {
   const cartId = cookies().get("_medusa_cart_id")?.value
 
@@ -29,9 +29,9 @@ const fetchCart = async () => {
 
   return cart
 }
-
+*/
 export default async function Checkout() {
-  const cart = await fetchCart()
+  /*const cart = await fetchCart()
 
   if (!cart) {
     return notFound()
@@ -44,5 +44,6 @@ export default async function Checkout() {
       </Wrapper>
       <CheckoutSummary />
     </div>
-  )
+  )*/
+  return <div></div>
 }

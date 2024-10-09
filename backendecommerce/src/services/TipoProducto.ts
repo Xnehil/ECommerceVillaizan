@@ -3,6 +3,7 @@ import { TipoProducto } from "../models/TipoProducto";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils"
 import TipoProductoRepository from "src/repositories/TipoProducto";
+import { Producto } from "@models/Producto";
 
 class TipoProductoService extends TransactionBaseService {
     protected tipoProductoRepository_: typeof TipoProductoRepository;
@@ -10,12 +11,7 @@ class TipoProductoService extends TransactionBaseService {
     constructor(container){
         super(container);
         this.tipoProductoRepository_ = container.tipoproductoRepository;
-    }
-
-
-    getMessage() {
-        return "Hello from TipoProductoService";
-      }
+    }   
 
       async listar(): Promise<TipoProducto[]> {
         const tipoProductoRepo = this.activeManager_.withRepository(this.tipoProductoRepository_);
@@ -62,25 +58,24 @@ class TipoProductoService extends TransactionBaseService {
         return tipoProducto;
       }
     
-      async crear(tipoProducto: TipoProducto): Promise<TipoProducto> {
+      async crear(tipoProducto: TipoProducto): Promise<{ tipoProducto: TipoProducto, alreadyExists: boolean }> {
         return this.atomicPhase_(async (manager) => {
-          const tipoProductoRepo = manager.withRepository(this.tipoProductoRepository_);
-
-          // Check if a tipoProducto with the same nombre (lowercased) already exists
-          const existingTipoProducto = await tipoProductoRepo.createQueryBuilder('tipoProducto')
-          .where('LOWER(tipoProducto.nombre) = LOWER(:nombre)', { nombre: tipoProducto.nombre })
-          .getOne();
-
-      
-          if (existingTipoProducto) {
-            return existingTipoProducto;
-          }
-      
-          const tipoProductoCreado = tipoProductoRepo.create(tipoProducto);
-          const result = await tipoProductoRepo.save(tipoProductoCreado);
-          return result;
+            const tipoProductoRepo = manager.withRepository(this.tipoProductoRepository_);
+    
+            // Check if a tipoProducto with the same nombre (lowercased) already exists
+            const existingTipoProducto = await tipoProductoRepo.createQueryBuilder('tipoProducto')
+                .where('LOWER(tipoProducto.nombre) = LOWER(:nombre)', { nombre: tipoProducto.nombre })
+                .getOne();
+    
+            if (existingTipoProducto) {
+                return { tipoProducto: existingTipoProducto, alreadyExists: true };
+            }
+    
+            const tipoProductoCreado = tipoProductoRepo.create(tipoProducto);
+            const result = await tipoProductoRepo.save(tipoProductoCreado);
+            return { tipoProducto: result, alreadyExists: false };
         });
-      }
+    }
     
       async actualizar(
         id: string,
@@ -96,11 +91,19 @@ class TipoProductoService extends TransactionBaseService {
     
       async eliminar(id: string): Promise<void> {
         return await this.atomicPhase_(async (manager) => {
-          const tipoProductoRepo = manager.withRepository(this.tipoProductoRepository_);
-          const tipoProducto = await this.recuperar(id);
-          await tipoProductoRepo.remove([tipoProducto]);
+            const tipoProductoRepo = manager.withRepository(this.tipoProductoRepository_);
+            const productos = await manager.query(
+              'SELECT * FROM vi_producto WHERE id_tipoproducto = $1',
+              [id]
+          );
+            if (productos.length > 0) {
+                throw new MedusaError(MedusaError.Types.NOT_ALLOWED, "No se puede eliminar este tipo de producto porque tiene productos asociados");
+            }
+    
+            const tipoProducto = await this.recuperar(id);
+            await tipoProductoRepo.update(id, { estaActivo: false , desactivadoEn: new Date() });
         });
-      }
+    }
 }
 
 export default TipoProductoService;

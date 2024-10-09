@@ -2,6 +2,7 @@ import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn, BeforeInsert } fr
 import { Persona } from './Persona';
 import { EntidadBase } from './EntidadBase';
 import { generateEntityId } from '@medusajs/medusa';
+import { Rol } from './Rol';
 
 @Entity('vi_usuario')
 export class Usuario extends EntidadBase {
@@ -33,6 +34,10 @@ export class Usuario extends EntidadBase {
     @ManyToOne(() => Persona, persona => persona.id)
     @JoinColumn({ name: 'id_persona' })
     persona: Persona;
+
+    @ManyToOne(() => Rol, rol => rol.id)
+    @JoinColumn({ name: 'id_rol' })
+    rol: Rol;
 
     @BeforeInsert()
     private beforeInsert() {

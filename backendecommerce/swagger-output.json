@@ -172,7 +172,8 @@
               },
               "codigo": {
                 "type": "string",
-                "example": "PROD12345"
+                "example": "PROD12345",
+                "nullable": true
               },
               "nombre": {
                 "type": "string",
@@ -977,6 +978,37 @@
             }
           }
         ]
+      },
+      "HistorialRepartidor": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/EntidadBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "estado": {
+                "type": "string",
+                "example": "Entregado"
+              },
+              "razonDeRechazo": {
+                "type": "string",
+                "nullable": true,
+                "example": "Cliente no disponible"
+              },
+              "motorizado": {
+                "$ref": "#/components/schemas/Motorizado"
+              },
+              "usuario": {
+                "$ref": "#/components/schemas/Usuario"
+              },
+              "pedido": {
+                "$ref": "#/components/schemas/Pedido"
+              }
+            }
+          }
+        ]
       }
     }
   },
@@ -1203,7 +1235,7 @@
         }
       }
     },
-    "/ciudades": {
+    "/ciudad": {
       "get": {
         "summary": "Lista todas los ciudades con paginación",
         "tags": [
@@ -1619,6 +1651,169 @@
         }
       }
     },
+    "/historialRepartidor/{id}": {
+      "get": {
+        "summary": "Recupera un Historial de Repartidor por ID",
+        "tags": [
+          "HistorialRepartidores"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del Historial de Repartidor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del Historial de Repartidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistorialRepartidor"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Historial de Repartidor no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un Historial de Repartidor por ID",
+        "tags": [
+          "HistorialRepartidores"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del Historial de Repartidor"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistorialRepartidor"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Historial de Repartidor actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistorialRepartidor"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Historial de Repartidor no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un Historial de Repartidor por ID",
+        "tags": [
+          "HistorialRepartidores"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del Historial de Repartidor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Historial de Repartidor eliminado exitosamente"
+          },
+          "404": {
+            "description": "Historial de Repartidor no encontrado"
+          }
+        }
+      }
+    },
+    "/historialRepartidor": {
+      "get": {
+        "summary": "Lista todos los Historiales de Repartidores con paginación",
+        "tags": [
+          "HistorialRepartidores"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de Historiales de Repartidores",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "historiales": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/HistorialRepartidor"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo Historial de Repartidor",
+        "tags": [
+          "HistorialRepartidor"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HistorialRepartidor"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El Historial de Repartidor ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistorialRepartidor"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
     "/igv/{id}": {
       "get": {
         "summary": "Recupera un IGV por ID",
@@ -1782,66 +1977,7 @@
         }
       }
     },
-    "/inventariosalmacen": {
-      "get": {
-        "summary": "Lista todos los inventarios de almacén con paginación",
-        "tags": [
-          "InventariosAlmacen"
-        ],
-        "responses": {
-          "200": {
-            "description": "Una lista de inventarios de almacén",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "inventarioAlmacens": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InventarioAlmacen"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Crea un nuevo inventario de almacén",
-        "tags": [
-          "InventariosAlmacen"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InventarioAlmacen"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "El inventario de almacén ha sido creado exitosamente.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventarioAlmacen"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Petición inválida"
-          }
-        }
-      }
-    },
-    "/inventariosalmacen/{id}": {
+    "/inventarioAlmacen/{id}": {
       "get": {
         "summary": "Recupera un inventario de almacén por ID",
         "tags": [
@@ -1945,7 +2081,7 @@
         }
       }
     },
-    "/inventariosalmacen/{id}/aumentar": {
+    "/inventarioAlmacen/{id}/aumentar": {
       "patch": {
         "summary": "Aumenta el stock de un inventario de almacén por ID",
         "tags": [
@@ -1998,7 +2134,7 @@
         }
       }
     },
-    "/inventariosalmacen/{id}/disminuir": {
+    "/inventarioAlmacen/{id}/disminuir": {
       "patch": {
         "summary": "Disminuye el stock de un inventario de almacén por ID",
         "tags": [
@@ -2047,6 +2183,65 @@
           },
           "404": {
             "description": "Inventario de almacén no encontrado"
+          }
+        }
+      }
+    },
+    "/inventariosalmacen": {
+      "get": {
+        "summary": "Lista todos los inventarios de almacén con paginación",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de inventarios de almacén",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "inventarioAlmacens": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InventarioAlmacen"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo inventario de almacén",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventarioAlmacen"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El inventario de almacén ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioAlmacen"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
           }
         }
       }
@@ -2716,6 +2911,40 @@
         }
       }
     },
+    "/metodoPago/nombre/{nombre}": {
+      "get": {
+        "summary": "Recupera un método de pago por nombre",
+        "tags": [
+          "MetodoPagos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nombre",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Nombre del método de pago"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del método de pago",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetodoPago"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Método de pago no encontrado"
+          }
+        }
+      }
+    },
     "/metodoPago": {
       "get": {
         "summary": "Lista todos los métodos de pago con paginación",
@@ -2790,6 +3019,15 @@
             },
             "required": true,
             "description": "ID del motorizado"
+          },
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
           }
         ],
         "responses": {
@@ -2885,6 +3123,17 @@
         "tags": [
           "Motorizados"
         ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Una lista de motorizadoes",
@@ -2905,9 +3154,7 @@
             }
           }
         }
-      }
-    },
-    "/motorizadoes": {
+      },
       "post": {
         "summary": "Crea un nuevo  motorizado",
         "tags": [
@@ -2936,6 +3183,49 @@
           },
           "400": {
             "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/motorizado/usuario/{id_usuario}": {
+      "get": {
+        "summary": "Recupera un motorizado por ID",
+        "tags": [
+          "Motorizados"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del motorizado"
+          },
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del motorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Motorizado"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Motorizado no encontrado"
           }
         }
       }
@@ -3315,6 +3605,15 @@
             },
             "required": true,
             "description": "ID del pedido"
+          },
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
           }
         ],
         "responses": {
@@ -3327,51 +3626,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "Pedido no encontrado"
-          }
-        }
-      },
-      "put": {
-        "summary": "Actualiza un pedido por ID",
-        "tags": [
-          "Pedidos"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "ID del pedido"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Pedido"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Pedido actualizado exitosamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Pedido"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Petición inválida"
           },
           "404": {
             "description": "Pedido no encontrado"
@@ -3409,6 +3663,17 @@
         "summary": "Lista todos los pedidos con paginación",
         "tags": [
           "Pedidos"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
+          }
         ],
         "responses": {
           "200": {
@@ -3641,6 +3906,24 @@
             },
             "required": true,
             "description": "ID del producto"
+          },
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
+          },
+          {
+            "in": "query",
+            "name": "nombre",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si realmente el id es el nombre del producto"
           }
         ],
         "responses": {
@@ -3653,9 +3936,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "Producto no encontrado"
           }
         }
       },
@@ -3736,6 +4016,17 @@
         "tags": [
           "Producto"
         ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Una lista de productos",
@@ -3785,6 +4076,9 @@
           },
           "400": {
             "description": "Petición inválida"
+          },
+          "405": {
+            "description": "Ya existe un producto con ese nombre"
           }
         }
       }
@@ -4570,6 +4864,10 @@
     },
     {
       "name": "Frutas"
+    },
+    {
+      "name": "HistorialRepartidores",
+      "description": "API para la gestión de Historiales de Repartidores"
     },
     {
       "name": "Igvs",

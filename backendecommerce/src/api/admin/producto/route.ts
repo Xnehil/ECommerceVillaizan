@@ -19,12 +19,12 @@ import { Producto } from "src/models/Producto";
  *     summary: Lista todos los productos con paginación
  *     tags: [Producto]
  *     parameters:
- *      - in: query
- *       name: enriquecido
- *      schema:
- *       type: boolean
- *     required: false
- *    description: Si se debe recuperar el producto enriquecido
+ *       - in: query
+ *         name: enriquecido
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe recuperar el producto enriquecido
  *     responses:
  *       200:
  *         description: Una lista de productos
@@ -56,7 +56,7 @@ import { Producto } from "src/models/Producto";
   }
 
 
-  /**
+/**
  * @swagger
  * /producto:
  *   post:
@@ -77,8 +77,8 @@ import { Producto } from "src/models/Producto";
  *               $ref: '#/components/schemas/Producto'
  *       400:
  *         description: Petición inválida
- *      405:
- *        description: Ya existe un producto con ese nombre
+ *       405:
+ *         description: Ya existe un producto con ese nombre
  */
   export const POST = async (
     req: MedusaRequest,

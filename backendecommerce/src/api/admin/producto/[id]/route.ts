@@ -26,13 +26,12 @@ import { Producto } from "src/models/Producto";
  *           type: boolean
  *         required: false
  *         description: Si se debe recuperar el producto enriquecido
- *      - in: query
- *        name: nombre
- *       schema:
- *        type: boolean
- *        required: false
- *        description: Si realmente el id es el nombre del producto
- * 
+ *       - in: query
+ *         name: nombre
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si realmente el id es el nombre del producto
  *     responses:
  *       200:
  *         description: Detalles del producto
@@ -40,8 +39,6 @@ import { Producto } from "src/models/Producto";
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Producto'
- *       404:
- *         description: Producto no encontrado
  */
 
 

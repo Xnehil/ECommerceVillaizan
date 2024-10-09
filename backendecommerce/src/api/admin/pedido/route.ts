@@ -19,6 +19,13 @@ import { Pedido } from "src/models/Pedido";
  *   get:
  *     summary: Lista todos los pedidos con paginación
  *     tags: [Pedidos]
+ *     parameters:
+ *       - in: query
+ *         name: enriquecido
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe recuperar el producto enriquecido
  *     responses:
  *       200:
  *         description: Una lista de pedidos
@@ -38,9 +45,16 @@ export const GET = async (
     res: MedusaResponse
 ) => {
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
-
+    const enriquecido = req.query.enriquecido === 'true';
     res.json({
-        pedidos: await pedidoService.listarConPaginacion(),
+        pedidos: await pedidoService.listarConPaginacion(
+            {},
+            {
+                skip: 0,
+                take: 20,
+                relations: enriquecido ? ["motorizado","direccion","usuario"] : []
+            }
+        ),
     });
 };
 

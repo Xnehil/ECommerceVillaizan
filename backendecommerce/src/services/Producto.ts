@@ -94,7 +94,7 @@ class ProductoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
           const productoRepo = manager.withRepository(this.productoRepository_);
           const producto = await this.recuperar({ id });
-          await productoRepo.remove([producto]);
+          await productoRepo.update({ id }, { estaActivo: false , desactivadoEn: new Date() });
         });
       }
 }

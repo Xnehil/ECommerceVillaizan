@@ -86,7 +86,7 @@ class DireccionService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const direccionRepo = manager.withRepository(this.direccionRepository_);
             const direccion = await this.recuperar(id);
-            await direccionRepo.remove([direccion]);
+            await direccionRepo.update(id, { estaActivo: false , desactivadoEn: new Date() });
         });
     }
 }

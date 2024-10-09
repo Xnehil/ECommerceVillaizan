@@ -86,7 +86,7 @@ class UbicacionService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const ubicacionRepo = manager.withRepository(this.ubicacionRepository_);
             const ubicacion = await this.recuperar(id);
-            await ubicacionRepo.remove([ubicacion]);
+            await ubicacionRepo.update(id, { desactivadoEn: new Date(), estaActivo: false });
         });
     }
 }
