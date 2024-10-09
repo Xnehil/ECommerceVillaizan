@@ -11,11 +11,10 @@ import { Direccion } from "types/PaqueteEnvio";
 
 type MetodoPagoClientProps = {
   pedido: Pedido;
-  /*usuario: Usuario;
-  direccion: Direccion;*/
+  setStep: (step: string) => void;
 };
 
-export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: MetodoPagoClientProps) {
+export default function MetodoPagoClient({ pedido, setStep}: MetodoPagoClientProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
@@ -74,7 +73,8 @@ export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: Meto
   };
 
   const handleBackClick = () => {
-    window.history.back();
+    //window.history.back();
+    setStep("direccion")
   };
 
   const calcularTotal = () => {
