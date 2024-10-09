@@ -2,13 +2,9 @@
 
 import InputWithLabel from "@/components/forms/inputWithLabel";
 import { Label } from "@radix-ui/react-label";
-import React, { MutableRefObject, useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
 import { Producto } from "@/types/PaqueteProducto";
-
-interface InformacionGeneralProps {
-  producto: MutableRefObject<Producto>;
-}
 
 interface InformacionGeneralProps {
   producto: MutableRefObject<Producto>;
@@ -19,30 +15,38 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   producto,
   isEditing,
 }) => {
+  const [precioEcommerce, setPrecioEcommerce] = useState(
+    producto.current.precioEcommerce?.toString() || ""
+  );
+  const [codigo, setCodigo] = useState(producto.current.codigo || "");
+  const [descripcion, setDescripcion] = useState(
+    producto.current.descripcion || ""
+  );
   const [previewSrc, setPreviewSrc] = useState(
     "https://placehold.co/200?text=Vista+previa"
   );
 
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // setProductName(event.target.value);
-    producto.current.nombre = event.target.value;
-  };
+  useEffect(() => {
+    setPrecioEcommerce(producto.current.precioEcommerce?.toString() || "");
+    setCodigo(producto.current.codigo || "");
+    setDescripcion(producto.current.descripcion || "");
+  }, [isEditing]);
 
   const handlePriceChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPrecioEcommerce(event.target.value);
     producto.current.precioEcommerce = parseFloat(event.target.value);
-    // console.log(producto.current);
   };
 
   const handleCodeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCodigo(event.target.value);
     producto.current.codigo = event.target.value;
-    // console.log(producto.current);
   };
 
   const handleDescriptionChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
+    setDescripcion(event.target.value);
     producto.current.descripcion = event.target.value;
-    // console.log(producto.current);
   };
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,6 +78,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
             required={isEditing ? true : false}
             onChange={handlePriceChange}
             disabled={!isEditing}
+            value={precioEcommerce}
           />
         </div>
         <div className="flex-1">
@@ -83,6 +88,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
             type="text"
             onChange={handleCodeChange}
             disabled={!isEditing}
+            value={codigo}
           />
         </div>
       </div>
@@ -91,6 +97,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         placeholder="Ej. Descripción corta"
         onChange={handleDescriptionChange}
         disabled={!isEditing}
+        value={descripcion}
       />
       {isEditing && (
         <InputWithLabel

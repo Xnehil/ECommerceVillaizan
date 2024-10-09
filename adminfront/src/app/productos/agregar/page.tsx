@@ -28,17 +28,10 @@ const AgregarPage: React.FC = () => {
   const handleCancel = () => {
     router.back();
   };
-  const handleEditClick = () => {
-    setIsEditing(true);
-  };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setProductName(event.target.value);
     producto.current.nombre = event.target.value;
-  };
-
-  const handleInputBlur = () => {
-    setIsEditing(false);
   };
 
   const handleSave = async () => {
@@ -46,6 +39,26 @@ const AgregarPage: React.FC = () => {
     console.log("Saving product");
     // create a codigo for the product
     producto.current.seVendeEcommerce = true;
+
+    if (producto.current.nombre === "") {
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El nombre del producto es requerido.",
+      });
+      return;
+    }
+
+    if (producto.current.precioEcommerce === 0) {
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El precio del producto es requerido.",
+      });
+      return;
+    }
 
     console.log(producto.current);
     try {
