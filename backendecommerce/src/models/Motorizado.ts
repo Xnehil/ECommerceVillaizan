@@ -12,7 +12,7 @@ export class Motorizado extends EntidadBase {
   @Column({ type: 'varchar', length: 20 })
   placa: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, name: 'urlimagen' })
   urlImagen: string;
 
   @ManyToOne(() => Almacen, almacen => almacen.motorizados)

@@ -404,6 +404,10 @@
                 "type": "string",
                 "example": "ABC-1234"
               },
+              "urlImagen": {
+                "type": "string",
+                "example": "http://example.com/imagen.jpg"
+              },
               "almacen": {
                 "$ref": "#/components/schemas/Almacen"
               },
@@ -3187,32 +3191,29 @@
         }
       }
     },
-    "/motorizado/usuario/{id_usuario}": {
-      "get": {
+    "/motorizado/usuario": {
+      "post": {
         "summary": "Recupera un motorizado por ID",
         "tags": [
           "Motorizados"
         ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "ID del motorizado"
-          },
-          {
-            "in": "query",
-            "name": "enriquecido",
-            "schema": {
-              "type": "boolean"
-            },
-            "required": false,
-            "description": "Si se debe recuperar el producto enriquecido"
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_usuario": {
+                    "type": "string",
+                    "description": "ID del motorizado",
+                    "example": "12345"
+                  }
+                }
+              }
+            }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "Detalles del motorizado",
@@ -4155,31 +4156,6 @@
           },
           "400": {
             "description": "Petición inválida"
-          },
-          "404": {
-            "description": "subcategoria no encontrado"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Elimina un subcategoria por ID",
-        "tags": [
-          "Subcategorias"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "ID del subcategoria"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "subcategoria eliminado exitosamente"
           },
           "404": {
             "description": "subcategoria no encontrado"
