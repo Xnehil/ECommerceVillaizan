@@ -1977,66 +1977,7 @@
         }
       }
     },
-    "/inventariosalmacen": {
-      "get": {
-        "summary": "Lista todos los inventarios de almacén con paginación",
-        "tags": [
-          "InventariosAlmacen"
-        ],
-        "responses": {
-          "200": {
-            "description": "Una lista de inventarios de almacén",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "inventarioAlmacens": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InventarioAlmacen"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Crea un nuevo inventario de almacén",
-        "tags": [
-          "InventariosAlmacen"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/InventarioAlmacen"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "El inventario de almacén ha sido creado exitosamente.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/InventarioAlmacen"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Petición inválida"
-          }
-        }
-      }
-    },
-    "/inventariosalmacen/{id}": {
+    "/inventarioAlmacen/{id}": {
       "get": {
         "summary": "Recupera un inventario de almacén por ID",
         "tags": [
@@ -2140,7 +2081,7 @@
         }
       }
     },
-    "/inventariosalmacen/{id}/aumentar": {
+    "/inventarioAlmacen/{id}/aumentar": {
       "patch": {
         "summary": "Aumenta el stock de un inventario de almacén por ID",
         "tags": [
@@ -2193,7 +2134,7 @@
         }
       }
     },
-    "/inventariosalmacen/{id}/disminuir": {
+    "/inventarioAlmacen/{id}/disminuir": {
       "patch": {
         "summary": "Disminuye el stock de un inventario de almacén por ID",
         "tags": [
@@ -2242,6 +2183,65 @@
           },
           "404": {
             "description": "Inventario de almacén no encontrado"
+          }
+        }
+      }
+    },
+    "/inventariosalmacen": {
+      "get": {
+        "summary": "Lista todos los inventarios de almacén con paginación",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de inventarios de almacén",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "inventarioAlmacens": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InventarioAlmacen"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo inventario de almacén",
+        "tags": [
+          "InventariosAlmacen"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventarioAlmacen"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El inventario de almacén ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventarioAlmacen"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
           }
         }
       }
@@ -3183,6 +3183,49 @@
           },
           "400": {
             "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/motorizado/usuario/{id_usuario}": {
+      "get": {
+        "summary": "Recupera un motorizado por ID",
+        "tags": [
+          "Motorizados"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del motorizado"
+          },
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del motorizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Motorizado"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Motorizado no encontrado"
           }
         }
       }

@@ -53,7 +53,7 @@ export const GET = async (
     try {
         const motorizado = await motorizadoService.recuperar(id,
             {
-                relations: enriquecido ? ["usuario"] : []
+                relations: enriquecido ? ["usuario","ciudad","almacen"] : []
             }
         );
         res.json({ motorizado });
