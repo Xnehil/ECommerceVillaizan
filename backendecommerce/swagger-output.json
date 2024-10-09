@@ -1235,7 +1235,7 @@
         }
       }
     },
-    "/ciudades": {
+    "/ciudad": {
       "get": {
         "summary": "Lista todas los ciudades con paginación",
         "tags": [
@@ -2911,6 +2911,40 @@
         }
       }
     },
+    "/metodoPago/nombre/{nombre}": {
+      "get": {
+        "summary": "Recupera un método de pago por nombre",
+        "tags": [
+          "MetodoPagos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nombre",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Nombre del método de pago"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del método de pago",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetodoPago"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Método de pago no encontrado"
+          }
+        }
+      }
+    },
     "/metodoPago": {
       "get": {
         "summary": "Lista todos los métodos de pago con paginación",
@@ -2985,6 +3019,15 @@
             },
             "required": true,
             "description": "ID del motorizado"
+          },
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
           }
         ],
         "responses": {
@@ -3080,6 +3123,17 @@
         "tags": [
           "Motorizados"
         ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Una lista de motorizadoes",
@@ -3100,9 +3154,7 @@
             }
           }
         }
-      }
-    },
-    "/motorizadoes": {
+      },
       "post": {
         "summary": "Crea un nuevo  motorizado",
         "tags": [
