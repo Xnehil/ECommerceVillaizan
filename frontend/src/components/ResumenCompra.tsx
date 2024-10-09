@@ -6,7 +6,7 @@ import Link from "next/link"
 import { DetallePedido, MetodoPago, Pedido } from 'types/PaquetePedido';
 import { Direccion } from 'types/PaqueteEnvio';
 import { Usuario } from 'types/PaqueteUsuario';
-import axios from "axios"
+import axios, { AxiosError } from "axios"
 
 interface ResumenCompraProps {
   descuento: number;
@@ -47,7 +47,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const isButtonDisabled = !selectedImageId || !seleccionado; // Deshabilitar el botón si no hay una imagen seleccionada
   const detalles: DetallePedido[] = pedido ? pedido.detalles : [];
   const [tooltip, setTooltip] = useState<string | null>(null); // State for tooltip content
-
+  const [showError, setShowError] = useState(false);
     
   const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!isButtonDisabled) {
@@ -121,22 +121,35 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
     pedido.estado = "solicitado";
     //Guarda el montoEfectivoPagar en el pedido
     pedido.montoEfectivoPagar = paymentAmount ?? 0;
-    const response = await axios.put(`${baseUrl}/admin/pedido/${pedido.id}?asignarRepartidor=true`, pedido); // Harvy agregó esto, un parámetro extra que el back leería para saber que se debe asignar un repartidor
-    if(response.data){
-      //setShowBuscandoPopup(false);
-      console.log("Pedido modificado correctamente");
-      console.log(response.data);
+    try{
+      const response = await axios.put(`${baseUrl}/admin/pedido/${pedido.id}?asignarRepartidor=true`, pedido); // Harvy agregó esto, un parámetro extra que el back leería para saber que se debe asignar un repartidor
+      if(response.data){
+        //setShowBuscandoPopup(false);
+        console.log("Pedido modificado correctamente");
+        console.log(response.data);
+      }
+      setShowPopup(false);
+      setShowBuscandoPopup(true);
+  
+      //Luego de 3 segundos, se cierra el popup de "Buscando repartidor". Solo para desarrollo
+      setTimeout(() => {
+        setShowBuscandoPopup(false);
+        //Redirigir a la página de seguimiento
+        let codigoSeguimiento = "123456";
+        window.location.href = `/seguimiento?codigo=${codigoSeguimiento}`;
+      }, 3000);
+    } catch (error) {
+      const axiosError = error as AxiosError;
+        if (axiosError.response && axiosError.response.status === 404) {
+            console.log("Pedido no encontrado");
+        } else if (axiosError.response?.status === 503) {
+            console.log("No hay motorizados disponibles");
+            setShowPopup(false);
+            setShowBuscandoPopup(true);
+            setShowError(true);
+        }
     }
-    setShowPopup(false);
-    setShowBuscandoPopup(true);
-
-    //Luego de 3 segundos, se cierra el popup de "Buscando repartidor". Solo para desarrollo
-    setTimeout(() => {
-      setShowBuscandoPopup(false);
-      //Redirigir a la página de seguimiento
-      let codigoSeguimiento = "123456";
-      window.location.href = `/seguimiento?codigo=${codigoSeguimiento}`;
-    }, 3000);
+    
   };
 
   const handleCloseBuscandoPopup = () => {
@@ -288,7 +301,8 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       {showBuscandoPopup && (
         <BuscandoPopup
           onClose={handleCloseBuscandoPopup}
-          customText="¡Buscando repartidor!"
+          customText={showError ? "No hay repartidores disponibles. Inténtalo de nuevo en unos minutos " : "Buscando repartidor disponible"}
+          error = {showError}
         />
       )}
     </div>

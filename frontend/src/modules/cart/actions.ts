@@ -103,7 +103,7 @@ export async function retrievePedido(productos: boolean = false) {
 
   if (productos) {
     try {
-      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle?pedido=true`)
       return response.data.pedido
     } catch (e) {
       console.log(e)

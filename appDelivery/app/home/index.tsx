@@ -7,10 +7,18 @@ import {
   Switch,
   Pressable,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons"; // Asegúrate de tener esta librería instalada
+import { MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { Link, useNavigation } from "@react-navigation/native";
+import { Link } from "@react-navigation/native";
 import axios from "axios";
+import {
+  MotorizadoResponse,
+  Usuario,
+  UsuarioResponse,
+} from "@/interfaces/interfaces";
+import { useRouter } from "expo-router";
+import { getUserData } from "@/functions/storage";
+import WebSocketComponent from "@/components/websocket";
 
 function Icon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -31,42 +39,45 @@ function Icon(props: {
   );
 }
 
-interface Usuario {
-  id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
-  estaActivo: boolean;
-  nombre: string;
-  apellido: string;
-  conCuenta: boolean;
-  numeroTelefono: string;
-  correo: string;
-  contrasena: string;
-  fechaUltimoLogin: string | null;
-}
-
-interface UsuariosResponse {
-  usuarios: Usuario[];
-}
-
 export default function TabOneScreen() {
   const [isConnected, setIsConnected] = useState(false);
-  const [motorizado, setMotorizado] = useState<Usuario | null>(null);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const [data_usuario, setDataUsuario] = useState<Usuario | null>(null);
 
+  // Obtén los datos del usuario
+  const getData = async (): Promise<Usuario | null> => {
+    try {
+      const userData = await getUserData();
+      if (!userData) {
+        throw new Error("No se pudo obtener los datos del usuario");
+      }
+      return userData;
+    } catch (error) {
+      console.error("Error al obtener los datos del usuario:", error);
+      return null;
+    }
+  };
+
+  // Obtener motorizado y su estado de actividad
   const obtenerMotorizado = async () => {
     try {
-      const response = await axios.get<UsuariosResponse>('http://localhost:9000/admin/usuario/');
-
-      // Extrae el primer motorizado
-      const repartidor = response.data.usuarios[0];
-      console.log('Motorizado:', repartidor.id);
-      setMotorizado(repartidor); 
+      const userData = await getData();
+      if (userData?.id) {
+        const response = await axios.get<MotorizadoResponse>(
+          `http://localhost:9000/admin/motorizado/usuario/${userData.id}`
+        );
+        const motorizado = response.data.motorizado;
+        console.log(motorizado);
+        const usuario = motorizado.usuario;
+        setDataUsuario(usuario);
+        setIsConnected(usuario?.estaActivo ?? false);
+        console.log("Usuario obtenido con éxito:", usuario);
+      } else {
+        console.error("No se encontró el ID de usuario");
+      }
     } catch (error) {
-      console.error('Error al obtener motorizado:', error);
+      console.error("Error al obtener usuario:", error);
     } finally {
       setLoading(false);
     }
@@ -76,10 +87,34 @@ export default function TabOneScreen() {
     obtenerMotorizado();
   }, []);
 
-  const toggleSwitch = () => setIsConnected((previousState) => !previousState);
+  // Función para actualizar el estado 'estaActivo' en la base de datos
+  const actualizarEstadoMotorizado = async (nuevoEstado: boolean) => {
+    console.log("Estado " + nuevoEstado);
+    console.log("Data usuario: " + data_usuario?.nombre);
+    if (data_usuario?.id) {
+      try {
+        const response = await axios.put(
+          `http://localhost:9000/admin/usuario/${data_usuario.id}`,
+          { estaActivo: nuevoEstado }
+        );
+        console.log(response.data);
+        console.log("Estado del motorizado actualizado con éxito.");
+      } catch (error) {
+        console.error("Error al actualizar el estado del motorizado:", error);
+      }
+    }
+  };
+
+  // Función para manejar el cambio del switch
+  const toggleSwitch = async () => {
+    const nuevoEstado = !isConnected;
+    await actualizarEstadoMotorizado(nuevoEstado);
+    setIsConnected(nuevoEstado);
+  };
 
   return (
     <View style={styles.container}>
+      <WebSocketComponent />
       <View style={styles.header}>
         <Icon
           name="menu"
@@ -98,14 +133,22 @@ export default function TabOneScreen() {
           trackColor={{ false: "#e4e4e4", true: "#E0AC00" }}
         />
       </View>
-      <Text style={styles.greeting}>Hola {motorizado?.nombre || "Motorizado"}!</Text> 
+      <Text style={styles.greeting}>
+        Hola {data_usuario?.nombre || "Repartidor"}!
+      </Text>
       <Text style={styles.instructions}>
         Ten en cuenta estos datos, son muy importantes para la asignación de
         órdenes
       </Text>
 
-      <Link to={"/deliverys"} style={styles.card}>
-        <Pressable style={styles.card_inside}>
+      <Link
+        to={"/home/deliverys"}
+        style={[styles.card, !isConnected && styles.disabledCard]}
+      >
+        <Pressable
+          style={styles.card_inside}
+          disabled={!isConnected} // Inhabilita el Pressable si no está conectado
+        >
           <MaterialIcons name="list-alt" size={24} color="white" />
           <View style={styles.cardText}>
             <Text style={[styles.cardTitle, styles.cardContent]}>
@@ -117,6 +160,7 @@ export default function TabOneScreen() {
           </View>
         </Pressable>
       </Link>
+
       <TouchableOpacity style={styles.card}>
         <MaterialIcons name="directions-car" size={24} color="white" />
         <View style={styles.cardText}>
@@ -198,5 +242,8 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 18,
     fontWeight: "bold",
+  },
+  disabledCard: {
+    backgroundColor: "gray",
   },
 });
