@@ -70,13 +70,13 @@ export default function PaginatedProducts({
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           console.error(
-            "Error fetching products:",
+            "Los productos no se encuentran disponibles en ese momento por favor intentalo de nuevo",
             error.response ? error.response.data : error.message
           );
         } else {
-          console.error("Error fetching products:", error);
+          console.error("Los productos no se encuentran disponibles en ese momento por favor intentalo de nuevo", error);
         }
-        setError("Error fetching products");
+        setError("Los productos no se encuentran disponibles en ese momento por favor intentalo de nuevo");
       } finally {
         setLoading(false);
       }
