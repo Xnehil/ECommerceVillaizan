@@ -12,11 +12,11 @@ const StepConfirmacion = () => <div>Step Confirmación</div>;
 
 interface CheckoutProps {
     pedido: Pedido;
-    usuario?: any;
-    direccion?: any;
+    /*usuario?: any;
+    direccion?: any;*/
   }
   
-  const Checkout: React.FC<CheckoutProps> = ({ pedido, usuario, direccion }) => {
+  const Checkout: React.FC<CheckoutProps> = ({ pedido /*, usuario, direccion*/ }) => {
   const searchParams = useSearchParams();
   const [step, setStep] = useState(searchParams.get('step') || 'aaa');
 
@@ -25,7 +25,7 @@ interface CheckoutProps {
       case 'direccion':
         return <StepDireccion setStep={setStep} />;
       case 'pago':
-        return <MetodoPagoClient pedido={pedido} usuario={usuario} direccion={direccion}/>
+        return <MetodoPagoClient pedido={pedido} /*usuario={usuario} direccion={direccion}*//>
       default:
         return <div>Seleccione un paso válido</div>;
     }

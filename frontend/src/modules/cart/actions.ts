@@ -3,7 +3,7 @@
 import { revalidateTag } from "next/cache"
 import axios from "axios"
 import { DetallePedido } from "types/PaquetePedido"
-import cookie from "cookie"
+/*import cookie from "cookie"*/
 import { cookies } from "next/headers"
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL

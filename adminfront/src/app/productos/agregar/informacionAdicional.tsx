@@ -10,13 +10,16 @@ import "@/styles/general.css";
 import { Producto, Subcategoria, TipoProducto } from "@/types/PaqueteProducto";
 import { Skeleton } from "@/components/ui/skeleton";
 import axios from "axios";
+import { useToast } from "@/hooks/use-toast";
 
 interface InformacionAdicionalProps {
   producto: MutableRefObject<Producto>;
+  isEditing: boolean;
 }
 
 const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   producto,
+  isEditing,
 }) => {
   const [isNewCategory, setIsNewCategory] = useState<boolean>(false);
   const [newCategoryName, setNewCategoryName] = useState<string>("");
@@ -32,6 +35,8 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   const subcategories = useRef<{ value: string; label: string }[]>([]);
 
   const a = useRef(0);
+
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -85,29 +90,29 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   }, []);
 
   const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value);
-    producto.current.tipoProducto = { id: value } as TipoProducto;
     if (value === "Nueva categoría") {
       setIsNewCategory(true);
     } else {
       setIsNewCategory(false);
+      setSelectedCategory(value);
+      producto.current.tipoProducto = { id: value } as TipoProducto;
     }
   };
 
   const handleSubcategoryChange = (value: string) => {
-    setSelectedSubcategory(value);
-    producto.current.subcategorias = [{ id: value } as Subcategoria];
     if (value === "Nueva subcategoría") {
       setIsNewSubcategory(true);
     } else {
       setIsNewSubcategory(false);
+      setSelectedSubcategory(value);
+      producto.current.subcategorias = [{ id: value } as Subcategoria];
     }
   };
 
   const handleCancelNewCategory = () => {
     setIsNewCategory(false);
     setNewCategoryName("");
-    setSelectedCategory("");
+    // setSelectedCategory("");
   };
 
   const handleSaveNewCategory = async () => {
@@ -147,15 +152,28 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       setIsLoading(false);
       setIsNewCategory(false);
       setSelectedCategory(newCategory.id);
+
+      producto.current.tipoProducto = { id: newCategory.id } as TipoProducto;
+
+      toast({
+        description: "La nueva categoría ha sido guardada exitosamente.",
+      });
     } catch (error) {
       console.error("Error saving new category:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          "Ocurrió un error al guardar la nueva categoría. Por favor, intente de nuevo.",
+      });
+      setIsLoading(false);
     }
   };
 
   const handleCancelNewSubcategory = () => {
     setIsNewSubcategory(false);
     setNewSubcategoryName("");
-    setSelectedSubcategory("");
+    // setSelectedSubcategory("");
   };
 
   const handleSaveNewSubcategory = async () => {
@@ -194,8 +212,23 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       setIsLoading(false);
       setIsNewSubcategory(false);
       setSelectedSubcategory(newSubcategory.id);
+
+      producto.current.subcategorias = [
+        { id: newSubcategory.id } as Subcategoria,
+      ];
+
+      toast({
+        description: "La nueva subcategoría ha sido guardada exitosamente.",
+      });
     } catch (error) {
       console.error("Error saving new subcategory:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          "Ocurrió un error al guardar la nueva subcategoría. Por favor, intente de nuevo.",
+      });
+      setIsLoading(false);
     }
   };
 
@@ -220,7 +253,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
             <InputWithLabel
               label="Categoría"
               placeholder="Nueva categoría"
-              // value={newCategoryName}
+              value={newCategoryName}
               onChange={(e) => {
                 setNewCategoryName(e.target.value);
               }}
@@ -241,6 +274,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
             })}
             onChange={handleCategoryChange}
             {...(selectedCategory !== "" && { value: selectedCategory })}
+            disabled={!isEditing}
           />
         )}
       </>
@@ -255,7 +289,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
             <InputWithLabel
               label="Subcategoría"
               placeholder="Nueva subcategoría"
-              // value={newCategoryName}
+              value={newSubcategoryName}
               onChange={(e) => {
                 setNewSubcategoryName(e.target.value);
               }}
@@ -279,6 +313,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
             })}
             onChange={handleSubcategoryChange}
             value={selectedSubcategory}
+            disabled={!isEditing}
           />
         )}
       </>
@@ -287,6 +322,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         placeholder="Agregar una breve reseña"
         maxLength={800}
         onChange={handleNutritionalInfoChange}
+        disabled={!isEditing}
       />
     </div>
   );

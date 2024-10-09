@@ -15,6 +15,7 @@ interface SelectWithLabelProps {
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
   value?: string;
+  disabled?: boolean;
 }
 
 const SelectWithLabel: React.FC<SelectWithLabelProps> = ({
@@ -22,11 +23,12 @@ const SelectWithLabel: React.FC<SelectWithLabelProps> = ({
   options,
   onChange,
   value,
+  disabled = false,
 }) => {
   return (
     <div className="grid w-full max-w-sm items-center space-y-2">
       <Label>{label}</Label>
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger>
           <SelectValue placeholder="Seleccionar" />
         </SelectTrigger>

@@ -943,6 +943,35 @@ const options = {
             },
           ],
         },
+        HistorialRepartidor: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                estado: {
+                  type: 'string',
+                  example: 'Entregado',
+                },
+                razonDeRechazo: {
+                  type: 'string',
+                  nullable: true,
+                  example: 'Cliente no disponible',
+                },
+                motorizado: {
+                  $ref: '#/components/schemas/Motorizado',
+                },
+                usuario: {
+                  $ref: '#/components/schemas/Usuario',
+                },
+                pedido: {
+                  $ref: '#/components/schemas/Pedido',
+                }
+              },
+            },
+          ],
+        },
 
       }
     }
