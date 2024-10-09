@@ -13,22 +13,22 @@ interface OrderDetailsProps {
       return null;
     }
     console.log(pedido);
-    pedido.motorizado = {} as Motorizado;
-    pedido.motorizado.placa = "AT1-ASD";
-    pedido.motorizado.urlImagen = "https://via.placeholder.com/100";
-    pedido.motorizado.usuario = {} as Usuario;
-    pedido.motorizado.usuario.nombre = "No asignado";
+    // pedido.motorizado = {} as Motorizado;
+    // pedido.motorizado.placa = "AT1-ASD";
+    // pedido.motorizado.urlImagen = "https://via.placeholder.com/100";
+    // pedido.motorizado.usuario = {} as Usuario;
+    // pedido.motorizado.usuario.nombre = "No asignado";
 
     return (
-      <div className="mt-5 flex justify-between bg-gray-100 rounded-lg shadow-md w-full p-6 pl-24 pr-24">
+      <div className="mt-5 flex justify-between bg-gray-100 rounded-lg shadow-md w-full p-6 pl-20 pr-24">
         {/* Driver Image */}
         <div className="flex-1 flex text-left">
           <img
-            src="https://via.placeholder.com/100" // Sample image URL
+            src={pedido.motorizado?.urlImagen ?? "https://luciatrejo.com/wp-content/uploads/2023/08/IMG-20230819-WA0204.jpg"}
             alt="Driver"
-            className="rounded-full w-42 h-42 object-cover mb-2 mr-6"
+            className="rounded-full w-28 h-28 object-cover mb-2 mr-6"
           />
-          <div>
+          <div className='flex flex-col justify-center'>
             <p className="font-bold text-gray-800">Conductor: {pedido.motorizado?.usuario?.nombre ?? "Masha"}</p>
             <p className="text-gray-600">Placa: {pedido.motorizado?.placa ?? "No asignado"}</p>
           </div>

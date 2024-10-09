@@ -94,6 +94,7 @@ export const PUT = async (
         const pedido = await pedidoService.actualizar(id, pedidoData, asignarRepartidor);
         res.json({ pedido });
     } catch (error) {
+        console.log(error);
         if (error.message === "Pedido no encontrado") {
             res.status(404).json({ error: "Pedido no encontrado" });
         } else if (error.message === "No hay motorizados disponibles") {

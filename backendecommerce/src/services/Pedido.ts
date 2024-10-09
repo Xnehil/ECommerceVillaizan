@@ -101,9 +101,10 @@ class PedidoService extends TransactionBaseService {
                 // console.log("Ubicaciones disponibles:", ubicacionesDelivery);
                 if(ubicacionesDelivery.size > 0){
                     // console.log("Motorizados disponibles:", ubicacionesDelivery);
-                    const motorizadoId = ubicacionesDelivery.values().next().value; //Lógica de asignación
-                    const dataMotorizado = await motorizadoRepo.findOne(motorizadoId);
-                    console.log("Motorizado asignado:", dataMotorizado);
+                    const motorizadoId = ubicacionesDelivery.keys().next().value;
+                    // console.log("Motorizado a buscar:", motorizadoId);
+                    const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
+                    // console.log("Motorizado asignado:", dataMotorizado);
                     if(dataMotorizado){
                         data.motorizado = dataMotorizado;
                         // Last 3 digits of id + last 3 chars of dataMotorizado.id
