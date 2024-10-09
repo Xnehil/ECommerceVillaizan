@@ -18,6 +18,15 @@ const fetchCart = async () => {
     const enrichedItems = await enrichLineItems(cart.detalles);
     // console.log("Detalles enriquecidos:", enrichedItems);
     cart.detalles = enrichedItems;
+
+    if (cart.motorizado === null){
+        // buscar motorizado con el codigo de seguimiento
+        // cart.motorizado = motorizado
+    }
+    //Conectar a websocket para recibir actualizaciones en tiempo real
+
+    
+
     return cart
   }
 

@@ -11,30 +11,12 @@ interface MapaTrackingProps {
 }
 
 const MapaTracking: React.FC<MapaTrackingProps> = ({ pedido }) => {
+    const [driverPosition, setDriverPosition] = useState<[number, number]>([-6.476, -76.361]);
     if (!pedido) {
         return null;
     }
-    const [driverPosition, setDriverPosition] = useState<[number, number]>([-6.476, -76.361]);
     const posicionDestino = (pedido.direccion?.ubicacion?.latitud && pedido.direccion?.ubicacion?.longitud ? [pedido.direccion?.ubicacion?.latitud, pedido.direccion?.ubicacion?.longitud] : [-6.484, -76.364]) as LatLngExpression;
 
-    useEffect(() => {
-        // Function to fetch the driver's location
-        const fetchDriverLocation = async () => {
-            try {
-                // Replace with your API call or location fetching logic
-                const response = await fetch('https://api.example.com/driver-location');
-                const data = await response.json();
-                setDriverPosition([data.latitude, data.longitude]);
-            } catch (error) {
-                console.error('Error fetching driver location:', error);
-            }
-        };
-
-        // Fetch the driver's location when the component mounts
-        // fetchDriverLocation();
-        // const intervalId = setInterval(fetchDriverLocation, 10000); // Fetch every 10 seconds
-        // return () => clearInterval(intervalId);
-    }, []);
 
     return (
         <MapContainer center={driverPosition} zoom={15} style={{ height: '100%', width: '100%' }}>
