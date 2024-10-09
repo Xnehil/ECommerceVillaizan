@@ -134,6 +134,7 @@ export default function MetodoPagoClient({ pedido, setStep}: MetodoPagoClientPro
           onImageClick={handleImageClick}
           selectedImageId={selectedImageId}
           setPaymentAmount={setPaymentAmount}
+          hideCircle = {true}
         />
 
         <div style={{ marginRight: "180px", marginTop: "-20px", marginBottom: "40px" }}>

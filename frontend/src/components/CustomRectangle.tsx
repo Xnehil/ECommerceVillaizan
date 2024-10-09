@@ -16,6 +16,7 @@ type CustomRectangleProps = {
   onImageClick: (id: string | null) => void; // Permitir null
   selectedImageId: string | null;
   setPaymentAmount: (amount: number | null) => void; // Add setPaymentAmount to props
+  hideCircle?: boolean; // Add hideCircle to props
 };
 
 const CustomRectangle: React.FC<CustomRectangleProps> = ({
@@ -26,6 +27,7 @@ const CustomRectangle: React.FC<CustomRectangleProps> = ({
   onImageClick,
   selectedImageId: propSelectedImageId,
   setPaymentAmount, // Destructure the setPaymentAmount function from props
+  hideCircle = false, // Destructure hideCircle with default value false
 }) => {
   const [isCircleSelected, setIsCircleSelected] = useState(false); // Estado para controlar la selección del círculo
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -80,14 +82,16 @@ const CustomRectangle: React.FC<CustomRectangleProps> = ({
         height: height,
       }}
     >
-      <div
-        style={{
-          ...styles.circle,
-          backgroundColor: isCircleSelected ? "black" : "white", // Rellenar el círculo si está seleccionado
-        }}
-        onClick={handleCircleClick}
-      ></div>
-      <span style={styles.text}>{text}</span>
+      {!hideCircle && (
+        <div
+          style={{
+            ...styles.circle,
+            backgroundColor: isCircleSelected ? "black" : "white", // Rellenar el círculo si está seleccionado
+          }}
+          onClick={handleCircleClick}
+        ></div>
+      )}
+      <span style={{ ...styles.text, marginLeft: "20px" }}>{text}</span>
       <div style={styles.imagesContainer}>
         {images.map((image, index) => (
           <div
