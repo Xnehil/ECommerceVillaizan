@@ -11,9 +11,10 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Link } from "@react-navigation/native";
 import axios from "axios";
-import { Usuario, UsuarioResponse } from "@/interfaces/interfaces";
+import { MotorizadoResponse, Usuario, UsuarioResponse } from "@/interfaces/interfaces";
 import { useRouter } from "expo-router";
 import { getUserData } from "@/functions/storage";
+import WebSocketComponent from "@/components/websocket";
 
 function Icon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -59,12 +60,14 @@ export default function TabOneScreen() {
     try {
       const userData = await getData();
       if (userData?.id) {
-        const response = await axios.get<UsuarioResponse>(
-          `http://localhost:9000/admin/usuario/${userData.id}`
+        const response = await axios.get<MotorizadoResponse>(
+          `http://localhost:9000/admin/motorizado/usuario/${userData.id}`
         );
-        const usuario = response.data.usuario;
+        const motorizado = response.data.motorizado;
+        console.log(motorizado);
+        const usuario = motorizado.usuario
         setDataUsuario(usuario);
-        setIsConnected(usuario.estaActivo); 
+        setIsConnected(usuario?.estaActivo ?? false);
         console.log('Usuario obtenido con éxito:', usuario);
       } else {
         console.error("No se encontró el ID de usuario");
