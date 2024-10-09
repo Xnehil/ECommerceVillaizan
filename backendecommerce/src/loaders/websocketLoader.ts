@@ -7,6 +7,7 @@ import WebSocket from "ws";
 
 
 export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, pedidoId: string | null }>();
+const entregados = new Set<string>();
 export default async (
   container: MedusaContainer,
   config: ConfigModule
@@ -86,16 +87,18 @@ const handleDeliveryMessage = (
   userId: string,
   deliveryLocations: Map<string, { lat: number, lng: number, pedidoId: string | null }>
 ) => {
+  console.info(`Received message from delivery ${userId}: ${JSON.stringify(message)}`);
   switch (message.type) {
     case 'ubicacion':
-      // console.info(`Actualización de ubicación de ${userId}: ${JSON.stringify(message.data)}`);
-      // Update the location in the map
       const currentData = deliveryLocations.get(userId) || { lat: 0, lng: 0, pedidoId: null };
       deliveryLocations.set(userId, { ...currentData, ...message.data });
       break;
-    case 'orderStatus':
-      console.info(`Order status update from ${userId}: ${JSON.stringify(message.data)}`);
-      // Handle order status update
+    case 'entrega':
+      console.info(`Entrega realizada por ${userId}: ${JSON.stringify(message.data)}`);
+      const pedidoEntregado = message.data.pedidoId;
+      if (pedidoEntregado) {
+        entregados.add(pedidoEntregado);
+      }
       break;
     default:
       console.warn(`Unknown message type from delivery: ${message.type}`);
@@ -112,18 +115,24 @@ const handleClientMessage = (
 ) => {
   switch (message.type) {
     case 'ubicacion':
-      console.info(`Client location request: ${JSON.stringify(message.data)}`);
+      // console.info(`Client location request: ${JSON.stringify(message.data)}`);
       // Retrieve the location of the requested delivery person
       const deliveryId = message.data.deliveryId;
       const location = deliveryLocations.get(deliveryId);
       const enEntrega = location?.pedidoId === idPedido;
-      if (location && enEntrega) {
+      const entregado = entregados.has(idPedido);
+      if (entregado) {
+        console.info(`Pedido ${idPedido} ya fue entregado`);
+        ws.send(JSON.stringify({ type: 'entregadoResponse', data: 'Pedido entregado' }));
+        entregados.delete(idPedido);
+      } else if (location && enEntrega) {
         ws.send(JSON.stringify({ type: 'locationResponse', data: location }));
-      } else if (location && !enEntrega) {
+      } 
+      else if (location && !enEntrega) {
         ws.send(JSON.stringify({ type: 'notYetResponse', data: 'Repartidor atendiendo otros pedido' }));
       } 
       else {
-        ws.send(JSON.stringify({ type: 'locationResponse', error: 'Location not found' }));
+        ws.send(JSON.stringify({ type: 'error', error: 'Location not found' }));
       }
       break;
     case 'orderQuery':

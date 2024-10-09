@@ -9,16 +9,16 @@ import { Ubicacion } from "src/models/Ubicacion";
 /**
  * @swagger
  * tags:
- *   name: Ubicaciones
+ *   name: Ubicacion
  *   description: API para la gestión de ubicaciones
  */
 
 /**
  * @swagger
- * /ubicaciones:
+ * /ubicacion:
  *   get:
  *     summary: Lista todos los ubicaciones con paginación
- *     tags: [Ubicaciones]
+ *     tags: [Ubicacion]
  *     responses:
  *       200:
  *         description: Una lista de ubicaciones
@@ -45,10 +45,10 @@ import { Ubicacion } from "src/models/Ubicacion";
 
   /**
  * @swagger
- * /ubicaciones:
+ * /ubicacion:
  *   post:
  *     summary: Crea una nueva ubicación
- *     tags: [Ubicaciones]
+ *     tags: [Ubicacion]
  *     requestBody:
  *       required: true
  *       content:

@@ -1,6 +1,8 @@
 "use client";
 
+import EnEsperaTracking from '@components/EnEsperaTracking';
 import { LoadingSpinner } from '@components/LoadingSpinner';
+import PedidoEntregado from '@components/PedidoEntregado';
 // import MapaTracking from '@components/MapaTracking';
 import SeguimientoHeader from '@components/SeguimientoHeader';
 import { connectWebSocket } from '@lib/util/websocketUtils';
@@ -12,7 +14,12 @@ import { Pedido } from 'types/PaquetePedido';
 
 const MapaTracking = dynamic(() => import('@components/MapaTracking'), { ssr: false });
 
-const fetchCart = async ( setDriverPosition: (position: [number, number]) => void) => {
+interface ExtendedWebSocket extends WebSocket {
+    intervalId?: NodeJS.Timeout;
+}
+
+
+const fetchCart = async ( setDriverPosition: (position: [number, number]) => void, setEnRuta: (enRuta: string) => void, enRuta: string ): Promise<Pedido> => {
     const respuesta = await retrievePedido(true);
     let cart:Pedido= respuesta;
     let aux = cart.detalles;
@@ -24,23 +31,42 @@ const fetchCart = async ( setDriverPosition: (position: [number, number]) => voi
         // buscar motorizado con el codigo de seguimiento
         // cart.motorizado = motorizado
     }
+    let ws: ExtendedWebSocket | null = null;
     //Conectar a websocket para recibir actualizaciones en tiempo real
     if (cart.motorizado) {
         // Conectar a websocket para recibir actualizaciones en tiempo real
-        const ws = connectWebSocket(
+        ws = connectWebSocket(
             cart.motorizado.id, // idRepartidor
             cart.id, // idPedido
             (data) => {
+                // console.log(data);
+                if(enRuta === "entregado"){
+                    return;
+                }
                 if (data.type === 'locationResponse') {
                     // Actualizar la posición del motorizado
-                    setDriverPosition([data.data.location.lat, data.data.location.lng]);
+                    setEnRuta("ruta");
+                    setDriverPosition([data.data.lat, data.data.lng]);
                 } else if (data.type === 'notYetResponse') {
-                    // Actualizar el estado del pedido
-                    console.log(data.data);
+                    // El motorizado está atendiendo otros pedidos
+                    setEnRuta("espera");
+                } else if (data.type === 'entregadoResponse') {
+                    // El pedido ha sido entregado
+                    setEnRuta("entregado");
+                    // De momento lo enviamos a la página de inicio
+                    window.location.href = '/';
                 }
+
             },
-            () => {
+           () => {
                 // Handle WebSocket connection close
+                console.log("WebSocket connection closed");
+                if (ws && ws.intervalId) {
+                    console.log('Clearing interval with ID:', ws.intervalId);
+                    clearInterval(ws.intervalId); // Clear the interval when the connection is closed
+                } else {
+                    console.log('No interval ID found on WebSocket instance');
+                }
             }
         );
     } else {
@@ -59,10 +85,11 @@ const TrackingPage: React.FC = () => {
     const [codigo, setCodigo] = React.useState<string | null>(search.get('codigo'));
     const [loading, setLoading] = React.useState<boolean>(true);
     const [driverPosition, setDriverPosition] = React.useState<[number, number]>([-6.476, -76.361]);
+    const[enRuta, setEnRuta] = React.useState<string>("");
     const mapRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        fetchCart(setDriverPosition).then((cart) => {
+        fetchCart(setDriverPosition, setEnRuta, enRuta).then((cart) => {
             // console.log(cart);
             setPedido(cart);
             setLoading(false);
@@ -76,6 +103,12 @@ const TrackingPage: React.FC = () => {
             window.scrollBy(0, -30); // Adjust the value (-50) to scroll a bit higher
         }
     }, [pedido]);
+
+    // useEffect(() => {
+    //     if (driverPosition) {
+    //         console.log(driverPosition);
+    //     }
+    // } , [driverPosition]);
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault();
@@ -133,11 +166,17 @@ const TrackingPage: React.FC = () => {
                     ) : (
                         <>
                             <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }} ref={mapRef}>
-                                <SeguimientoHeader pedido={pedido} />
+                                <SeguimientoHeader pedido={pedido} enRuta={enRuta} />
                             </div>
 
-                            <div style={{ marginTop: '40px', height: '64vh', border: '1px solid #ccc' }} >
-                                <MapaTracking pedido={pedido} driverPosition={driverPosition} />
+                            <div style={{ marginTop: '40px', height: '64vh', border: '1px solid #ccc' }}>
+                                {enRuta === 'ruta' ? (
+                                    <MapaTracking pedido={pedido} driverPosition={driverPosition ?? [-6.476, -76.361]} />
+                                ) : enRuta === 'espera' ? (
+                                    <EnEsperaTracking codigoSeguimiento={pedido?.codigoSeguimiento ?? 'ADA123'} />
+                                ) : enRuta === 'entregado' ? (
+                                    <PedidoEntregado pedidoId={pedido?.id ?? "Hola"} />
+                                ) : null}
                             </div>
                         </>
                     )}
