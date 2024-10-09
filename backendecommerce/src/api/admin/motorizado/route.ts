@@ -19,6 +19,13 @@ import { Motorizado } from "src/models/Motorizado";
  *   get:
  *     summary: Lista todos los motorizadoes con paginación
  *     tags: [Motorizados]
+ *     parameters:
+ *       - in: query
+ *         name: enriquecido
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe recuperar el producto enriquecido
  *     responses:
  *       200:
  *         description: Una lista de motorizadoes
@@ -37,9 +44,16 @@ import { Motorizado } from "src/models/Motorizado";
     res: MedusaResponse
   ) => {
     const motorizadoService: MotorizadoService = req.scope.resolve("motorizadoService");
-
+    const enriquecido = req.query.enriquecido === 'true';
     res.json({
-      motorizadoes: await motorizadoService.listarConPaginacion(),
+      motorizadoes: await motorizadoService.listarConPaginacion(
+        {},
+        {
+          skip: 0,
+          take: 20,
+          relations: enriquecido ? ["usuario"] : []
+        }
+      ),
     })
   }
 
