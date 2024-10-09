@@ -20,7 +20,6 @@ const StoreTemplate = ({
   // Estado para la búsqueda de texto
   const [searchText, setSearchText] = useState("")
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
-  
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value.toLowerCase())
@@ -29,7 +28,7 @@ const StoreTemplate = ({
   return (
     <div className="flex flex-col small:flex-row small:items-start py-6 content-container" data-testid="category-container">
       <div className="w-full">
-      <div className="mb-8 text-2xl-semi">
+        <div className="mb-8 text-2xl-semi">
           {/* Envolver en un Link para que sea clicable */}
           <Link href="/account" passHref>
             <h1
@@ -68,4 +67,4 @@ const StoreTemplate = ({
   )
 }
 
-export default StoreTemplate
+export default StoreTemplate;
