@@ -1,6 +1,6 @@
 const express = require("express");
 const { GracefulShutdownServer } = require("medusa-core-utils");
-const setupWebSocket = require("./src/websocket/index.js");
+// const setupWebSocket = require("./src/websocket/index.js");
 
 const loaders = require("@medusajs/medusa/dist/loaders/index").default;
 
@@ -27,9 +27,9 @@ const loaders = require("@medusajs/medusa/dist/loaders/index").default;
         console.log(`HTTP Server is ready on port: ${port}`);
 
         // WebSocket setup (after HTTP server starts)
-        console.log("Setting up WebSocket...");
-        setupWebSocket(server);
-        console.log("WebSocket setup complete.");
+        // console.log("Setting up WebSocket...");
+        // setupWebSocket(server);
+        // console.log("WebSocket setup complete.");
       });
 
       // Wrap server with graceful shutdown

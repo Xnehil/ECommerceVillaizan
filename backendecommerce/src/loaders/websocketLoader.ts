@@ -5,6 +5,8 @@ import {
 } from "@medusajs/medusa";
 import WebSocket from "ws";
 
+
+export const ubicacionesDelivery = new Map<string, { lat: number, lng: number }>();
 export default async (
   container: MedusaContainer,
   config: ConfigModule
@@ -19,7 +21,6 @@ export default async (
     path: "/ws",
   });
 
-  const ubicacionesDelivery = new Map<string, { lat: number, lng: number }>();
 
   wss.on("connection", (ws, req) => {
     console.info("New WebSocket connection established");
@@ -54,8 +55,21 @@ export default async (
       }
     });
 
+    ws.on("close", () => {
+      if (id) {
+        console.info(`WebSocket connection closed for user ${id}`);
+        if (rol === 'delivery') {
+          ubicacionesDelivery.delete(id);
+          console.info(`Se eliminó al repartidor ${id} de la lista de ubicaciones`);
+        }
+      } else {
+        console.info('WebSocket connection closed');
+      }
+    });
     ws.send(JSON.stringify({ message: `Welcome ${rol} (${id}) to the WebSocket server!` }));
   });
+
+
 
   console.info(`WebSocket server is listening on port ${port}`);
   console.info("Ending WebSocket loader...");
@@ -90,7 +104,7 @@ const handleClientMessage = (
   deliveryLocations: Map<string, { lat: number, lng: number }>
 ) => {
   switch (message.type) {
-    case 'locationRequest':
+    case 'ubicacion':
       console.info(`Client location request: ${JSON.stringify(message.data)}`);
       // Retrieve the location of the requested delivery person
       const deliveryId = message.data.deliveryId;
