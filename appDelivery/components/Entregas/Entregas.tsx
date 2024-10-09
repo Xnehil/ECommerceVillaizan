@@ -11,186 +11,33 @@ import {
 import * as Progress from "react-native-progress";
 import { Link } from "expo-router";
 import axios from "axios";
-
-const pedidos: Pedido[] = [
-  {
-    id: 1,
-    address: "Av. José Larco 123, Miraflores",
-    distance: 3,
-    cliente: {
-      nombre: "Ana García",
-      telefono: "987654321",
-    },
-    metodosPago: [{ nombre: "Tarjeta de crédito" }],
-    productos: [
-      { nombre: "Helado de vainilla", cantidad: 2 },
-      { nombre: "Galleta de chocolate", cantidad: 1 },
-    ],
-    subtotal: 15.0,
-  },
-  {
-    id: 2,
-    address: "Calle Puno 456, San Isidro",
-    distance: 4,
-    cliente: {
-      nombre: "José Martínez",
-      telefono: "963852741",
-    },
-    metodosPago: [{ nombre: "Yape" }],
-    productos: [
-      { nombre: "Helado de chocolate", cantidad: 1 },
-      { nombre: "Helado de fresa", cantidad: 2 },
-    ],
-    subtotal: 18.0,
-  },
-  {
-    id: 3,
-    address: "Av. Arequipa 789, Lince",
-    distance: 5,
-    cliente: {
-      nombre: "María Fernández",
-      telefono: "912345678",
-    },
-    metodosPago: [{ nombre: "Efectivo" }],
-    productos: [
-      { nombre: "Helado de lúcuma", cantidad: 3 },
-    ],
-    subtotal: 12.0,
-  },
-  {
-    id: 4,
-    address: "Jirón de la Unión 321, Cercado de Lima",
-    distance: 2,
-    cliente: {
-      nombre: "Carlos Pérez",
-      telefono: "765432198",
-    },
-    metodosPago: [{ nombre: "Transferencia bancaria" }],
-    productos: [
-      { nombre: "Helado de maracuyá", cantidad: 2 },
-      { nombre: "Helado de chocolate", cantidad: 1 },
-    ],
-    subtotal: 20.0,
-  },
-  {
-    id: 5,
-    address: "Av. Javier Prado 654, San Borja",
-    distance: 6,
-    cliente: {
-      nombre: "Laura Torres",
-      telefono: "654321987",
-    },
-    metodosPago: [{ nombre: "Yape" }],
-    productos: [
-      { nombre: "Helado de fresa", cantidad: 2 },
-      { nombre: "Galleta de vainilla", cantidad: 1 },
-    ],
-    subtotal: 16.0,
-  },
-  {
-    id: 6,
-    address: "Calle San Martín 111, Miraflores",
-    distance: 2,
-    cliente: {
-      nombre: "Sofía Ruiz",
-      telefono: "741852963",
-    },
-    metodosPago: [{ nombre: "Tarjeta de débito" }],
-    productos: [
-      { nombre: "Helado de frutas mixtas", cantidad: 1 },
-      { nombre: "Helado de chocolate", cantidad: 2 },
-    ],
-    subtotal: 17.0,
-  },
-  {
-    id: 7,
-    address: "Av. Tacna 888, Breña",
-    distance: 3,
-    cliente: {
-      nombre: "Diego Jiménez",
-      telefono: "852963741",
-    },
-    metodosPago: [{ nombre: "Efectivo" }],
-    productos: [
-      { nombre: "Helado de avellana", cantidad: 2 },
-    ],
-    subtotal: 10.0,
-  },
-  {
-    id: 8,
-    address: "Calle 28 de Julio 555, Surco",
-    distance: 4,
-    cliente: {
-      nombre: "Natalia López",
-      telefono: "951753486",
-    },
-    metodosPago: [{ nombre: "Transferencia bancaria" }],
-    productos: [
-      { nombre: "Helado de mora", cantidad: 1 },
-      { nombre: "Helado de mango", cantidad: 1 },
-    ],
-    subtotal: 14.0,
-  },
-  {
-    id: 9,
-    address: "Calle Lima 444, Jesús María",
-    distance: 5,
-    cliente: {
-      nombre: "Andrés Ramírez",
-      telefono: "321654987",
-    },
-    metodosPago: [{ nombre: "Tarjeta de crédito" }],
-    productos: [
-      { nombre: "Helado de chocolate", cantidad: 1 },
-      { nombre: "Helado de fresa", cantidad: 2 },
-      { nombre: "Galleta de chocolate", cantidad: 2 },
-    ],
-    subtotal: 25.0,
-  },
-  {
-    id: 10,
-    address: "Av. La Marina 222, San Miguel",
-    distance: 6,
-    cliente: {
-      nombre: "Gabriela Salazar",
-      telefono: "159753486",
-    },
-    metodosPago: [{ nombre: "Yape" }],
-    productos: [
-      { nombre: "Helado de lúcuma", cantidad: 2 },
-      { nombre: "Helado de café", cantidad: 1 },
-    ],
-    subtotal: 19.0,
-  },
-];
+import { Usuario, Pedido } from "@/interfaces/interfaces";
+import { getUserData } from "@/functions/storage";
 
 
-interface Producto {
-  nombre: string;
-  cantidad: number;
-}
-
-interface Pedido {
-  address: string;
-  distance: number;
-  cliente: {
-    nombre: string;
-    telefono: string;
-  };
-  id: number;
-  timeoutId?: NodeJS.Timeout;
-  metodosPago: { nombre: "Yape" | "Efectivo" | "Plin" | "Transferencia bancaria" | "Tarjeta de crédito" | "Tarjeta de débito" }[];
-  productos: Producto[];
-  subtotal: GLfloat;
-}
 
 export default function Entregas() {
   const [pedidosNuevos, setPedidosNuevos] = useState<Pedido[]>([]);
+  const pedidos: Pedido[] = []; // Define the pedidos array
   const [pedidosAceptados, setPedidosAceptados] = useState<Pedido[]>([]);
   const [idCounter, setIdCounter] = useState(1);
   const [tiemposRestantes, setTiemposRestantes] = useState<{
     [key: number]: number;
   }>({});
+
+  // Obtén los datos del usuario
+  const getData = async (): Promise<Usuario | null> => {
+    try {
+      const userData = await getUserData();
+      if (!userData) {
+        throw new Error("No se pudo obtener los datos del usuario");
+      }
+      return userData;
+    } catch (error) {
+      console.error("Error al obtener los datos del usuario:", error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     setPedidosAceptados(pedidos.slice(0, 2));
