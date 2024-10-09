@@ -43,7 +43,7 @@ import { Motorizado } from "src/models/Motorizado";
  *         description: Motorizado no encontrado
  */
 
-export const GET_BY_ID = async (
+export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse
 ) => {
