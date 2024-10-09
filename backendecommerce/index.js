@@ -3,6 +3,7 @@ const { GracefulShutdownServer } = require("medusa-core-utils");
 const swaggerJSDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const fs = require("fs");
+const setupWebSocket = require("./src/websocket");
 
 const loaders = require("@medusajs/medusa/dist/loaders/index").default
 
@@ -28,9 +29,11 @@ const loaders = require("@medusajs/medusa/dist/loaders/index").default
         })
       )
 
-      const swaggerDocs = swaggerJSDoc(swaggerOptions)
-      fs.writeFileSync('./swagger-output.json', JSON.stringify(swaggerDocs, null, 2), 'utf-8')
-      console.log('Swagger JSON has been generated and saved to swagger-output.json')
+      const wss =setupWebSocket(server  )
+
+      // const swaggerDocs = swaggerJSDoc(swaggerOptions)
+      // fs.writeFileSync('./swagger-output.json', JSON.stringify(swaggerDocs, null, 2), 'utf-8')
+      // console.log('Swagger JSON has been generated and saved to swagger-output.json')
 
 
       // Handle graceful shutdown

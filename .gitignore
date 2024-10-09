@@ -6,3 +6,4 @@ node_modules
 #Ignore datasource.js file inside any directory
 datasource.js
 thunder-collection_Villaizan.json
+backendecommerce/.yarnclean
