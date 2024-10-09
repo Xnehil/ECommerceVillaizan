@@ -51,7 +51,7 @@ import { Motorizado } from "src/models/Motorizado";
         {
           skip: 0,
           take: 20,
-          relations: enriquecido ? ["usuario"] : []
+          relations: enriquecido ? ["usuario","ciudad","almacen"] : []
         }
       ),
     })
