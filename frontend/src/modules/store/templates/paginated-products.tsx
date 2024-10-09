@@ -143,14 +143,14 @@ export default function PaginatedProducts({
         </select>
       </div>
       <div>
-        <label htmlFor="type-filter">Filtrar por Tipo de Producto:</label>
+        <label htmlFor="type-filter">Filtrar por Categoria:</label>
         <select
           id="type-filter"
           value={selectedProductType}
           onChange={(e) => setSelectedProductType(e.target.value)}
           className="border p-2 rounded"
         >
-          <option value="">Todos los Tipos</option>
+          <option value="">Todas las Categorias</option>
           {productTypes.map((type, index) => (
             <option key={index} value={type}>
               {type}
