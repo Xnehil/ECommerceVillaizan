@@ -75,7 +75,7 @@ const ProductosPage: React.FC = () => {
           descripciones, categorías, etc.
         </p>
         <div className="h-full w-full">
-          <DataTable columns={columns} data={products.current} />
+          <DataTable columns={columns} data={products.current} nombre="producto"/>
         </div>
       </div>
     </>

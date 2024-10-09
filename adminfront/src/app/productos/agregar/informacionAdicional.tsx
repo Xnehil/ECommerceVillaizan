@@ -339,18 +339,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         }
       );
 
-      if (response.status === 222) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "La categoría ya existe.",
-        });
-        setEditCategory(false);
-        setNewCategoryName("");
-        setIsLoading(false);
-        return;
-      }
-
       if (response.status !== 200) {
         throw new Error("Failed to save edited category");
       }
@@ -371,14 +359,22 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
       };
       setEditCategory(false);
       setIsLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving edited category:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description:
-          "Ocurrió un error al guardar la categoría editada. Por favor, intente de nuevo.",
-      });
+      if (error.response?.data?.error.includes("ya existe")) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "La categoría ya existe.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            "Ocurrió un error al guardar la categoría editada. Por favor, intente de nuevo.",
+        });
+      }
       setIsLoading(false);
     }
   };
@@ -408,18 +404,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         }
       );
 
-      if (response.status === 222) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "La subcategoría ya existe.",
-        });
-        setEditSubcategory(false);
-        setNewSubcategoryName("");
-        setIsLoading(false);
-        return;
-      }
-
       if (response.status !== 200) {
         throw new Error("Failed to save edited subcategory");
       }
@@ -443,17 +427,24 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         description: "La subcategoría ha sido editada exitosamente.",
       });
 
-      
       setEditSubcategory(false);
       setIsLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving edited subcategory:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description:
-          "Ocurrió un error al guardar la subcategoría editada. Por favor, intente de nuevo.",
-      });
+      if (error.response?.data?.error.includes("ya existe")) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "La subcategoría ya existe.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            "Ocurrió un error al guardar la subcategoría editada. Por favor, intente de nuevo.",
+        });
+      }
       setIsLoading(false);
     }
   };
@@ -624,8 +615,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
                           </AlertDialogTitle>
                           <AlertDialogDescription>
                             Esta acción no se puede deshacer. Esto eliminará
-                            permanentemente la categoría de
-                            nuestros servidores.
+                            permanentemente la categoría de nuestros servidores.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -722,12 +712,13 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>
-                            ¿Estás seguro de que deseas eliminar esta subcategoría?
+                            ¿Estás seguro de que deseas eliminar esta
+                            subcategoría?
                           </AlertDialogTitle>
                           <AlertDialogDescription>
                             Esta acción no se puede deshacer. Esto eliminará
-                            permanentemente la subcategoría de
-                            nuestros servidores.
+                            permanentemente la subcategoría de nuestros
+                            servidores.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

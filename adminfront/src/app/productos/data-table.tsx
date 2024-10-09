@@ -23,15 +23,19 @@ import { useState } from "react";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  nombre?: string;
+  npagination?: number;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  nombre,
+  npagination,
 }: DataTableProps<TData, TValue>) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 7,
+    pageSize: npagination || 7,
   });
   const table = useReactTable({
     data,
@@ -103,7 +107,7 @@ export function DataTable<TData, TValue>({
           <strong>{table.getRowModel().rows.length}</strong>
           <div>de</div>
           <strong>{table.getPrePaginationRowModel().rows.length}</strong>
-          <div>producto(s)</div>
+          <div>{nombre}(s)</div>
         </span>
         <div className="flex items-center justify-end space-x-2">
           <Button
