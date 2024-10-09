@@ -36,9 +36,15 @@ export const GET = async (
 ) => {
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const { id } = req.params;
-
+    const enriquecido = req.query.enriquecido === 'true';
     try {
-        const pedido = await pedidoService.recuperar(id);
+        const pedido = await pedidoService.recuperar(id,
+            {
+                skip: 0,
+                take: 20,
+                relations: enriquecido ? ["motorizado","direccion","usuario"] : []
+            }
+        );
         res.json({ pedido });
     } catch (error) {
         res.status(404).json({ error: "Pedido no encontrado" });
@@ -48,8 +54,8 @@ export const GET = async (
 /**
  * @swagger
  * /pedido/{id}:
- *   put:
- *     summary: Actualiza un pedido por ID
+ *   get:
+ *     summary: Recupera un pedido por ID
  *     tags: [Pedidos]
  *     parameters:
  *       - in: path
@@ -58,21 +64,19 @@ export const GET = async (
  *           type: string
  *         required: true
  *         description: ID del pedido
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/Pedido'
+ *       - in: query
+ *         name: enriquecido
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe recuperar el producto enriquecido
  *     responses:
  *       200:
- *         description: Pedido actualizado exitosamente
+ *         description: Detalles del pedido
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Pedido'
- *       400:
- *         description: Petición inválida
  *       404:
  *         description: Pedido no encontrado
  */

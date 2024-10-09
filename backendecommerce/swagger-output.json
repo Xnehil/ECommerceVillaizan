@@ -3605,6 +3605,15 @@
             },
             "required": true,
             "description": "ID del pedido"
+          },
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
           }
         ],
         "responses": {
@@ -3617,51 +3626,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "Pedido no encontrado"
-          }
-        }
-      },
-      "put": {
-        "summary": "Actualiza un pedido por ID",
-        "tags": [
-          "Pedidos"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "ID del pedido"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Pedido"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Pedido actualizado exitosamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Pedido"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Petición inválida"
           },
           "404": {
             "description": "Pedido no encontrado"
@@ -3699,6 +3663,17 @@
         "summary": "Lista todos los pedidos con paginación",
         "tags": [
           "Pedidos"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
+          }
         ],
         "responses": {
           "200": {
