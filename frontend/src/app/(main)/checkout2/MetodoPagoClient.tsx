@@ -96,6 +96,15 @@ export default function MetodoPagoClient({ pedido/*, usuario, direccion*/}: Meto
 
   return (
     <>
+      {/* Banner debajo del header */}
+      <img
+          src="/images/bannerFlujoCompra.png"
+          alt="Promociones en Villaizan"
+          style={{
+            width: '100%',
+            height: 'auto',
+          }}
+        />
       <div style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "60px" }}>
           <BackButton onClick={handleBackClick} />
       </div>
