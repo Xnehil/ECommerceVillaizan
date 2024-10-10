@@ -16,6 +16,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [ciudad, setCiudad] = useState("");
   const [referencia, setReferencia] = useState("");
   const [distrito, setDistrito] = useState("");
+  const [nombre, setNombre] = useState(""); // Nuevo estado para nombre
+  const [telefono, setTelefono] = useState(""); // Nuevo estado para teléfono
+  const [numeroDni, setNumeroDni] = useState(""); // Nuevo estado para DNI
 
   const fetchCart = async () => {
     try {
@@ -26,6 +29,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
         console.error('No se obtuvo un carrito válido.');
         return;
       }
+      console.log('Contenido del carrito:', cart);
   
       const enrichedItems = await enrichLineItems(cart.detalles);
       cart.detalles = enrichedItems;
@@ -37,7 +41,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   };
 
   const handleSubmit = async () => {
-    const data = {
+    const direccionData = {
       calle,
       numeroExterior,
       numeroInterior,
@@ -57,36 +61,79 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
       },
     };
 
+    const usuarioData = {
+      nombre: nombre,
+      apellido: "No tiene cuenta",
+      correo: "correo@5",
+      contrasena: "contrasena",
+      conCuenta: 0,
+      numeroTelefono: telefono,
+      fechaUltimoLogin: null,
+      persona: {
+        tipoDocumento: "DNI",
+        numeroDocumento: numeroDni,
+        razonEliminacion: null,
+        estado: null
+      }
+    };
+
     try {
-      const response = await axios.post('http://localhost:9000/admin/direccion', data, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      console.log('Respuesta del servidor:', response.data);
-      setStep("pago"); // Avanzar al siguiente paso si es exitoso
-    } catch (error) {
-      console.error('Error al enviar la dirección:', error);
+      // Realizar ambas solicitudes POST
+      const [direccionResponse, usuarioResponse] = await Promise.all([
+        axios.post('http://localhost:9000/admin/direccion', direccionData, {
+          headers: { 'Content-Type': 'application/json' },
+        }),
+        axios.post('http://localhost:9000/admin/usuario', usuarioData, {
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      ]);
+
+      console.log('Respuesta de dirección:', direccionResponse.data);
+      console.log('Respuesta de usuario:', usuarioResponse.data);
+      // Obtener los IDs de la respuesta
+      const direccionId = direccionResponse.data.direccion.id; // Ajusta según la estructura de la respuesta
+      const usuarioId = usuarioResponse.data.usuario.id; // Ajusta según la estructura de la respuesta
+      console.log('Pedido ID:', direccionId);
+      console.log('Pedido ID:', usuarioId);
+      // Realizar el PUT para actualizar el pedido con los IDs
+      if (carritoState?.id) {
+        const pedidoId = carritoState.id;
+        console.log('Pedido ID:', pedidoId);
+        const pedidoUpdateData = {
+          direccion: direccionId,
+          usuario: usuarioId,
+        };
+        await axios.put(
+          `http://localhost:9000/admin/pedido/${pedidoId}?enriquecido=true`,
+          pedidoUpdateData,
+          {
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+  
+        console.log('Pedido actualizado con dirección y usuario.');
+      setStep("pago");
+    } else {
+      console.error('No se encontró el ID del pedido.');
     }
+  } catch (error) {
+    console.error('Error al enviar la dirección o el usuario:', error);
+  }
   };
 
   useEffect(() => {
     fetchCart();
   }, []);
 
-
   return (
     <div className="content-container mx-auto py-8">
       <button className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800" onClick={() => setStep('previous')}>
         <img src="/images/back.png" alt="Volver" className="h-8" /> Volver
       </button>
-
       <h1 className="text-3xl font-bold mb-6">Coloca tus Datos</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Formulario de datos personales (ocupa 2 columnas) */}
         <form className="grid grid-cols-1 gap-6 lg:col-span-2" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-          {/* Nombre completo con ícono */}
           <div className="flex items-center gap-3">
             <img src="/images/servicio-al-cliente.png" alt="Nombre completo" className="h-14" />
             <div className="w-full">
@@ -96,13 +143,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               <input
                 type="text"
                 id="nombre"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="Juan Perez"
               />
             </div>
           </div>
 
-          {/* DNI/RUC */}
           <div className="flex items-center gap-3">
             <div className="w-full">
               <label htmlFor="dni" className="block text-lg font-medium text-gray-700">
@@ -111,13 +159,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               <input
                 type="text"
                 id="dni"
+                value={numeroDni}
+                onChange={(e) => setNumeroDni(e.target.value)}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="12345678"
               />
             </div>
           </div>
 
-         {/* Ciudad con ícono */}
           <div className="flex items-center gap-3">
             <img src="/images/casa.png" alt="Ciudad" className="h-14" />
             <div className="w-full">
@@ -140,8 +189,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               </div>
             </div>
           </div>
-          
-          {/* Calle y número */}
+
           <div className="flex items-center gap-3">
             <div className="w-full grid grid-cols-2 gap-2">
               <div>
@@ -173,7 +221,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
             </div>
           </div>
 
-          {/* Referencia */}
           <div className="flex items-center gap-3">
             <img src="/images/referencia.png" alt="Referencia" className="h-14" />
             <div className="w-full">
@@ -191,7 +238,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
             </div>
           </div>
 
-          {/* Teléfono */}
           <div className="flex items-center gap-3">
             <img src="/images/telefono.png" alt="Teléfono" className="h-14" />
             <div className="w-full">
@@ -201,6 +247,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               <input
                 type="text"
                 id="telefono"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="987654321"
               />
@@ -208,7 +256,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
           </div>
         </form>
 
-        {/* Total Carrito (ocupa 1 columna) */}
         <div className="bg-white py-6">
           {carritoState ? (
             <Summary2 carrito={carritoState} handleSubmit={handleSubmit} />
