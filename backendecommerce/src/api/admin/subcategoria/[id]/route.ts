@@ -121,8 +121,8 @@ export const PUT = async (
  *         description: subcategoria eliminado exitosamente
  *       404:
  *         description: subcategoria no encontrado
- *      406:
- *        description: Hay productos asociados a esta subcategoría
+ *       406:
+ *         description: Hay productos asociados a esta subcategoría
  */
 
 export const DELETE = async (

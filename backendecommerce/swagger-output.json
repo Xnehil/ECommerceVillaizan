@@ -1243,7 +1243,7 @@
       "get": {
         "summary": "Lista todas los ciudades con paginación",
         "tags": [
-          "Ciudades"
+          "Ciudad"
         ],
         "responses": {
           "200": {
@@ -1269,7 +1269,7 @@
       "post": {
         "summary": "Crea una nueva ciudad",
         "tags": [
-          "Ciudades"
+          "Ciudad"
         ],
         "requestBody": {
           "required": true,
@@ -1520,11 +1520,11 @@
         }
       }
     },
-    "/direcciones": {
+    "/direccion": {
       "get": {
         "summary": "Lista todas los direcciones con paginación",
         "tags": [
-          "Direcciones"
+          "Direccion"
         ],
         "responses": {
           "200": {
@@ -1550,7 +1550,7 @@
       "post": {
         "summary": "Crea una nueva dirección",
         "tags": [
-          "Direcciones"
+          "Direccion"
         ],
         "requestBody": {
           "required": true,
@@ -4201,6 +4201,34 @@
             "description": "subcategoria no encontrado"
           }
         }
+      },
+      "delete": {
+        "summary": "Elimina un subcategoria por ID",
+        "tags": [
+          "Subcategorias"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del subcategoria"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "subcategoria eliminado exitosamente"
+          },
+          "404": {
+            "description": "subcategoria no encontrado"
+          },
+          "406": {
+            "description": "Hay productos asociados a esta subcategoría"
+          }
+        }
       }
     },
     "/subcategoria": {
@@ -4425,11 +4453,11 @@
         }
       }
     },
-    "/ubicaciones": {
+    "/ubicacion": {
       "get": {
         "summary": "Lista todos los ubicaciones con paginación",
         "tags": [
-          "Ubicaciones"
+          "Ubicacion"
         ],
         "responses": {
           "200": {
@@ -4455,7 +4483,7 @@
       "post": {
         "summary": "Crea una nueva ubicación",
         "tags": [
-          "Ubicaciones"
+          "Ubicacion"
         ],
         "requestBody": {
           "required": true,
@@ -4863,7 +4891,7 @@
       "description": "API para la gestión de bancos"
     },
     {
-      "name": "Ciudades",
+      "name": "Ciudad",
       "description": "API para la gestión de ciudades"
     },
     {
@@ -4942,7 +4970,7 @@
       "description": "API para tipo de productos"
     },
     {
-      "name": "Ubicaciones",
+      "name": "Ubicacion",
       "description": "API para la gestión de ubicaciones"
     },
     {

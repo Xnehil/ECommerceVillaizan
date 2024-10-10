@@ -101,7 +101,8 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   //console.log("Pedido id:", pedido.id)
 
   const handleConfirmar = async () => {
-
+    setShowPopup(false);
+    setShowBuscandoPopup(true);
     //Guarda el metodo de pago
     try{
       if(selectedImageId === "pagoEfec"){
@@ -145,16 +146,10 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         console.log("Pedido modificado correctamente");
         console.log(response.data);
       }
-      setShowPopup(false);
-      setShowBuscandoPopup(true);
-  
-      //Luego de 3 segundos, se cierra el popup de "Buscando repartidor". Solo para desarrollo
-      setTimeout(() => {
-        setShowBuscandoPopup(false);
-        //Redirigir a la página de seguimiento
-        let codigoSeguimiento = "123456";
-        window.location.href = `/seguimiento?codigo=${codigoSeguimiento}`;
-      }, 3000);
+      // setShowBuscandoPopup(false);
+      //Redirigir a la página de seguimiento
+      let codigoSeguimiento = "123456";
+      window.location.href = `/seguimiento?codigo=${pedido.codigoSeguimiento??codigoSeguimiento}`;
     } catch (error) {
       const axiosError = error as AxiosError;
         if (axiosError.response && axiosError.response.status === 404) {
