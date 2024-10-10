@@ -211,17 +211,24 @@ export default function ProductPreview({
           </button>
         </div>
       ) : (
-        <button
-          onClick={handleAddToCart}
-          disabled={isAdding}
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-yellow-500 text-white font-bold py-2 px-4 rounded"
-        >
-          {isAdding ? "Añadiendo..." : "Agregar"}
-        </button>
+        productPreview.inventarios[0].stock > 0 && (
+          <button
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-yellow-500 text-white font-bold py-2 px-4 rounded"
+          >
+            {isAdding ? "Añadiendo..." : "Agregar"}
+          </button>
+        )
       )}
 
       {/* Mensaje de error */}
       {error && <div className="mt-2 text-red-500 text-sm">{error}</div>}
+      {!productPreview.inventarios[0].stock && (
+        <div className="mt-2 text-red-500 text-sm">
+          Este producto no está disponible en tu ciudad
+        </div>
+      )}
 
       {/* Información del producto */}
       <div className="flex txt-compact-medium mt-4 justify-between">
