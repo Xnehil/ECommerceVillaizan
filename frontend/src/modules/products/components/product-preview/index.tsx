@@ -229,6 +229,11 @@ export default function ProductPreview({
           Este producto no está disponible en tu ciudad
         </div>
       )}
+      {productPreview.inventarios[0].stock <= productPreview.inventarios[0].stockMinimo && (
+        <div className="mt-2 text-red-500 text-sm">
+          Stock limitado: quedan pocas unidades disponibles en tu ciudad
+        </div>
+      )}
 
       {/* Información del producto */}
       <div className="flex txt-compact-medium mt-4 justify-between">
