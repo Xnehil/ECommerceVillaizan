@@ -46,7 +46,30 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const [showBuscandoPopup, setShowBuscandoPopup] = useState(false);
   const isButtonDisabled = !selectedImageId || !seleccionado; // Deshabilitar el botón si no hay una imagen seleccionada
   const detalles: DetallePedido[] = pedido ? pedido.detalles : [];
+  const [tooltip, setTooltip] = useState<string | null>(null); // State for tooltip content
   const [showError, setShowError] = useState(false);
+  const [errorText, setErrorText] = useState("");
+    
+  const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!isButtonDisabled) {
+      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'black';
+      (e.currentTarget as HTMLButtonElement).style.color = 'white';
+    } else {
+      if (!seleccionado && selectedImageId) {
+        setTooltip('Debes aceptar los términos y condiciones');
+      } else if (!selectedImageId && seleccionado) {
+        setTooltip('Debes seleccionar un método de pago');
+      } else {
+        setTooltip('Debes seleccionar un método de pago y aceptar los términos y condiciones');
+      }
+    }
+  };
+
+  const handleMouseOut = (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e.currentTarget as HTMLButtonElement).style.backgroundColor = isButtonDisabled ? 'lightgrey' : 'transparent';
+    (e.currentTarget as HTMLButtonElement).style.color = isButtonDisabled ? 'darkgrey' : 'black';
+    setTooltip(null);
+  };
 
 
 
@@ -80,21 +103,37 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const handleConfirmar = async () => {
 
     //Guarda el metodo de pago
-    if(selectedImageId === "pagoEfec"){
-      const responseMetodoPago = await axios.post(`${baseUrl}/admin/metodoPago/nombre`, {
-        nombre: "Pago en Efectivo"
-      });
-      if(responseMetodoPago.data){
-        console.log("Metodo de pago encontrado");
-        console.log(responseMetodoPago.data);
-        // Initialize metodosPago if undefined
-        if (!pedido.metodosPago) {
-          pedido.metodosPago = [];
+    try{
+      if(selectedImageId === "pagoEfec"){
+        const responseMetodoPago = await axios.post(`${baseUrl}/admin/metodoPago/nombre`, {
+          nombre: "Pago en Efectivo"
+        });
+        if(responseMetodoPago.data){
+          console.log("Metodo de pago encontrado");
+          console.log(responseMetodoPago.data);
+          // Initialize metodosPago if undefined
+          if (!pedido.metodosPago) {
+            pedido.metodosPago = [];
+          }
+          //Guarda el metodo de pago en el pedido
+          pedido.metodosPago.push(responseMetodoPago.data.metodoPago);
         }
-        //Guarda el metodo de pago en el pedido
-        pedido.metodosPago.push(responseMetodoPago.data.metodoPago);
       }
     }
+    catch(error){
+      
+      const axiosError = error as AxiosError;
+        if (axiosError.response && axiosError.response.status === 404) {
+            console.log("Pedido no encontrado");
+        } else if (axiosError.response?.status === 503) {
+            console.log("Error al guardar el metodo de pago");
+            setErrorText("Error al guardar el metodo de pago. Inténtalo de nuevo en unos minutos");
+            setShowPopup(false);
+            setShowBuscandoPopup(true);
+            setShowError(true);
+        }
+    }
+    
     //Cambiar el estado del pedido a solicitado
     pedido.estado = "solicitado";
     //Guarda el montoEfectivoPagar en el pedido
@@ -122,6 +161,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             console.log("Pedido no encontrado");
         } else if (axiosError.response?.status === 503) {
             console.log("No hay motorizados disponibles");
+            setErrorText("No hay repartidores disponibles. Inténtalo de nuevo en unos minutos");
             setShowPopup(false);
             setShowBuscandoPopup(true);
             setShowError(true);
@@ -222,37 +262,51 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           padding: '10px',
           border: isButtonDisabled ? '2px lightgrey' : '2px solid black',
           borderRadius: '5px',
-          backgroundColor: isButtonDisabled ? 'lightgrey' : 'transparent', // Cambia el color de fondo si está deshabilitado
-          color: isButtonDisabled ? 'darkgrey' : 'black', // Cambia el color del texto si está deshabilitado
+          backgroundColor: isButtonDisabled ? 'lightgrey' : 'transparent',
+          color: isButtonDisabled ? 'darkgrey' : 'black',
           fontWeight: 'bold',
-          cursor: isButtonDisabled ? 'not-allowed' : 'pointer', // Cambia el cursor si está deshabilitado
           transition: 'background-color 0.3s, color 0.3s',
-          marginTop: "10px"
+          marginTop: '10px',
+          position: 'relative' // Needed for tooltip positioning
         }}
-        onMouseOver={(e) => {
-          if (!isButtonDisabled) {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'black';
-            (e.currentTarget as HTMLButtonElement).style.color = 'white';
-          }
-        }}
-        onMouseOut={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.backgroundColor = isButtonDisabled ? 'lightgrey' : 'transparent';
-          (e.currentTarget as HTMLButtonElement).style.color = isButtonDisabled ? 'darkgrey' : 'black';
-        }}
+        onMouseOver={handleMouseOver}
+        onMouseOut={handleMouseOut}
+        disabled={isButtonDisabled}
         onClick={() => {
           if (!isButtonDisabled) {
-            setShowPopup(true); // Abre el popup al hacer clic solo si no está deshabilitado
+            setShowPopup(true);
           }
         }}
       >
         Comprar
+        {/* Tooltip */}
+        {tooltip && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '110%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'black',
+              color: 'white',
+              padding: '5px 10px',
+              borderRadius: '4px',
+              whiteSpace: 'nowrap',
+              zIndex: 1
+            }}
+          >
+            {tooltip}
+          </div>
+        )}
       </button>
+
+      
 
       {/* Popup de Entrega */}
       {showPopup && (
         <EntregaPopup
-          direccion={`${direccion.calle ?? ''} ${direccion.numeroExterior ?? ''}${direccion.numeroInterior ? `, ${direccion.numeroInterior}` : ''}, ${direccion.distrito ?? ''}, ${direccion.ciudad?.nombre ?? ''}`.trim().replace(/,\s*$/, '')}
-          nombre= {`${usuario.nombre} ${usuario.apellido}` }
+        direccion={`${direccion.calle ?? ''}${direccion.calle ? ' ' : ''}${direccion.numeroExterior ?? ''}${direccion.numeroInterior ? `, ${direccion.numeroInterior}` : ''}${direccion.distrito ? `, ${direccion.distrito}` : ''}${direccion.ciudad?.nombre ? `, ${direccion.ciudad.nombre}` : ''}`.trim().replace(/,\s*$/, '')}
+          nombre= {`${usuario.nombre}` }
           detalles = {detalles}
           subtotal={total}
           metodoPago="Pago en Efectivo"
@@ -265,7 +319,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       {showBuscandoPopup && (
         <BuscandoPopup
           onClose={handleCloseBuscandoPopup}
-          customText={showError ? "No hay repartidores disponibles. Inténtalo de nuevo en unos minutos " : "Buscando repartidor disponible"}
+          customText={showError ? errorText : "Buscando repartidor disponible"}
           error = {showError}
         />
       )}

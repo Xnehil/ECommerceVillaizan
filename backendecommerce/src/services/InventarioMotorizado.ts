@@ -3,13 +3,16 @@ import { InventarioMotorizado } from "../models/InventarioMotorizado";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import inventarioMotorizadoRepository from "src/repositories/InventarioMotorizado";
+import MotorizadoRepository from "@repositories/Motorizado";
 
 class InventarioMotorizadoService extends TransactionBaseService {
     protected inventarioMotorizadoRepository_: typeof inventarioMotorizadoRepository;
+    protected motorizadoRepository_: typeof MotorizadoRepository;
 
     constructor(container) {
         super(container);
         this.inventarioMotorizadoRepository_ = container.inventariomotorizadoRepository;
+        this.motorizadoRepository_ = container.motorizadoRepository;
     }
 
     getMessage() {
@@ -141,6 +144,45 @@ class InventarioMotorizadoService extends TransactionBaseService {
             return await inventarioMotorizadoRepo.save(inventarioMotorizado);
         });
     }
+
+    async findByMotorizadoId(motorizadoId: string): Promise<InventarioMotorizado[]> {
+        const inventarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);
+        const inventarioMotorizado = await inventarioMotorizadoRepo.findByMotorizadoId(motorizadoId);
+        if (!inventarioMotorizado) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Inventario Motorizado no encontrado");
+        }
+        return inventarioMotorizado;
+    }
+
+    async findByCiudadId(ciudadId: string): Promise<InventarioMotorizado[]> {
+        const inventarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);
+        const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
+        const motorizados = await motorizadoRepo.listarPorCiudad(ciudadId);
+        console.log("find by ciudad id");
+        if (!motorizados) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizados no encontrados");
+        }
+        console.log("encontre motorizados");
+        console.log(motorizados);
+        //iterate over motorizados and get the inventarioMotorizado for each one
+        let inventarioMotorizados = [];
+        for (const motorizado of motorizados) {
+            console.log("itreacion motorizado")
+            const inventarioMotorizado = await inventarioMotorizadoRepo.findByMotorizadoId(motorizado.id);
+            if (inventarioMotorizado) {
+                //add the array of inventarioMotorizado to the inventarioMotorizados array
+                inventarioMotorizados.push(inventarioMotorizado);
+                //log
+                console.log(inventarioMotorizados);
+            }
+        }
+        if (!inventarioMotorizados) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Inventario Motorizado no encontrado");
+        }
+        return inventarioMotorizados;
+    }
+
+
 }
 
 export default InventarioMotorizadoService;

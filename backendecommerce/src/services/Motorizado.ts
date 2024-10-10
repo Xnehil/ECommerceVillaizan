@@ -92,11 +92,46 @@ class MotorizadoService extends TransactionBaseService {
 
     async listarPorUsuarioId(id_usuario: string): Promise<Motorizado> {
         const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
-        const motorizado = await motorizadoRepo.findByUsuarioId(id_usuario);
+        const motorizado = await motorizadoRepo.encontrarPorUsuarioId(id_usuario);
         if (!motorizado) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
         }
         return motorizado;
+    }
+
+    async encontrarPorPlaca(placa: string): Promise<Motorizado> {
+        const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
+        const motorizado = await motorizadoRepo.encontrarPorPlaca(placa);
+        if (!motorizado) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
+        }
+        return motorizado;
+    }
+
+    async recuperarMotorizadosConDetalle(id: string, options: FindConfig<Motorizado> = {}): Promise<Motorizado> {
+        const pedidoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
+        const relations = ["inventarios", ...(options.relations || [])];
+        const query = buildQuery({ id }, { relations });
+        const pedido = await pedidoRepo.findOne(query);
+    
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+    
+        return pedido;
+    }
+
+    async recuperarListaMotorizadosConDetalle(options: FindConfig<Motorizado> = {}): Promise<Motorizado[]> {
+        const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
+        const relations = ["inventarios", ...(options.relations || [])];
+        const query = buildQuery({}, { relations });
+        const motorizados = await motorizadoRepo.find(query);
+    
+        if (!motorizados || motorizados.length === 0) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "No se encontraron motorizados");
+        }
+    
+        return motorizados;
     }
 }
 
