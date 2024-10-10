@@ -11,13 +11,13 @@ import { columns, columnsEdit } from "./columns";
 import Loading from "@/components/Loading";
 
 interface InformacionAdicionalProps {
-    motorizado: MutableRefObject<Motorizado>;
+  motorizado: MutableRefObject<Motorizado>;
   inventario: MutableRefObject<InventarioMotorizado[]>;
   isEditing: boolean;
 }
 
 const Inventario: React.FC<InformacionAdicionalProps> = ({
-    motorizado,
+  motorizado,
   inventario,
   isEditing,
 }) => {
@@ -32,11 +32,11 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
         console.log("Fetching products");
         // Fetch products
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}producto`
+          `${process.env.NEXT_PUBLIC_BASE_URL}producto?ecommerce=true`
         );
         const data = await response.data;
         console.log("Products fetched:", data);
-
+        
         const productsData: Producto[] = data.productos;
         console.log("Products:", productsData);
 
