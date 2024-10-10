@@ -54,8 +54,8 @@ export const GET = async (
 /**
  * @swagger
  * /pedido/{id}:
- *   get:
- *     summary: Recupera un pedido por ID
+ *   put:
+ *     summary: Actualiza un pedido por ID
  *     tags: [Pedidos]
  *     parameters:
  *       - in: path
@@ -65,20 +65,54 @@ export const GET = async (
  *         required: true
  *         description: ID del pedido
  *       - in: query
- *         name: enriquecido
+ *         name: asignarRepartidor
  *         schema:
  *           type: boolean
  *         required: false
- *         description: Si se debe recuperar el producto enriquecido
+ *         description: Si se debe asignar un repartidor
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Pedido'
  *     responses:
  *       200:
- *         description: Detalles del pedido
+ *         description: Pedido actualizado
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Pedido'
+ *       400:
+ *         description: Petición inválida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Petición inválida
  *       404:
  *         description: Pedido no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Pedido no encontrado
+ *       503:
+ *         description: No hay motorizados disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: No hay motorizados
  */
 
 export const PUT = async (
