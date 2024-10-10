@@ -1,8 +1,9 @@
 import { useRouter } from "next/navigation"
 import React from "react"
+import { CityCookie } from "types/global"
 
 interface CiudadPopupProps {
-  setCity: (city: string) => void
+  setCity: (city: CityCookie) => void
 }
 
 const CiudadPopup: React.FC<CiudadPopupProps> = ({ setCity }) => {
@@ -14,7 +15,10 @@ const CiudadPopup: React.FC<CiudadPopupProps> = ({ setCity }) => {
         <button
           style={styles.optionButton}
           onClick={() => {
-            setCity("ciud_01J9PMCXF25RK303Q3AH3MXJ66")
+            setCity({
+              id: "ciud_01J9PMCXF25RK303Q3AH3MXJ66",
+              nombre: "Tarapoto",
+            })
           }}
         >
           Tarapoto
@@ -22,7 +26,10 @@ const CiudadPopup: React.FC<CiudadPopupProps> = ({ setCity }) => {
         <button
           style={styles.optionButton}
           onClick={() => {
-            setCity("ciud_01J9PMD3F020RD1H7XK5VJXFFR")
+            setCity({
+              id: "ciud_01J9PMD3F020RD1H7XK5VJXFFR",
+              nombre: "Jaén",
+            })
           }}
         >
           Jaén
@@ -30,7 +37,10 @@ const CiudadPopup: React.FC<CiudadPopupProps> = ({ setCity }) => {
         <button
           style={styles.optionButton}
           onClick={() => {
-            setCity("ciud_01J9PMCMWRYNTSEA2PKGZFG6J2")
+            setCity({
+              id: "ciud_01J9PMCMWRYNTSEA2PKGZFG6J2",
+              nombre: "Moyobamba",
+            })
           }}
         >
           Moyobamba

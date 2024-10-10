@@ -7,6 +7,8 @@ import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-g
 import { Pedido } from "types/PaquetePedido"
 import { getCityCookie, setCityCookie } from "../actions"
 import CiudadPopup from "@components/CiudadPopup"
+import SelectCity from "@components/SelectCity"
+import { CityCookie } from "types/global"
 
 const StoreTemplate = ({
   sortBy,
@@ -23,15 +25,19 @@ const StoreTemplate = ({
   const [searchText, setSearchText] = useState("")
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
   const [selectCityPopup, setSelectCityPopup] = useState(false)
-  const [city, setCity] = useState<string | null>(null)
+  const [city, setCity] = useState<CityCookie | null>(null)
 
   useEffect(() => {
     // Check for city ID cookie
-    const cityId = getCityCookie()
-    if (!cityId || cityId === "none") {
+    const cityCookie: CityCookie = getCityCookie()
+    if (!cityCookie || cityCookie.id == "none") {
       setSelectCityPopup(true)
+      console.log("City not set")
+      return
     }
-    console.log("City ID:", cityId)
+    console.log("City ID:", cityCookie)
+    setCity(cityCookie)
+    // console.log("City set:", city)
   }, [])
 
   useEffect(() => {
@@ -52,7 +58,7 @@ const StoreTemplate = ({
       data-testid="category-container"
     >
       {selectCityPopup && <CiudadPopup setCity={setCity} />}
-      {
+      {!selectCityPopup && (
         <div className="w-full">
           <div className="mb-8 text-2xl-semi">
             {/* Envolver en un Link para que sea clicable */}
@@ -78,6 +84,10 @@ const StoreTemplate = ({
 
           <CartButton carrito={carritoState} setCarrito={setCarritoState} />
 
+          {city && (
+            <SelectCity setSelectCityPopup={setSelectCityPopup} city={city} />
+          )}
+
           <Suspense fallback={<SkeletonProductGrid />}>
             <PaginatedProducts
               sortBy={sortBy || "created_at"}
@@ -90,7 +100,7 @@ const StoreTemplate = ({
             />
           </Suspense>
         </div>
-      }
+      )}
     </div>
   )
 }

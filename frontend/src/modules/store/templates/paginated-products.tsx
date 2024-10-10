@@ -6,6 +6,7 @@ import { Pagination } from "@modules/store/components/pagination"
 import axios from "axios"
 import { Producto } from "types/PaqueteProducto"
 import { Pedido } from "types/PaquetePedido"
+import { CityCookie } from "types/global"
 
 const PRODUCT_LIMIT = 12
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
@@ -25,7 +26,7 @@ export default function PaginatedProducts({
   searchText: string // Recibir el texto de búsqueda
   carrito: Pedido | null
   setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>
-  city?: string | null
+  city?: CityCookie | null
 }) {
   const [products, setProducts] = useState<Producto[]>([])
   const [totalPages, setTotalPages] = useState(1)
@@ -38,10 +39,23 @@ export default function PaginatedProducts({
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!city || city.id === "none") return // Wait for city to be available
+
       setLoading(true)
+      setError(null)
+
+      console.log("Fetching products for city:", city)
+
       try {
-        const response = await axios.get(
-          `${baseUrl}/admin/producto?enriquecido=true&ecommerce=true`
+        if (!city) {
+          throw new Error("City not found")
+        }
+        const cityParam = {
+          id_ciudad: city.id,
+        }
+        const response = await axios.post(
+          `${baseUrl}/admin/producto/ciudad`,
+          cityParam
         )
 
         if (!response || !response.data || !response.data.productos) {
@@ -50,6 +64,8 @@ export default function PaginatedProducts({
 
         const products = response.data.productos
         setProducts(products)
+
+        console.log("Products fetched:", products)
 
         const count = products.length
         setTotalPages(Math.ceil(count / PRODUCT_LIMIT))
@@ -69,6 +85,7 @@ export default function PaginatedProducts({
           .filter(Boolean)
 
         setProductTypes([...new Set<string>(allProductTypes)]) // Quitar duplicados
+
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           console.error(

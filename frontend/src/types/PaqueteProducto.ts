@@ -1,4 +1,5 @@
 import { EntidadBase } from "./EntidadBase";
+import { InventarioMotorizado } from "./PaqueteEnvio";
 
 // /frontend/models/Producto.ts
 
@@ -42,9 +43,4 @@ export interface Fruta extends EntidadBase { //Placeholder, borrar o reemplazar 
     productos: Producto[];
 }
 
-export interface InventarioMotorizado extends EntidadBase { //Placeholder, borrar o reemplazar si lo consideran necesario
-    id: string;
-    cantidad: number;
-    producto: Producto;
-}
 
