@@ -35,7 +35,7 @@ const fetchCart = async () => {
 
 export default async function MetodoPago() {
   const cart = await fetchCart()
-  
+  //console.log("Carrito:", cart);
 
   return <Checkout pedido={cart}/* usuario={usuario} direccion={direccion}*/ />
   
