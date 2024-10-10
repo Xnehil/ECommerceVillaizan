@@ -1013,6 +1013,18 @@
             }
           }
         ]
+      },
+      "ProductoRequestBody": {
+        "type": "object",
+        "required": [
+          "id_ciudad"
+        ],
+        "properties": {
+          "id_ciudad": {
+            "type": "string",
+            "description": "ID de la ciudad para recuperar productos"
+          }
+        }
       }
     }
   },
@@ -2191,7 +2203,7 @@
         }
       }
     },
-    "/inventariosalmacen": {
+    "/inventarioAlmacen": {
       "get": {
         "summary": "Lista todos los inventarios de almacén con paginación",
         "tags": [
@@ -4268,6 +4280,80 @@
           },
           "404": {
             "description": "producto no encontrado"
+          }
+        }
+      }
+    },
+    "/producto/ciudad": {
+      "post": {
+        "summary": "Recuperar productos por ciudad",
+        "description": "Recupera una lista de productos basados en el ID de la ciudad proporcionado.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductoRequestBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lista de productos recuperados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "nombre": {
+                        "type": "string"
+                      },
+                      "precio": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Petición inválida"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Motorizado no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Motorizado no encontrado"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
