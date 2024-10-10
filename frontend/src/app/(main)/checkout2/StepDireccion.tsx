@@ -77,9 +77,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
     const usuarioData = {
       nombre: nombre,
       apellido: "No tiene cuenta",
-      correo: "correo@5",
+      correo: null,
       contrasena: "contrasena",
-      conCuenta: 0,
+      conCuenta: false,
       numeroTelefono: telefono,
       fechaUltimoLogin: null,
       persona: {

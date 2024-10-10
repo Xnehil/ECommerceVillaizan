@@ -5247,7 +5247,7 @@ language-tags@^1.0.9:
   dependencies:
     language-subtag-registry "^0.3.20"
 
-leaflet@^1.9.0, leaflet@^1.9.4:
+leaflet@^1.9.4:
   version "1.9.4"
   resolved "https://registry.npmjs.org/leaflet/-/leaflet-1.9.4.tgz"
   integrity sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA==
@@ -5460,7 +5460,7 @@ medusa-core-utils@^1.2.0:
     cookie "^0.7.0"
     leaflet "^1.9.4"
     lodash "^4.17.21"
-    medusa-next "file:C:/Users/Maracuya/AppData/Local/Yarn/Cache/v6/npm-medusa-next-1.0.3-15a60af2-0eaf-4e88-b504-6b1fc6c8302e-1728423386747/node_modules/medusa-next"
+    medusa-next "file:../../../../AppData/Local/Yarn/Cache/v6/npm-medusa-next-1.0.3-2a1f5426-32e2-4746-8f37-711dc6fd4f26-1728568363021/node_modules/medusa-next"
     medusa-react "^9.0.0"
     next "^14.0.0"
     pg "^8.11.3"
