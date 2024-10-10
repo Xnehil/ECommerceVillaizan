@@ -2191,86 +2191,6 @@
         }
       }
     },
-    "/inventarioAlmacen/motorizado": {
-      "post": {
-        "summary": "Obtener inventario de un motorizado",
-        "description": "Obtiene el inventario asociado a un motorizado específico.",
-        "tags": [
-          "Motorizados"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": [
-                  "id_motorizado"
-                ],
-                "properties": {
-                  "id_motorizado": {
-                    "type": "string",
-                    "description": "ID del motorizado"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Inventario del motorizado obtenido exitosamente",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "inventarios": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/InventarioMotorizado"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Petición inválida",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Petición inválida"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Motorizado no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Motorizado no encontrado"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/inventariosalmacen": {
       "get": {
         "summary": "Lista todos los inventarios de almacén con paginación",
@@ -2611,6 +2531,86 @@
                     "error": {
                       "type": "string",
                       "example": "Error interno del servidor"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inventarioMotorizado/motorizado": {
+      "post": {
+        "summary": "Obtener inventario de un motorizado",
+        "description": "Obtiene el inventario asociado a un motorizado específico.",
+        "tags": [
+          "Motorizados"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id_motorizado"
+                ],
+                "properties": {
+                  "id_motorizado": {
+                    "type": "string",
+                    "description": "ID del motorizado"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Inventario del motorizado obtenido exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "inventarios": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/InventarioMotorizado"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Petición inválida"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Motorizado no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Motorizado no encontrado"
                     }
                   }
                 }
@@ -4420,6 +4420,34 @@
           },
           "404": {
             "description": "subcategoria no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un subcategoria por ID",
+        "tags": [
+          "Subcategorias"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del subcategoria"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "subcategoria eliminado exitosamente"
+          },
+          "404": {
+            "description": "subcategoria no encontrado"
+          },
+          "406": {
+            "description": "Hay productos asociados a esta subcategoría"
           }
         }
       }

@@ -16,7 +16,7 @@ import InventarioMotorizadoService from "@services/InventarioMotorizado";
 
 /**
  * @swagger
- * /inventarioAlmacen/motorizado:
+ * /inventarioMotorizado/motorizado:
  *   post:
  *     summary: Obtener inventario de un motorizado
  *     description: Obtiene el inventario asociado a un motorizado específico.

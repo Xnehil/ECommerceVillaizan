@@ -12,7 +12,8 @@ import { Subcategoria } from "src/models/Subcategoria";
  * /subcategoria/{id}:
  *   get:
  *     summary: Recupera un subcategoria por ID
- *     tags: [Subcategorias]
+ *     tags: 
+ *       - Subcategorias
  *     parameters:
  *       - in: path
  *         name: id
@@ -108,7 +109,8 @@ export const PUT = async (
  * /subcategoria/{id}:
  *   delete:
  *     summary: Elimina un subcategoria por ID
- *     tags: [Subcategorias]
+ *     tags: 
+ *       - Subcategorias
  *     parameters:
  *       - in: path
  *         name: id
@@ -121,8 +123,8 @@ export const PUT = async (
  *         description: subcategoria eliminado exitosamente
  *       404:
  *         description: subcategoria no encontrado
- *      406:
- *        description: Hay productos asociados a esta subcategoría
+ *       406:
+ *         description: Hay productos asociados a esta subcategoría
  */
 
 export const DELETE = async (
