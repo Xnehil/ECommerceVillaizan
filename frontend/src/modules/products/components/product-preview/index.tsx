@@ -224,15 +224,17 @@ export default function ProductPreview({
 
       {/* Mensaje de error */}
       {error && <div className="mt-2 text-red-500 text-sm">{error}</div>}
-      {!productPreview.inventarios[0].stock && (
+      {!productPreview.inventarios[0].stock ? (
         <div className="mt-2 text-red-500 text-sm">
           Este producto no está disponible en tu ciudad
         </div>
-      )}
-      {productPreview.inventarios[0].stock <= productPreview.inventarios[0].stockMinimo && (
-        <div className="mt-2 text-red-500 text-sm">
-          Stock limitado: quedan pocas unidades disponibles en tu ciudad
-        </div>
+      ) : (
+        productPreview.inventarios[0].stock <=
+          productPreview.inventarios[0].stockMinimo && (
+          <div className="mt-2 text-red-500 text-sm">
+            Stock limitado: quedan pocas unidades disponibles en tu ciudad
+          </div>
+        )
       )}
 
       {/* Información del producto */}
