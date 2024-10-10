@@ -7,17 +7,26 @@ export const PedidoRepository = dataSource
   .getRepository(Pedido) 
   .extend({
     async encontrarPorUsuarioId(id_usuario: string): Promise<Pedido[]> {
-      return this.createQueryBuilder("pedido")
-        .leftJoinAndSelect("pedido.usuario", "usuario")
-        .where("usuario.id = :id_usuario", { id_usuario })
-        .getMany();
+      return this.find({
+        where: {
+          usuario: {
+            id: id_usuario,
+          },
+        },
+        relations: ['motorizado', 'direccion', 'usuario'],
+      });
     },
     async findByMotorizadoId(id_motorizado: string): Promise<Pedido[]> {
-      return this.createQueryBuilder("pedido")
-        .leftJoinAndSelect("pedido.motorizado", "motorizado")
-        .where("motorizado.id = :id_motorizado", { id_motorizado })
-        .getMany();
+        return this.find({
+          where: {
+            motorizado: {
+              id: id_motorizado,
+            },
+          },
+          relations: ['motorizado', 'direccion', 'usuario'],
+        });
     }
+    
   })
 
 export default PedidoRepository
