@@ -1,6 +1,7 @@
 import { EntidadBase } from "./EntidadBase";
 import { Direccion, Motorizado } from "./PaqueteEnvio";
 import { Producto } from "./PaqueteProducto";
+import { Usuario } from "./PaqueteUsuario";
 
 
 // Define the Pedido interface for frontend use
@@ -14,6 +15,7 @@ export interface Pedido extends EntidadBase {
     montoEfectivoPagar?: number; // Optional field
     motorizado?: Motorizado; // Optional field
     direccion?: Direccion; // Optional field
+    usuario?: Usuario;
     metodosPago: MetodoPago[]; // Many-to-many relationship
     detalles: DetallePedido[]; // One-to-many relationship
 }
