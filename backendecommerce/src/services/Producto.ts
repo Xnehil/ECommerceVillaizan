@@ -28,11 +28,35 @@ class ProductoService extends TransactionBaseService {
           skip: 0,
           take: 20,
           relations: [],
-        }
+        },
+        soloEcommerce?: boolean
       ): Promise<[Producto[], number]> {
+        console.log("Listar y contar llegó con soloEcommerce: ", soloEcommerce);
         const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
-        const query = buildQuery(selector, config);
-        return productoRepo.findAndCount(query);
+        const query = productoRepo.createQueryBuilder("producto");
+        query.where(selector);
+        if (config.relations) {
+          config.relations.forEach((relation) => {
+            query.leftJoinAndSelect(`producto.${relation}`, relation);
+          });
+        }
+        if (config.order) {
+          Object.keys(config.order).forEach((key) => {
+            query.addOrderBy(`producto.${key}`, config.order[key]);
+          });
+        }      
+        if (config.skip) {
+          query.skip(config.skip);
+        }
+        if (config.take) {
+          query.take(config.take);
+        }
+        if (soloEcommerce) {
+          // console.log("Solo ecommerce");
+          query.andWhere("producto.sevendeecommerce = true");
+        }
+        const productos = await query.getManyAndCount();
+        return productos;
       }
     
       async listarConPaginacion(
@@ -41,9 +65,11 @@ class ProductoService extends TransactionBaseService {
           skip: 0,
           take: 20,
           relations: [],
-        }
+        },
+        soloEcommerce?: boolean
       ): Promise<Producto[]> {
-        const [productos] = await this.listarYContar(selector, config);
+        // console.log("Listar con paginación llegó con soloEcommerce: ", soloEcommerce);
+        const [productos] = await this.listarYContar(selector, config, soloEcommerce);
         return productos;
       }
     
