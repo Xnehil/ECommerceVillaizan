@@ -5471,7 +5471,7 @@ medusa-core-utils@^1.2.0:
     js-cookie "^3.0.5"
     leaflet "^1.9.4"
     lodash "^4.17.21"
-    medusa-next "file:C:/Users/amy22/AppData/Local/Yarn/Cache/v6/npm-medusa-next-1.0.3-b8a1a20c-2060-47a3-aa90-a2786c624dcd-1728575919491/node_modules/medusa-next"
+    medusa-next "file:C:/Users/Maracuya/AppData/Local/Yarn/Cache/v6/npm-medusa-next-1.0.3-15a60af2-0eaf-4e88-b504-6b1fc6c8302e-1728423386747/node_modules/medusa-next"
     medusa-react "^9.0.0"
     next "^14.0.0"
     pg "^8.11.3"
