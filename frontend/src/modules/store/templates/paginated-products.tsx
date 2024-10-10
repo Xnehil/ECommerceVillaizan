@@ -1,14 +1,14 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import ProductPreview from "@modules/products/components/product-preview";
-import { Pagination } from "@modules/store/components/pagination";
-import axios from "axios";
-import { Producto } from "types/PaqueteProducto";
-import { Pedido } from "types/PaquetePedido";
+import { useEffect, useState } from "react"
+import ProductPreview from "@modules/products/components/product-preview"
+import { Pagination } from "@modules/store/components/pagination"
+import axios from "axios"
+import { Producto } from "types/PaqueteProducto"
+import { Pedido } from "types/PaquetePedido"
 
-const PRODUCT_LIMIT = 12;
-const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+const PRODUCT_LIMIT = 12
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
 export default function PaginatedProducts({
   sortBy,
@@ -17,81 +17,88 @@ export default function PaginatedProducts({
   searchText, // Recibir el texto de búsqueda
   carrito,
   setCarrito,
+  city,
 }: {
-  sortBy?: string;
-  page: number;
-  countryCode: string;
-  searchText: string; // Recibir el texto de búsqueda
-  carrito: Pedido | null;
-  setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>;
+  sortBy?: string
+  page: number
+  countryCode: string
+  searchText: string // Recibir el texto de búsqueda
+  carrito: Pedido | null
+  setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>
+  city?: string | null
 }) {
-  const [products, setProducts] = useState<Producto[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>(""); // Nueva categoría seleccionada
-  const [categories, setCategories] = useState<string[]>([]); // Lista de categorías disponibles
-  const [productTypes, setProductTypes] = useState<string[]>([]);
-  const [selectedProductType, setSelectedProductType] = useState("");
-
+  const [products, setProducts] = useState<Producto[]>([])
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string>("") // Nueva categoría seleccionada
+  const [categories, setCategories] = useState<string[]>([]) // Lista de categorías disponibles
+  const [productTypes, setProductTypes] = useState<string[]>([])
+  const [selectedProductType, setSelectedProductType] = useState("")
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
-        const response = await axios.get(`${baseUrl}/admin/producto?enriquecido=true`);
-  
+        const response = await axios.get(
+          `${baseUrl}/admin/producto?enriquecido=true&ecommerce=true`
+        )
+
         if (!response || !response.data || !response.data.productos) {
-          throw new Error("Invalid response structure");
+          throw new Error("Invalid response structure")
         }
-  
-        const products = response.data.productos;
-        setProducts(products);
-  
-        const count = products.length;
-        setTotalPages(Math.ceil(count / PRODUCT_LIMIT));
-  
+
+        const products = response.data.productos
+        setProducts(products)
+
+        const count = products.length
+        setTotalPages(Math.ceil(count / PRODUCT_LIMIT))
+
         // Obtener subcategorías y tipos de producto y actualizar el estado
         const allCategories = products
           .flatMap((product: Producto) =>
             product.subcategorias?.map((sub) => sub.nombre)
           )
-          .filter(Boolean);
-  
-        setCategories([...new Set<string>(allCategories)]); // Quitar duplicados
-  
+          .filter(Boolean)
+
+        setCategories([...new Set<string>(allCategories)]) // Quitar duplicados
+
         // Obtener todos los tipos de producto y actualizar el estado
         const allProductTypes = products
           .map((product: Producto) => product.tipoProducto?.nombre)
-          .filter(Boolean);
-  
-        setProductTypes([...new Set<string>(allProductTypes)]); // Quitar duplicados
-  
+          .filter(Boolean)
+
+        setProductTypes([...new Set<string>(allProductTypes)]) // Quitar duplicados
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           console.error(
-            "Los productos no se encuentran disponibles en ese momento por favor intentalo de nuevo",
+            "Los productos no se encuentran disponibles en este momento. Por favor, inténtalo de nuevo.",
             error.response ? error.response.data : error.message
-          );
+          )
+          console.error("Error response:", error)
         } else {
-          console.error("Los productos no se encuentran disponibles en ese momento por favor intentalo de nuevo", error);
+          console.error(
+            "Los productos no se encuentran disponibles en este momento. Por favor, inténtalo de nuevo.",
+            error
+          )
         }
-        setError("Los productos no se encuentran disponibles en ese momento por favor intentalo de nuevo");
+        setError(
+          "Los productos no se encuentran disponibles en este momento. Por favor, inténtalo de nuevo."
+        )
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-  
-    fetchProducts();
-  }, [page, sortBy]);
-  
+    }
+
+    fetchProducts()
+  }, [page, sortBy, city])
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div>{error}</div>
   }
 
   // Filtrar los productos según la categoría seleccionada
@@ -99,16 +106,16 @@ export default function PaginatedProducts({
     // Filtrar por subcategoría si está seleccionada
     const categoryMatch = selectedCategory
       ? p.subcategorias.some((sub) => sub.nombre === selectedCategory)
-      : true;
-  
+      : true
+
     // Filtrar por tipo de producto si está seleccionado
     const productTypeMatch = selectedProductType
       ? p.tipoProducto?.nombre === selectedProductType
-      : true;
-  
+      : true
+
     // Solo devolver los productos que coincidan con ambos filtros
-    return categoryMatch && productTypeMatch;
-  });
+    return categoryMatch && productTypeMatch
+  })
 
   // Mostrar mensaje de "No se encontraron productos" cuando no haya coincidencias
   if (filteredProducts.length === 0 && searchText) {
@@ -121,14 +128,16 @@ export default function PaginatedProducts({
           No se encontraron productos que coincidan con la búsqueda.
         </p>
       </div>
-    );
+    )
   }
 
   return (
     <>
       {/* Filtro de categorías */}
       <div className="mb-4">
-        <label className="block mb-2 text-lg font-semibold">Filtrar por Subcategoría:</label>
+        <label className="block mb-2 text-lg font-semibold">
+          Filtrar por Subcategoría:
+        </label>
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
@@ -157,20 +166,28 @@ export default function PaginatedProducts({
             </option>
           ))}
         </select>
-      </div>   
+      </div>
       <ul
         className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8"
         data-testid="products-list"
       >
         {filteredProducts.map((p: Producto) => (
           <li key={p.id}>
-            <ProductPreview productPreview={p} carrito={carrito} setCarrito={setCarrito} />
+            <ProductPreview
+              productPreview={p}
+              carrito={carrito}
+              setCarrito={setCarrito}
+            />
           </li>
         ))}
       </ul>
       {totalPages > 1 && (
-        <Pagination data-testid="product-pagination" page={page} totalPages={totalPages} />
+        <Pagination
+          data-testid="product-pagination"
+          page={page}
+          totalPages={totalPages}
+        />
       )}
     </>
-  );
+  )
 }
