@@ -5,19 +5,41 @@ import { Usuario } from 'types/PaqueteUsuario';
 
 interface OrderDetailsProps {
     pedido: Pedido | null;
+    enRuta: string;
   }
 
   
-  const SeguimientoHeader: React.FC<OrderDetailsProps> = ({ pedido }) => {
+  
+  const SeguimientoHeader: React.FC<OrderDetailsProps> = ({ pedido, enRuta }) => {
     if (!pedido) {
       return null;
     }
-    console.log(pedido);
-    // pedido.motorizado = {} as Motorizado;
-    // pedido.motorizado.placa = "AT1-ASD";
-    // pedido.motorizado.urlImagen = "https://via.placeholder.com/100";
-    // pedido.motorizado.usuario = {} as Usuario;
-    // pedido.motorizado.usuario.nombre = "No asignado";
+
+    const getStatusText = () => {
+      switch (enRuta) {
+          case 'espera':
+              return 'En espera';
+          case 'ruta':
+              return 'En ruta';
+          case 'entregado':
+              return 'Entregado';
+          default:
+              return '';
+      }
+  };
+
+  const getStatusClass = () => {
+      switch (enRuta) {
+          case 'espera':
+              return 'text-yellow-600';
+          case 'ruta':
+              return 'text-blue-600';
+          case 'entregado':
+              return 'text-green-600';
+          default:
+              return 'text-gray-600';
+      }
+  };
 
     return (
       <div className="mt-5 flex justify-between bg-gray-100 rounded-lg shadow-md w-full p-6 pl-20 pr-24">
@@ -54,7 +76,7 @@ interface OrderDetailsProps {
             alt="State"
             className="w-12 h-12 mt-2"
           />
-          <p className="text-gray-600">{pedido.estado}</p>
+          <p className={getStatusClass()}>{getStatusText()}</p>
         </div>
       </div>
     );

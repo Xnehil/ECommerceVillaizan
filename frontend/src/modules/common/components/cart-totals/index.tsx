@@ -17,9 +17,10 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
     return acc + Number(item.subtotal) || 0
   }, 0)
   const descuento = 0 // Implementar descuento en un sprint futuro
-  const costoEnvio = 10 // Ejemplo: costo fijo de envío de S/. 10.0
+  const costoEnvio = 0 // 
   const impuestos = 0 // Implementar impuestos en un sprint futuro
-  const total = subtotal - descuento + costoEnvio + impuestos
+  const envioGratis = subtotal >= 25 // Ejemplo: envío gratis si el subtotal es mayor o igual a S/. 50.0
+  const total = subtotal - descuento + (envioGratis ? 0 : costoEnvio) + impuestos
 
   // Llamar al callback para actualizar el valor de costo de envío
   React.useEffect(() => {
@@ -58,7 +59,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
         )}
         <div className="flex items-center justify-between">
           <span>Envío</span>
-          <span data-testid="cart-shipping" data-value={costoEnvio || 0}>
+          <span data-testid="cart-shipping" data-value={costoEnvio || 0} className={envioGratis ? "line-through" : ""}>
             {getAmount(costoEnvio)}
           </span>
         </div>

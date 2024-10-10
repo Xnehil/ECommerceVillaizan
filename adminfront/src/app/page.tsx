@@ -1,15 +1,19 @@
+"use client";
+
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
-  // useEffect(() => {
+  const router = useRouter();
+  useEffect(() => {
   //   const isAuthenticated = Cookies.get("auth-token");
 
   //   if (!isAuthenticated) {
   //     router.push("/login");
   //   } else {
-  //     router.push("/productos"); // Redirect to productos after login
+      router.push("/productos"); // Redirect to productos after login
   //   }
-  // }, [router]);
+  }, [router]);
 
-  // return null; // No UI needed
+  return null; // No UI needed
 }

@@ -19,12 +19,18 @@ import { Producto } from "src/models/Producto";
  *     summary: Lista todos los productos con paginación
  *     tags: [Producto]
  *     parameters:
- *       - in: query
+ *      - in: query
  *         name: enriquecido
  *         schema:
  *           type: boolean
  *         required: false
  *         description: Si se debe recuperar el producto enriquecido
+ *      - in: query
+ *        name: ecommerce
+ *        schema:
+ *           type: boolean
+ *        required: false
+ *        description: Si se debe recuperar solo los productos que se muestran en el ecommerce
  *     responses:
  *       200:
  *         description: Una lista de productos
@@ -44,14 +50,21 @@ import { Producto } from "src/models/Producto";
   ) => {
     const productoService: ProductoService = req.scope.resolve("productoService");
     const enriquecido = req.query.enriquecido === 'true';
+    const soloEcommerce = req.query.ecommerce === 'true';
     res.json({
       productos: await productoService.listarConPaginacion(
         {},  
         {
           skip: 0,
           take: 20,
-          relations: enriquecido ? ["tipoProducto", "subcategorias", "frutas"] : []
-        })
+          relations: enriquecido ? ["tipoProducto", "subcategorias", "frutas"] : [],
+          order: {
+            nombre: "ASC"
+          }
+        },
+        soloEcommerce
+      ),
+
     })
   }
 
