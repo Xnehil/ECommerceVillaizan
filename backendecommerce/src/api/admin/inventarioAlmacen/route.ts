@@ -15,7 +15,7 @@ import { InventarioAlmacen } from "src/models/InventarioAlmacen";
 
 /**
  * @swagger
- * /inventariosalmacen:
+ * /inventarioAlmacen:
  *   get:
  *     summary: Lista todos los inventarios de almacén con paginación
  *     tags: [InventariosAlmacen]
@@ -45,7 +45,7 @@ import { InventarioAlmacen } from "src/models/InventarioAlmacen";
 
   /**
  * @swagger
- * /inventariosalmacen:
+ * /inventarioAlmacen:
  *   post:
  *     summary: Crea un nuevo inventario de almacén
  *     tags: [InventariosAlmacen]

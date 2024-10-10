@@ -28,13 +28,13 @@ import { Motorizado } from "src/models/Motorizado";
  *         description: Si se debe recuperar el producto enriquecido
  *     responses:
  *       200:
- *         description: Una lista de motorizadoes
+ *         description: Una lista de motorizados
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 motorizadoes:
+ *                 motorizados:
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Motorizado'
@@ -46,7 +46,7 @@ import { Motorizado } from "src/models/Motorizado";
     const motorizadoService: MotorizadoService = req.scope.resolve("motorizadoService");
     const enriquecido = req.query.enriquecido === 'true';
     res.json({
-      motorizadoes: await motorizadoService.listarConPaginacion(
+      motorizados: await motorizadoService.listarConPaginacion(
         {},
         {
           skip: 0,

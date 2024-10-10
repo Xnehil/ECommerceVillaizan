@@ -14,6 +14,12 @@ export const MotorizadoRepository = dataSource
       return this.createQueryBuilder("motorizado")
         .where("motorizado.placa = :placa", { placa })
         .getOne();
+    },
+    async listarPorCiudad(ciudad: string): Promise<Motorizado[]> {
+      return this.createQueryBuilder("motorizado")
+        .leftJoinAndSelect("motorizado.ciudad", "ciudad")
+        .where("ciudad.id = :ciudad", { ciudad })
+        .getMany();
     }
   })
 
