@@ -56,3 +56,9 @@ export type ProductCategoryWithChildren = Omit<
   category_children: ProductCategory[]
   category_parent?: ProductCategory
 }
+
+
+export interface CityCookie {
+  id: string;
+  nombre: string;
+}
