@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CustomRectangle from "components/CustomRectangle";
 import PaymentPopup from "components/PaymentPopup";
 import ResumenCompra from "components/ResumenCompra";
@@ -17,20 +17,18 @@ type MetodoPagoClientProps = {
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
-const fetchPedido = async (pedido : Pedido) => {
-  try{
+const fetchPedido = async (pedido: Pedido) => {
+  try {
     const response = await axios.get(`${baseUrl}/admin/pedido/${pedido.id}?enriquecido=true`);
-    const pedidoRespuesta :Pedido= response.data.pedido;
-    console.log("Pedido recuperado")
-    return pedidoRespuesta
+    return response.data.pedido;
+  } catch (error) {
+    console.error("Error fetching pedido:", error);
+    return null; // Return null or handle the error appropriately
   }
-  catch(error){
-    console.log(error)
-  }
-}
+};
 
-const defaultUsuario : Usuario = {
-  nombre: "Juan",
+const defaultUsuario: Usuario = {
+  nombre: "Juanito",
   apellido: "Perez",
   conCuenta: true,
   correo: "",
@@ -40,8 +38,8 @@ const defaultUsuario : Usuario = {
   desactivadoEn: null,
   usuarioCreacion: "",
   usuarioActualizacion: "",
-  estaActivo: false
-}
+  estaActivo: false,
+};
 
 const defaultDireccion: Direccion = {
   id: "",
@@ -55,20 +53,27 @@ const defaultDireccion: Direccion = {
   desactivadoEn: null,
   usuarioCreacion: "",
   usuarioActualizacion: "",
-  estaActivo: false
+  estaActivo: false,
 };
 
-export default async function MetodoPagoClient({ pedidoInput, setStep}: MetodoPagoClientProps) {
+export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoClientProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
+  const [pedido, setPedido] = useState<Pedido | null>(null); // State to hold the fetched pedido
   const descuento = 10;
   const hayDescuento = false;
   const costoEnvio = 5;
   const noCostoEnvio = true;
 
-  const pedido = await fetchPedido(pedidoInput);
-  
+  useEffect(() => {
+    const getPedido = async () => {
+      const fetchedPedido = await fetchPedido(pedidoInput);
+      setPedido(fetchedPedido);
+    };
+
+    getPedido();
+  }, [pedidoInput]); // Fetch pedido whenever pedidoInput changes
 
   const handleImageClick = (id: string | null) => {
     if (id === "pagoEfec") {
@@ -91,26 +96,25 @@ export default async function MetodoPagoClient({ pedidoInput, setStep}: MetodoPa
   };
 
   const handleBackClick = () => {
-    //window.history.back();
-    setStep("direccion")
+    setStep("direccion");
   };
 
   const calcularTotal = () => {
-    return calcularSubtotal() - (hayDescuento? descuento: 0) + (noCostoEnvio ? 0 : costoEnvio);
+    return calcularSubtotal() - (hayDescuento ? descuento : 0) + (noCostoEnvio ? 0 : costoEnvio);
   };
 
   const calcularSubtotal = () => {
-    if (!pedido) {
+    if (!pedidoInput) {
       return 0;
     }
-    return pedido.detalles.reduce((acc: number, item) => {
+    return pedidoInput.detalles.reduce((acc: number, item) => {
       return acc + Number(item.subtotal) || 0;
     }, 0);
   };
 
   const calcularVuelto = () => {
     return paymentAmount ? paymentAmount - calcularTotal() : 0;
-  }
+  };
 
   const total = calcularTotal();
   const vuelto = calcularVuelto();
@@ -119,15 +123,15 @@ export default async function MetodoPagoClient({ pedidoInput, setStep}: MetodoPa
     <>
       {/* Banner debajo del header */}
       <img
-          src="/images/bannerFlujoCompra.png"
-          alt="Promociones en Villaizan"
-          style={{
-            width: '100%',
-            height: 'auto',
-          }}
-        />
+        src="/images/bannerFlujoCompra.png"
+        alt="Promociones en Villaizan"
+        style={{
+          width: '100%',
+          height: 'auto',
+        }}
+      />
       <div style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "60px" }}>
-          <BackButton onClick={handleBackClick} />
+        <BackButton onClick={handleBackClick} />
       </div>
 
       <h1 style={{ marginTop: "20px", fontSize: "24px", fontWeight: "bold", paddingLeft: "80px" }}>Método Pago</h1>
@@ -155,7 +159,7 @@ export default async function MetodoPagoClient({ pedidoInput, setStep}: MetodoPa
           onImageClick={handleImageClick}
           selectedImageId={selectedImageId}
           setPaymentAmount={setPaymentAmount}
-          hideCircle = {true}
+          hideCircle={true}
         />
 
         {pedido && (
@@ -171,7 +175,7 @@ export default async function MetodoPagoClient({ pedidoInput, setStep}: MetodoPa
               vuelto={vuelto}
               direccion={pedido?.direccion ?? defaultDireccion} // Provide a default Direccion
               usuario={pedido?.usuario ?? defaultUsuario}
-              pedido={pedido}
+              pedido={pedidoInput}
             />
           </div>
         )}
@@ -182,7 +186,7 @@ export default async function MetodoPagoClient({ pedidoInput, setStep}: MetodoPa
           totalPagar={total}
           onConfirm={handlePaymentConfirm}
           onClose={handlePopupClose}
-          montoMaximoDeVuelto = {100}
+          montoMaximoDeVuelto={100}
         />
       )}
     </>
