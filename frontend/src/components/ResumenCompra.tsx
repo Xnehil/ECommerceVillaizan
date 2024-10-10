@@ -48,6 +48,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const detalles: DetallePedido[] = pedido ? pedido.detalles : [];
   const [tooltip, setTooltip] = useState<string | null>(null); // State for tooltip content
   const [showError, setShowError] = useState(false);
+  const [errorText, setErrorText] = useState("");
     
   const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!isButtonDisabled) {
@@ -102,21 +103,37 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const handleConfirmar = async () => {
 
     //Guarda el metodo de pago
-    if(selectedImageId === "pagoEfec"){
-      const responseMetodoPago = await axios.post(`${baseUrl}/admin/metodoPago/nombre`, {
-        nombre: "Pago en Efectivo"
-      });
-      if(responseMetodoPago.data){
-        console.log("Metodo de pago encontrado");
-        console.log(responseMetodoPago.data);
-        // Initialize metodosPago if undefined
-        if (!pedido.metodosPago) {
-          pedido.metodosPago = [];
+    try{
+      if(selectedImageId === "pagoEfec"){
+        const responseMetodoPago = await axios.post(`${baseUrl}/admin/metodoPago/nombre`, {
+          nombre: "Pago en Efectivo"
+        });
+        if(responseMetodoPago.data){
+          console.log("Metodo de pago encontrado");
+          console.log(responseMetodoPago.data);
+          // Initialize metodosPago if undefined
+          if (!pedido.metodosPago) {
+            pedido.metodosPago = [];
+          }
+          //Guarda el metodo de pago en el pedido
+          pedido.metodosPago.push(responseMetodoPago.data.metodoPago);
         }
-        //Guarda el metodo de pago en el pedido
-        pedido.metodosPago.push(responseMetodoPago.data.metodoPago);
       }
     }
+    catch(error){
+      
+      const axiosError = error as AxiosError;
+        if (axiosError.response && axiosError.response.status === 404) {
+            console.log("Pedido no encontrado");
+        } else if (axiosError.response?.status === 503) {
+            console.log("Error al guardar el metodo de pago");
+            setErrorText("Error al guardar el metodo de pago. Inténtalo de nuevo en unos minutos");
+            setShowPopup(false);
+            setShowBuscandoPopup(true);
+            setShowError(true);
+        }
+    }
+    
     //Cambiar el estado del pedido a solicitado
     pedido.estado = "solicitado";
     //Guarda el montoEfectivoPagar en el pedido
@@ -144,6 +161,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             console.log("Pedido no encontrado");
         } else if (axiosError.response?.status === 503) {
             console.log("No hay motorizados disponibles");
+            setErrorText("No hay repartidores disponibles. Inténtalo de nuevo en unos minutos");
             setShowPopup(false);
             setShowBuscandoPopup(true);
             setShowError(true);
@@ -301,7 +319,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       {showBuscandoPopup && (
         <BuscandoPopup
           onClose={handleCloseBuscandoPopup}
-          customText={showError ? "No hay repartidores disponibles. Inténtalo de nuevo en unos minutos " : "Buscando repartidor disponible"}
+          customText={showError ? errorText : "Buscando repartidor disponible"}
           error = {showError}
         />
       )}

@@ -16,6 +16,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [ciudad, setCiudad] = useState("");
   const [referencia, setReferencia] = useState("");
   const [distrito, setDistrito] = useState("");
+  const [telefono, setTelefono] = useState('');
+  const [error, setError] = useState('');
 
   const fetchCart = async () => {
     try {
@@ -36,7 +38,19 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
     }
   };
 
+  const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d*$/.test(value)) {
+      setTelefono(value);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (telefono.length !== 9) {
+      setError('Debe ingresar un número de teléfono de 9 dígitos');
+      return;
+    }
+    setError('');
     const data = {
       calle,
       numeroExterior,
@@ -198,11 +212,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               <label htmlFor="telefono" className="block text-lg font-medium text-gray-700">
                 Teléfono <span className="text-red-500">*</span>
               </label>
+              {error && <p className="text-red-500">{error}</p>}
               <input
                 type="text"
                 id="telefono"
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="987654321"
+                value={telefono}
+                onChange={handleTelefonoChange}
               />
             </div>
           </div>
