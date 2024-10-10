@@ -86,6 +86,42 @@ class ProductoService extends TransactionBaseService {
         }
         return producto;
       }
+
+      async recuperarConDetalle(id: string, options: FindConfig<Producto> = {}): Promise<Producto> {
+        const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
+        const relations = ["inventarios", ...(options.relations || [])];
+        const query = buildQuery({ id }, { relations });
+        const producto = await productoRepo.findOne(query);
+    
+        if (!producto) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+    
+        return producto;
+      }
+
+      async recuperarProductosConDetalle(options: FindConfig<Producto> = {}): Promise<Producto[]> {
+        const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
+        const relations = ["inventarios", ...(options.relations || [])];
+        const query = buildQuery({}, { relations });
+        const productos = await productoRepo.find(query);
+    
+        if (!productos || productos.length === 0) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "No se encontraron productos");
+        }
+    
+        return productos;
+      }
+
+      async recuperarProductosPorCiudad(ciudadId :string, options: FindConfig<Producto> = {}): Promise<Producto[]> {
+        //use productoRepo.findProductosWithInventariosByCiudad(ciudadId)
+        const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
+        const productos = await productoRepo.findProductosWithInventariosByCiudad(ciudadId);
+        if (!productos || productos.length === 0) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "No se encontraron productos");
+        }
+        return productos;
+      }
       
     
       async crear(producto: Producto): Promise<Producto> {

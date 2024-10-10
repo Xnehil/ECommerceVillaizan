@@ -140,7 +140,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
 
   return (
     <div className="content-container mx-auto py-8">
-      <button className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800" onClick={() => setStep('previous')}>
+      <button className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800" onClick={() => window.history.back()/*setStep('previous')*/}>
         <img src="/images/back.png" alt="Volver" className="h-8" /> Volver
       </button>
       <h1 className="text-3xl font-bold mb-6">Coloca tus Datos</h1>

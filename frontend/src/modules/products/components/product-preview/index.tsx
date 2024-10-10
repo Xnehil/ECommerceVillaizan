@@ -34,21 +34,25 @@ export default function ProductPreview({
     setError(null)
 
     try {
-      let nuevoDetalle: DetallePedido | null = null
+      // Agregar al carritoState para que se actualice el carrito visualmente
+      const detalleAnterior = carrito?.detalles.find((detalle) => detalle.producto.id === productPreview.id);
+      console.log("Detalle anterior:", detalleAnterior);
+      let nuevoDetalle: DetallePedido | null = null;
+      console.log("Linea a");
 
       if (detalleAnterior) {
         // Actualizar la cantidad si ya existe en el carrito
-        const cantidad = detalleAnterior.cantidad + 1
+        const cantidad = detalleAnterior.cantidad + 1;
         await updateLineItem({
           detallePedidoId: detalleAnterior.id,
           cantidad: cantidad,
           subtotal: productPreview.precioEcommerce * cantidad,
-        })
+        });
         nuevoDetalle = {
           ...detalleAnterior,
           cantidad: cantidad,
           subtotal: productPreview.precioEcommerce * cantidad,
-        }
+        };
       } else {
         // Agregar un nuevo producto al carrito si no existe
         const response = await addItem({
@@ -56,15 +60,17 @@ export default function ProductPreview({
           idProducto: productPreview.id || "",
           precio: productPreview.precioEcommerce,
           idPedido: carrito?.id || "",
-        })
+        });
         if (response && typeof response === "object" && "detallePedido" in response) {
-          nuevoDetalle = response.detallePedido
-          if (nuevoDetalle)
-            {
-               nuevoDetalle.producto = productPreview
-            }
+          nuevoDetalle = response.detallePedido;
+          if (nuevoDetalle) {
+            nuevoDetalle.producto = productPreview;
+          } else {
+            throw new Error("Error: No se pudo crear o actualizar el detalle del producto.");
+          }
+          
         } else {
-          throw new Error("Error al agregar el producto al carrito.")
+          throw new Error("Error al agregar el producto al carrito.");
         }
       }
 

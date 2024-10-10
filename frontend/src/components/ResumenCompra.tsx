@@ -300,8 +300,8 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       {/* Popup de Entrega */}
       {showPopup && (
         <EntregaPopup
-          direccion={`${direccion.calle ?? ''} ${direccion.numeroExterior ?? ''}${direccion.numeroInterior ? `, ${direccion.numeroInterior}` : ''}, ${direccion.distrito ?? ''}, ${direccion.ciudad?.nombre ?? ''}`.trim().replace(/,\s*$/, '')}
-          nombre= {`${usuario.nombre} ${usuario.apellido}` }
+        direccion={`${direccion.calle ?? ''}${direccion.calle ? ' ' : ''}${direccion.numeroExterior ?? ''}${direccion.numeroInterior ? `, ${direccion.numeroInterior}` : ''}${direccion.distrito ? `, ${direccion.distrito}` : ''}${direccion.ciudad?.nombre ? `, ${direccion.ciudad.nombre}` : ''}`.trim().replace(/,\s*$/, '')}
+          nombre= {`${usuario.nombre}` }
           detalles = {detalles}
           subtotal={total}
           metodoPago="Pago en Efectivo"
