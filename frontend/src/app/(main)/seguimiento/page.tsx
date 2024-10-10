@@ -85,7 +85,7 @@ const TrackingPage: React.FC = () => {
     const [codigo, setCodigo] = React.useState<string | null>(search.get('codigo'));
     const [loading, setLoading] = React.useState<boolean>(true);
     const [driverPosition, setDriverPosition] = React.useState<[number, number]>([-6.476, -76.361]);
-    const[enRuta, setEnRuta] = React.useState<string>("");
+    const[enRuta, setEnRuta] = React.useState<string>("espera");
     const mapRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
