@@ -39,7 +39,7 @@ const MotorizadosPage: React.FC = () => {
         const data = await response.data;
         console.log("Motorizados fetched:", data);
 
-        const motorizadosData: Motorizado[] = data.motorizadoes;
+        const motorizadosData: Motorizado[] = data.motorizados;
         motorizados.current = motorizadosData;
         console.log("Motorizados:", motorizados.current);
         setIsLoading(false);

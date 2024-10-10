@@ -57,7 +57,11 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         onChange={() => {}}
         disabled={!isEditing}
         value={motorizado.current.ciudad?.nombre || ""}
-        options={[]}
+        options={[
+          { label: "Jaén", value: "Jaén" },
+          { label: "Moyobamba", value: "Moyobamba" },
+          { label: "Tarapoto", value: "Tarapoto" },
+        ]}
       />
       <h5>Información del conductor</h5>
 

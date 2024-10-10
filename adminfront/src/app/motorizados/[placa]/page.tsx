@@ -99,8 +99,11 @@ const MotorizadoPage: React.FC<MotorizadoPageProps> = ({
         motorizado.current = motorizadoData;
         console.log("Motorizado:", motorizado.current);
 
-        const responseInventario = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}inventarioMotorizado/${motorizado.current.id}`
+        const motorizadoId = { id_motorizado: motorizado.current.id };
+
+        const responseInventario = await axios.post(
+          `${process.env.NEXT_PUBLIC_BASE_URL}inventarioMotorizado/motorizado`,
+          motorizadoId
         );
         if (!responseInventario) {
           throw new Error("Failed to fetch inventario");
@@ -110,11 +113,11 @@ const MotorizadoPage: React.FC<MotorizadoPageProps> = ({
         console.log("Inventario fetched:", dataInventario);
 
         const inventarioData: InventarioMotorizado[] =
-          dataInventario.inventario;
+          dataInventario.inventarios;
         inventario.current = inventarioData;
         console.log("Inventario:", inventario.current);
 
-        copyInventario.current = { ...inventario.current };
+        copyInventario.current = JSON.parse(JSON.stringify(inventario.current));
 
         const edit = searchParams.get("edit");
         if (edit === "true") {
@@ -147,7 +150,25 @@ const MotorizadoPage: React.FC<MotorizadoPageProps> = ({
   }, []);
 
   const handleCancel = () => {
-    // copyInventario.current = { ...inventario.current };
+    // get the original stock values from inventario, just for the ones that are in both inventarios
+    copyInventario.current.forEach((copyItem) => {
+      const originalItem = inventario.current.find(
+        (item) => item.producto.id === copyItem.producto.id
+      );
+      if (originalItem) {
+        copyItem.stock = originalItem.stock;
+      }
+    });
+
+    const timeout = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+    const fetchData = async () => {
+      setIsLoading(true);
+      await timeout(100);
+      setIsLoading(false);
+    };
+    fetchData();
+
     setIsEditing(false);
     // router.back();
   };

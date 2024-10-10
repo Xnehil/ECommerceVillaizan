@@ -36,24 +36,28 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
         );
         const data = await response.data;
         console.log("Products fetched:", data);
-        
+
         const productsData: Producto[] = data.productos;
         console.log("Products:", productsData);
 
-        // check if any product is not in inventario
-        if (inventario) {
-          inventario.current = productsData.map(
-            (producto) =>
-              ({
-                producto: producto,
-                stock: 0,
-                stockMinimo: 0,
-                esMerma: false,
-                motorizado: motorizado.current,
-              } as InventarioMotorizado)
+        console.log("Fetching inventario");
+        console.log("inventario.current", inventario.current);  
+
+        // check if any product is not in inventario, add it
+        productsData.forEach((product) => {
+          const found = inventario.current.find(
+            (element) => element.producto.id === product.id
           );
-          console.log("Inventario:", inventario.current);
-        }
+          if (!found) {
+            inventario.current.push({
+              producto: product,
+              stock: 0,
+              stockMinimo: 0,
+              esMerma: false,
+              motorizado: motorizado.current,
+            } as InventarioMotorizado);
+          }
+        });
 
         setIsLoading(false);
 

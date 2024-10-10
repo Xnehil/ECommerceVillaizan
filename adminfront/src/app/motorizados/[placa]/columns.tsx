@@ -90,7 +90,6 @@ export const columnsEdit: ColumnDef<InventarioMotorizado>[] = [
           setStock("");
           row.original.stock = 0;
         }
-        console.log(row);
       };
 
       return (
