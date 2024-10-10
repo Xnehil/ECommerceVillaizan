@@ -1,13 +1,97 @@
-import React from 'react';
+import { Pedido } from "types/PaquetePedido";
+import { enrichLineItems, getOrSetCart } from "@modules/cart/actions";
+import React, { useEffect, useState } from 'react';
+import Summary2 from "@modules/cart/templates/summary2";
+import axios from 'axios';
 
 interface StepDireccionProps {
   setStep: (step: string) => void;
 }
 
 const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
+  const [carritoState, setCarritoState] = useState<Pedido | null>(null);
+  const [calle, setCalle] = useState("");
+  const [numeroExterior, setNumeroExterior] = useState("");
+  const [numeroInterior, setNumeroInterior] = useState("");
+  const [ciudad, setCiudad] = useState("");
+  const [referencia, setReferencia] = useState("");
+  const [distrito, setDistrito] = useState("");
+  const [telefono, setTelefono] = useState('');
+  const [error, setError] = useState('');
+
+  const fetchCart = async () => {
+    try {
+      const respuesta = await getOrSetCart();
+      let cart: Pedido = respuesta?.cart;
+  
+      if (!cart) {
+        console.error('No se obtuvo un carrito válido.');
+        return;
+      }
+  
+      const enrichedItems = await enrichLineItems(cart.detalles);
+      cart.detalles = enrichedItems;
+  
+      setCarritoState(cart);
+    } catch (error) {
+      console.error('Error al obtener el carrito:', error);
+    }
+  };
+
+  const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d*$/.test(value)) {
+      setTelefono(value);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (telefono.length !== 9) {
+      setError('Debe ingresar un número de teléfono de 9 dígitos');
+      return;
+    }
+    setError('');
+    const data = {
+      calle,
+      numeroExterior,
+      numeroInterior,
+      distrito,
+      codigoPostal: null,
+      referencia,
+      ciudad: {
+        value: ciudad,
+      },
+      ubicacion: {
+        latitud: "null",
+        longitud: "null",
+        direcciones: [
+          { value: "null" },
+          { value: "null" },
+        ],
+      },
+    };
+
+    try {
+      const response = await axios.post('http://localhost:9000/admin/direccion', data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log('Respuesta del servidor:', response.data);
+      setStep("pago"); // Avanzar al siguiente paso si es exitoso
+    } catch (error) {
+      console.error('Error al enviar la dirección:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+
   return (
     <div className="content-container mx-auto py-8">
-      <button className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800">
+      <button className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800" onClick={() => setStep('previous')}>
         <img src="/images/back.png" alt="Volver" className="h-8" /> Volver
       </button>
 
@@ -15,7 +99,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Formulario de datos personales (ocupa 2 columnas) */}
-        <form className="grid grid-cols-1 gap-6 lg:col-span-2">
+        <form className="grid grid-cols-1 gap-6 lg:col-span-2" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
           {/* Nombre completo con ícono */}
           <div className="flex items-center gap-3">
             <img src="/images/servicio-al-cliente.png" alt="Nombre completo" className="h-14" />
@@ -58,10 +142,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 <input
                   type="text"
                   id="ciudad"
+                  value={ciudad}
+                  onChange={(e) => setCiudad(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="Lima"
                 />
-                {/* Botón seleccionar mapa fuera del campo */}
                 <button className="px-4 py-2 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2">
                   <img src="/images/mapa.png" alt="Mapa" className="h-8" />
                   Selecciona en el mapa
@@ -69,6 +154,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               </div>
             </div>
           </div>
+          
           {/* Calle y número */}
           <div className="flex items-center gap-3">
             <div className="w-full grid grid-cols-2 gap-2">
@@ -79,6 +165,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 <input
                   type="text"
                   id="direccion"
+                  value={calle}
+                  onChange={(e) => setCalle(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="Calle Falsa 123"
                 />
@@ -90,6 +178,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 <input
                   type="text"
                   id="numero"
+                  value={numeroInterior}
+                  onChange={(e) => setNumeroInterior(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="10"
                 />
@@ -107,6 +197,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               <input
                 type="text"
                 id="referencia"
+                value={referencia}
+                onChange={(e) => setReferencia(e.target.value)}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="Cerca del parque"
               />
@@ -120,34 +212,26 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               <label htmlFor="telefono" className="block text-lg font-medium text-gray-700">
                 Teléfono <span className="text-red-500">*</span>
               </label>
+              {error && <p className="text-red-500">{error}</p>}
               <input
                 type="text"
                 id="telefono"
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="987654321"
+                value={telefono}
+                onChange={handleTelefonoChange}
               />
             </div>
           </div>
         </form>
 
         {/* Total Carrito (ocupa 1 columna) */}
-        <div className="mt-8 p-4 border rounded-lg bg-[#FAF3E0] max-w-xs self-start">
-          <h2 className="text-xl font-bold mb-2">Total Carrito</h2>
-          <div className="flex justify-between text-lg">
-            <span className="text-gray-700">Subtotal <i className="fas fa-info-circle text-sm text-gray-400"></i></span> 
-            <span className="text-gray-700">S/. 56.00</span>
-          </div>
-          <div className="flex justify-between text-lg">
-            <span className="text-gray-700">Envío</span> 
-            <span className="text-gray-700">S/. 0.00</span>
-          </div>
-          <div className="flex justify-between text-lg font-bold mt-2">
-            <span className="text-gray-900">Total</span> 
-            <span className="text-gray-900">S/. 56.00</span>
-          </div>
-          <button className="w-full mt-4 px-4 py-2 bg-white border border-black rounded-md text-lg font-bold text-black hover:bg-gray-100">
-            Proceeder a Pagar
-          </button>
+        <div className="bg-white py-6">
+          {carritoState ? (
+            <Summary2 carrito={carritoState} handleSubmit={handleSubmit} />
+          ) : (
+            <p>Cargando carrito...</p>
+          )}
         </div>
       </div>
     </div>

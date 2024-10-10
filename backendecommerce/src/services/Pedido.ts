@@ -5,15 +5,20 @@ import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
 import { ubicacionesDelivery } from "../loaders/websocketLoader";
 import MotorizadoRepository from "@repositories/Motorizado";
+import { Motorizado } from "@models/Motorizado";
+import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
+import { InventarioMotorizado } from "@models/InventarioMotorizado";
 
 class PedidoService extends TransactionBaseService {
     protected pedidoRepository_: typeof pedidoRepository;
     protected motorizadoRepository_: typeof MotorizadoRepository;
+    protected inventarioMotorizadoRepository_: typeof InventarioMotorizadoRepository;
 
     constructor(container) {
         super(container);
         this.pedidoRepository_ = container.pedidoRepository;
         this.motorizadoRepository_ = container.motorizadoRepository;
+        this.inventarioMotorizadoRepository_ = container.inventariomotorizadoRepository;
     }
 
     getMessage() {
@@ -87,6 +92,36 @@ class PedidoService extends TransactionBaseService {
         });
     }
 
+    async checkPedido(pedido: Pedido, motorizado: Motorizado): Promise<boolean> {
+        const invetarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);
+        
+        const inventarios: InventarioMotorizado[] = await invetarioMotorizadoRepo.findByMotorizadoId(motorizado.id);
+        
+        // Iterate each pedido detail and check if the motorizado has the product
+        for (const detalle of pedido.detalles) {
+            const inventario = inventarios.find((inv) => inv.producto.id === detalle.producto.id);
+            if (!inventario || inventario.stock < detalle.cantidad) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    async reduceStock(pedido: Pedido, motorizado: Motorizado): Promise<void> {
+        const invetarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);
+        
+        const inventarios: InventarioMotorizado[] = await invetarioMotorizadoRepo.findByMotorizadoId(motorizado.id);
+        
+        // Iterate each pedido detail and reduce the stock
+        for (const detalle of pedido.detalles) {
+            const inventario = inventarios.find((inv) => inv.producto.id === detalle.producto.id);
+            if (inventario) {
+                inventario.stock -= detalle.cantidad;
+                await invetarioMotorizadoRepo.save(inventario);
+            }
+        }
+    }
+
     async actualizar(
         id: string,
         data: Omit<Partial<Pedido>, "id">,
@@ -94,29 +129,41 @@ class PedidoService extends TransactionBaseService {
     ): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
-            const pedido = await this.recuperar(id);
+            const relations = asignarRepartidor ? ["motorizado", "direccion"] : [];
+            const pedido = await this.recuperarConDetalle(id, { relations });
 
+            //log ubicacionesDelivery
+            console.log(ubicacionesDelivery);
+    
             if (asignarRepartidor) {
                 const motorizadoRepo = manager.withRepository(this.motorizadoRepository_);
-                // console.log("Ubicaciones disponibles:", ubicacionesDelivery);
-                if(ubicacionesDelivery.size > 0){
-                    // console.log("Motorizados disponibles:", ubicacionesDelivery);
-                    const motorizadoId = ubicacionesDelivery.keys().next().value;
-                    // console.log("Motorizado a buscar:", motorizadoId);
-                    const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
-                    // console.log("Motorizado asignado:", dataMotorizado);
-                    if(dataMotorizado){
-                        data.motorizado = dataMotorizado;
-                        // Last 3 digits of id + last 3 chars of dataMotorizado.id
-                        data.codigoSeguimiento = id.slice(-3) + dataMotorizado.id.slice(-3);
-                    } else{
-                        throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
+    
+                if (ubicacionesDelivery.size > 0) {
+                    let motorizadoAsignado = null;
+    
+                    for (const motorizadoId of ubicacionesDelivery.keys()) {
+                        const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
+                        if (dataMotorizado) {
+                            const hasStock = await this.checkPedido(pedido, dataMotorizado);
+                            if (hasStock) {
+                                motorizadoAsignado = dataMotorizado;
+                                break;
+                            }
+                        }
                     }
-                } else{
+    
+                    if (motorizadoAsignado) {
+                        data.motorizado = motorizadoAsignado;
+                        this.reduceStock(pedido, motorizadoAsignado);
+                        data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3);
+                    } else {
+                        throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
+                    }
+                } else {
                     throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles");
                 }
             }
-
+    
             Object.assign(pedido, data);
             return await pedidoRepo.save(pedido);
         });

@@ -5,7 +5,6 @@ import { enrichLineItems, getOrSetCart, retrieveCart } from "@modules/cart/actio
 import CartDropdown from "@modules/layout/components/cart-dropdown";
 import { GetServerSideProps } from "next";
 import { DetallePedido, Pedido } from "types/PaquetePedido"
-/*import cookie from 'cookie';*/
 import { useEffect, useState } from "react";
 import Spinner from "@modules/common/icons/spinner";
 
