@@ -151,7 +151,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
             <img src="/images/servicio-al-cliente.png" alt="Nombre completo" className="h-14" />
             <div className="w-full">
               <label htmlFor="nombre" className="block text-lg font-medium text-gray-700">
-                Nombre Completo <span className="text-red-500">*</span>
+                Nombre  <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -167,7 +167,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
           <div className="flex items-center gap-3">
             <div className="w-full">
               <label htmlFor="dni" className="block text-lg font-medium text-gray-700">
-                DNI/RUC <span className="text-red-500">*</span>
+                DNI <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -207,7 +207,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
             <div className="w-full grid grid-cols-2 gap-2">
               <div>
                 <label htmlFor="direccion" className="block text-lg font-medium text-gray-700">
-                  Calle/Dirección <span className="text-red-500">*</span>
+                  Dirección <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -215,7 +215,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   value={calle}
                   onChange={(e) => setCalle(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="Calle Falsa 123"
+                  placeholder="Calle Malvinas 123"
                 />
               </div>
               <div>
@@ -228,7 +228,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   value={numeroInterior}
                   onChange={(e) => setNumeroInterior(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="10"
+                  placeholder="No rellenar si no aplica"
                 />
               </div>
             </div>
@@ -246,7 +246,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 value={referencia}
                 onChange={(e) => setReferencia(e.target.value)}
                 className="mt-1 block w-full p-2 border rounded-md"
-                placeholder="Cerca del parque"
+                placeholder="Esquina del parque Tres Marías"
               />
             </div>
           </div>
