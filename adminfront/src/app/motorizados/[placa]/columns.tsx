@@ -90,6 +90,7 @@ export const columnsEdit: ColumnDef<InventarioMotorizado>[] = [
           setStock("");
           row.original.stock = 0;
         }
+        console.log(row);
       };
 
       return (
@@ -98,6 +99,12 @@ export const columnsEdit: ColumnDef<InventarioMotorizado>[] = [
           value={stock}
           onChange={handleStockChange}
           className="w-full p-2 border rounded"
+          onBlur={() => {
+            if (stock === "") {
+              setStock("0");
+              row.original.stock = 0;
+            }
+          }}
         />
       );
     },

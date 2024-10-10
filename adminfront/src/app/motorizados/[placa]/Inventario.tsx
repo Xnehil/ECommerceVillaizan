@@ -11,19 +11,22 @@ import { columns, columnsEdit } from "./columns";
 import Loading from "@/components/Loading";
 
 interface InformacionAdicionalProps {
+    motorizado: MutableRefObject<Motorizado>;
   inventario: MutableRefObject<InventarioMotorizado[]>;
   isEditing: boolean;
 }
 
 const Inventario: React.FC<InformacionAdicionalProps> = ({
+    motorizado,
   inventario,
   isEditing,
 }) => {
   const a = useRef(0);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { toast } = useToast();
   useEffect(() => {
     const fetchInventario = async () => {
-      setIsLoading(true);
       try {
         console.log(a.current);
         console.log("Fetching products");
@@ -46,16 +49,23 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
                 stock: 0,
                 stockMinimo: 0,
                 esMerma: false,
+                motorizado: motorizado.current,
               } as InventarioMotorizado)
           );
           console.log("Inventario:", inventario.current);
         }
 
         setIsLoading(false);
-        
+
         a.current = a.current + 1;
       } catch (error) {
         console.error("Failed to fetch inventario", error);
+        toast({
+          title: "Error",
+          description:
+            "Error al obtener la información de productos. Por favor, intente de nuevo.",
+        });
+        setIsLoading(false);
       }
     };
     if (a.current === 0) {

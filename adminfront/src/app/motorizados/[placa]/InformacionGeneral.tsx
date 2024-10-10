@@ -11,7 +11,7 @@ import SelectWithLabel from "@/components/forms/selectWithLabel";
 import { Label } from "@/components/ui/label";
 
 interface InformacionGeneralProps {
-  motorizado?: MutableRefObject<Motorizado>;
+  motorizado: MutableRefObject<Motorizado>;
   isEditing?: boolean;
 }
 
@@ -50,13 +50,13 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         required={isEditing ? true : false}
         // onChange={handlePriceChange}
         disabled={!isEditing}
-        // value={precioEcommerce}
+        value={motorizado.current.placa}
       />
       <SelectWithLabel
         label="Ciudad"
         onChange={() => {}}
         disabled={!isEditing}
-        value={""}
+        value={motorizado.current.ciudad?.nombre || ""}
         options={[]}
       />
       <h5>Información del conductor</h5>
@@ -66,14 +66,14 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         placeholder="Ej. Jose"
         // onChange={handleDescriptionChange}
         disabled={!isEditing}
-        // value={descripcion}
+        value={motorizado.current.usuario?.nombre || ""}
       />
       <InputWithLabel
         label="Apellidos"
         placeholder="Ej. Pineda"
         // onChange={handleDescriptionChange}
         disabled={!isEditing}
-        // value={descripcion}
+        value={motorizado.current.usuario?.apellido || ""}
       />
       <div className="grid grid-cols-2 gap-4">
         <Label>Estado:</Label>
@@ -81,7 +81,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
           id="estado"
           label="Disponible"
           disabled={true}
-          checked={true}
+          checked={motorizado.current.disponible}
         />
       </div>
       {/* {isEditing && (
