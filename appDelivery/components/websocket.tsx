@@ -1,92 +1,57 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, Button, TextInput } from 'react-native';
-import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
+import useWebSocket from 'react-use-websocket';
 
-const WebSocketComponent: React.FC = () => {
-  const [messageHistory, setMessageHistory] = useState<string[]>([]);
-  const [inputMessage, setInputMessage] = useState<string>('');
-  const [pedidoId, setPedidoId] = useState<string>(''); // Campo para ID del pedido
-  const [latitud, setLatitud] = useState<string>(''); // Campo para latitud
-  const [longitud, setLongitud] = useState<string>(''); // Campo para longitud
+interface WebSocketComponentProps {
+  idMotorizado: string; // ID del motorizado para la URL del WebSocket
+}
 
-  // Establece la conexión WebSocket al servidor
-  const { sendMessage, lastMessage, readyState } = useWebSocket('ws://localhost:9001/ws?rol=delivery&id=mot_01J97FH8NJWHKNFX26KZ048KTX ', {
-    onOpen: () => console.log('Conexión establecida con el servidor WebSocket'),
-    onMessage: (event: WebSocketEventMap['message']) => {
-      setMessageHistory((prev) => [...prev, event.data]); // Agrega el nuevo mensaje al historial de mensajes
-    },
-    onError: (event: WebSocketEventMap['error']) => console.error('Error de WebSocket', event),
+export interface WebSocketComponentRef {
+  sendUbicacion: (lat: number, lng: number) => void;
+  sendPedido: (pedidoId: string) => void;
+}
+
+// Usamos `forwardRef` para permitir que el componente exponga funciones a su padre
+const WebSocketComponent = forwardRef<WebSocketComponentRef, WebSocketComponentProps>(({ idMotorizado }, ref) => {
+  // Establece la conexión WebSocket con el ID del motorizado en la URL
+  const { sendMessage } = useWebSocket(`ws://localhost:9001/ws?rol=delivery&id=${idMotorizado}`, {
+    onOpen: () => console.log('Conexión WebSocket establecida'),
+    onError: (event) => console.error('Error en la conexión WebSocket', event),
+    shouldReconnect: () => true, // Reconexión automática
   });
 
-  // Función para enviar el mensaje al servidor WebSocket
-  const handleSendMessage = useCallback(() => {
-    if ( latitud && longitud) {
-      const message = {
-        type: "ubicacion",
-        data: {
-          lat: parseFloat(latitud), 
-          lng: parseFloat(longitud)
-        }
-      };
-      sendMessage(JSON.stringify(message)); // Envía el mensaje al servidor WebSocket
-      setInputMessage(''); // Limpia el campo de entrada
-      setPedidoId(''); // Limpia el campo de ID del pedido
-      setLatitud(''); // Limpia el campo de latitud
-      setLongitud(''); // Limpia el campo de longitud
-    }
-  }, [pedidoId, latitud, longitud, sendMessage]);
+  // Función para enviar la ubicación
+  const sendUbicacion = useCallback((lat: number, lng: number) => {
+    const ubicacionMessage = {
+      type: "ubicacion",
+      data: {
+        lat: lat,
+        lng: lng,
+      },
+    };
+    sendMessage(JSON.stringify(ubicacionMessage)); // Envía el mensaje de ubicación
+    console.log("Ubicación enviada:", ubicacionMessage);
+  }, [sendMessage]);
 
-  // Efecto para manejar la llegada de un nuevo mensaje
-  useEffect(() => {
-    if (lastMessage !== null) {
-      setMessageHistory((prev) => [...prev, lastMessage.data]);
-    }
-  }, [lastMessage]);
+  // Función para enviar el ID del pedido
+  const sendPedido = useCallback((pedidoId: string) => {
+    const pedidoMessage = {
+      type: "ubicacion",
+      data: {
+        pedidoId: pedidoId,
+      },
+    };
+    sendMessage(JSON.stringify(pedidoMessage)); // Envía el mensaje del pedido
+    console.log("Pedido enviado:", pedidoMessage);
+  }, [sendMessage]);
 
-  // Mostrar el estado de la conexión
-  const connectionStatus: string = {
-    [ReadyState.CONNECTING]: 'Conectando',
-    [ReadyState.OPEN]: 'Conectado',
-    [ReadyState.CLOSING]: 'Cerrando',
-    [ReadyState.CLOSED]: 'Desconectado',
-    [ReadyState.UNINSTANTIATED]: 'No instanciado',
-  }[readyState];
+  // Exponemos las funciones al componente padre a través de `ref`
+  useImperativeHandle(ref, () => ({
+    sendUbicacion,
+    sendPedido,
+  }));
 
-  return (
-    <View style={{ padding: 20 }}>
-      <Text>Estado de la conexión: {connectionStatus}</Text>
-
-      <TextInput
-        placeholder="ID del Pedido"
-        value={pedidoId}
-        onChangeText={setPedidoId}
-        style={{ borderWidth: 1, marginBottom: 10, padding: 10 }}
-      />
-
-      <TextInput
-        placeholder="Latitud"
-        value={latitud}
-        onChangeText={setLatitud}
-        keyboardType="numeric" // Solo permite números
-        style={{ borderWidth: 1, marginBottom: 10, padding: 10 }}
-      />
-
-      <TextInput
-        placeholder="Longitud"
-        value={longitud}
-        onChangeText={setLongitud}
-        keyboardType="numeric" // Solo permite números
-        style={{ borderWidth: 1, marginBottom: 10, padding: 10 }}
-      />
-
-      <Button title="Enviar ubicación" onPress={handleSendMessage} disabled={readyState !== ReadyState.OPEN} />
-
-      <Text style={{ marginTop: 20 }}>Historial de mensajes:</Text>
-      {messageHistory.map((message, index) => (
-        <Text key={index}>{message}</Text>
-      ))}
-    </View>
-  );
-};
+  // Este componente no renderiza nada visual
+  return null;
+});
 
 export default WebSocketComponent;

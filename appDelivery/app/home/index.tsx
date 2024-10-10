@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -12,13 +12,13 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Link } from "@react-navigation/native";
 import axios from "axios";
 import {
+  Motorizado,
   MotorizadoResponse,
   Usuario,
   UsuarioResponse,
 } from "@/interfaces/interfaces";
 import { useRouter } from "expo-router";
 import { getUserData } from "@/functions/storage";
-import WebSocketComponent from "@/components/websocket";
 
 function Icon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -43,7 +43,9 @@ export default function TabOneScreen() {
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
   const [data_usuario, setDataUsuario] = useState<Usuario | null>(null);
+  const [motorizado,setMotorizado] = useState<Motorizado | null>();
 
   // Obtén los datos del usuario
   const getData = async (): Promise<Usuario | null> => {
@@ -64,14 +66,18 @@ export default function TabOneScreen() {
     try {
       const userData = await getData();
       if (userData?.id) {
-        const response = await axios.get<MotorizadoResponse>(
-          `http://localhost:9000/admin/motorizado/usuario/${userData.id}`
+        const response = await axios.post<MotorizadoResponse>(
+          'http://localhost:9000/admin/motorizado/usuario',
+          {
+            id_usuario: userData?.id
+          }
         );
         const motorizado = response.data.motorizado;
         console.log(motorizado);
+        setMotorizado(motorizado)
         const usuario = motorizado.usuario;
         setDataUsuario(usuario);
-        setIsConnected(usuario?.estaActivo ?? false);
+        setIsConnected(motorizado?.disponible ?? false);
         console.log("Usuario obtenido con éxito:", usuario);
       } else {
         console.error("No se encontró el ID de usuario");
@@ -90,12 +96,12 @@ export default function TabOneScreen() {
   // Función para actualizar el estado 'estaActivo' en la base de datos
   const actualizarEstadoMotorizado = async (nuevoEstado: boolean) => {
     console.log("Estado " + nuevoEstado);
-    console.log("Data usuario: " + data_usuario?.nombre);
-    if (data_usuario?.id) {
+    console.log("Data motorizado: " + motorizado);
+    if (motorizado?.id) {
       try {
         const response = await axios.put(
-          `http://localhost:9000/admin/usuario/${data_usuario.id}`,
-          { estaActivo: nuevoEstado }
+          `http://localhost:9000/admin/motorizado/${motorizado.id}`,
+          { disponible: nuevoEstado }
         );
         console.log(response.data);
         console.log("Estado del motorizado actualizado con éxito.");
@@ -114,7 +120,6 @@ export default function TabOneScreen() {
 
   return (
     <View style={styles.container}>
-      <WebSocketComponent />
       <View style={styles.header}>
         <Icon
           name="menu"
@@ -193,6 +198,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#f7f7f7", // Fondo claro
+  },
+  button: {
+    backgroundColor: "#aa0000",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   cardContent: {
     color: "#fff",
