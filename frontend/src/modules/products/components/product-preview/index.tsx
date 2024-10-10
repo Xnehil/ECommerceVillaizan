@@ -34,7 +34,7 @@ export default function ProductPreview({
     setError(null)
 
     try {
-      let nuevoDetalle = null
+      let nuevoDetalle: DetallePedido | null = null
 
       if (detalleAnterior) {
         // Actualizar la cantidad si ya existe en el carrito
@@ -59,7 +59,10 @@ export default function ProductPreview({
         })
         if (response && typeof response === "object" && "detallePedido" in response) {
           nuevoDetalle = response.detallePedido
-          nuevoDetalle.producto = productPreview
+          if (nuevoDetalle)
+            {
+               nuevoDetalle.producto = productPreview
+            }
         } else {
           throw new Error("Error al agregar el producto al carrito.")
         }
