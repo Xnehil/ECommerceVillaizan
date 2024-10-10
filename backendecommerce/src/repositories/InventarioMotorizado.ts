@@ -24,6 +24,7 @@ export const InventarioMotorizadoRepository = dataSource
         },
         relations: ['motorizado', 'producto'],
       });
+      
     },
   });
 

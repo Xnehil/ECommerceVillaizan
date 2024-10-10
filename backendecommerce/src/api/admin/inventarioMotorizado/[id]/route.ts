@@ -6,7 +6,13 @@ import type {
 import  InventarioMotorizadoService  from "../../../../services/InventarioMotorizado"
 import { InventarioMotorizado } from "src/models/InventarioMotorizado";
   
-  
+/**
+ * @swagger
+ * tags:
+ *   name: InventarioMotorizado
+ *   description: API para la gestión de inventarioMotorizadoes
+ */  
+
   /**
  * @swagger
  * /inventarioMotorizado/{id}:
