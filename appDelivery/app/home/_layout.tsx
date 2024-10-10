@@ -8,78 +8,74 @@ import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import StyledIcon from "@/components/StyledIcon";
 import * as Location from "expo-location";
-import { View, Text } from "react-native";
-import useWebSocket, { ReadyState } from 'react-use-websocket';
-import WebSocketComponent, { WebSocketComponentRef } from "@/components/websocket";
+import { View } from "react-native";
+import WebSocketComponent, {
+  WebSocketComponentRef,
+} from "@/components/websocket";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const wsRef = useRef<WebSocketComponentRef>(null); // Referencia al componente WebSocket
+  const wsRef = useRef<WebSocketComponentRef>(null);
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
 
-  // Función para enviar la ubicación usando WebSocket
   const enviarUbicacion = () => {
-    if (wsRef.current && location) {
-      const { latitude, longitude } = location;
-      wsRef.current.sendUbicacion(latitude, longitude); // Envía la ubicación por WebSocket
-      console.log("Ubicación enviada:", latitude, longitude);
+    const lat = location?.latitude;
+    const lng = location?.longitude;
+
+    if (lat !== undefined && lng !== undefined && wsRef.current) {
+      wsRef.current.sendUbicacion(lat, lng);
     } else {
-      console.log("No se pudo enviar la ubicación: WebSocket no está listo o la ubicación es nula.");
+      console.log("No se pudo enviar la ubicación o el WebSocket no está listo");
     }
   };
 
-  // Obtener y actualizar la ubicación cada 10 segundos
   useEffect(() => {
-    let isMounted = true;
-
     const getLocation = async () => {
       try {
-        const { status } = await Location.requestForegroundPermissionsAsync();
+        let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           console.log("Permiso de ubicación denegado");
           return;
         }
 
-        const locationAsync = await Location.getCurrentPositionAsync({});
-        if (isMounted) {
-          setLocation({
-            latitude: locationAsync.coords.latitude,
-            longitude: locationAsync.coords.longitude,
-          });
-        }
+        let location_async = await Location.getCurrentPositionAsync({});
+        setLocation({
+          latitude: location_async.coords.latitude,
+          longitude: location_async.coords.longitude,
+        });
       } catch (error) {
-        console.error("Error al obtener la ubicación:", error);
+        console.log("Error al obtener la ubicación:", error);
       }
     };
 
-    // Llamar la primera vez
+    // Obtener la ubicación al cargar el componente
     getLocation();
-    // Actualizar ubicación cada 10 segundos
-    const intervalId = setInterval(() => {
-      getLocation();
-    }, 10000);
+
+    // Actualizar la ubicación cada 10 segundos
+    const locationInterval = setInterval(getLocation, 10000);
 
     return () => {
-      isMounted = false;
-      clearInterval(intervalId); // Limpiar el intervalo al desmontar el componente
+      clearInterval(locationInterval);
     };
   }, []);
 
-  // Efecto para enviar la ubicación cuando cambia
   useEffect(() => {
-    if (location) {
-      enviarUbicacion();
-    }
+    // Enviar la ubicación cada 10 segundos si está disponible
+    const sendInterval = setInterval(enviarUbicacion, 10000);
+
+    return () => {
+      clearInterval(sendInterval);
+    };
   }, [location]);
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: false,
+        headerShown: useClientOnlyValue(false, true),
         tabBarStyle: {
           height: 70,
           paddingBottom: 10, // Espaciado inferior
@@ -95,10 +91,14 @@ export default function TabLayout() {
               <Link href="/">
                 <StyledIcon
                   name="sign-out"
-                  color={'black'}
+                  color={"black"}
                   IconComponent={FontAwesome}
                 />
               </Link>
+              <WebSocketComponent
+                idMotorizado="mot_01J97FH8NJWHKNFX26KZ048KTX"
+                ref={wsRef}
+              />
             </View>
           ),
           tabBarIcon: ({ color }) => (
@@ -151,9 +151,6 @@ export default function TabLayout() {
           tabBarLabelPosition: "below-icon",
         }}
       />
-
-      {/* Incluye el WebSocketComponent, con su referencia wsRef */}
-      <WebSocketComponent idMotorizado="mot_01J97FH8NJWHKNFX26KZ048KTX" ref={wsRef} />
     </Tabs>
   );
 }
