@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -8,43 +8,68 @@ import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import StyledIcon from "@/components/StyledIcon";
 import * as Location from "expo-location";
-import { View, Text } from "react-native";
-import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { View } from "react-native";
+import WebSocketComponent, {
+  WebSocketComponentRef,
+} from "@/components/websocket";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const wsRef = useRef<WebSocketComponentRef>(null);
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
   } | null>(null);
-  
+
+  const enviarUbicacion = () => {
+    const lat = location?.latitude;
+    const lng = location?.longitude;
+
+    if (lat !== undefined && lng !== undefined && wsRef.current) {
+      wsRef.current.sendUbicacion(lat, lng);
+    } else {
+      console.log("No se pudo enviar la ubicación o el WebSocket no está listo");
+    }
+  };
+
   useEffect(() => {
-    let isMounted = true;
-
     const getLocation = async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permiso de ubicación denegado");
-        return;
-      }
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.log("Permiso de ubicación denegado");
+          return;
+        }
 
-      let location_async = await Location.getCurrentPositionAsync({});
-      if (isMounted) {
+        let location_async = await Location.getCurrentPositionAsync({});
         setLocation({
           latitude: location_async.coords.latitude,
           longitude: location_async.coords.longitude,
         });
+      } catch (error) {
+        console.log("Error al obtener la ubicación:", error);
       }
     };
 
+    // Obtener la ubicación al cargar el componente
     getLocation();
-    const intervalId = setInterval(getLocation, 10000);
+
+    // Actualizar la ubicación cada 10 segundos
+    const locationInterval = setInterval(getLocation, 10000);
 
     return () => {
-      isMounted = false;
-      clearInterval(intervalId);
+      clearInterval(locationInterval);
     };
   }, []);
+
+  useEffect(() => {
+    // Enviar la ubicación cada 10 segundos si está disponible
+    const sendInterval = setInterval(enviarUbicacion, 10000);
+
+    return () => {
+      clearInterval(sendInterval);
+    };
+  }, [location]);
 
   return (
     <Tabs
@@ -62,14 +87,18 @@ export default function TabLayout() {
         options={{
           title: "Inicio",
           headerRight: () => (
-            <View style={{padding:10}}>
+            <View style={{ padding: 10 }}>
               <Link href="/">
                 <StyledIcon
                   name="sign-out"
-                  color={'black'}
+                  color={"black"}
                   IconComponent={FontAwesome}
                 />
               </Link>
+              <WebSocketComponent
+                idMotorizado="mot_01J97FH8NJWHKNFX26KZ048KTX"
+                ref={wsRef}
+              />
             </View>
           ),
           tabBarIcon: ({ color }) => (

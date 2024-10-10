@@ -40,6 +40,10 @@ export interface Pedido {
   montoEfectivoPagar: string;
 }
 
+export interface PedidosResponse {
+  pedidos: Pedido[];
+}
+
 export interface Almacen {
   // Define the properties of Almacen here
 }
