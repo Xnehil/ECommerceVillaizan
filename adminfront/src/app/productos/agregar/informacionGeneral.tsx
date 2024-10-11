@@ -32,7 +32,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   const [previewSrc, setPreviewSrc] = useState(
     "https://placehold.co/150?text=Vista+previa"
   );
-  
+
   useEffect(() => {
     setPrecioEcommerce(producto.current.precioEcommerce?.toString() || "");
     setCodigo(producto.current.codigo || "");
@@ -109,10 +109,6 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
       reader.readAsDataURL(file);
     }
   };
-  console.log("Producto:", producto.current);
-  if (producto.current) {
-    console.log("URL de la imagen:", producto.current.urlImagen);
-  }
 
   return (
     <div className="info-side-container">
@@ -173,16 +169,16 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         />
       )}
       <>
-      <div className="mb-4">
-        <Label className="text-lg font-semibold mb-2">Vista previa</Label>
-        <div className="flex w-full justify-center items-center border rounded-lg shadow-md p-2 bg-gray-100">
+        <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+          {isEditing ? "Vista previa" : "Imagen"}
+        </Label>
+        <div className="flex w-full justify-center">
           <img
-            src="https://i.imgur.com/omGhh5B.png"
+            src={previewSrc}
             alt="Imagen de vista previa"
-            className="w-64 h-64 shadow-lg border-2 border-gray-300"
+            className="h-auto"
           />
         </div>
-      </div>
       </>
     </div>
   );
