@@ -182,20 +182,20 @@ export default function ProductPreview({
   }
 
   return (
-    <div className="relative group">
+    <div className="relative group bg-white shadow-md rounded-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
       {/* Thumbnail */}
       <Thumbnail
         thumbnail={productPreview.urlImagen}
         size="full"
         isFeatured={isFeatured}
       />
-
+  
       {/* Botón Agregar, Cantidad, y Remover */}
       {cantidadActual > 0 ? (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center">
           <button
             onClick={handleRemoveFromCart}
-            className="bg-red-500 text-white font-bold py-2 px-4 rounded-full shadow-lg"
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-colors duration-200"
           >
             -
           </button>
@@ -205,9 +205,9 @@ export default function ProductPreview({
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
-            className="bg-yellow-500 text-white font-bold py-2 px-4 rounded-full shadow-lg"
+            className={`bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-colors duration-200 ${isAdding ? "opacity-50" : ""}`}
           >
-            +
+            {isAdding ? "Añadiendo..." : "+"}
           </button>
         </div>
       ) : (
@@ -215,37 +215,53 @@ export default function ProductPreview({
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-yellow-500 text-white font-bold py-2 px-4 rounded"
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded shadow-lg"
           >
             {isAdding ? "Añadiendo..." : "Agregar"}
           </button>
         )
       )}
-
+  
       {/* Mensaje de error */}
-      {error && <div className="mt-2 text-red-500 text-sm">{error}</div>}
+      {error && (
+        <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2 flex items-center">
+          <span className="material-icons">error_outline</span>
+          <span className="ml-2">{error}</span>
+        </div>
+      )}
+  
+      {/* Stock limitado */}
       {!productPreview.inventarios[0].stock ? (
-        <div className="mt-2 text-red-500 text-sm">
+        <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2">
           Este producto no está disponible en tu ciudad
         </div>
       ) : (
-        productPreview.inventarios[0].stock <=
-          productPreview.inventarios[0].stockMinimo && (
-          <div className="mt-2 text-red-500 text-sm">
+        productPreview.inventarios[0].stock <= productPreview.inventarios[0].stockMinimo && (
+          <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2">
             Stock limitado: quedan pocas unidades disponibles en tu ciudad
           </div>
         )
       )}
-
+  
       {/* Información del producto */}
-      <div className="flex txt-compact-medium mt-4 justify-between">
-        <Text className="text-ui-fg-subtle" data-testid="product-title">
-          {productPreview.nombre}
-        </Text>
-        <div className="flex items-center gap-x-2">
-          {cheapestPrice && <span>{`S/. ${cheapestPrice}`}</span>}
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <Text
+            className="text-xl font-semibold text-gray-800 truncate"
+            data-testid="product-title"
+          >
+            {productPreview.nombre}
+          </Text>
+          <div className="flex items-center gap-x-2">
+            {cheapestPrice && (
+              <span className="text-lg font-bold text-yellow-600">
+                {`S/. ${cheapestPrice}`}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>
   )
+  
 }
