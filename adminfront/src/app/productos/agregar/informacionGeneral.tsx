@@ -18,6 +18,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   producto,
   isEditing,
 }) => {
+  console.log("Renderizando InformacionGeneral");
   const [precioEcommerce, setPrecioEcommerce] = useState(
     producto.current.precioEcommerce?.toString() || ""
   );
@@ -31,7 +32,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   const [previewSrc, setPreviewSrc] = useState(
     "https://placehold.co/150?text=Vista+previa"
   );
-
+  
   useEffect(() => {
     setPrecioEcommerce(producto.current.precioEcommerce?.toString() || "");
     setCodigo(producto.current.codigo || "");
@@ -108,6 +109,11 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
       reader.readAsDataURL(file);
     }
   };
+  console.log("Producto:", producto.current);
+  if (producto.current) {
+    console.log("URL de la imagen:", producto.current.urlImagen);
+  }
+
   return (
     <div className="info-side-container">
       <h5>Información general</h5>
@@ -118,6 +124,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         onChange={handleNameChange}
         disabled={!isEditing}
       /> */}
+
       <div className="w-full max-w-sm flex space-x-2">
         <div className="flex-1">
           <InputWithLabel
@@ -166,16 +173,16 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         />
       )}
       <>
-        <Label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-          {isEditing ? "Vista previa" : "Imagen"}
-        </Label>
-        <div className="flex w-full justify-center">
+      <div className="mb-4">
+        <Label className="text-lg font-semibold mb-2">Vista previa</Label>
+        <div className="flex w-full justify-center items-center border rounded-lg shadow-md p-2 bg-gray-100">
           <img
-            src={previewSrc}
+            src="https://i.imgur.com/omGhh5B.png"
             alt="Imagen de vista previa"
-            className="h-auto"
+            className="w-64 h-64 shadow-lg border-2 border-gray-300"
           />
         </div>
+      </div>
       </>
     </div>
   );
