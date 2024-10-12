@@ -4,44 +4,45 @@ import { CityCookie } from "types/global"
 
 interface CiudadPopupProps {
   setCity: (city: CityCookie) => void
+  resetCarrito: () => void // Nuevo prop para resetear el carrito
 }
 
-const CiudadPopup: React.FC<CiudadPopupProps> = ({ setCity }) => {
+const CiudadPopup: React.FC<CiudadPopupProps> = ({ setCity, resetCarrito }) => {
   const router = useRouter()
+
+  const handleCityChange = (city: CityCookie) => {
+    setCity(city)
+    resetCarrito() // Reinicia el carrito al cambiar de ciudad
+  }
+
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
         <h2 style={{ textAlign: "center" }}>Selecciona tu ubicación</h2>
         <button
           style={styles.optionButton}
-          onClick={() => {
-            setCity({
-              id: "ciud_01J9PMCXF25RK303Q3AH3MXJ66",
-              nombre: "Tarapoto",
-            })
-          }}
+          onClick={() => handleCityChange({
+            id: "ciud_01J9PMCXF25RK303Q3AH3MXJ66",
+            nombre: "Tarapoto",
+          })}
         >
           Tarapoto
         </button>
         <button
           style={styles.optionButton}
-          onClick={() => {
-            setCity({
-              id: "ciud_01J9PMD3F020RD1H7XK5VJXFFR",
-              nombre: "Jaén",
-            })
-          }}
+          onClick={() => handleCityChange({
+            id: "ciud_01J9PMD3F020RD1H7XK5VJXFFR",
+            nombre: "Jaén",
+          })}
         >
           Jaén
         </button>
         <button
           style={styles.optionButton}
-          onClick={() => {
-            setCity({
-              id: "ciud_01J9PMCMWRYNTSEA2PKGZFG6J2",
-              nombre: "Moyobamba",
-            })
-          }}
+          onClick={() => handleCityChange({
+            id: "ciud_01J9PMCMWRYNTSEA2PKGZFG6J2",
+            nombre: "Moyobamba",
+          })}
         >
           Moyobamba
         </button>

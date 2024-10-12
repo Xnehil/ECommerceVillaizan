@@ -39,12 +39,17 @@ const StoreTemplate = ({
     }
   }, [city])
 
+  // Nueva función para reiniciar el carrito
+  const resetCarrito = () => {
+    setCarritoState(null) // Vacia el carrito
+  }
+
   return (
     <div
       className="flex flex-col small:flex-row small:items-start py-6 content-container"
       data-testid="category-container"
     >
-      {selectCityPopup && <CiudadPopup setCity={setCity} />}
+      {selectCityPopup && <CiudadPopup setCity={setCity} resetCarrito={resetCarrito} />} {/* Pasar resetCarrito */}
       {!selectCityPopup && (
         <div className="w-full">
           <div className="mb-8 text-2xl-semi">
@@ -59,8 +64,9 @@ const StoreTemplate = ({
           </div>
           {city && (
             <SelectCity setSelectCityPopup={setSelectCityPopup} city={city} />
-          )}     
-          {/* Move the CartButton below the filters */}
+          )}
+          
+          {/* Mueve el botón del carrito debajo de los filtros */}
           <Suspense fallback={<SkeletonProductGrid />}>
             <PaginatedProducts
               sortBy={sortBy || "created_at"}
@@ -71,7 +77,6 @@ const StoreTemplate = ({
               city={city}
             />
           </Suspense>
-
         </div>
       )}
     </div>
