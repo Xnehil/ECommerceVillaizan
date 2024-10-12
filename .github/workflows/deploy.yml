@@ -1,0 +1,63 @@
+# name: Deploy Applications
+
+# on:
+#   push:
+#     branches:
+#       - master  # Or your production branch
+
+# jobs:
+#   deploy-backend:
+#     name: Deploy Backend
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Set up SSH
+#         uses: webfactory/ssh-agent@v0.7.0
+#         with:
+#           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+#       - name: Deploy backend to EC2
+#         run: |
+#           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_BACKEND_HOST }} << 'EOF'
+#             cd ECommerceVillaizan/
+#             git pull origin master
+#             export $(cat .env | xargs)  # Adjust if using any other .env file
+            
+#             pm2 restart medusa
+#           EOF
+
+#   deploy-frontend:
+#     name: Deploy Frontends
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Set up SSH
+#         uses: webfactory/ssh-agent@v0.7.0
+#         with:
+#           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+#       - name: Deploy Ecommerce Frontend to EC2
+#         run: |
+#           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_FRONTEND_HOST }} << 'EOF'
+#             cd /path/to/frontend-ecommerce
+#             git pull origin main
+#             export $(cat .env.local | xargs)
+#             npm install
+#             npm run build
+#             pm2 restart ecommerce
+#           EOF
+
+#       - name: Deploy Admin Frontend to EC2
+#         run: |
+#           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_FRONTEND_HOST }} << 'EOF'
+#             cd /path/to/frontend-admin
+#             git pull origin main
+#             export $(cat .env.local | xargs)
+#             npm install
+#             npm run build
+#             pm2 restart admin
+#           EOF
