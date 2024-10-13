@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import Summary2 from "@modules/cart/templates/summary2"
 import axios from "axios"
 import { getCityCookie } from "@modules/store/actions"
+import GoogleMapModal from "@components/GoogleMapsModal"
 
 interface StepDireccionProps {
   setStep: (step: string) => void
@@ -23,6 +24,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [dniError, setDniError] = useState<string | null>(null)
   const [telefonoError, setTelefonoError] = useState<string | null>(null)
   const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
+
+  const [showMapModal, setShowMapModal] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState({ lat: "", lng: "" })
+
+  const handleMapSelect = (lat: number, lng: number) => {
+    setSelectedLocation({ lat: lat.toString(), lng: lng.toString() })
+    console.log("Selected Location:", { lat, lng })
+  }
 
   const fetchCart = async () => {
     try {
@@ -186,8 +195,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               className="h-14"
             />
             <div className="w-full">
-              <label htmlFor="nombre" className="block text-lg font-medium text-gray-700">
-                Nombre  <span className="text-red-500">*</span>
+              <label
+                htmlFor="nombre"
+                className="block text-lg font-medium text-gray-700"
+              >
+                Nombre <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -202,7 +214,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
 
           <div className="flex items-center gap-3">
             <div className="w-full">
-              <label htmlFor="dni" className="block text-lg font-medium text-gray-700">
+              <label
+                htmlFor="dni"
+                className="block text-lg font-medium text-gray-700"
+              >
                 DNI <span className="text-red-500">*</span>
               </label>
               <input
@@ -235,6 +250,13 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   placeholder="Lima"
                   disabled={true}
                 />
+                <button
+                  className="px-4 py-2 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2"
+                  onClick={() => setShowMapModal(true)}
+                >
+                  <img src="/images/mapa.png" alt="Mapa" className="h-8" />
+                  Selecciona en el mapa
+                </button>
               </div>
             </div>
           </div>
@@ -242,7 +264,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
           <div className="flex items-center gap-3">
             <div className="w-full grid grid-cols-2 gap-2">
               <div>
-                <label htmlFor="direccion" className="block text-lg font-medium text-gray-700">
+                <label
+                  htmlFor="direccion"
+                  className="block text-lg font-medium text-gray-700"
+                >
                   Dirección <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -322,6 +347,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
             <p>Los campos con <span className="text-red-500">*</span> son obligatorios.</p>
           </div>
         </form>
+
+        {/* Map modal */}
+        {showMapModal && (
+            <GoogleMapModal
+              onSelectLocation={handleMapSelect}
+              closeModal={() => setShowMapModal(false)}
+            />
+        )}
 
         <div className="bg-white py-6">
           {carritoState ? (
