@@ -18,6 +18,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   producto,
   isEditing,
 }) => {
+  console.log("Renderizando InformacionGeneral");
   const [precioEcommerce, setPrecioEcommerce] = useState(
     producto.current.precioEcommerce?.toString() || ""
   );
@@ -108,6 +109,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
       reader.readAsDataURL(file);
     }
   };
+
   return (
     <div className="info-side-container">
       <h5>Información general</h5>
@@ -118,6 +120,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         onChange={handleNameChange}
         disabled={!isEditing}
       /> */}
+
       <div className="w-full max-w-sm flex space-x-2">
         <div className="flex-1">
           <InputWithLabel
