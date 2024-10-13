@@ -2,8 +2,6 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "@/components/Loading";
@@ -12,7 +10,6 @@ import { columns } from "./columns";
 import { Motorizado } from "@/types/PaqueteMotorizado";
 
 const MotorizadosPage: React.FC = () => {
-  const router = useRouter(); // Initialize useRouter
 
   const motorizados = useRef<Motorizado[]>([]); // Initialize motorizados
 

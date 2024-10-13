@@ -7,7 +7,6 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import InformacionGeneral from "./informacionGeneral";
 import InformacionAdicional from "./informacionAdicional";
-import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Producto } from "@/types/PaqueteProducto";
 import axios from "axios";
@@ -38,7 +37,6 @@ import {
 
 const AgregarPage: React.FC = () => {
   const router = useRouter();
-  const [isEditingName, setIsEditingName] = useState(false);
   const [productName, setProductName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const producto = useRef<Producto>({} as Producto);
