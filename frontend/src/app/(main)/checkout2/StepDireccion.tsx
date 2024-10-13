@@ -17,10 +17,12 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [ciudad, setCiudad] = useState("")
   const [referencia, setReferencia] = useState("")
   const [distrito, setDistrito] = useState("")
-  const [nombre, setNombre] = useState("") // Nuevo estado para nombre
-  const [telefono, setTelefono] = useState("") // Nuevo estado para teléfono
-  const [numeroDni, setNumeroDni] = useState("") // Nuevo estado para DNI
-  const [error, setError] = useState("")
+  const [nombre, setNombre] = useState("")
+  const [telefono, setTelefono] = useState("")
+  const [numeroDni, setNumeroDni] = useState("")
+  const [dniError, setDniError] = useState<string | null>(null)
+  const [telefonoError, setTelefonoError] = useState<string | null>(null)
+  const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
 
   const fetchCart = async () => {
     try {
@@ -34,7 +36,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
         console.error("No se obtuvo un carrito válido.")
         return
       }
-      console.log("Contenido del carrito:", cart)
 
       const enrichedItems = await enrichLineItems(cart.detalles)
       cart.detalles = enrichedItems
@@ -45,19 +46,48 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
     }
   }
 
+  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (/^\d*$/.test(value)) {
+      setNumeroDni(value)
+      if (value.length > 8) {
+        setDniError("El DNI no puede tener más de 8 dígitos")
+      } else {
+        setDniError(null)
+      }
+    }
+  }
+
   const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     if (/^\d*$/.test(value)) {
       setTelefono(value)
+      if (value.length > 9) {
+        setTelefonoError("El teléfono no puede tener más de 9 dígitos")
+      } else {
+        setTelefonoError(null)
+      }
     }
   }
 
+  const isFormValid = () => {
+    return (
+      nombre.trim() !== "" &&
+      numeroDni.length === 8 &&
+      telefono.length === 9 &&
+      calle.trim() !== ""
+    )
+  }
+
   const handleSubmit = async () => {
-    if (telefono.length !== 9) {
-      setError("Debe ingresar un número de teléfono de 9 dígitos")
+    if (!isFormValid()) {
+      setShowWarnings(true) // Mostrar advertencia cuando se intenta enviar el formulario con campos vacíos
       return
     }
-    setError("")
+
+    // Resetear advertencia cuando se valida correctamente el formulario
+    setShowWarnings(false)
+
     const direccionData = {
       calle,
       numeroExterior,
@@ -92,7 +122,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
     }
 
     try {
-      // Realizar ambas solicitudes POST
       const [direccionResponse, usuarioResponse] = await Promise.all([
         axios.post("http://localhost:9000/admin/direccion", direccionData, {
           headers: { "Content-Type": "application/json" },
@@ -102,17 +131,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
         }),
       ])
 
-      console.log("Respuesta de dirección:", direccionResponse.data)
-      console.log("Respuesta de usuario:", usuarioResponse.data)
-      // Obtener los IDs de la respuesta
-      const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
-      const usuarioId = usuarioResponse.data.usuario.id // Ajusta según la estructura de la respuesta
-      console.log("Pedido ID:", direccionId)
-      console.log("Pedido ID:", usuarioId)
-      // Realizar el PUT para actualizar el pedido con los IDs
+      const direccionId = direccionResponse.data.direccion.id
+      const usuarioId = usuarioResponse.data.usuario.id
+
       if (carritoState?.id) {
         const pedidoId = carritoState.id
-        console.log("Pedido ID:", pedidoId)
         const pedidoUpdateData = {
           direccion: direccionId,
           usuario: usuarioId,
@@ -125,7 +148,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
           }
         )
 
-        console.log("Pedido actualizado con dirección y usuario.")
         setStep("pago")
       } else {
         console.error("No se encontró el ID del pedido.")
@@ -143,7 +165,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
     <div className="content-container mx-auto py-8">
       <button
         className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800"
-        onClick={() => window.history.back() /*setStep('previous')*/}
+        onClick={() => window.history.back()}
       >
         <img src="/images/back.png" alt="Volver" className="h-8" /> Volver
       </button>
@@ -187,10 +209,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 type="text"
                 id="dni"
                 value={numeroDni}
-                onChange={(e) => setNumeroDni(e.target.value)}
+                onChange={handleDniChange}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="12345678"
               />
+              {dniError && <p className="text-red-500">{dniError}</p>}
             </div>
           </div>
 
@@ -208,15 +231,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   type="text"
                   id="ciudad"
                   value={ciudad}
-                  onChange={(e) => setCiudad(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="Lima"
                   disabled={true}
                 />
-                <button className="px-4 py-2 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2">
-                  <img src="/images/mapa.png" alt="Mapa" className="h-8" />
-                  Selecciona en el mapa
-                </button>
               </div>
             </div>
           </div>
@@ -249,7 +267,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   value={numeroInterior}
                   onChange={(e) => setNumeroInterior(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="No rellenar si no aplica"
+                  placeholder="Colocar el numero interno"
                 />
               </div>
             </div>
@@ -288,22 +306,31 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               >
                 Teléfono <span className="text-red-500">*</span>
               </label>
-              {error && <p className="text-red-500">{error}</p>}
               <input
                 type="text"
                 id="telefono"
                 value={telefono}
+                onChange={handleTelefonoChange}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="987654321"
-                onChange={handleTelefonoChange}
               />
+              {telefonoError && <p className="text-red-500">{telefonoError}</p>}
             </div>
+          </div>
+
+          <div className="mt-6 text-gray-600">
+            <p>Los campos con <span className="text-red-500">*</span> son obligatorios.</p>
           </div>
         </form>
 
         <div className="bg-white py-6">
           {carritoState ? (
-            <Summary2 carrito={carritoState} handleSubmit={handleSubmit} />
+            <Summary2
+              carrito={carritoState}
+              handleSubmit={handleSubmit}
+              isFormValid={isFormValid()}
+              showWarnings={showWarnings} // Pasar advertencias
+            />
           ) : (
             <p>Cargando carrito...</p>
           )}
@@ -313,4 +340,4 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   )
 }
 
-export default StepDireccion
+export default StepDireccion;

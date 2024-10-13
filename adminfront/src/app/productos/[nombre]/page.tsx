@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import "@/styles/general.css";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
