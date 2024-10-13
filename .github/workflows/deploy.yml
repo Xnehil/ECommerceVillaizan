@@ -51,7 +51,7 @@ jobs:
             yarn build
             pm2 restart ecommerce
             cd ../adminfront/
-            yarn
-            yarn build
+            npm install
+            npm run build
             pm2 restart admin
           EOF
