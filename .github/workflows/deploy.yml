@@ -13,11 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Add host to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.EC2_BACKEND_HOST }} >> ~/.ssh/known_hosts
-
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
@@ -26,7 +21,6 @@ jobs:
       - name: Deploy backend to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_BACKEND_HOST }} << 'EOF'
-            set -e  # Exit immediately if a command exits with a non-zero status
             cd ECommerceVillaizan/
             git pull origin master
             cd backendecommerce/ 
@@ -42,11 +36,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Add host to known_hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.EC2_FRONTEND_HOST }} >> ~/.ssh/known_hosts
-
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.7.0
         with:
@@ -55,7 +44,6 @@ jobs:
       - name: Deploy Ecommerce and Admin Frontend to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_FRONTEND_HOST }} << 'EOF'
-            set -e  # Exit immediately if a command exits with a non-zero status
             cd ECommerceVillaizan/
             git pull origin main
             cd frontend/ 
