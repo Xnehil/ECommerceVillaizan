@@ -41,6 +41,7 @@ const AgregarPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const producto = useRef<Producto>({} as Producto);
   const [isEditing, setIsEditing] = useState(true);
+  const imagen = useRef<File | undefined>(undefined);
 
   const { toast } = useToast();
 
@@ -99,8 +100,35 @@ const AgregarPage: React.FC = () => {
       return;
     }
 
+    if(!imagen.current) {
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "La imagen del producto es requerida.",
+      });
+      return;
+    }
+
     console.log(producto.current);
     try {
+      //Guardar imagen primero
+      const formData = new FormData();
+      formData.append("file", imagen.current);
+      formData.append("fileName", imagen.current.name);
+      formData.append("folderId", "productos");
+      
+
+      const responseImagen = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}imagenes`,
+        formData
+      );
+      console.log(responseImagen);
+      if (responseImagen.status !== 200) {
+        throw new Error("Error al guardar imagen.");
+      }
+      producto.current.urlImagen = responseImagen.data.fileUrl;
+
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}producto`,
         producto.current
@@ -181,7 +209,7 @@ const AgregarPage: React.FC = () => {
       </div>
       <Separator />
       <div className="information-container">
-        <InformacionGeneral producto={producto} isEditing={isEditing} />
+        <InformacionGeneral producto={producto} isEditing={isEditing} imagen={imagen} />
         <InformacionAdicional producto={producto} isEditing={isEditing} />
         <div className="buttons-side-container">
           <div className="lower-buttons-container">

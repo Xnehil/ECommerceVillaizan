@@ -11,11 +11,13 @@ import CheckboxWithLabel from "@/components/forms/checkboxWithLabel";
 interface InformacionGeneralProps {
   producto: MutableRefObject<Producto>;
   isEditing: boolean;
+  imagen: MutableRefObject<File | undefined>;
 }
 
 const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   producto,
   isEditing,
+  imagen,
 }) => {
   console.log("Renderizando InformacionGeneral");
   const [precioEcommerce, setPrecioEcommerce] = useState(
@@ -29,7 +31,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
     producto.current.descripcion || ""
   );
   const [previewSrc, setPreviewSrc] = useState(
-    "https://placehold.co/150?text=Vista+previa"
+    producto.current.urlImagen || "https://placehold.co/150?text=Vista+previa"
   );
 
   useEffect(() => {
@@ -106,6 +108,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         setPreviewSrc(reader.result as string);
       };
       reader.readAsDataURL(file);
+      imagen.current = file;
     }
   };
 
