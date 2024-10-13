@@ -1,10 +1,8 @@
 "use client";
 
 import InputWithLabel from "@/components/forms/inputWithLabel";
-import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import React, { MutableRefObject } from "react";
 import "@/styles/general.css";
-import { toast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
 import CheckboxWithLabel from "@/components/forms/checkboxWithLabel";
 import { Motorizado } from "@/types/PaqueteMotorizado";
 import SelectWithLabel from "@/components/forms/selectWithLabel";

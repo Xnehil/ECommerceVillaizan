@@ -2,11 +2,10 @@
 
 import InputWithLabel from "@/components/forms/inputWithLabel";
 import { Label } from "@radix-ui/react-label";
-import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useState } from "react";
 import "@/styles/general.css";
 import { Producto } from "@/types/PaqueteProducto";
 import { toast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
 import CheckboxWithLabel from "@/components/forms/checkboxWithLabel";
 
 interface InformacionGeneralProps {

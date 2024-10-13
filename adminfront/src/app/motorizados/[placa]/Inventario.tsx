@@ -41,7 +41,7 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
         console.log("Products:", productsData);
 
         console.log("Fetching inventario");
-        console.log("inventario.current", inventario.current);  
+        console.log("inventario.current", inventario.current);
 
         // check if any product is not in inventario, add it
         productsData.forEach((product) => {
@@ -74,6 +74,7 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
     };
     if (a.current === 0) {
       fetchInventario();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }
   }, []);
 
