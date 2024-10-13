@@ -6,59 +6,40 @@ on:
       - master  # Or your production branch
 
 jobs:
-  deploy-backend:
-    name: Deploy Backend
+  Deploy:
+    name: Deploy to EC2
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Add host to known_hosts
+      - name: Build & Deploy Backend
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.EC2_BACKEND_HOST }}
+          USER_NAME: ${{ secrets.EC2_USER }}
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.EC2_BACKEND_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Deploy backend to EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_BACKEND_HOST }} << 'EOF'
-            set -e  # Exit immediately if a command exits with a non-zero status
-            cd ECommerceVillaizan/
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+            cd /home/ubuntu/ECommerceVillaizan/
             git pull origin master
-            cd backendecommerce/ 
-            yarn 
+            cd backendecommerce/
+            yarn
             yarn build
             pm2 restart medusa
-          EOF
+          '
 
-  deploy-frontend:
-    name: Deploy Frontends
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Add host to known_hosts
+      - name: Build & Deploy Frontend
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOSTNAME: ${{ secrets.EC2_FRONTEND_HOST }}
+          USER_NAME: ${{ secrets.EC2_USER }}
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.EC2_FRONTEND_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Deploy Ecommerce and Admin Frontend to EC2
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_FRONTEND_HOST }} << 'EOF'
-            set -e  # Exit immediately if a command exits with a non-zero status
-            cd ECommerceVillaizan/
+          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+            cd /home/ubuntu/ECommerceVillaizan/
             git pull origin main
-            cd frontend/ 
+            cd frontend/
             yarn
             yarn build
             pm2 restart ecommerce
@@ -66,4 +47,4 @@ jobs:
             yarn
             yarn build
             pm2 restart admin
-          EOF
+          '
