@@ -19,7 +19,6 @@ export default async (
 
   const wss = new WebSocket.Server({
     port: port,
-    path: "/ws",
   });
 
 
