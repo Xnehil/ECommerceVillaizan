@@ -25,6 +25,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [telefonoError, setTelefonoError] = useState<string | null>(null)
   const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
 
+  const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+
   const [showMapModal, setShowMapModal] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState({ lat: "", lng: "" })
 
@@ -132,10 +134,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
 
     try {
       const [direccionResponse, usuarioResponse] = await Promise.all([
-        axios.post("http://localhost:9000/admin/direccion", direccionData, {
+        axios.post(baseUrl+"/admin/direccion", direccionData, {
           headers: { "Content-Type": "application/json" },
         }),
-        axios.post("http://localhost:9000/admin/usuario", usuarioData, {
+        axios.post(baseUrl+"/admin/usuario", usuarioData, {
           headers: { "Content-Type": "application/json" },
         }),
       ])
@@ -150,7 +152,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
           usuario: usuarioId,
         }
         await axios.put(
-          `http://localhost:9000/admin/pedido/${pedidoId}?enriquecido=true`,
+          baseUrl+`/admin/pedido/${pedidoId}?enriquecido=true`,
           pedidoUpdateData,
           {
             headers: { "Content-Type": "application/json" },

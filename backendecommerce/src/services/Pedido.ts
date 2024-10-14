@@ -145,6 +145,7 @@ class PedidoService extends TransactionBaseService {
                         const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
                         if (dataMotorizado) {
                             const hasStock = await this.checkPedido(pedido, dataMotorizado);
+                            // const mismaCiudad = dataMotorizado.ciudad.id === pedido.direccion.ciudad.id;
                             if (hasStock) {
                                 motorizadoAsignado = dataMotorizado;
                                 break;

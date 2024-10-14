@@ -6,7 +6,11 @@ import {
 import WebSocket from "ws";
 
 
-export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, pedidoId: string | null }>();
+export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, pedidoId: string | null }>(
+  [
+    ['mot_01J9PMQG49H0SZ0G6MFHM04XEV', { lat: 6.483, lng: -76.333, pedidoId: null }], // Para pruebas
+  ]
+);
 const entregados = new Set<string>();
 export default async (
   container: MedusaContainer,
