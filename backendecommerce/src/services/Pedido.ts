@@ -142,6 +142,7 @@ class PedidoService extends TransactionBaseService {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
             const relations = asignarRepartidor ? ["motorizado", "direccion"] : [];
             const pedido = await this.recuperarConDetalle(id, { relations });
+            let tienestock : boolean = false;
 
             //log ubicacionesDelivery
             console.log(ubicacionesDelivery);
@@ -158,6 +159,7 @@ class PedidoService extends TransactionBaseService {
                             const hasStock = await this.checkPedido(pedido, dataMotorizado);
                             if (hasStock) {
                                 motorizadoAsignado = dataMotorizado;
+                                tienestock = true;
                                 break;
                             }
                         }

@@ -133,7 +133,9 @@ export const PUT = async (
             res.status(404).json({ error: "Pedido no encontrado" });
         } else if (error.message === "No hay motorizados disponibles") {
             res.status(503).json({ error: "No hay motorizados" });
-        } 
+        } else if (error.message == "No hay motorizados disponibles con suficiente stock"){
+            res.status(504).json({ error: "No hay motorizados disponibles con suficiente stock" });
+        }
         else {
             res.status(400).json({ error: "Petición inválida" });
         }
