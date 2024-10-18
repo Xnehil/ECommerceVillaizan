@@ -1,25 +1,64 @@
-import React, { useState } from "react"
+"use client"
+
+import React, { useRef, useState } from "react"
 import { GoogleMap, Marker } from "@react-google-maps/api"
+import { map } from "lodash"
 
 interface GoogleMapModalProps {
   onSelectLocation: (lat: number, lng: number) => void
+  city: string
   closeModal: () => void
+  location?: { lat: number; lng: number }
 }
 
 const GoogleMapModal: React.FC<GoogleMapModalProps> = ({
   onSelectLocation,
+  city,
   closeModal,
+  location,
 }) => {
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number
     lng: number
-  } | null>(null)
-  
+  } | null>(location || null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const mapRef = useRef<google.maps.Map | null>(null)
+
   const handleMapClick = (event: google.maps.MapMouseEvent) => {
-    if (event.latLng) {
-      const lat = event.latLng.lat()
-      const lng = event.latLng.lng()
-      setSelectedLocation({ lat, lng })
+    try {
+      if (event.latLng) {
+        const lat = event.latLng.lat()
+        const lng = event.latLng.lng()
+        const geocoder = new google.maps.Geocoder()
+
+        geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+          if (status === "OK" && results) {
+            if (results[0]) {
+              const address = results[0].formatted_address
+              console.log("Address:", address)
+              if (address.includes(city)) {
+                setSelectedLocation({ lat, lng })
+                setErrorMessage(null)
+                if (mapRef.current) {
+                  mapRef.current.setCenter({ lat, lng })
+                }
+              } else {
+                setErrorMessage(`La dirección seleccionada no está en ${city}.`)
+                setSelectedLocation(null)
+              }
+            } else {
+              console.error("No se encontraron resultados.")
+            }
+          } else {
+            console.error("Geocoder falló debido a:", status)
+          }
+        })
+      }
+    } catch (error) {
+      console.error(error)
+      setErrorMessage(
+        "Ha ocurrido un error con el mapa. Por favor, intenta de nuevo."
+      )
     }
   }
 
@@ -30,32 +69,54 @@ const GoogleMapModal: React.FC<GoogleMapModalProps> = ({
     }
   }
 
+  const getInitialCenter = () => {
+    if (selectedLocation) {
+      return selectedLocation
+    } else {
+      if (city === "Moyobamba") {
+        return { lat: -6.04413, lng: -76.96719 }
+      } else if (city === "Tarapoto") {
+        return { lat: -6.482, lng: -76.365 }
+      } else {
+        return { lat: -12.046374, lng: -77.042793 } // Default to Lima
+      }
+    }
+  }
+
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
         <GoogleMap
           mapContainerStyle={{ width: "100%", height: "400px" }}
-          center={{ lat: -12.046374, lng: -77.042793 }} // Initial location (Lima, for example)
-          zoom={12}
+          center={getInitialCenter()}
+          zoom={14}
           onClick={handleMapClick}
+          onLoad={(map) => {
+            mapRef.current = map
+          }}
         >
           {selectedLocation && <Marker position={selectedLocation} />}
         </GoogleMap>
+        {errorMessage && <p style={styles.errorMessage}>{errorMessage}</p>}
         <div className="flex w-full">
           <button
             onClick={closeModal}
-            className="w-1/2 p-2 mr-1"
+            className={`p-2 ${
+              !(!!errorMessage || !selectedLocation) ? "w-1/2 mr-1" : "w-full"
+            }`}
             style={styles.closeButton}
           >
             Volver
           </button>
-          <button
-            onClick={handleConfirm}
-            className="w-1/2 p-2 ml-1"
-            style={styles.optionButton}
-          >
-            Confirmar
-          </button>
+          {!(!!errorMessage || !selectedLocation) && (
+            <button
+              onClick={handleConfirm}
+              className="w-1/2 p-2 ml-1"
+              style={styles.optionButton}
+            >
+              Confirmar
+            </button>
+          )}
         </div>
       </div>
     </div>

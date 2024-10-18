@@ -1,10 +1,11 @@
 import { Pedido } from "types/PaquetePedido"
 import { enrichLineItems, getOrSetCart } from "@modules/cart/actions"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import Summary2 from "@modules/cart/templates/summary2"
 import axios from "axios"
 import { getCityCookie } from "@modules/store/actions"
 import GoogleMapModal from "@components/GoogleMapsModal"
+import { set } from "lodash"
 
 interface StepDireccionProps {
   setStep: (step: string) => void
@@ -13,6 +14,9 @@ interface StepDireccionProps {
 const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
   const [calle, setCalle] = useState("")
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
   const [numeroExterior, setNumeroExterior] = useState("")
   const [numeroInterior, setNumeroInterior] = useState("")
   const [ciudad, setCiudad] = useState("")
@@ -22,13 +26,35 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [telefono, setTelefono] = useState("") // Nuevo estado para teléfono
   const [numeroDni, setNumeroDni] = useState("") // Nuevo estado para DNI
   const [error, setError] = useState("")
+  const [locationError, setLocationError] = useState("")
 
   const [showMapModal, setShowMapModal] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState({ lat: "", lng: "" })
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number
+    lng: number
+  } | null>(null)
 
   const handleMapSelect = (lat: number, lng: number) => {
-    setSelectedLocation({ lat: lat.toString(), lng: lng.toString() })
+    setSelectedLocation({ lat, lng })
     console.log("Selected Location:", { lat, lng })
+    setLocationError("")
+    if (!calle || calle === "") {
+      const geocoder = new google.maps.Geocoder()
+      const latlng = new google.maps.LatLng(lat, lng)
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === "OK" && results) {
+          if (results[0]) {
+            const address = results[0].formatted_address
+            // console.log("Address:", address)
+            setCalle(address)
+          } else {
+            console.error("No se encontraron resultados.")
+          }
+        } else {
+          console.error("Geocoder falló debido a:", status)
+        }
+      })
+    }
   }
 
   const fetchCart = async () => {
@@ -62,8 +88,16 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   }
 
   const handleSubmit = async () => {
+    let errorSubmit = false
     if (telefono.length !== 9) {
       setError("Debe ingresar un número de teléfono de 9 dígitos")
+      errorSubmit = true
+    }
+    if (!selectedLocation) {
+      setLocationError("Debe seleccionar una ubicación en el mapa")
+      errorSubmit = true
+    }
+    if (errorSubmit) {
       return
     }
     setError("")
@@ -146,6 +180,39 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
 
   useEffect(() => {
     fetchCart()
+    if (inputRef.current && google.maps.places) {
+      const city = getCityCookie()
+
+      const sanMartinBounds = new google.maps.LatLngBounds(
+        new google.maps.LatLng(-7.0, -77.5), // Southwest corner of San Martin
+        new google.maps.LatLng(-5.0, -75.5) // Northeast corner of San Martin
+      )
+
+      autocompleteRef.current = new google.maps.places.Autocomplete(
+        inputRef.current,
+        {
+          types: ["address"],
+          componentRestrictions: { country: "PE" },
+          bounds: sanMartinBounds,
+          strictBounds: true,
+        }
+      )
+
+      autocompleteRef.current.addListener("place_changed", () => {
+        const place = autocompleteRef.current?.getPlace()
+        if (
+          place &&
+          place.formatted_address &&
+          place.formatted_address.includes(city.nombre)
+        ) {
+          setCalle(place.formatted_address)
+        } else {
+          // Handle case when place is outside the selected city
+          console.log("Selected place is not within the desired city")
+          setCalle("")
+        }
+      })
+    }
   }, [])
 
   return (
@@ -218,6 +285,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               >
                 Ciudad <span className="text-red-500">*</span>
               </label>
+              {locationError && <p className="text-red-500">{locationError}</p>}
               <div className="flex gap-3">
                 <input
                   type="text"
@@ -255,6 +323,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   onChange={(e) => setCalle(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="Calle Malvinas 123"
+                  ref={inputRef}
                 />
               </div>
               <div>
@@ -324,10 +393,12 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
 
         {/* Map modal */}
         {showMapModal && (
-            <GoogleMapModal
-              onSelectLocation={handleMapSelect}
-              closeModal={() => setShowMapModal(false)}
-            />
+          <GoogleMapModal
+            onSelectLocation={handleMapSelect}
+            city={ciudad}
+            closeModal={() => setShowMapModal(false)}
+            {...(selectedLocation && { location: selectedLocation })}
+          />
         )}
 
         <div className="bg-white py-6">
