@@ -1,10 +1,11 @@
 import { Pedido } from "types/PaquetePedido"
 import { enrichLineItems, getOrSetCart } from "@modules/cart/actions"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import Summary2 from "@modules/cart/templates/summary2"
 import axios from "axios"
 import { getCityCookie } from "@modules/store/actions"
 import GoogleMapModal from "@components/GoogleMapsModal"
+import { set } from "lodash"
 
 interface StepDireccionProps {
   setStep: (step: string) => void
@@ -13,26 +14,47 @@ interface StepDireccionProps {
 const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
   const [calle, setCalle] = useState("")
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
   const [numeroExterior, setNumeroExterior] = useState("")
   const [numeroInterior, setNumeroInterior] = useState("")
   const [ciudad, setCiudad] = useState("")
   const [referencia, setReferencia] = useState("")
   const [distrito, setDistrito] = useState("")
-  const [nombre, setNombre] = useState("")
-  const [telefono, setTelefono] = useState("")
-  const [numeroDni, setNumeroDni] = useState("")
-  const [dniError, setDniError] = useState<string | null>(null)
-  const [telefonoError, setTelefonoError] = useState<string | null>(null)
-  const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
-
-  const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+  const [nombre, setNombre] = useState("") // Nuevo estado para nombre
+  const [telefono, setTelefono] = useState("") // Nuevo estado para teléfono
+  const [numeroDni, setNumeroDni] = useState("") // Nuevo estado para DNI
+  const [error, setError] = useState("")
+  const [locationError, setLocationError] = useState("")
 
   const [showMapModal, setShowMapModal] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState({ lat: "", lng: "" })
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number
+    lng: number
+  } | null>(null)
 
   const handleMapSelect = (lat: number, lng: number) => {
-    setSelectedLocation({ lat: lat.toString(), lng: lng.toString() })
+    setSelectedLocation({ lat, lng })
     console.log("Selected Location:", { lat, lng })
+    setLocationError("")
+    if (!calle || calle === "") {
+      const geocoder = new google.maps.Geocoder()
+      const latlng = new google.maps.LatLng(lat, lng)
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === "OK" && results) {
+          if (results[0]) {
+            const address = results[0].formatted_address
+            // console.log("Address:", address)
+            setCalle(address)
+          } else {
+            console.error("No se encontraron resultados.")
+          }
+        } else {
+          console.error("Geocoder falló debido a:", status)
+        }
+      })
+    }
   }
 
   const fetchCart = async () => {
@@ -47,6 +69,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
         console.error("No se obtuvo un carrito válido.")
         return
       }
+      console.log("Contenido del carrito:", cart)
 
       const enrichedItems = await enrichLineItems(cart.detalles)
       cart.detalles = enrichedItems
@@ -57,48 +80,27 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
     }
   }
 
-  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    if (/^\d*$/.test(value)) {
-      setNumeroDni(value)
-      if (value.length > 8) {
-        setDniError("El DNI no puede tener más de 8 dígitos")
-      } else {
-        setDniError(null)
-      }
-    }
-  }
-
   const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     if (/^\d*$/.test(value)) {
       setTelefono(value)
-      if (value.length > 9) {
-        setTelefonoError("El teléfono no puede tener más de 9 dígitos")
-      } else {
-        setTelefonoError(null)
-      }
     }
-  }
-
-  const isFormValid = () => {
-    return (
-      nombre.trim() !== "" &&
-      numeroDni.length === 8 &&
-      telefono.length === 9 &&
-      calle.trim() !== ""
-    )
   }
 
   const handleSubmit = async () => {
-    if (!isFormValid()) {
-      setShowWarnings(true) // Mostrar advertencia cuando se intenta enviar el formulario con campos vacíos
+    let errorSubmit = false
+    if (telefono.length !== 9) {
+      setError("Debe ingresar un número de teléfono de 9 dígitos")
+      errorSubmit = true
+    }
+    if (!selectedLocation) {
+      setLocationError("Debe seleccionar una ubicación en el mapa")
+      errorSubmit = true
+    }
+    if (errorSubmit) {
       return
     }
-
-    // Resetear advertencia cuando se valida correctamente el formulario
-    setShowWarnings(false)
-
+    setError("")
     const direccionData = {
       calle,
       numeroExterior,
@@ -133,32 +135,40 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
     }
 
     try {
+      // Realizar ambas solicitudes POST
       const [direccionResponse, usuarioResponse] = await Promise.all([
-        axios.post(baseUrl+"/admin/direccion", direccionData, {
+        axios.post("http://localhost:9000/admin/direccion", direccionData, {
           headers: { "Content-Type": "application/json" },
         }),
-        axios.post(baseUrl+"/admin/usuario", usuarioData, {
+        axios.post("http://localhost:9000/admin/usuario", usuarioData, {
           headers: { "Content-Type": "application/json" },
         }),
       ])
 
-      const direccionId = direccionResponse.data.direccion.id
-      const usuarioId = usuarioResponse.data.usuario.id
-
+      console.log("Respuesta de dirección:", direccionResponse.data)
+      console.log("Respuesta de usuario:", usuarioResponse.data)
+      // Obtener los IDs de la respuesta
+      const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
+      const usuarioId = usuarioResponse.data.usuario.id // Ajusta según la estructura de la respuesta
+      console.log("Pedido ID:", direccionId)
+      console.log("Pedido ID:", usuarioId)
+      // Realizar el PUT para actualizar el pedido con los IDs
       if (carritoState?.id) {
         const pedidoId = carritoState.id
+        console.log("Pedido ID:", pedidoId)
         const pedidoUpdateData = {
           direccion: direccionId,
           usuario: usuarioId,
         }
         await axios.put(
-          baseUrl+`/admin/pedido/${pedidoId}?enriquecido=true`,
+          `http://localhost:9000/admin/pedido/${pedidoId}?enriquecido=true`,
           pedidoUpdateData,
           {
             headers: { "Content-Type": "application/json" },
           }
         )
 
+        console.log("Pedido actualizado con dirección y usuario.")
         setStep("pago")
       } else {
         console.error("No se encontró el ID del pedido.")
@@ -170,13 +180,46 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
 
   useEffect(() => {
     fetchCart()
+    if (inputRef.current && google.maps.places) {
+      const city = getCityCookie()
+
+      const sanMartinBounds = new google.maps.LatLngBounds(
+        new google.maps.LatLng(-7.0, -77.5), // Southwest corner of San Martin
+        new google.maps.LatLng(-5.0, -75.5) // Northeast corner of San Martin
+      )
+
+      autocompleteRef.current = new google.maps.places.Autocomplete(
+        inputRef.current,
+        {
+          types: ["address"],
+          componentRestrictions: { country: "PE" },
+          bounds: sanMartinBounds,
+          strictBounds: true,
+        }
+      )
+
+      autocompleteRef.current.addListener("place_changed", () => {
+        const place = autocompleteRef.current?.getPlace()
+        if (
+          place &&
+          place.formatted_address &&
+          place.formatted_address.includes(city.nombre)
+        ) {
+          setCalle(place.formatted_address)
+        } else {
+          // Handle case when place is outside the selected city
+          console.log("Selected place is not within the desired city")
+          setCalle("")
+        }
+      })
+    }
   }, [])
 
   return (
     <div className="content-container mx-auto py-8">
       <button
         className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800"
-        onClick={() => window.history.back()}
+        onClick={() => window.history.back() /*setStep('previous')*/}
       >
         <img src="/images/back.png" alt="Volver" className="h-8" /> Volver
       </button>
@@ -226,11 +269,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 type="text"
                 id="dni"
                 value={numeroDni}
-                onChange={handleDniChange}
+                onChange={(e) => setNumeroDni(e.target.value)}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="12345678"
               />
-              {dniError && <p className="text-red-500">{dniError}</p>}
             </div>
           </div>
 
@@ -243,11 +285,13 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               >
                 Ciudad <span className="text-red-500">*</span>
               </label>
+              {locationError && <p className="text-red-500">{locationError}</p>}
               <div className="flex gap-3">
                 <input
                   type="text"
                   id="ciudad"
                   value={ciudad}
+                  onChange={(e) => setCiudad(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="Lima"
                   disabled={true}
@@ -279,6 +323,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   onChange={(e) => setCalle(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="Calle Malvinas 123"
+                  ref={inputRef}
                 />
               </div>
               <div>
@@ -294,7 +339,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   value={numeroInterior}
                   onChange={(e) => setNumeroInterior(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="Colocar el numero interno"
+                  placeholder="No rellenar si no aplica"
                 />
               </div>
             </div>
@@ -333,39 +378,32 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               >
                 Teléfono <span className="text-red-500">*</span>
               </label>
+              {error && <p className="text-red-500">{error}</p>}
               <input
                 type="text"
                 id="telefono"
                 value={telefono}
-                onChange={handleTelefonoChange}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="987654321"
+                onChange={handleTelefonoChange}
               />
-              {telefonoError && <p className="text-red-500">{telefonoError}</p>}
             </div>
-          </div>
-
-          <div className="mt-6 text-gray-600">
-            <p>Los campos con <span className="text-red-500">*</span> son obligatorios.</p>
           </div>
         </form>
 
         {/* Map modal */}
         {showMapModal && (
-            <GoogleMapModal
-              onSelectLocation={handleMapSelect}
-              closeModal={() => setShowMapModal(false)}
-            />
+          <GoogleMapModal
+            onSelectLocation={handleMapSelect}
+            city={ciudad}
+            closeModal={() => setShowMapModal(false)}
+            {...(selectedLocation && { location: selectedLocation })}
+          />
         )}
 
         <div className="bg-white py-6">
           {carritoState ? (
-            <Summary2
-              carrito={carritoState}
-              handleSubmit={handleSubmit}
-              isFormValid={isFormValid()}
-              showWarnings={showWarnings} // Pasar advertencias
-            />
+            <Summary2 carrito={carritoState} handleSubmit={handleSubmit} />
           ) : (
             <p>Cargando carrito...</p>
           )}
@@ -375,4 +413,4 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   )
 }
 
-export default StepDireccion;
+export default StepDireccion
