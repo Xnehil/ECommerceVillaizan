@@ -7,6 +7,7 @@ import { DetallePedido, MetodoPago, Pedido } from 'types/PaquetePedido';
 import { Direccion } from 'types/PaqueteEnvio';
 import { Usuario } from 'types/PaqueteUsuario';
 import axios, { AxiosError } from "axios"
+import { ErrorMessage } from '@hookform/error-message';
 
 interface ResumenCompraProps {
   descuento: number;
@@ -160,6 +161,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             setShowPopup(false);
             setShowBuscandoPopup(true);
             setShowError(true);
+        } else if (axiosError.response?.status === 504) {
+            console.log("Algunos productos en tu carrito tienen stock insuficiente.");
+            setErrorText("Algunos productos en tu carrito tienen stock insuficiente.");
+            setShowPopup(false);
+            setShowBuscandoPopup(true);
+            setShowError(true);
         }
     }
     
@@ -167,6 +174,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
 
   const handleCloseBuscandoPopup = () => {
     setShowBuscandoPopup(false);
+    if(errorText === "No hay repartidores disponibles. Inténtalo de nuevo en unos minutos"){
+      window.history.back();
+    }
   };
 
   const handleRedirect = () => {

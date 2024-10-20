@@ -61,8 +61,8 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
   const [pedido, setPedido] = useState<Pedido | null>(null); // State to hold the fetched pedido
-  const descuento = 10;
-  const hayDescuento = false;
+  let descuento : number = 0;
+  const hayDescuento = true;
   const costoEnvio = 5;
   const noCostoEnvio = true;
 
@@ -99,9 +99,32 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
     setStep("direccion");
   };
 
+  /*
   const calcularTotal = () => {
     return calcularSubtotal() - (hayDescuento ? descuento : 0) + (noCostoEnvio ? 0 : costoEnvio);
-  };
+  };*/
+
+  const calcularTotal = () => {
+    const subtotal = calcularSubtotal();
+    const totalDescuento = hayDescuento ? descuento : 0;
+    const totalEnvio = noCostoEnvio ? 0 : costoEnvio;
+
+    let retorno = subtotal - totalDescuento + totalEnvio;
+
+    // Si el total tiene más de un decimal, redondear a un decimal
+    if (retorno * 10 % 1 !== 0) {
+        const retornoRedondeado = Math.floor(retorno * 10) / 10;
+        const parteDescontada = retorno - retornoRedondeado;
+
+        retorno = retornoRedondeado;
+
+        // Aumenta el descuento con la parte descontada, si es relevante para la lógica
+        descuento += parteDescontada;
+    }
+
+    return retorno;
+};
+
 
   const calcularSubtotal = () => {
     if (!pedidoInput) {

@@ -97,7 +97,18 @@ class PedidoService extends TransactionBaseService {
         
         const inventarios: InventarioMotorizado[] = await invetarioMotorizadoRepo.findByMotorizadoId(motorizado.id);
         
-        // Iterate each pedido detail and check if the motorizado has the product
+        if(!pedido.direccion || !pedido.direccion.ciudad) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no tiene dirección o ciudad");
+        }
+        if(!pedido.direccion.ciudad.id) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no tiene ciudad");
+        }
+        const ciudadId = pedido.direccion.ciudad.id
+        // Verificacion de ciudad
+        if(ciudadId !== motorizado.ciudad.id) {
+            return false;
+        }
+        // Se itera cada detalle del pedido y se verifica si el motorizado tiene el producto
         for (const detalle of pedido.detalles) {
             const inventario = inventarios.find((inv) => inv.producto.id === detalle.producto.id);
             if (!inventario || inventario.stock < detalle.cantidad) {
@@ -131,6 +142,7 @@ class PedidoService extends TransactionBaseService {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
             const relations = asignarRepartidor ? ["motorizado", "direccion"] : [];
             const pedido = await this.recuperarConDetalle(id, { relations });
+            let tienestock : boolean = false;
 
             //log ubicacionesDelivery
             console.log(ubicacionesDelivery);
@@ -148,6 +160,7 @@ class PedidoService extends TransactionBaseService {
                             // const mismaCiudad = dataMotorizado.ciudad.id === pedido.direccion.ciudad.id;
                             if (hasStock) {
                                 motorizadoAsignado = dataMotorizado;
+                                tienestock = true;
                                 break;
                             }
                         }
