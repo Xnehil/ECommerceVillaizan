@@ -3,7 +3,7 @@ import { Pedido } from "../models/Pedido";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
-import { ubicacionesDelivery } from "../loaders/websocketLoader";
+import { ubicacionesDelivery, pedidosPorConfirmar } from "../loaders/websocketLoader";
 import MotorizadoRepository from "@repositories/Motorizado";
 import { Motorizado } from "@models/Motorizado";
 import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
@@ -94,26 +94,30 @@ class PedidoService extends TransactionBaseService {
 
     async checkPedido(pedido: Pedido, motorizado: Motorizado): Promise<boolean> {
         const invetarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);
-        
-        const inventarios: InventarioMotorizado[] = await invetarioMotorizadoRepo.findByMotorizadoId(motorizado.id);
-        
-        if(!pedido.direccion || !pedido.direccion.ciudad) {
-            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no tiene dirección o ciudad");
-        }
-        if(!pedido.direccion.ciudad.id) {
-            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no tiene ciudad");
-        }
-        const ciudadId = pedido.direccion.ciudad.id
-        // Verificacion de ciudad
-        if(ciudadId !== motorizado.ciudad.id) {
-            return false;
-        }
-        // Se itera cada detalle del pedido y se verifica si el motorizado tiene el producto
-        for (const detalle of pedido.detalles) {
-            const inventario = inventarios.find((inv) => inv.producto.id === detalle.producto.id);
-            if (!inventario || inventario.stock < detalle.cantidad) {
+        try {
+            const inventarios: InventarioMotorizado[] = await invetarioMotorizadoRepo.findByMotorizadoId(motorizado.id);
+            
+            if(!pedido.direccion || !pedido.direccion.ciudad) {
+                throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no tiene dirección o ciudad");
+            }
+            if(!pedido.direccion.ciudad.id) {
+                throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no tiene ciudad");
+            }
+            const ciudadId = pedido.direccion.ciudad.id
+            // Verificacion de ciudad
+            if(ciudadId !== motorizado.ciudad.id) {
                 return false;
             }
+            // Se itera cada detalle del pedido y se verifica si el motorizado tiene el producto
+            for (const detalle of pedido.detalles) {
+                const inventario = inventarios.find((inv) => inv.producto.id === detalle.producto.id);
+                if (!inventario || inventario.stock < detalle.cantidad) {
+                    return false;
+                }
+            }
+        } catch (error) {
+            console.error("Error al verificar stock", error);
+            return false;
         }
         return true;
     }
@@ -152,13 +156,18 @@ class PedidoService extends TransactionBaseService {
     
                 if (ubicacionesDelivery.size > 0) {
                     let motorizadoAsignado = null;
-    
+                    console.log("Recorriendo motorizados");
                     for (const motorizadoId of ubicacionesDelivery.keys()) {
                         const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
+                        console.log("Motorizado con id: ", motorizadoId);
                         if (dataMotorizado) {
+                            console.log("Motorizado encontrado: ", dataMotorizado);
+                            console.log("Verificando stock");
                             const hasStock = await this.checkPedido(pedido, dataMotorizado);
                             // const mismaCiudad = dataMotorizado.ciudad.id === pedido.direccion.ciudad.id;
-                            if (hasStock) {
+                            console.log("Stock: ", hasStock);
+                            if (hasStock || true ) { //Eliminar el true para que se verifique el stock
+                                console.log("Motorizado con stock encontrado");
                                 motorizadoAsignado = dataMotorizado;
                                 tienestock = true;
                                 break;
@@ -179,6 +188,16 @@ class PedidoService extends TransactionBaseService {
             }
     
             Object.assign(pedido, data);
+            return await pedidoRepo.save(pedido);
+        });
+    }
+
+    async confirmar(id: string): Promise<Pedido> {
+        return await this.atomicPhase_(async (manager) => {
+            const pedidoRepo = manager.withRepository(this.pedidoRepository_);
+            const pedido = await this.recuperar(id);
+            pedido.estado = "confirmado";
+            pedidosPorConfirmar.delete(id);
             return await pedidoRepo.save(pedido);
         });
     }

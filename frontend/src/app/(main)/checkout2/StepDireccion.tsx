@@ -27,12 +27,15 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [numeroDni, setNumeroDni] = useState("") // Nuevo estado para DNI
   const [error, setError] = useState("")
   const [locationError, setLocationError] = useState("")
-
+  const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
   const [showMapModal, setShowMapModal] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number
     lng: number
   } | null>(null)
+  const [dniError, setDniError] = useState<string | null>(null)
+  const [telefonoError, setTelefonoError] = useState<string | null>(null)
+  const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
 
   const handleMapSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng })
@@ -86,21 +89,32 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
       setTelefono(value)
     }
   }
+  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (/^\d*$/.test(value)) {
+      setNumeroDni(value)
+      if (value.length > 8) {
+        setDniError("El DNI no puede tener más de 8 dígitos")
+      } else {
+        setDniError(null)
+      }
+    }
+  }
+  const isFormValid = () => {
+    return (
+      nombre.trim() !== "" &&
+      numeroDni.length === 8 &&
+      telefono.length === 9 &&
+      calle.trim() !== ""
+    )
+  }
 
   const handleSubmit = async () => {
-    let errorSubmit = false
-    if (telefono.length !== 9) {
-      setError("Debe ingresar un número de teléfono de 9 dígitos")
-      errorSubmit = true
+    if  (!isFormValid()) {
+      setShowWarnings(true);
+      return;
     }
-    if (!selectedLocation) {
-      setLocationError("Debe seleccionar una ubicación en el mapa")
-      errorSubmit = true
-    }
-    if (errorSubmit) {
-      return
-    }
-    setError("")
+    setShowWarnings(false);
     const direccionData = {
       calle,
       numeroExterior,
@@ -137,10 +151,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
     try {
       // Realizar ambas solicitudes POST
       const [direccionResponse, usuarioResponse] = await Promise.all([
-        axios.post("http://localhost:9000/admin/direccion", direccionData, {
+        axios.post(baseUrl+"/admin/direccion", direccionData, {
           headers: { "Content-Type": "application/json" },
         }),
-        axios.post("http://localhost:9000/admin/usuario", usuarioData, {
+        axios.post(baseUrl+"/admin/usuario", usuarioData, {
           headers: { "Content-Type": "application/json" },
         }),
       ])
@@ -161,7 +175,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
           usuario: usuarioId,
         }
         await axios.put(
-          `http://localhost:9000/admin/pedido/${pedidoId}?enriquecido=true`,
+          baseUrl+`/admin/pedido/${pedidoId}?enriquecido=true`,
           pedidoUpdateData,
           {
             headers: { "Content-Type": "application/json" },
@@ -269,7 +283,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 type="text"
                 id="dni"
                 value={numeroDni}
-                onChange={(e) => setNumeroDni(e.target.value)}
+                onChange={handleDniChange}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="12345678"
               />
@@ -403,7 +417,12 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
 
         <div className="bg-white py-6">
           {carritoState ? (
-            <Summary2 carrito={carritoState} handleSubmit={handleSubmit} />
+            <Summary2
+              carrito={carritoState}
+              handleSubmit={handleSubmit}
+              isFormValid={isFormValid()}
+              showWarnings={showWarnings}
+            />
           ) : (
             <p>Cargando carrito...</p>
           )}

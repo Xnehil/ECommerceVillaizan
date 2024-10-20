@@ -1,5 +1,4 @@
-import { Region } from "@medusajs/medusa"
-import { notFound } from "next/navigation"
+
 import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL

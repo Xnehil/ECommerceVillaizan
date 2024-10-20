@@ -11,6 +11,7 @@ export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, p
     ['mot_01J9PMQG49H0SZ0G6MFHM04XEV', { lat: 6.483, lng: -76.333, pedidoId: null }], // Para pruebas
   ]
 );
+export const pedidosPorConfirmar = new Set<string>();
 const entregados = new Set<string>();
 export default async (
   container: MedusaContainer,
@@ -29,13 +30,16 @@ export default async (
   wss.on("connection", (ws, req) => {
     console.info("New WebSocket connection established");
 
-    // Basic authentication (for demonstration purposes)
     const params = new URLSearchParams(req.url?.split('?')[1]);
     const rol = params.get('rol'); // Si es delivery o cliente
     const id = params.get('id');
 
     if (id && rol === 'delivery') {
       ubicacionesDelivery.set(id, { lat: 0, lng: 0, pedidoId: null });
+    }
+
+    if (id && rol === 'cliente') {
+      pedidosPorConfirmar.add(id);
     }
 
     if (!rol || !id) {
@@ -45,7 +49,7 @@ export default async (
     }
 
     ws.on("message", (message) => {
-      console.info(`Received message from ${rol} (${id}): ${message}`);
+      // console.info(`Received message from ${rol} (${id}): ${message}`);
       let parsedMessage;
       try {
         parsedMessage = JSON.parse(message.toString()); // Convert RawData to string
@@ -128,7 +132,11 @@ const handleClientMessage = (
         console.info(`Pedido ${idPedido} ya fue entregado`);
         ws.send(JSON.stringify({ type: 'entregadoResponse', data: 'Pedido entregado' }));
         entregados.delete(idPedido);
-      } else if (location && enEntrega) {
+      } else if (pedidosPorConfirmar.has(idPedido)) {
+        ws.send(JSON.stringify({ type: 'confirmarResponse', data: 'Pedido en proceso de confirmación' }));
+
+      }
+        else if (location && enEntrega) {
         ws.send(JSON.stringify({ type: 'locationResponse', data: location }));
       } 
       else if (location && !enEntrega) {

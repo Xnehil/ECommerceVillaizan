@@ -149,8 +149,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       }
       // setShowBuscandoPopup(false);
       //Redirigir a la página de seguimiento
+      const pedidoActualizado = response.data.pedido;
       let codigoSeguimiento = "123456";
-      window.location.href = `/seguimiento?codigo=${pedido.codigoSeguimiento??codigoSeguimiento}`;
+      window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
     } catch (error) {
       const axiosError = error as AxiosError;
         if (axiosError.response && axiosError.response.status === 404) {

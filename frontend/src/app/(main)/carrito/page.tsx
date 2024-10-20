@@ -1,4 +1,3 @@
-import { LineItem } from "@medusajs/medusa";
 import { Metadata } from "next";
 import { cookies } from "next/headers";
 

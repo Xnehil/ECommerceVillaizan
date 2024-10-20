@@ -70,6 +70,13 @@ export const GET = async (
  *           type: boolean
  *         required: false
  *         description: Si se debe asignar un repartidor
+ *        - in: query
+ *          name: confirmar
+ *          schema:
+ *            type: boolean
+ *          required: false
+ *          description: Si se debe confirmar el pedido. No hace falta enviar el body
+ * 
  *     requestBody:
  *       required: true
  *       content:
@@ -123,6 +130,17 @@ export const PUT = async (
     const { id } = req.params;
     const pedidoData = req.body as Partial<Pedido>;
     const asignarRepartidor = req.query.asignarRepartidor === 'true';
+    const confirmar = req.query.confirmar === 'true';
+
+    if (confirmar) {
+        try {
+            const pedido = await pedidoService.confirmar(id);
+            res.json({ pedido });
+        } catch (error) {
+            res.status(404).json({ error: "Pedido no encontrado" });
+        }
+        return;
+    }
 
     try {
         const pedido = await pedidoService.actualizar(id, pedidoData, asignarRepartidor);
