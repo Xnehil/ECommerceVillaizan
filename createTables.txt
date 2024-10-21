@@ -31,6 +31,7 @@ DROP TABLE IF EXISTS vi_categoria;
 DROP TABLE IF EXISTS vi_etiqueta;
 DROP TABLE IF EXISTS vi_publicacion;
 DROP TABLE IF EXISTS vi_publicacion_etiqueta;
+DROP TABLE IF EXISTS vi_ajustes_ecommerce;
 
 
 -- Gestion de usuarios
@@ -688,6 +689,22 @@ CREATE TABLE vi_historialrepartidor(
     CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES vi_usuario(id),
 	id_pedido VARCHAR(50),
     CONSTRAINT fk_pedido FOREIGN KEY (id_pedido) REFERENCES vi_pedido(id), 
+    --trazabilidad
+    estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
+    desactivadoen TIMESTAMP,
+    creadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    actualizadoen TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    usuariocreacion VARCHAR(50) NOT NULL,
+    usuarioactualizacion VARCHAR(50)
+);
+
+CREATE TABLE vi_ajustes_ecommerce (
+    id VARCHAR(50) PRIMARY KEY,           
+    llave VARCHAR(255) NOT NULL UNIQUE, 
+    valor TEXT NOT NULL,            
+    tag VARCHAR(100),               
+    descripcion TEXT,                
+
     --trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,
