@@ -82,24 +82,60 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
       console.error("Error al obtener el carrito:", error)
     }
   }
+  const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNombre(value);
+    localStorage.setItem('nombre', value); // Save to localStorage
+  }
+
+  const handleNroInteriorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNumeroInterior(value);
+    localStorage.setItem('nroInterior', value);
+  }
 
   const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
+    const value = e.target.value;
+  
+    // Ensure the value contains only digits before updating the state
     if (/^\d*$/.test(value)) {
-      setTelefono(value)
-    }
-  }
-  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    if (/^\d*$/.test(value)) {
-      setNumeroDni(value)
-      if (value.length > 8) {
-        setDniError("El DNI no puede tener más de 8 dígitos")
+      setTelefono(value);
+      localStorage.setItem('telefono', value); // Save to localStorage
+  
+      // Check if the value exceeds 9 digits
+      if (value.length > 9) {
+        setTelefonoError("El teléfono no puede tener más de 9 dígitos");
       } else {
-        setDniError(null)
+        setTelefonoError(null); // Clear error if it's valid
       }
     }
   }
+
+  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d*$/.test(value)) {
+      setNumeroDni(value);
+      localStorage.setItem('dni', value); // Save to localStorage
+      if (value.length > 8) {
+        setDniError("El DNI no puede tener más de 8 dígitos");
+      } else {
+        setDniError(null);
+      }
+    }
+  }
+
+  const handleCalleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCalle(value);
+    localStorage.setItem('calle', value); // Save to localStorage
+  };
+
+  const handleReferenciaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setReferencia(value);
+    localStorage.setItem('referencia', value); // Save to localStorage
+  };
+  
   const isFormValid = () => {
     return (
       nombre.trim() !== "" &&
@@ -193,6 +229,19 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   }
 
   useEffect(() => {
+    const savedNombre = localStorage.getItem('nombre');
+    const savedTelefono = localStorage.getItem('telefono');
+    const savedDni = localStorage.getItem('dni');
+    const savedCalle = localStorage.getItem('calle');
+    const savedNroInterior= localStorage.getItem('nroInterior');
+    const savedReferencia= localStorage.getItem('referencia');
+  
+    if (savedNombre) setNombre(savedNombre);
+    if (savedTelefono) setTelefono(savedTelefono);
+    if (savedDni) setNumeroDni(savedDni);
+    if (savedNroInterior) setNumeroInterior(savedNroInterior);
+    if (savedCalle) setCalle(savedCalle);
+    if (savedReferencia) setReferencia(savedReferencia);
     fetchCart()
     if (inputRef.current && google.maps.places) {
       const city = getCityCookie()
@@ -264,7 +313,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 type="text"
                 id="nombre"
                 value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
+                onChange={handleNombreChange}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="Juan Perez"
               />
@@ -287,6 +336,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="12345678"
               />
+              {dniError && (
+                <p className="text-red-500 mt-2">{dniError}</p>  // Render the error message if it's set
+                )}
             </div>
           </div>
 
@@ -334,7 +386,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   type="text"
                   id="direccion"
                   value={calle}
-                  onChange={(e) => setCalle(e.target.value)}
+                  onChange={handleCalleChange}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="Calle Malvinas 123"
                   ref={inputRef}
@@ -351,7 +403,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   type="text"
                   id="numero"
                   value={numeroInterior}
-                  onChange={(e) => setNumeroInterior(e.target.value)}
+                  onChange={handleNroInteriorChange}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="No rellenar si no aplica"
                 />
@@ -376,7 +428,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 type="text"
                 id="referencia"
                 value={referencia}
-                onChange={(e) => setReferencia(e.target.value)}
+                onChange={handleReferenciaChange}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="Esquina del parque Tres Marías"
               />
@@ -401,6 +453,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 placeholder="987654321"
                 onChange={handleTelefonoChange}
               />
+              {telefonoError && (
+                <p className="text-red-500 mt-2">{telefonoError}</p>  // Render the error message if it's set
+              )}
             </div>
           </div>
         </form>
