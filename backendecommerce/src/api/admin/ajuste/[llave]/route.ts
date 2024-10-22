@@ -24,7 +24,7 @@ import { Ajuste } from "src/models/Ajuste";
  *         name: llave
  *         schema:
  *           type: string
- *           enum: [monto_minimo_pedido, permitir_cancelaciones, horario_lunes, horario_martes, horario_miercoles, horario_jueves, horario_viernes, horario_sabado, horario_domingo]
+ *           enum: [monto_minimo_pedido, permitir_cancelaciones, horario_lunes, horario_martes, horario_miercoles, horario_jueves, horario_viernes, horario_sabado, horario_domingo, tiempo_confirmacion]
  *         required: true
  *         description: Llave del ajuste
  *     responses:

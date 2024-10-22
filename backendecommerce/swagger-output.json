@@ -1050,7 +1050,8 @@
                 "horario_jueves",
                 "horario_viernes",
                 "horario_sabado",
-                "horario_domingo"
+                "horario_domingo",
+                "tiempo_confirmacion"
               ]
             },
             "required": true,
@@ -4129,6 +4130,111 @@
           }
         }
       },
+      "put": {
+        "summary": "Actualiza un pedido por ID",
+        "tags": [
+          "Pedidos"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID del pedido"
+          },
+          {
+            "in": "query",
+            "name": "asignarRepartidor",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe asignar un repartidor"
+          },
+          {
+            "in": "query",
+            "name": "confirmar",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe confirmar el pedido. No hace falta enviar el body"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Pedido"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pedido actualizado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pedido"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Petición inválida"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Pedido no encontrado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Pedido no encontrado"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "No hay motorizados disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "No hay motorizados"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "delete": {
         "summary": "Elimina un pedido por ID",
         "tags": [
@@ -4464,7 +4570,7 @@
         },
         "responses": {
           "200": {
-            "description": "producto actualizado exitosamente",
+            "description": "Producto actualizado exitosamente",
             "content": {
               "application/json": {
                 "schema": {
@@ -4477,7 +4583,7 @@
             "description": "Petición inválida"
           },
           "404": {
-            "description": "producto no encontrado"
+            "description": "Producto no encontrado"
           }
         }
       },
@@ -4582,6 +4688,52 @@
       }
     },
     "/producto": {
+      "get": {
+        "summary": "Lista todos los productos con paginación",
+        "tags": [
+          "Producto"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "enriquecido",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar el producto enriquecido"
+          },
+          {
+            "in": "query",
+            "name": "ecommerce",
+            "schema": {
+              "type": "boolean"
+            },
+            "required": false,
+            "description": "Si se debe recuperar solo los productos que se muestran en el ecommerce"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de productos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "productos": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Producto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "summary": "Crea un nuevo producto",
         "tags": [
