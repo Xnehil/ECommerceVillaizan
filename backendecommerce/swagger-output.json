@@ -1029,6 +1029,180 @@
     }
   },
   "paths": {
+    "/ajuste/{llave}": {
+      "get": {
+        "summary": "Recupera un ajuste por el nombre de la llave",
+        "tags": [
+          "Ajustes"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "llave",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "monto_minimo_pedido",
+                "permitir_cancelaciones",
+                "horario_lunes",
+                "horario_martes",
+                "horario_miercoles",
+                "horario_jueves",
+                "horario_viernes",
+                "horario_sabado",
+                "horario_domingo"
+              ]
+            },
+            "required": true,
+            "description": "Llave del ajuste"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalles del ajuste",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ajuste"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ajuste no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualiza un ajuste por llave",
+        "tags": [
+          "Ajustes"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "llave",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Llave del ajuste"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Ajuste"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ajuste actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ajuste"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "404": {
+            "description": "Ajuste no encontrado"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Elimina un ajuste por llave",
+        "tags": [
+          "Ajustes"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "llave",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "Llave del ajuste"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ajuste eliminado exitosamente"
+          },
+          "404": {
+            "description": "Ajuste no encontrado"
+          }
+        }
+      }
+    },
+    "/ajuste": {
+      "get": {
+        "summary": "Lista todos los ajustes con paginación",
+        "tags": [
+          "Ajustes"
+        ],
+        "responses": {
+          "200": {
+            "description": "Una lista de ajustes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ajustes": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Ajuste"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Crea un nuevo ajustes",
+        "tags": [
+          "Ajustes"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Ajuste"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "El ajustes ha sido creado exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ajuste"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          }
+        }
+      }
+    },
     "/almacenes": {
       "get": {
         "summary": "Lista todos los almacenes con paginación",
@@ -1989,6 +2163,64 @@
           },
           "400": {
             "description": "Petición inválida"
+          }
+        }
+      }
+    },
+    "/imagenes": {
+      "post": {
+        "summary": "Genera una URL pre-firmada para subir un archivo a Google Drive",
+        "tags": [
+          "Imagenes"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filePath": {
+                    "type": "string",
+                    "description": "Ruta del archivo a subir"
+                  },
+                  "fileName": {
+                    "type": "string",
+                    "description": "Nombre del archivo a subir"
+                  },
+                  "folderId": {
+                    "type": "string",
+                    "description": "ID de la carpeta en Google Drive"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "La URL pre-firmada ha sido generada exitosamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "fileId": {
+                      "type": "string"
+                    },
+                    "uploadUrl": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Petición inválida"
+          },
+          "500": {
+            "description": "Error interno del servidor"
           }
         }
       }
@@ -3897,102 +4129,6 @@
           }
         }
       },
-      "put": {
-        "summary": "Actualiza un pedido por ID",
-        "tags": [
-          "Pedidos"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "id",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "ID del pedido"
-          },
-          {
-            "in": "query",
-            "name": "asignarRepartidor",
-            "schema": {
-              "type": "boolean"
-            },
-            "required": false,
-            "description": "Si se debe asignar un repartidor"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Pedido"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Pedido actualizado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Pedido"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Petición inválida",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Petición inválida"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Pedido no encontrado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "Pedido no encontrado"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "No hay motorizados disponibles",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "example": "No hay motorizados"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       "delete": {
         "summary": "Elimina un pedido por ID",
         "tags": [
@@ -4446,43 +4582,6 @@
       }
     },
     "/producto": {
-      "get": {
-        "summary": "Lista todos los productos con paginación",
-        "tags": [
-          "Producto"
-        ],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "enriquecido",
-            "schema": {
-              "type": "boolean"
-            },
-            "required": false,
-            "description": "Si se debe recuperar el producto enriquecido"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Una lista de productos",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "productos": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/Producto"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       "post": {
         "summary": "Crea un nuevo producto",
         "tags": [
@@ -5277,6 +5376,10 @@
   },
   "tags": [
     {
+      "name": "Ajustes",
+      "description": "API para la gestión de ajustes"
+    },
+    {
       "name": "Almacenes",
       "description": "API para la gestión de almacenes"
     },
@@ -5310,6 +5413,10 @@
     {
       "name": "Igvs",
       "description": "API para la gestión de IGVs"
+    },
+    {
+      "name": "Imagenes",
+      "description": "API para la gestión de imágenes"
     },
     {
       "name": "InventariosAlmacen",

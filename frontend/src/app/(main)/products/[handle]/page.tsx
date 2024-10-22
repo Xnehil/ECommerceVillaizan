@@ -8,7 +8,6 @@ import {
   listRegions,
   retrievePricedProductById,
 } from "@lib/data"
-import { Region } from "@medusajs/medusa"
 import ProductTemplate from "@modules/products/templates"
 import axios from "axios"
 import { Producto } from "types/PaqueteProducto"

@@ -1,24 +1,18 @@
-import { useRouter } from "next/navigation"
-import React, { use, useEffect } from "react"
+import React from "react"
 import { CityCookie } from "types/global"
 
 interface SelectCityProps {
-  setSelectCityPopup: (selectCityPopup: boolean) => void
+  setSelectCityPopup: () => void // Se ajusta para activar el popup de confirmación
   city: CityCookie
 }
 
-const SelectCity: React.FC<SelectCityProps> = ({
-  setSelectCityPopup,
-  city,
-}) => {
+const SelectCity: React.FC<SelectCityProps> = ({ setSelectCityPopup, city }) => {
   return (
     <div style={styles.rectangulo} className="mt-2 mb-2 pl-4 pr-4">
       <p>Catálogo de zona: {city.nombre}</p>
       <button
         style={styles.optionButton}
-        onClick={() => {
-          setSelectCityPopup(true)
-        }}
+        onClick={setSelectCityPopup} // Activar la confirmación del cambio de ciudad
       >
         Cambiar
       </button>

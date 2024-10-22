@@ -63,6 +63,41 @@ export async function getOrSetCart(only_get=false) {
   revalidateTag("cart")
 }
 
+export async function deleteCart() {
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+
+  if (!cartId) {
+    console.error("No hay carrito para eliminar.")
+    return null
+  }
+
+  try {
+    // Realizar la solicitud DELETE para eliminar el carrito
+    await axios.delete(`${baseUrl}/admin/pedido/${cartId}`)
+
+    console.log(`Carrito con ID ${cartId} eliminado.`)
+
+    // Eliminar la cookie del carrito
+    cookies().set("_medusa_cart_id", "", {
+      maxAge: -1, // Esto elimina la cookie
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    })
+
+    return {
+      success: true,
+      message: `Carrito con ID ${cartId} eliminado.`,
+    }
+  } catch (e) {
+    console.error("Error al eliminar el carrito:", e)
+    return {
+      success: false,
+      message: "Error al eliminar el carrito.",
+    }
+  }
+}
+
 export async function retrieveCart(productos: boolean = false) {
   const cookieValues = cookies()
   const cartId = cookieValues.get("_medusa_cart_id")?.value
