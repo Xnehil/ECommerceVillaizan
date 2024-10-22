@@ -9,17 +9,21 @@ interface BuscandoPopupProps {
 }
 
 const BuscandoPopup: React.FC<BuscandoPopupProps> = ({ onClose, customText, error = false }) => {
+  const buttonText = error && customText === "Error al guardar el metodo de pago. Inténtalo de nuevo en unos minutos"
+    ? "Regresar al carrito"
+    : "Cerrar";
+
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
         {error ? (
-             <div style={styles.errorContainer}>
-             <img src={"/images/motoHeladera.png"} alt="Error" style={styles.errorImage} />
-             <p style={styles.errorMessage}>
+          <div style={styles.errorContainer}>
+            <img src={"/images/motoHeladera.png"} alt="Error" style={styles.errorImage} />
+            <p style={styles.errorMessage}>
               {customText}
             </p>
-             <button style={styles.closeButton} onClick={onClose}>Cerrar</button>
-           </div>
+            <button style={styles.closeButton} onClick={onClose}>{buttonText}</button>
+          </div>
         ) : (
           <>
             <LoadingSpinner size={140} className="custom-spinner-class" />

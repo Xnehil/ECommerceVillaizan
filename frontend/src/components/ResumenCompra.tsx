@@ -7,6 +7,7 @@ import { DetallePedido, MetodoPago, Pedido } from 'types/PaquetePedido';
 import { Direccion } from 'types/PaqueteEnvio';
 import { Usuario } from 'types/PaqueteUsuario';
 import axios, { AxiosError } from "axios"
+import { ErrorMessage } from '@hookform/error-message';
 
 interface ResumenCompraProps {
   descuento: number;
@@ -160,6 +161,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             setShowPopup(false);
             setShowBuscandoPopup(true);
             setShowError(true);
+        } else if (axiosError.response?.status === 504) {
+            console.log("Algunos productos en tu carrito tienen stock insuficiente.");
+            setErrorText("Algunos productos en tu carrito tienen stock insuficiente.");
+            setShowPopup(false);
+            setShowBuscandoPopup(true);
+            setShowError(true);
         }
     }
     
@@ -167,6 +174,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
 
   const handleCloseBuscandoPopup = () => {
     setShowBuscandoPopup(false);
+    if(errorText === "Algunos productos en tu carrito tienen stock insuficiente."){
+      window.history.back();
+    }
   };
 
   const handleRedirect = () => {
@@ -193,7 +203,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       ))}
 
       {/* Mostrar descuento y costo de envío */}
-      {hayDescuento && (
+      {hayDescuento && descuento > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
           <span>Descuento</span>
           <span>- S/. {descuento.toFixed(2)}</span>
