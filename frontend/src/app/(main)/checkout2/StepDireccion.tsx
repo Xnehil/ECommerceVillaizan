@@ -1,10 +1,11 @@
 import { Pedido } from "types/PaquetePedido"
 import { enrichLineItems, getOrSetCart } from "@modules/cart/actions"
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import Summary2 from "@modules/cart/templates/summary2"
 import axios from "axios"
 import { getCityCookie } from "@modules/store/actions"
 import GoogleMapModal from "@components/GoogleMapsModal"
+import { set } from "lodash"
 
 interface StepDireccionProps {
   setStep: (step: string) => void
@@ -13,26 +14,50 @@ interface StepDireccionProps {
 const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
   const [calle, setCalle] = useState("")
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
   const [numeroExterior, setNumeroExterior] = useState("")
   const [numeroInterior, setNumeroInterior] = useState("")
   const [ciudad, setCiudad] = useState("")
   const [referencia, setReferencia] = useState("")
   const [distrito, setDistrito] = useState("")
-  const [nombre, setNombre] = useState("")
-  const [telefono, setTelefono] = useState("")
-  const [numeroDni, setNumeroDni] = useState("")
+  const [nombre, setNombre] = useState("") // Nuevo estado para nombre
+  const [telefono, setTelefono] = useState("") // Nuevo estado para teléfono
+  const [numeroDni, setNumeroDni] = useState("") // Nuevo estado para DNI
+  const [error, setError] = useState("")
+  const [locationError, setLocationError] = useState("")
+  const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+  const [showMapModal, setShowMapModal] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number
+    lng: number
+  } | null>(null)
   const [dniError, setDniError] = useState<string | null>(null)
   const [telefonoError, setTelefonoError] = useState<string | null>(null)
   const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
 
-  const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-
-  const [showMapModal, setShowMapModal] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState({ lat: "", lng: "" })
-
   const handleMapSelect = (lat: number, lng: number) => {
-    setSelectedLocation({ lat: lat.toString(), lng: lng.toString() })
+    setSelectedLocation({ lat, lng })
     console.log("Selected Location:", { lat, lng })
+    setLocationError("")
+    if (!calle || calle === "") {
+      const geocoder = new google.maps.Geocoder()
+      const latlng = new google.maps.LatLng(lat, lng)
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === "OK" && results) {
+          if (results[0]) {
+            const address = results[0].formatted_address
+            // console.log("Address:", address)
+            setCalle(address)
+          } else {
+            console.error("No se encontraron resultados.")
+          }
+        } else {
+          console.error("Geocoder falló debido a:", status)
+        }
+      })
+    }
   }
 
   const fetchCart = async () => {
@@ -47,6 +72,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
         console.error("No se obtuvo un carrito válido.")
         return
       }
+      console.log("Contenido del carrito:", cart)
 
       const enrichedItems = await enrichLineItems(cart.detalles)
       cart.detalles = enrichedItems
@@ -56,31 +82,60 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
       console.error("Error al obtener el carrito:", error)
     }
   }
+  const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNombre(value);
+    localStorage.setItem('nombre', value); // Save to localStorage
+  }
 
-  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    if (/^\d*$/.test(value)) {
-      setNumeroDni(value)
-      if (value.length > 8) {
-        setDniError("El DNI no puede tener más de 8 dígitos")
-      } else {
-        setDniError(null)
-      }
-    }
+  const handleNroInteriorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNumeroInterior(value);
+    localStorage.setItem('nroInterior', value);
   }
 
   const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
+    const value = e.target.value;
+  
+    // Ensure the value contains only digits before updating the state
     if (/^\d*$/.test(value)) {
-      setTelefono(value)
+      setTelefono(value);
+      localStorage.setItem('telefono', value); // Save to localStorage
+  
+      // Check if the value exceeds 9 digits
       if (value.length > 9) {
-        setTelefonoError("El teléfono no puede tener más de 9 dígitos")
+        setTelefonoError("El teléfono no puede tener más de 9 dígitos");
       } else {
-        setTelefonoError(null)
+        setTelefonoError(null); // Clear error if it's valid
       }
     }
   }
 
+  const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d*$/.test(value)) {
+      setNumeroDni(value);
+      localStorage.setItem('dni', value); // Save to localStorage
+      if (value.length > 8) {
+        setDniError("El DNI no puede tener más de 8 dígitos");
+      } else {
+        setDniError(null);
+      }
+    }
+  }
+
+  const handleCalleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCalle(value);
+    localStorage.setItem('calle', value); // Save to localStorage
+  };
+
+  const handleReferenciaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setReferencia(value);
+    localStorage.setItem('referencia', value); // Save to localStorage
+  };
+  
   const isFormValid = () => {
     return (
       nombre.trim() !== "" &&
@@ -91,14 +146,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   }
 
   const handleSubmit = async () => {
-    if (!isFormValid()) {
-      setShowWarnings(true) // Mostrar advertencia cuando se intenta enviar el formulario con campos vacíos
-      return
+    if  (!isFormValid()) {
+      setShowWarnings(true);
+      return;
     }
-
-    // Resetear advertencia cuando se valida correctamente el formulario
-    setShowWarnings(false)
-
+    setShowWarnings(false);
     const direccionData = {
       calle,
       numeroExterior,
@@ -133,6 +185,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
     }
 
     try {
+      // Realizar ambas solicitudes POST
       const [direccionResponse, usuarioResponse] = await Promise.all([
         axios.post(baseUrl+"/admin/direccion", direccionData, {
           headers: { "Content-Type": "application/json" },
@@ -142,11 +195,17 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
         }),
       ])
 
-      const direccionId = direccionResponse.data.direccion.id
-      const usuarioId = usuarioResponse.data.usuario.id
-
+      console.log("Respuesta de dirección:", direccionResponse.data)
+      console.log("Respuesta de usuario:", usuarioResponse.data)
+      // Obtener los IDs de la respuesta
+      const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
+      const usuarioId = usuarioResponse.data.usuario.id // Ajusta según la estructura de la respuesta
+      console.log("Pedido ID:", direccionId)
+      console.log("Pedido ID:", usuarioId)
+      // Realizar el PUT para actualizar el pedido con los IDs
       if (carritoState?.id) {
         const pedidoId = carritoState.id
+        console.log("Pedido ID:", pedidoId)
         const pedidoUpdateData = {
           direccion: direccionId,
           usuario: usuarioId,
@@ -159,6 +218,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
           }
         )
 
+        console.log("Pedido actualizado con dirección y usuario.")
         setStep("pago")
       } else {
         console.error("No se encontró el ID del pedido.")
@@ -169,14 +229,60 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   }
 
   useEffect(() => {
+    const savedNombre = localStorage.getItem('nombre');
+    const savedTelefono = localStorage.getItem('telefono');
+    const savedDni = localStorage.getItem('dni');
+    const savedCalle = localStorage.getItem('calle');
+    const savedNroInterior= localStorage.getItem('nroInterior');
+    const savedReferencia= localStorage.getItem('referencia');
+  
+    if (savedNombre) setNombre(savedNombre);
+    if (savedTelefono) setTelefono(savedTelefono);
+    if (savedDni) setNumeroDni(savedDni);
+    if (savedNroInterior) setNumeroInterior(savedNroInterior);
+    if (savedCalle) setCalle(savedCalle);
+    if (savedReferencia) setReferencia(savedReferencia);
     fetchCart()
+    if (inputRef.current && google.maps.places) {
+      const city = getCityCookie()
+
+      const sanMartinBounds = new google.maps.LatLngBounds(
+        new google.maps.LatLng(-7.0, -77.5), // Southwest corner of San Martin
+        new google.maps.LatLng(-5.0, -75.5) // Northeast corner of San Martin
+      )
+
+      autocompleteRef.current = new google.maps.places.Autocomplete(
+        inputRef.current,
+        {
+          types: ["address"],
+          componentRestrictions: { country: "PE" },
+          bounds: sanMartinBounds,
+          strictBounds: true,
+        }
+      )
+
+      autocompleteRef.current.addListener("place_changed", () => {
+        const place = autocompleteRef.current?.getPlace()
+        if (
+          place &&
+          place.formatted_address &&
+          place.formatted_address.includes(city.nombre)
+        ) {
+          setCalle(place.formatted_address)
+        } else {
+          // Handle case when place is outside the selected city
+          console.log("Selected place is not within the desired city")
+          setCalle("")
+        }
+      })
+    }
   }, [])
 
   return (
     <div className="content-container mx-auto py-8">
       <button
         className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800"
-        onClick={() => window.history.back()}
+        onClick={() => window.history.back() /*setStep('previous')*/}
       >
         <img src="/images/back.png" alt="Volver" className="h-8" /> Volver
       </button>
@@ -207,7 +313,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 type="text"
                 id="nombre"
                 value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
+                onChange={handleNombreChange}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="Juan Perez"
               />
@@ -230,7 +336,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="12345678"
               />
-              {dniError && <p className="text-red-500">{dniError}</p>}
+              {dniError && (
+                <p className="text-red-500 mt-2">{dniError}</p>  // Render the error message if it's set
+                )}
             </div>
           </div>
 
@@ -243,11 +351,13 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               >
                 Ciudad <span className="text-red-500">*</span>
               </label>
+              {locationError && <p className="text-red-500">{locationError}</p>}
               <div className="flex gap-3">
                 <input
                   type="text"
                   id="ciudad"
                   value={ciudad}
+                  onChange={(e) => setCiudad(e.target.value)}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="Lima"
                   disabled={true}
@@ -276,9 +386,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   type="text"
                   id="direccion"
                   value={calle}
-                  onChange={(e) => setCalle(e.target.value)}
+                  onChange={handleCalleChange}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="Calle Malvinas 123"
+                  ref={inputRef}
                 />
               </div>
               <div>
@@ -292,9 +403,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                   type="text"
                   id="numero"
                   value={numeroInterior}
-                  onChange={(e) => setNumeroInterior(e.target.value)}
+                  onChange={handleNroInteriorChange}
                   className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="Colocar el numero interno"
+                  placeholder="No rellenar si no aplica"
                 />
               </div>
             </div>
@@ -317,7 +428,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
                 type="text"
                 id="referencia"
                 value={referencia}
-                onChange={(e) => setReferencia(e.target.value)}
+                onChange={handleReferenciaChange}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="Esquina del parque Tres Marías"
               />
@@ -333,29 +444,30 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               >
                 Teléfono <span className="text-red-500">*</span>
               </label>
+              {error && <p className="text-red-500">{error}</p>}
               <input
                 type="text"
                 id="telefono"
                 value={telefono}
-                onChange={handleTelefonoChange}
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="987654321"
+                onChange={handleTelefonoChange}
               />
-              {telefonoError && <p className="text-red-500">{telefonoError}</p>}
+              {telefonoError && (
+                <p className="text-red-500 mt-2">{telefonoError}</p>  // Render the error message if it's set
+              )}
             </div>
-          </div>
-
-          <div className="mt-6 text-gray-600">
-            <p>Los campos con <span className="text-red-500">*</span> son obligatorios.</p>
           </div>
         </form>
 
         {/* Map modal */}
         {showMapModal && (
-            <GoogleMapModal
-              onSelectLocation={handleMapSelect}
-              closeModal={() => setShowMapModal(false)}
-            />
+          <GoogleMapModal
+            onSelectLocation={handleMapSelect}
+            city={ciudad}
+            closeModal={() => setShowMapModal(false)}
+            {...(selectedLocation && { location: selectedLocation })}
+          />
         )}
 
         <div className="bg-white py-6">
@@ -364,7 +476,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
               carrito={carritoState}
               handleSubmit={handleSubmit}
               isFormValid={isFormValid()}
-              showWarnings={showWarnings} // Pasar advertencias
+              showWarnings={showWarnings}
             />
           ) : (
             <p>Cargando carrito...</p>
@@ -375,4 +487,4 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
   )
 }
 
-export default StepDireccion;
+export default StepDireccion

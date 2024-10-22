@@ -7,7 +7,9 @@ import { Pedido } from "types/PaquetePedido"
 import { getCityCookie, setCityCookie } from "../actions"
 import CiudadPopup from "@components/CiudadPopup"
 import SelectCity from "@components/SelectCity"
+import ConfirmChangeCityPopup from "@components/ConfirmChangeCityPopup" // Importar el popup de confirmación
 import { CityCookie } from "types/global"
+import { deleteCart } from "@modules/cart/actions"
 
 const StoreTemplate = ({
   sortBy,
@@ -21,6 +23,7 @@ const StoreTemplate = ({
   const pageNumber = page ? parseInt(page) : 1
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
   const [selectCityPopup, setSelectCityPopup] = useState(false)
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false) // Estado para el popup de confirmación
   const [city, setCity] = useState<CityCookie | null>(null)
 
   useEffect(() => {
@@ -40,8 +43,27 @@ const StoreTemplate = ({
   }, [city])
 
   // Nueva función para reiniciar el carrito
-  const resetCarrito = () => {
-    setCarritoState(null) // Vacia el carrito
+// Nueva función async para resetear el carrito
+    const resetCarrito = async () => {
+      const result = await deleteCart(); // Llamada a deleteCart para eliminar el carrito
+
+      if (result?.success) {
+        console.log(result.message);
+        setCarritoState(null); // Actualiza el estado local si es necesario
+      } else {
+        console.error(result?.message);
+      }
+    };
+
+  // Funciones para manejar la confirmación de cambio de ciudad
+  const handleConfirmCityChange = () => {
+    setSelectCityPopup(true) // Procede a cambiar la ciudad
+    resetCarrito(); // Llama a resetCarrito para vaciar/eliminar el carrito
+    setShowConfirmPopup(false) // Cierra el popup
+  }
+
+  const handleCancelCityChange = () => {
+    setShowConfirmPopup(false) // Cierra el popup sin cambiar
   }
 
   return (
@@ -49,7 +71,8 @@ const StoreTemplate = ({
       className="flex flex-col small:flex-row small:items-start py-6 content-container"
       data-testid="category-container"
     >
-      {selectCityPopup && <CiudadPopup setCity={setCity} resetCarrito={resetCarrito} />} {/* Pasar resetCarrito */}
+      {selectCityPopup && <CiudadPopup setCity={setCity} resetCarrito={resetCarrito} />}
+      
       {!selectCityPopup && (
         <div className="w-full">
           <div className="mb-8 text-2xl-semi">
@@ -62,11 +85,14 @@ const StoreTemplate = ({
               </h1>
             </Link>
           </div>
+
           {city && (
-            <SelectCity setSelectCityPopup={setSelectCityPopup} city={city} />
+            <SelectCity
+              setSelectCityPopup={() => setShowConfirmPopup(true)} // Activa el popup de confirmación
+              city={city}
+            />
           )}
-          
-          {/* Mueve el botón del carrito debajo de los filtros */}
+
           <Suspense fallback={<SkeletonProductGrid />}>
             <PaginatedProducts
               sortBy={sortBy || "created_at"}
@@ -78,6 +104,14 @@ const StoreTemplate = ({
             />
           </Suspense>
         </div>
+      )}
+
+      {/* Popup de confirmación afuera de SelectCity */}
+      {showConfirmPopup && (
+        <ConfirmChangeCityPopup
+          onConfirm={handleConfirmCityChange}
+          onCancel={handleCancelCityChange}
+        />
       )}
     </div>
   )

@@ -81,7 +81,7 @@ export const GET = async (
  *             $ref: '#/components/schemas/producto'
  *     responses:
  *       200:
- *         description: producto actualizado exitosamente
+ *         description: Producto actualizado exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -89,7 +89,7 @@ export const GET = async (
  *       400:
  *         description: Petición inválida
  *       404:
- *         description: producto no encontrado
+ *         description: Producto no encontrado
  */
 
 export const PUT = async (

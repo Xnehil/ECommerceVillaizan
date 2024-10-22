@@ -11,9 +11,10 @@ const zanahoria="/images/zanohoria.png";
 
 interface EnEsperaTrackingProps {
     codigoSeguimiento: string;
+    mensaje?: string;
 }
 
-const EnEsperaTracking: React.FC<EnEsperaTrackingProps> = ({codigoSeguimiento}) => {
+const EnEsperaTracking: React.FC<EnEsperaTrackingProps> = ({codigoSeguimiento, mensaje}) => {
     const images = [berenjena, cebolla, pera, pinon, tomate, zanahoria];
     const duplicatedImages = images.concat(images);
 
@@ -33,8 +34,8 @@ const EnEsperaTracking: React.FC<EnEsperaTrackingProps> = ({codigoSeguimiento}) 
                     />
                 ))}
             </div>
-            <div style={{ zIndex: 2 }} className='flex flex-col items-center bg-white p-4 rounded-lg shadow-lg'>
-            <h6 style={styles.heading}>Tu pedido está en espera</h6>
+            <div style={{ zIndex: 2 }} className='flex flex-col items-center bg-white p-4 rounded-lg shadow-lg w-1/2'>
+            <h6 style={styles.heading}>{mensaje}</h6>
             <Spinner />
             <p style={styles.body}>Cuando tu pedido esté en camino, podrás seguirlo en tiempo real.</p>
             <p style={styles.body}>Tu código de seguimiento es:</p>
@@ -79,6 +80,7 @@ const styles = {
         marginBottom: '0.5rem',
         fontSize: '1.5rem',
         color: '#B88E2F', // mostazaTexto
+        maxWidth: '60%',
     },
     body: {
         marginTop: '8px',
