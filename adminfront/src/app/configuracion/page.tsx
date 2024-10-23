@@ -8,7 +8,9 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "@/components/Loading";
 import { Separator } from "@/components/ui/separator";
-import Parametros from "./parametros";
+import Parametros from "@/app/configuracion/parametros";
+import Categorias from "@/app/configuracion/categorias/categorias";
+import Subcategorias from "@/app/configuracion/subcategorias/subcategorias";
 
 const ConfiguracionPage: React.FC = () => {
   const router = useRouter(); // Initialize useRouter
@@ -23,10 +25,6 @@ const ConfiguracionPage: React.FC = () => {
     }
   }, []);
 
-  const handleAddProductClick = () => {
-    router.push("/productos/agregar"); // Navigate to /agregar page
-  };
-
   return (
     <>
       <div className="content-container">
@@ -36,9 +34,8 @@ const ConfiguracionPage: React.FC = () => {
         <Separator />
         <div className="information-container">
           <Parametros isEditing={false} />
-        </div>
-        <div className="lower-buttons-container w-full">
-          <Button variant="default">Editar</Button>
+          <Categorias/>
+          <Subcategorias isEditing={false} />
         </div>
       </div>
     </>

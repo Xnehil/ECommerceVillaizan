@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 
 interface ParametrosProps {
   isEditing: boolean;
@@ -18,7 +19,7 @@ interface ParametrosProps {
 
 const Parametros: React.FC<ParametrosProps> = ({ isEditing = false }) => {
   return (
-    <div className="flex p-0 flex-col items-start gap-[16px] self-stretch w-full md:w-1/3">
+    <div className="flex p-0 flex-col items-start gap-[16px] self-stretch w-full md:w-1/3 h-full">
       <h5>General</h5>
       <div className="w-full max-w-sm flex space-x-2">
         <div className="flex">
@@ -67,6 +68,9 @@ const Parametros: React.FC<ParametrosProps> = ({ isEditing = false }) => {
             Si el tiempo se agota, el pedido se cancelará automáticamente."
           />
         </div>
+      </div>
+      <div className="w-full mt-8">
+        <Button variant="default">Editar</Button>
       </div>
     </div>
   );
