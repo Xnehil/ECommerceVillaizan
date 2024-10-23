@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Usuario } from "@/interfaces/interfaces";
+import { Pedido, Usuario } from "@/interfaces/interfaces";
 
 // Guardar la sesión
 const storeUserSession = async (token: string) => {
@@ -44,4 +44,26 @@ const getUserData = async (): Promise<Usuario | null> => {
   }
 };
 
-export { storeUserSession, getUserSession, storeUserData, getUserData };
+const storeCurrentDelivery = async (delivery: Pedido) => {
+  try {
+    await AsyncStorage.setItem('@current_delivery', JSON.stringify(delivery));
+  } catch (e) {
+    console.error('Error saving current delivery', e);
+  }
+};
+
+const getCurrentDelivery = async (): Promise<Pedido | null> => {
+  try {
+    const delivery = await AsyncStorage.getItem('@current_delivery');
+    if (delivery !== null) {
+      return JSON.parse(delivery) as Pedido;
+    }
+    return null;
+  } catch (e) {
+    console.error('Error retrieving current delivery', e);
+    return null;
+  }
+};
+
+
+export { storeUserSession, getUserSession, storeUserData, getUserData, getCurrentDelivery,  storeCurrentDelivery};

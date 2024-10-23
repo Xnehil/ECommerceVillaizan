@@ -17,7 +17,6 @@ export {
   ErrorBoundary,
 } from "expo-router";
 
-
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -51,11 +50,19 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack initialRouteName="login">
-        <Stack.Screen name="login" options={{ headerShown: false}} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="home" options={{ headerShown: false }} />
         <Stack.Screen
-          name="Entregar"
+          name="entregar"
           options={{ presentation: "card", title: "Entregar" }}
+        />
+        <Stack.Screen
+          name="confirmada"
+          options={{presentation: "card",title: "Entrega Confirmada",headerShown: false,}}
+        />
+        <Stack.Screen
+          name="cancelada"
+          options={{presentation: "card",title: "Entrega Confirmada",headerShown: false,}}
         />
       </Stack>
     </ThemeProvider>

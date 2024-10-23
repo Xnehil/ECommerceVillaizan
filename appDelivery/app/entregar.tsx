@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,25 +6,124 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import SwipeButton from "rn-swipe-button";
-import axios from 'axios';
+import axios from "axios";
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import TabBarIcon from "@/components/StyledIcon";
-
-type Producto = {
-  nombre: string;
-  cantidad: number;
-};
+import { DetallePedido } from "@/interfaces/interfaces";
+import { Link, router } from "expo-router";
+import { getCurrentDelivery, storeCurrentDelivery } from "@/functions/storage";
 
 const EntregarPedido = () => {
   const route = useRoute();
-  const { pedido } = route.params as { pedido: string };
+  const { pedido } = route.params as { pedido?: string } || { pedido: null };
+
+  const parsedPedido = pedido ? JSON.parse(decodeURIComponent(pedido)) : {};
+
+  const [pedidoCompleto, setPedidoCompleto] = useState<any>(null);
 
 
+  const handleCancelEntrega = async () => {
+    try {
+      const confirm = window.confirm(
+        "¿Está seguro de que desea reasginar la entrega?"
+      );
+      if (!confirm) return;
 
-  const parsedPedido = JSON.parse(decodeURIComponent(pedido));
+      const baseUrl = "http://localhost:9000/admin";
+      await axios.put(`${baseUrl}/pedido/${parsedPedido.id}`, {
+        estado: "Cancelado",
+      });
+      alert("Entrega reasginada");
+      router.push({
+        pathname: "/cancelada",
+      });
+    } catch (error) {
+      console.error("Error updating pedido:", error);
+      alert("Error al reasginar la entrega");
+    }
+  };
+
+  const handleConfirmarEntrega = async () => {
+    try {
+      const confirm = window.confirm(
+        "¿Está seguro de que desea confirmar la entrega?"
+      );
+      if (!confirm) return;
+
+      const baseUrl = "http://localhost:9000/admin";
+      await axios.put(`${baseUrl}/pedido/${parsedPedido.id}`, {
+        estado: "Entregado",
+      });
+      alert("Entrega confirmada");
+      router.push({
+        pathname: "/confirmada",
+      });
+    } catch (error) {
+      console.error("Error updating pedido:", error);
+      alert("Error al confirmar la entrega");
+    }
+  };
+
+  const fetchPedidoCompleto = async (idPedido: string) => {
+    try {
+      const baseUrl = "http://localhost:9000/admin";
+
+      // Obtener los datos del pedido
+      const pedidoResponseDetalle = await axios.get(
+        `${baseUrl}/pedido/${idPedido}/conDetalle`
+      );
+      const pedidoDataDetalle = pedidoResponseDetalle.data.pedido;
+
+      const pedidoResponse = await axios.get(
+        `${baseUrl}/pedido/${idPedido}?enriquecido=true`
+      );
+      let pedidoData = pedidoResponse.data.pedido;
+      pedidoData.detalles = pedidoDataDetalle.detalles;
+      // Mapear los detalles del pedido para obtener los detalles completos
+      const detallesPromises = pedidoData.detalles.map(async (detalle: any) => {
+        try {
+          const detalleResponse = await axios.get(
+            `${baseUrl}/detallePedido/${detalle.id}`
+          );
+          return detalleResponse.data.detallePedido;
+        } catch (error) {
+          console.error(`Error fetching detalle for ID ${detalle.id}:`, error);
+          return null; // Si ocurre un error, manejarlo retornando null o un valor por defecto
+        }
+      });
+
+      // Esperar a que todas las promesas se resuelvan
+      const detallesCompletos = await Promise.all(detallesPromises);
+
+      // Filtrar los detalles no válidos (si alguna promesa falló y retornó null)
+      pedidoData.detalles = detallesCompletos.filter(
+        (detalle) => detalle !== null
+      );
+      // Establecer el estado una vez que todos los detalles estén listos
+      storeCurrentDelivery(pedidoData);
+      setPedidoCompleto(pedidoData);
+      router.replace('/entregar')
+    } catch (error) {
+      console.error("Error fetching pedido completo:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (parsedPedido?.id) {
+        fetchPedidoCompleto(parsedPedido.id);
+      } else {
+        const pedido = await getCurrentDelivery();
+        setPedidoCompleto(pedido);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -34,7 +133,9 @@ const EntregarPedido = () => {
         </View>
 
         <View style={styles.clienteRow}>
-          <Text style={styles.cliente}>{parsedPedido.cliente.nombre}</Text>
+          <Text style={styles.cliente}>
+            {pedidoCompleto?.usuario?.nombre || "Nombre no disponible"}
+          </Text>
           <View style={styles.iconosCliente}>
             <TouchableOpacity>
               <TabBarIcon
@@ -62,15 +163,36 @@ const EntregarPedido = () => {
         <Text style={styles.titulo}>Datos del pedido</Text>
         <View style={styles.pedidoRow}>
           <View style={styles.pedidoInfo}>
-            <Text style={styles.productosText}>
-              {parsedPedido.productos
-                .map(
-                  (producto: Producto) =>
-                    `(${producto.cantidad}) ${producto.nombre} `
-                )
-                .join(", ")}
-            </Text>
-            <Text style={styles.linkVerMas}>Ver más</Text>
+            {Array.isArray(pedidoCompleto?.detalles) &&
+            pedidoCompleto.detalles.length > 0 ? (
+              <Text style={styles.productosText}>
+                {pedidoCompleto.detalles
+                  .map(
+                    (detalle: DetallePedido) =>
+                      `(${detalle?.cantidad || 0}) ${
+                        detalle?.producto?.nombre || "Nombre no disponible"
+                      }`
+                  )
+                  .join(", ")}
+              </Text>
+            ) : (
+              <Text style={styles.productosText}>
+                No hay detalles del pedido
+              </Text>
+            )}
+            <Link
+              href={{
+                pathname: "/Detalles",
+              }}
+              asChild
+              id={String(parsedPedido.id)}
+            >
+              <Pressable>
+                {({ pressed }) => (
+                  <Text style={styles.linkVerMas}>Ver detalles</Text>
+                )}
+              </Pressable>
+            </Link>
           </View>
           <TouchableOpacity>
             <TabBarIcon
@@ -88,11 +210,11 @@ const EntregarPedido = () => {
         <View style={styles.detallesPago}>
           <View style={styles.subtotalColumn}>
             <View style={styles.columnTitle}>
-              <Text style={styles.subtotalTitulo}>Subtotal:</Text>
+              <Text style={styles.subtotalTitulo}>Total:</Text>
             </View>
             <View>
               <Text style={styles.subtotalValor}>
-                S/. {parsedPedido.subtotal}
+                S/. {pedidoCompleto?.total || "Subtotal no disponible"}
               </Text>
             </View>
           </View>
@@ -103,16 +225,23 @@ const EntregarPedido = () => {
             <View style={styles.metodosListado}>
               <View style={styles.metodoInfo}>
                 <View style={styles.leftInfo}>
-                  <View style={{ justifyContent: "center" }}>
-                    <Image
-                      source={require("../assets/images/yape.png")}
-                      style={styles.iconoPago}
-                    />
-                  </View>
-                  <Text style={styles.metodoNombre}>
-                    {parsedPedido.metodosPago[0]?.nombre ||
-                      "Método de pago no especificado"}
-                  </Text>
+                  {pedidoCompleto?.metodosPago?.[0]?.nombre ? (
+                    <>
+                      <View style={{ justifyContent: "center" }}>
+                        <Image
+                          source={require("../assets/images/yape.png")}
+                          style={styles.iconoPago}
+                        />
+                      </View>
+                      <Text style={styles.metodoNombre}>
+                        {pedidoCompleto.metodosPago[0].nombre}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={styles.metodoNombre}>
+                      Método de pago no especificado
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.rightInfo}>
                   <View style={{ justifyContent: "center" }}>
@@ -134,7 +263,26 @@ const EntregarPedido = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <View style={styles.swipeButtonContainer}>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.rejectButton}
+          onPress={handleCancelEntrega}
+        >
+          <Text style={styles.confirmButtonText}>Reasginar entrega</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={handleConfirmarEntrega}
+        >
+          <Text style={styles.confirmButtonText}>Confirmar entrega</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+/*
+<View style={styles.swipeButtonContainer}>
         <SwipeButton
           thumbIconBackgroundColor="#FFFFFF"
           thumbIconBorderColor="#E0E0E0"
@@ -148,10 +296,7 @@ const EntregarPedido = () => {
           }}
         />
       </View>
-    </View>
-  );
-};
-
+*/
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -163,6 +308,10 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     flexDirection: "column",
     justifyContent: "space-between",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   clienteContainer: {
     marginBottom: 10,
@@ -247,7 +396,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
   },
-  productosText:{
+  productosText: {
     fontSize: 20,
   },
   linkVerMas: {
@@ -282,6 +431,25 @@ const styles = StyleSheet.create({
   agregarParcial: {
     color: "red",
     fontSize: 16,
+  },
+  confirmButton: {
+    backgroundColor: "#4CAF50",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  rejectButton: {
+    backgroundColor: "#F44336", // Red color for reject button
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 20,
+  },
+  confirmButtonText: {
+    fontSize: 18,
+    color: "#FFF",
+    fontWeight: "bold",
   },
   swipeButtonText: {
     fontSize: 18,
