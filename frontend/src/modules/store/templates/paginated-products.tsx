@@ -11,6 +11,7 @@ import { CityCookie } from "types/global";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUp, faArrowDown, faFilter } from '@fortawesome/free-solid-svg-icons';
 
+const FILTERS_KEY = "product_filters";
 const PRODUCT_LIMIT = 12;
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
@@ -29,16 +30,35 @@ export default function PaginatedProducts({
   setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>;
   city?: CityCookie | null;
 }) {
+  const initialFilters = JSON.parse(localStorage.getItem(FILTERS_KEY) || '{}');
+  
   const [products, setProducts] = useState<Producto[]>([]);
+  const [originalProducts, setOriginalProducts] = useState<Producto[]>([]); // Guardar el estado original
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [warning, setWarning] = useState<string | null>(null); // Estado para el mensaje de advertencia por tiempo de espera
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialFilters.selectedCategory || "");
   const [categories, setCategories] = useState<string[]>([]);
   const [productTypes, setProductTypes] = useState<string[]>([]);
-  const [selectedProductType, setSelectedProductType] = useState("");
-  const [searchText, setSearchText] = useState("");
-  const [isSortedByPrice, setIsSortedByPrice] = useState<boolean | null>(null); // null si no se ha seleccionado ninguna ordenación
+  const [selectedProductType, setSelectedProductType] = useState(initialFilters.selectedProductType || "");
+  const [searchText, setSearchText] = useState(initialFilters.searchText || "");
+  const [isSortedByPrice, setIsSortedByPrice] = useState<boolean | null>(initialFilters.isSortedByPrice ?? null);
+  const [sortError, setSortError] = useState<string | null>(null); // Estado para el error de ordenación
+
+  const saveFilters = () => {
+    const filters = {
+      searchText,
+      selectedCategory,
+      selectedProductType,
+      isSortedByPrice,
+    };
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
+  };
+
+  useEffect(() => {
+    saveFilters();
+  }, [searchText, selectedCategory, selectedProductType, isSortedByPrice]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -46,6 +66,11 @@ export default function PaginatedProducts({
 
       setLoading(true);
       setError(null);
+      setWarning(null); // Restablecer la advertencia antes de la nueva solicitud
+
+      const timeout = setTimeout(() => {
+        setWarning("Parece que la conexión está lenta. Inténtalo más tarde.");
+      }, 10000); // 10 segundos de tiempo de espera para mostrar la advertencia
 
       try {
         const cityParam = { id_ciudad: city.id };
@@ -60,6 +85,7 @@ export default function PaginatedProducts({
 
         const products = response.data.productos;
         setProducts(products);
+        setOriginalProducts(products); // Guardar el estado original de los productos
 
         const count = products.length;
         setTotalPages(Math.ceil(count / PRODUCT_LIMIT));
@@ -77,10 +103,13 @@ export default function PaginatedProducts({
           .filter(Boolean);
 
         setProductTypes([...new Set<string>(allProductTypes)]);
+        
+        clearTimeout(timeout); // Limpiar el timeout si la respuesta llega antes de los 10 segundos
       } catch (error: unknown) {
         setError(
           "Los productos no se encuentran disponibles en este momento. Por favor, inténtalo de nuevo."
         );
+        clearTimeout(timeout); // Limpiar el timeout en caso de error
       } finally {
         setLoading(false);
       }
@@ -95,13 +124,20 @@ export default function PaginatedProducts({
 
   // Nueva función para ordenar por precio
   const handleSortByPrice = () => {
-    const sortedProducts = [...products].sort((a, b) =>
-      isSortedByPrice
-        ? a.precioEcommerce - b.precioEcommerce // Orden ascendente si ya está en descendente
-        : b.precioEcommerce - a.precioEcommerce // Orden descendente si no está ordenado
-    );
-    setProducts(sortedProducts);
-    setIsSortedByPrice(isSortedByPrice === null ? true : !isSortedByPrice); // Cambia el estado de orden
+    try {
+      const sortedProducts = [...products].sort((a, b) =>
+        isSortedByPrice
+          ? a.precioEcommerce - b.precioEcommerce // Orden ascendente si ya está en descendente
+          : b.precioEcommerce - a.precioEcommerce // Orden descendente si no está ordenado
+      );
+      setProducts(sortedProducts); // Aplicar la ordenación
+      setIsSortedByPrice(isSortedByPrice === null ? true : !isSortedByPrice);
+      setSortError(null); // Limpiar cualquier mensaje de error previo
+    } catch (error) {
+      // En caso de error, restaurar los productos originales y mostrar un mensaje de error
+      setProducts(originalProducts);
+      setSortError("Lo sentimos. No se puede ordenar en este momento. Por favor, intenta de nuevo.");
+    }
   };
 
   const filteredProducts = products.filter((p) => {
@@ -160,17 +196,29 @@ export default function PaginatedProducts({
             className="flex items-center justify-center h-12 w-12 border border-gray-300 rounded-md bg-white shadow-sm hover:bg-gray-100 focus:outline-none"
             aria-label="Ordenar y filtrar"
           >
-            {/* Mostrar la flecha solo si se ha seleccionado alguna ordenación */}
             {isSortedByPrice !== null && (
               <FontAwesomeIcon
                 icon={isSortedByPrice ? faArrowUp : faArrowDown}
                 className="mr-2"
               />
             )}
-            {/* Icono de filtro */}
             <FontAwesomeIcon icon={faFilter} />
           </button>
         </div>
+
+        {/* Mostrar el mensaje de advertencia si la conexión es lenta */}
+        {warning && (
+          <div className="text-yellow-500 text-center my-4">
+            {warning}
+          </div>
+        )}
+
+        {/* Mostrar el mensaje de error si ocurre un fallo en la ordenación */}
+        {sortError && (
+          <div className="text-red-500 text-center my-4">
+            {sortError}
+          </div>
+        )}
 
         <div className="relative z-10 mb-4">
           <CartButton carrito={carrito} setCarrito={setCarrito} />
