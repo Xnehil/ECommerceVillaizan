@@ -29,21 +29,16 @@ const ConfiguracionPage: React.FC = () => {
 
   return (
     <>
-      <div className="header">
-        <div className="buttons-container">
-          <Button variant="default" onClick={handleAddProductClick}>
-            <Plus size={20} className="mr-2" />
-            Agregar
-          </Button>
-        </div>
-      </div>
       <div className="content-container">
         {isLoading && <Loading />}
         <h4>Configuración</h4>
         <p>Administra los parámetros generales del ecommerce.</p>
         <Separator />
-        <div className="information container">
+        <div className="information-container">
           <Parametros isEditing={false} />
+        </div>
+        <div className="lower-buttons-container w-full">
+          <Button variant="default">Editar</Button>
         </div>
       </div>
     </>
