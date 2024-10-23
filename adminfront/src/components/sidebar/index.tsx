@@ -6,6 +6,7 @@ const Sidebar = () => {
   const sidebarIcons = [
     { name: "Productos", icon: "/icons/productos.png", href: "/productos" },
     { name: "Motorizados", icon: "/icons/tuk-tuk.png", href: "/motorizados" },
+    { name: "Configuración", icon: "/icons/setting.png", href: "/configuracion" },
   ];
   // const pathname
 

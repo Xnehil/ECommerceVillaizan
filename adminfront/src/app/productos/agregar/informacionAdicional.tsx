@@ -138,23 +138,13 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   }, [isEditing]);
 
   const handleCategoryChange = (value: string) => {
-    if (value === "Nueva categoría") {
-      setIsNewCategory(true);
-    } else {
-      setIsNewCategory(false);
-      setSelectedCategory(value);
-      producto.current.tipoProducto = { id: value } as TipoProducto;
-    }
+    setSelectedCategory(value);
+    producto.current.tipoProducto = { id: value } as TipoProducto;
   };
 
   const handleSubcategoryChange = (value: string) => {
-    if (value === "Nueva subcategoría") {
-      setIsNewSubcategory(true);
-    } else {
-      setIsNewSubcategory(false);
-      setSelectedSubcategory(value);
-      producto.current.subcategorias = [{ id: value } as Subcategoria];
-    }
+    setSelectedSubcategory(value);
+    producto.current.subcategorias = [{ id: value } as Subcategoria];
   };
 
   const handleCancelNewCategory = () => {
@@ -188,7 +178,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
           title: "Error",
           description: "La categoría ya existe.",
         });
-        setSelectedCategory(response.data.tipoProducto.id);
         setIsNewCategory(false);
         setNewCategoryName("");
         setIsLoading(false);
@@ -213,9 +202,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
 
       setIsLoading(false);
       setIsNewCategory(false);
-      setSelectedCategory(newCategory.id);
-
-      producto.current.tipoProducto = { id: newCategory.id } as TipoProducto;
 
       toast({
         description: "La nueva categoría ha sido guardada exitosamente.",
@@ -262,7 +248,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
           title: "Error",
           description: "La subcategoría ya existe.",
         });
-        setSelectedSubcategory(response.data.subcategoria.id);
         setIsNewSubcategory(false);
         setNewSubcategoryName("");
         setIsLoading(false);
@@ -286,11 +271,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
 
       setIsLoading(false);
       setIsNewSubcategory(false);
-      setSelectedSubcategory(newSubcategory.id);
-
-      producto.current.subcategorias = [
-        { id: newSubcategory.id } as Subcategoria,
-      ];
 
       toast({
         description: "La nueva subcategoría ha sido guardada exitosamente.",
@@ -474,7 +454,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
 
       document.body.style.pointerEvents = "auto";
 
-      setSelectedCategory("");
       setIsLoading(false);
     } catch (error: any) {
       console.error("Error deleting category:", error);
@@ -521,7 +500,6 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
 
       document.body.style.pointerEvents = "auto";
 
-      setSelectedSubcategory("");
       setIsLoading(false);
     } catch (error: any) {
       console.error("Error deleting subcategory:", error);
@@ -545,7 +523,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
     <div className="info-side-container">
       <h5>Información adicional</h5>
       <>
-        {isLoading && !isNewSubcategory ? (
+        {isLoading ? (
           <div className="grid gap-1">
             <Skeleton className="h-6 w-64" />
             <Skeleton className="h-8 w-64" />
@@ -577,10 +555,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
           <div className="w-full flex flex-column">
             <SelectWithLabel
               label="Categoría"
-              options={categories.current.concat({
-                value: "Nueva categoría",
-                label: "Nueva categoría",
-              })}
+              options={categories.current}
               onChange={handleCategoryChange}
               {...(selectedCategory !== "" && { value: selectedCategory })}
               disabled={!isEditing}
@@ -641,7 +616,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         )}
       </>
       <>
-        {isLoading && !isNewCategory ? (
+        {isLoading ? (
           <div className="grid gap-1">
             <Skeleton className="h-6 w-64" />
             <Skeleton className="h-8 w-64" />
@@ -678,10 +653,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
           <div className="w-full flex flex-column">
             <SelectWithLabel
               label="Subcategoría"
-              options={subcategories.current.concat({
-                value: "Nueva subcategoría",
-                label: "Nueva subcategoría",
-              })}
+              options={subcategories.current}
               onChange={handleSubcategoryChange}
               value={selectedSubcategory}
               disabled={!isEditing}

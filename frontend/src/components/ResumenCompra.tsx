@@ -163,7 +163,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
 
   const handleCloseBuscandoPopup = () => {
     setShowBuscandoPopup(false);
-    if(errorText === "No hay repartidores disponibles. Inténtalo de nuevo en unos minutos"){
+    if(errorText === "Algunos productos en tu carrito tienen stock insuficiente."){
       window.history.back();
     }
   };
@@ -192,7 +192,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       ))}
 
       {/* Mostrar descuento y costo de envío */}
-      {hayDescuento && (
+      {hayDescuento && descuento > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
           <span>Descuento</span>
           <span>- S/. {descuento.toFixed(2)}</span>
