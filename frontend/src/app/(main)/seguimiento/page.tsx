@@ -17,6 +17,9 @@ import { useSearchParams } from "next/navigation"
 import React, { useEffect, useRef } from "react"
 import { Pedido } from "types/PaquetePedido"
 
+import { Suspense } from 'react';
+
+
 const MapaTracking = dynamic(() => import("@components/MapaTracking"), {
   ssr: false,
 })
@@ -232,4 +235,10 @@ const TrackingPage: React.FC = () => {
   )
 }
 
-export default TrackingPage
+const SeguimientoPageWrapper = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <TrackingPage />
+  </Suspense>
+);
+
+export default SeguimientoPageWrapper
