@@ -141,7 +141,7 @@ const Parametros: React.FC<ParametrosProps> = () => {
       });
     } catch (error) {
       console.error("Error saving parameters", error);
-      let description =
+      const description =
         "Ocurrió un error al guardar los parámetros. Por favor, intente de nuevo.";
       toast({
         variant: "destructive",
