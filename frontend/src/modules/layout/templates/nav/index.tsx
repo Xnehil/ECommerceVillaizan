@@ -1,6 +1,16 @@
-import Link from "next/link";
+"use client";
 
-export default async function Nav() {
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+
+export default function Nav() {
+  const [loginUrl, setLoginUrl] = useState('');
+
+  useEffect(() => {
+    const currentUrl = window.location.href;
+    setLoginUrl(`http://localhost:3000/login?redirect=${encodeURIComponent(currentUrl)}`);
+  }, []);
+
   return (
     <div className="sticky top-0 inset-x-0 z-50 bg-rojoVillaizan">
       <header className="relative h-16 mx-auto border-b border-ui-border-base bg-rojoVillaizan">
@@ -24,31 +34,10 @@ export default async function Nav() {
             <Link href="/comprar" className="hover:text-ui-fg-base text-white">
               Comprar
             </Link>
-            <Link href="/sobre" className="hover:text-ui-fg-base text-white">
-              Sobre
-            </Link>
-            <Link href="/contacto" className="hover:text-ui-fg-base text-white">
-              Contacto
-            </Link>
+            <a href={loginUrl} className="hover:text-ui-fg-base text-white flex items-center">
+              Inicia Sesión y accede a promociones
+            </a>
           </div>
-
-          {/* Carrito de compras y Botón de sesión */}
-          <div className="flex items-center gap-x-4">
-            {/* Carrito de compras */}
-            <Link href="/carrito" className="flex items-center">
-              <img
-                src="/images/carritoCompras.png" // Aquí coloca la ruta correcta del ícono del carrito
-                alt="Carrito de Compras"
-                className="h-8" // Ajusta el tamaño del ícono según sea necesario
-              />
-            </Link>
-
-            {/* Botón de sesión */}
-            <Link href="/account" className="hover:text-ui-fg-base text-white flex items-center">
-              Inicia sesión y accede a promociones
-            </Link>
-          </div>
-          
         </nav>
       </header>
     </div>
