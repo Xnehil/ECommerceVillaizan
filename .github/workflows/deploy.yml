@@ -26,7 +26,9 @@ jobs:
             cd backendecommerce/ 
             yarn 
             yarn build
-            pm2 restart medusa
+            pm2 delete medusa
+            pm2 start "yarn start" --name medusa
+            sudo systemctl restart nginx.service
           EOF
 
   deploy-frontend:
@@ -49,9 +51,11 @@ jobs:
             cd frontend/ 
             yarn
             yarn build
-            pm2 restart ecommerce
+            pm2 delete all
+            pm2 start npm --name "ecommerce" -- start
             cd ../adminfront/
             npm install
             npm run build
-            pm2 restart admin
+            pm2 start npm --name "admin" -- start
+            sudo systemctl restart nginx.service
           EOF
