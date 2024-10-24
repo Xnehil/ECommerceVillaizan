@@ -1,24 +1,12 @@
 "use client";
 
-import InputWithLabel from "@/components/forms/inputWithLabel";
 import React, { useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
+import { Subcategoria } from "@/types/PaqueteProducto";
 import axios from "axios";
-import { DataTable } from "@/components/datatable/data-table";
-import columns from "./columns";
 import { Skeleton } from "@/components/ui/skeleton";
-
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { TipoProducto } from "@/types/PaqueteProducto";
+import { DataTable } from "@/components/datatable/data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -29,17 +17,27 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { MoreHorizontal, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import InputWithLabel from "@/components/forms/inputWithLabel";
 
-interface CategoriasProps {}
+interface SubcategoriasProps {}
 
-const Categorias: React.FC<CategoriasProps> = () => {
-  const categories = useRef<TipoProducto[]>([]);
+const Subcategorias: React.FC<SubcategoriasProps> = () => {
+  const subcategories = useRef<Subcategoria[]>([]);
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(true);
 
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const idCategoria = useRef<string | null>(null);
+  const idSubcategoria = useRef<string | null>(null);
   const [nombre, setNombre] = useState("");
 
   const [isOpen, setIsOpen] = useState(false);
@@ -47,34 +45,35 @@ const Categorias: React.FC<CategoriasProps> = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      if (categories.current.length > 0) return;
+    const fetchSubcategories = async () => {
+      if (subcategories.current.length > 0) return;
 
       try {
         // console.log("Fetching categories");
         // console.log(a.current);
         a.current = a.current + 1;
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto`
+        const responseSubcategories = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}subcategoria`
         );
-        if (!response) {
-          throw new Error("Failed to fetch categories");
+
+        if (!responseSubcategories) {
+          throw new Error("Failed to fetch subcategories");
         }
-        const data = await response.data;
-        console.log("Categories fetched:", data);
+        const data = await responseSubcategories.data;
+        console.log("Subcategories fetched:", data);
 
-        const categoriesData: TipoProducto[] = data.tipoProductos;
+        const subcategoriesData: Subcategoria[] = data.subcategorias;
 
-        categories.current = categoriesData;
+        subcategories.current = subcategoriesData;
 
-        console.log("Categories:", categories.current);
+        console.log("Subategories:", subcategories.current);
       } catch (error) {
-        console.error("Failed to fetch categories", error);
+        console.error("Failed to fetch subcategories", error);
         toast({
           variant: "destructive",
           title: "Error",
           description:
-            "Ocurrió un error al obtener las categorías. Por favor, intente de nuevo.",
+            "Ocurrió un error al obtener las subcategorías. Por favor, intente de nuevo.",
         });
       } finally {
         setIsLoading(false);
@@ -82,11 +81,11 @@ const Categorias: React.FC<CategoriasProps> = () => {
     };
 
     if (a.current === 0) {
-      fetchCategories();
+      fetchSubcategories();
     }
   }, []);
 
-  const columns: ColumnDef<TipoProducto>[] = [
+  const columns: ColumnDef<Subcategoria>[] = [
     {
       accessorKey: "nombre",
       header: "Nombre",
@@ -130,11 +129,11 @@ const Categorias: React.FC<CategoriasProps> = () => {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>
-                  ¿Estás seguro de que deseas eliminar esta categoría?
+                  ¿Estás seguro de que deseas eliminar esta subcategoría?
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   Esta acción no se puede deshacer. Esto eliminará
-                  permanentemente la categoría de nuestros servidores.
+                  permanentemente la subcategoría de nuestros servidores.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -163,20 +162,19 @@ const Categorias: React.FC<CategoriasProps> = () => {
   };
 
   const handleEdit = (id: string, nombre: string) => {
-    idCategoria.current = id;
+    idSubcategoria.current = id;
     setNombre(nombre);
     setIsEditing(true);
   };
 
   const handleCancel = () => {
-    idCategoria.current = null;
+    idSubcategoria.current = null;
     setNombre("");
     setIsEditing(false);
     setIsAdding(false);
   };
 
   const handleSaveNew = async () => {
-    // Make POST request to save new category
     if (nombre === "") {
       toast({
         variant: "destructive",
@@ -185,15 +183,13 @@ const Categorias: React.FC<CategoriasProps> = () => {
       });
       return;
     }
-
     setIsLoading(true);
-
+    // Make POST request to save new subcategory
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}subcategoria`,
         {
           nombre: nombre,
-          subcategorias: [],
           productos: [],
         },
         {
@@ -207,37 +203,37 @@ const Categorias: React.FC<CategoriasProps> = () => {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "La categoría ya existe.",
+          description: "La subcategoría ya existe.",
         });
+        setIsLoading(false);
         return;
       }
-
       if (response.status !== 201) {
-        throw new Error("Failed to save new category");
+        throw new Error("Failed to save new subcategory");
       }
 
       const data = response.data;
-      console.log("New category saved:", data);
+      console.log("New subcategory saved:", data);
 
-      // create a TipoProducto object from the response (it will have all the fields)
-      const newCategory: TipoProducto = data.tipoProducto;
+      // create a Subcategoria object from the response (it will have all the fields)
+      const newSubcategory: Subcategoria = data.subcategoria;
 
-      // Add new category to the list of categories
-      categories.current.push(newCategory);
+      // Add new subcategory to the list of subcategories
+      subcategories.current.push(newSubcategory);
 
       setIsLoading(false);
       setIsAdding(false);
 
       toast({
-        description: "La nueva categoría ha sido guardada exitosamente.",
+        description: "La nueva subcategoría ha sido guardada exitosamente.",
       });
     } catch (error) {
-      console.error("Error saving new category:", error);
+      console.error("Error saving new subcategory:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description:
-          "Ocurrió un error al guardar la nueva categoría. Por favor, intente de nuevo.",
+          "Ocurrió un error al guardar la nueva subcategoría. Por favor, intente de nuevo.",
       });
       setIsLoading(false);
     }
@@ -257,7 +253,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
 
     try {
       const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto/${idCategoria.current}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}subcategoria/${idSubcategoria.current}`,
         {
           nombre: nombre,
         },
@@ -269,41 +265,41 @@ const Categorias: React.FC<CategoriasProps> = () => {
       );
 
       if (response.status !== 200) {
-        throw new Error("Failed to save edited category");
+        throw new Error("Failed to save edited subcategory");
       }
 
       const data = response.data;
-      console.log("Edited category saved:", data);
+      console.log("Edited subcategory saved:", data);
 
       // create a TipoProducto object from the response (it will have all the fields)
-      const editedCategory: TipoProducto = data.tipoProducto;
+      const editedSubcategory: Subcategoria = data.subcategoria;
 
       // Update category in the list of categories
-      const index = categories.current.findIndex(
-        (category) => category.id === editedCategory.id
+      const index = subcategories.current.findIndex(
+        (subcategory) => subcategory.id === editedSubcategory.id
       );
-      categories.current[index] = editedCategory;
+      subcategories.current[index] = editedSubcategory;
 
       setIsEditing(false);
       setIsLoading(false);
 
       toast({
-        description: "La categoría ha sido guardada exitosamente.",
+        description: "La subcategoría ha sido guardada exitosamente.",
       });
     } catch (error: any) {
-      console.error("Error saving edited category:", error);
+      console.error("Error saving edited subcategory:", error);
       if (error.response?.data?.error.includes("ya existe")) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "La categoría ya existe.",
+          description: "La subcategoría ya existe.",
         });
       } else {
         toast({
           variant: "destructive",
           title: "Error",
           description:
-            "Ocurrió un error al guardar la categoría editada. Por favor, intente de nuevo.",
+            "Ocurrió un error al guardar la subcategoría editada. Por favor, intente de nuevo.",
         });
       }
       setIsLoading(false);
@@ -318,34 +314,34 @@ const Categorias: React.FC<CategoriasProps> = () => {
 
     try {
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto/${id}`
+        `${process.env.NEXT_PUBLIC_BASE_URL}subcategoria/${id}`
       );
 
       if (response.status !== 200) {
-        throw new Error("Failed to delete category");
+        throw new Error("Failed to delete subcategory");
       }
 
       // Remove category from the list of categories
-      categories.current = categories.current.filter(
-        (category) => category.id !== id
+      subcategories.current = subcategories.current.filter(
+        (subcategory) => subcategory.id !== id
       );
 
       toast({
-        description: "La categoría ha sido eliminada exitosamente.",
+        description: "La subcategoría ha sido eliminada exitosamente.",
       });
 
       document.body.style.pointerEvents = "auto";
 
       setIsLoading(false);
     } catch (error: any) {
-      console.error("Error deleting category:", error);
+      console.error("Error deleting subcategory:", error);
 
       let description =
-        "Ocurrió un error al eliminar la categoría. Por favor, intente de nuevo.";
+        "Ocurrió un error al eliminar la subcategoría. Por favor, intente de nuevo.";
 
       if (error.response.status === 406) {
         description =
-          "La categoría no puede ser eliminada porque tiene productos asociados.";
+          "La subcategoría no puede ser eliminada porque tiene productos asociados.";
       }
 
       document.body.style.pointerEvents = "auto";
@@ -361,7 +357,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
 
   return (
     <div className="flex p-0 flex-col items-start gap-[16px] self-stretch w-full md:w-1/3">
-      <h5>Categorías</h5>
+      <h5>Subcategorías</h5>
       <div className="h-full w-4/5">
         {isLoading && (
           <div className="flex flex-col space-y-3">
@@ -372,12 +368,12 @@ const Categorias: React.FC<CategoriasProps> = () => {
             </div>
           </div>
         )}
-        {!isLoading && categories.current && !isEditing && !isAdding && (
+        {!isLoading && subcategories.current && !isEditing && !isAdding && (
           <>
             <DataTable
               columns={columns}
-              data={categories.current}
-              nombre="categoría"
+              data={subcategories.current}
+              nombre="subcategoría"
               npagination={5}
             />
             <div className="lower-buttons-container mt-8">
@@ -394,10 +390,10 @@ const Categorias: React.FC<CategoriasProps> = () => {
               <InputWithLabel
                 label={
                   isEditing
-                    ? "Nombre (editar categoría)"
-                    : "Nombre (agregar categoría)"
+                    ? "Nombre (editar subcategoría)"
+                    : "Nombre (agregar subcategoría)"
                 }
-                placeholder="Nombre de la categoría"
+                placeholder="Nombre de la subcategoría"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
               />
@@ -417,4 +413,4 @@ const Categorias: React.FC<CategoriasProps> = () => {
   );
 };
 
-export default Categorias;
+export default Subcategorias;
