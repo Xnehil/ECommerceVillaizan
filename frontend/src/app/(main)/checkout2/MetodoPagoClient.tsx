@@ -169,12 +169,22 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
         }}
       >
         <CustomRectangle
-          text="Contra Entrega"
+          text="Métodos de Pago"
           images={[
             {
               id: "pagoEfec",
               src: "/images/efectivo.png",
               hoverText: "Pago en Efectivo",
+            },
+            {
+              id: "yape",
+              src: "/images/yape.png", // Usamos la misma imagen para Yape
+              hoverText: "Pago con Yape",
+            },
+            {
+              id: "plin",
+              src: "/images/plin.png", // Usamos la misma imagen para Plin
+              hoverText: "Pago con Plin",
             },
           ]}
           width="45%"
