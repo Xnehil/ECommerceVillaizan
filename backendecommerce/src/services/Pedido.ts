@@ -3,7 +3,7 @@ import { Pedido } from "../models/Pedido";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
-import { ubicacionesDelivery, pedidosPorConfirmar } from "../loaders/websocketLoader";
+import { ubicacionesDelivery, pedidosPorConfirmar, enviarMensaje } from "../loaders/websocketLoader";
 import MotorizadoRepository from "@repositories/Motorizado";
 import { Motorizado } from "@models/Motorizado";
 import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
@@ -179,6 +179,7 @@ class PedidoService extends TransactionBaseService {
                         data.motorizado = motorizadoAsignado;
                         this.reduceStock(pedido, motorizadoAsignado);
                         data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3);
+                        enviarMensaje(motorizadoAsignado.id, "nuevoPedido", id);
                     } else {
                         throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
                     }

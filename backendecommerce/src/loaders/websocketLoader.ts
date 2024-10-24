@@ -13,6 +13,8 @@ export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, p
 );
 export const pedidosPorConfirmar = new Set<string>();
 const entregados = new Set<string>();
+const conexiones = new Map<string, WebSocket>();
+
 export default async (
   container: MedusaContainer,
   config: ConfigModule
@@ -36,10 +38,12 @@ export default async (
 
     if (id && rol === 'delivery') {
       ubicacionesDelivery.set(id, { lat: 0, lng: 0, pedidoId: null });
+      conexiones.set(id, ws);
     }
 
     if (id && rol === 'cliente') {
       pedidosPorConfirmar.add(id);
+      conexiones.set(id, ws);
     }
 
     if (!rol || !id) {
@@ -74,6 +78,7 @@ export default async (
           ubicacionesDelivery.delete(id);
           console.info(`Se eliminó al repartidor ${id} de la lista de ubicaciones`);
         }
+        conexiones.delete(id);
       } else {
         console.info('WebSocket connection closed');
       }
@@ -156,5 +161,12 @@ const handleClientMessage = (
       break;
     default:
       console.warn(`Unknown message type from client: ${message.type}`);
+  }
+};
+
+export const enviarMensaje = (id: string, type: string, mensaje: any) => {
+  const ws = conexiones.get(id);
+  if (ws) {
+    ws.send(JSON.stringify({ type, data: mensaje }));
   }
 };
