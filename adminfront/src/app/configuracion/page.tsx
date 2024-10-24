@@ -34,8 +34,8 @@ const ConfiguracionPage: React.FC = () => {
         <Separator />
         <div className="information-container">
           <Parametros isEditing={false} />
-          <Categorias/>
-          <Subcategorias isEditing={false} />
+          <Categorias />
+          <Subcategorias />
         </div>
       </div>
     </>

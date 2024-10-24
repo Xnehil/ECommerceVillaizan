@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TipoProducto } from "@/types/PaqueteProducto";
 import { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -37,6 +37,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const idCategoria = useRef<string | null>(null);
   const [nombre, setNombre] = useState("");
@@ -69,6 +70,12 @@ const Categorias: React.FC<CategoriasProps> = () => {
         console.log("Categories:", categories.current);
       } catch (error) {
         console.error("Failed to fetch categories", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            "Ocurrió un error al obtener las categorías. Por favor, intente de nuevo.",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -91,10 +98,9 @@ const Categorias: React.FC<CategoriasProps> = () => {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-
-      const handleCancelDialog = () => {
-        setIsOpen(false);
-      };
+        const handleCancelDialog = () => {
+          setIsOpen(false);
+        };
         return (
           <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenu>
@@ -132,11 +138,11 @@ const Categorias: React.FC<CategoriasProps> = () => {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-              <AlertDialogCancel asChild>
-                <Button variant="default" onClick={handleCancelDialog}>
-                  Cancelar
-                </Button>
-              </AlertDialogCancel>
+                <AlertDialogCancel asChild>
+                  <Button variant="default" onClick={handleCancelDialog}>
+                    Cancelar
+                  </Button>
+                </AlertDialogCancel>
                 <Button
                   variant="destructive"
                   onClick={() => handleDelete(row.original.id)}
@@ -151,6 +157,11 @@ const Categorias: React.FC<CategoriasProps> = () => {
     },
   ];
 
+  const handleAdd = () => {
+    setIsAdding(true);
+    setNombre("");
+  };
+
   const handleEdit = (id: string, nombre: string) => {
     idCategoria.current = id;
     setNombre(nombre);
@@ -161,9 +172,86 @@ const Categorias: React.FC<CategoriasProps> = () => {
     idCategoria.current = null;
     setNombre("");
     setIsEditing(false);
+    setIsAdding(false);
+  };
+
+  const handleSaveNew = async () => {
+    // Make POST request to save new category
+    if (nombre === "") {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El campo de nombre no puede estar vacío.",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto`,
+        {
+          nombre: nombre,
+          subcategorias: [],
+          productos: [],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 222) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "La categoría ya existe.",
+        });
+        return;
+      }
+
+      if (response.status !== 201) {
+        throw new Error("Failed to save new category");
+      }
+
+      const data = response.data;
+      console.log("New category saved:", data);
+
+      // create a TipoProducto object from the response (it will have all the fields)
+      const newCategory: TipoProducto = data.tipoProducto;
+
+      // Add new category to the list of categories
+      categories.current.push(newCategory);
+
+      setIsLoading(false);
+      setIsAdding(false);
+
+      toast({
+        description: "La nueva categoría ha sido guardada exitosamente.",
+      });
+    } catch (error) {
+      console.error("Error saving new category:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          "Ocurrió un error al guardar la nueva categoría. Por favor, intente de nuevo.",
+      });
+      setIsLoading(false);
+    }
   };
 
   const handleSave = async () => {
+    if (nombre === "") {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "El campo de nombre no puede estar vacío.",
+      });
+      return;
+    }
     setIsLoading(true);
     // Make PUT request to save edited category
 
@@ -284,19 +372,31 @@ const Categorias: React.FC<CategoriasProps> = () => {
             </div>
           </div>
         )}
-        {!isLoading && categories.current && !isEditing && (
-          <DataTable
-            columns={columns}
-            data={categories.current}
-            nombre="categoría"
-            npagination={5}
-          />
+        {!isLoading && categories.current && !isEditing && !isAdding && (
+          <>
+            <DataTable
+              columns={columns}
+              data={categories.current}
+              nombre="categoría"
+              npagination={5}
+            />
+            <div className="w-full mt-8">
+              <Button variant="default" onClick={handleAdd}>
+                <Plus size={20} className="mr-2" />
+                Agregar
+              </Button>
+            </div>
+          </>
         )}
-        {isEditing && !isLoading && (
+        {(isEditing || isAdding) && !isLoading && (
           <>
             <div className="flex w-4/5">
               <InputWithLabel
-                label="Nombre (editar categoría)"
+                label={
+                  isEditing
+                    ? "Nombre (editar categoría)"
+                    : "Nombre (agregar categoría)"
+                }
                 placeholder="Nombre de la categoría"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
@@ -306,7 +406,9 @@ const Categorias: React.FC<CategoriasProps> = () => {
               <Button variant={"secondary"} onClick={handleCancel}>
                 Cancelar
               </Button>
-              <Button onClick={handleSave}>Guardar</Button>
+              <Button onClick={isEditing ? handleSave : handleSaveNew}>
+                Guardar
+              </Button>
             </div>
           </>
         )}
