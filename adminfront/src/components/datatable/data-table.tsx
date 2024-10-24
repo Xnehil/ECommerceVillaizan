@@ -103,7 +103,6 @@ export function DataTable<TData, TValue>({
       <div className="flex w-full items-center justify-between pt-4">
         {" "}
         <span className="flex items-center gap-1 text-sm">
-          <div>Mostrando</div>
           <strong>{table.getRowModel().rows.length}</strong>
           <div>de</div>
           <strong>{table.getPrePaginationRowModel().rows.length}</strong>

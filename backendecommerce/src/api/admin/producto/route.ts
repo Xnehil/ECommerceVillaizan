@@ -19,18 +19,18 @@ import { Producto } from "src/models/Producto";
  *     summary: Lista todos los productos con paginación
  *     tags: [Producto]
  *     parameters:
- *      - in: query
+ *       - in: query
  *         name: enriquecido
  *         schema:
  *           type: boolean
  *         required: false
  *         description: Si se debe recuperar el producto enriquecido
- *      - in: query
- *        name: ecommerce
- *        schema:
+ *       - in: query
+ *         name: ecommerce
+ *         schema:
  *           type: boolean
- *        required: false
- *        description: Si se debe recuperar solo los productos que se muestran en el ecommerce
+ *         required: false
+ *         description: Si se debe recuperar solo los productos que se muestran en el ecommerce
  *     responses:
  *       200:
  *         description: Una lista de productos

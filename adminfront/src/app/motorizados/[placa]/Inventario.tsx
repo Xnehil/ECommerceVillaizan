@@ -6,7 +6,7 @@ import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { Motorizado } from "@/types/PaqueteMotorizado";
 import { InventarioMotorizado, Producto } from "@/types/PaqueteProducto";
-import { DataTable } from "@/app/productos/data-table";
+import { DataTable } from "@/components/datatable/data-table";
 import { columns, columnsEdit } from "./columns";
 import Loading from "@/components/Loading";
 

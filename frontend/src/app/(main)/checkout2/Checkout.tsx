@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { use, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/router"
 import { useSearchParams } from "next/navigation"
 import { Pedido } from "types/PaquetePedido"
@@ -22,17 +22,19 @@ const Checkout: React.FC<CheckoutProps> = ({
 }) => {
   const searchParams = useSearchParams()
   const [step, setStep] = useState(searchParams.get("step") || "aaa")
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!loaded) {
+      setLoaded(true)
+    }
+  }),
+    [loaded]
 
   const renderStep = () => {
     switch (step) {
       case "direccion":
-        return (
-          <LoadScript
-            googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
-          >
-            <StepDireccion setStep={setStep} />
-          </LoadScript>
-        )
+        return <StepDireccion setStep={setStep} />
       case "pago":
         return <MetodoPagoClient pedidoInput={pedido} setStep={setStep} />
       default:
@@ -40,7 +42,20 @@ const Checkout: React.FC<CheckoutProps> = ({
     }
   }
 
-  return <div>{renderStep()}</div>
+  return (
+    <div>
+      {window.google === undefined ? (
+        <LoadScript
+          googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
+          libraries={["places"]}
+        >
+          {renderStep()}
+        </LoadScript>
+      ) : (
+        renderStep()
+      )}
+    </div>
+  )
 }
 
 export default Checkout

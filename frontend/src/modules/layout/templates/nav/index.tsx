@@ -1,6 +1,37 @@
-import Link from "next/link";
+"use client";
 
-export default async function Nav() {
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useSession } from "next-auth/react";
+import { Loader2 } from "lucide-react";
+import Button from "components/Button";
+import { signOut } from "next-auth/react";
+import { getToken } from "next-auth/jwt";
+import jwt from "jsonwebtoken";
+
+export async function handleSignOut() {
+  await signOut();
+}
+
+export default function Nav() {
+  const [loginUrl, setLoginUrl] = useState('');
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    const currentUrl = window.location.href;
+    setLoginUrl(`http://localhost:3000/login?redirect=${encodeURIComponent(currentUrl)}`);
+  }, []);
+
+  useEffect(() => {
+    console.log('Session:', session);
+    if (session) {
+      console.log('id:', session.user?.id); // Log the user name
+      console.log('User name:', session.user?.name); // Log the user name
+      console.log('email:', session.user?.email); // Log the user name
+
+    }
+  }, [session, status]);
+
   return (
     <div className="sticky top-0 inset-x-0 z-50 bg-rojoVillaizan">
       <header className="relative h-16 mx-auto border-b border-ui-border-base bg-rojoVillaizan">
@@ -24,31 +55,26 @@ export default async function Nav() {
             <Link href="/comprar" className="hover:text-ui-fg-base text-white">
               Comprar
             </Link>
-            <Link href="/sobre" className="hover:text-ui-fg-base text-white">
-              Sobre
-            </Link>
-            <Link href="/contacto" className="hover:text-ui-fg-base text-white">
-              Contacto
-            </Link>
-          </div>
 
-          {/* Carrito de compras y Botón de sesión */}
-          <div className="flex items-center gap-x-4">
-            {/* Carrito de compras */}
-            <Link href="/carrito" className="flex items-center">
-              <img
-                src="/images/carritoCompras.png" // Aquí coloca la ruta correcta del ícono del carrito
-                alt="Carrito de Compras"
-                className="h-8" // Ajusta el tamaño del ícono según sea necesario
-              />
-            </Link>
-
-            {/* Botón de sesión */}
-            <Link href="/account" className="hover:text-ui-fg-base text-white flex items-center">
-              Inicia sesión y accede a promociones
-            </Link>
+            {/*Antiguo INiciar Sesión*/}
+            {/*<a href={loginUrl} className="hover:text-ui-fg-base text-white flex items-center">
+              Inicia Sesión y accede a promociones
+            </a> */}
+            {/* Acciones de usuario (oculto en móviles) */}
+            <div className="z-[51] hidden items-center space-x-2 md:flex">
+              {status === "loading" ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-3"></Loader2>
+              ) : session ? (
+                <Button className="text-lg font-bold" onClick={() => handleSignOut()} variant="link">
+                  Cerrar sesión
+                </Button>
+              ) : (
+                <a href={loginUrl} className="hover:text-ui-fg-base text-white flex items-center">
+                  Inicia Sesión y accede a promociones
+                </a>
+              )}
+            </div>
           </div>
-          
         </nav>
       </header>
     </div>

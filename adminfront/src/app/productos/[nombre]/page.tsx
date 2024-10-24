@@ -49,7 +49,7 @@ const ProductoPage: React.FC<ProductoPageProps> = ({ params: { nombre } }) => {
   const producto = useRef<Producto>({} as Producto);
   const copyProducto = useRef<Producto>({} as Producto);
   const [isEditing, setIsEditing] = useState(false);
-
+  const imagen = useRef<File | undefined>(undefined);
   const a = useRef(0);
 
   // useEffect(() => {
@@ -170,8 +170,27 @@ const ProductoPage: React.FC<ProductoPageProps> = ({ params: { nombre } }) => {
       return;
     }
 
+    
+
     console.log(copyProducto.current);
     try {
+      if (imagen.current) {
+        const formData = new FormData();
+        formData.append("file", imagen.current);
+        formData.append("fileName", imagen.current.name);
+        formData.append("folderId", "productos");
+        
+
+        const responseImagen = await axios.post(
+          `${process.env.NEXT_PUBLIC_BASE_URL}imagenes`,
+          formData
+        );
+        console.log(responseImagen);
+        if (responseImagen.status !== 200) {
+          throw new Error("Error al guardar imagen.");
+        }
+        copyProducto.current.urlImagen = responseImagen.data.fileUrl;
+      }
       // await new Promise((resolve) => setTimeout(resolve, 3000));
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_BASE_URL}producto/${producto.current.id}`,
@@ -260,6 +279,7 @@ const ProductoPage: React.FC<ProductoPageProps> = ({ params: { nombre } }) => {
             <InformacionGeneral
               producto={isEditing ? copyProducto : producto}
               isEditing={isEditing}
+              imagen={imagen}
             />
             <InformacionAdicional
               producto={isEditing ? copyProducto : producto}

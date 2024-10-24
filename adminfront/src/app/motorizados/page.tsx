@@ -5,7 +5,7 @@ import "@/styles/general.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "@/components/Loading";
-import { DataTable } from "@/app/productos/data-table";
+import { DataTable } from "@/components/datatable/data-table";
 import { columns } from "./columns";
 import { Motorizado } from "@/types/PaqueteMotorizado";
 

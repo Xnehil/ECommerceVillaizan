@@ -7,6 +7,7 @@ import { DetallePedido, MetodoPago, Pedido } from 'types/PaquetePedido';
 import { Direccion } from 'types/PaqueteEnvio';
 import { Usuario } from 'types/PaqueteUsuario';
 import axios, { AxiosError } from "axios"
+import { ErrorMessage } from '@hookform/error-message';
 
 interface ResumenCompraProps {
   descuento: number;
@@ -74,7 +75,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
 
 
   const toggleSeleccion = () => {
-    setSeleccionado(!seleccionado); // Cambia el estado entre true y false
+    setSeleccionado(!seleccionado);
   };
 
   const buscarPedido = async (id: string) => {
@@ -97,13 +98,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
     return pedidoRespuesta;
   }
 
-  //log the pedido id
-  //console.log("Pedido id:", pedido.id)
-
   const handleConfirmar = async () => {
     setShowPopup(false);
     setShowBuscandoPopup(true);
-    //Guarda el metodo de pago
     try{
       if(selectedImageId === "pagoEfec"){
         const responseMetodoPago = await axios.post(`${baseUrl}/admin/metodoPago/nombre`, {
@@ -112,11 +109,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         if(responseMetodoPago.data){
           console.log("Metodo de pago encontrado");
           console.log(responseMetodoPago.data);
-          // Initialize metodosPago if undefined
           if (!pedido.metodosPago) {
             pedido.metodosPago = [];
           }
-          //Guarda el metodo de pago en el pedido
           pedido.metodosPago.push(responseMetodoPago.data.metodoPago);
         }
       }
@@ -134,22 +129,17 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             setShowError(true);
         }
     }
-    
-    //Cambiar el estado del pedido a solicitado
     pedido.estado = "solicitado";
-    //Guarda el montoEfectivoPagar en el pedido
     pedido.montoEfectivoPagar = paymentAmount ?? 0;
     try{
       const response = await axios.put(`${baseUrl}/admin/pedido/${pedido.id}?asignarRepartidor=true`, pedido); // Harvy agregó esto, un parámetro extra que el back leería para saber que se debe asignar un repartidor
       if(response.data){
-        //setShowBuscandoPopup(false);
         console.log("Pedido modificado correctamente");
         console.log(response.data);
       }
-      // setShowBuscandoPopup(false);
-      //Redirigir a la página de seguimiento
+      const pedidoActualizado = response.data.pedido;
       let codigoSeguimiento = "123456";
-      window.location.href = `/seguimiento?codigo=${pedido.codigoSeguimiento??codigoSeguimiento}`;
+      window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
     } catch (error) {
       const axiosError = error as AxiosError;
         if (axiosError.response && axiosError.response.status === 404) {
@@ -160,6 +150,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             setShowPopup(false);
             setShowBuscandoPopup(true);
             setShowError(true);
+        } else if (axiosError.response?.status === 504) {
+            console.log("Algunos productos en tu carrito tienen stock insuficiente.");
+            setErrorText("Algunos productos en tu carrito tienen stock insuficiente.");
+            setShowPopup(false);
+            setShowBuscandoPopup(true);
+            setShowError(true);
         }
     }
     
@@ -167,6 +163,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
 
   const handleCloseBuscandoPopup = () => {
     setShowBuscandoPopup(false);
+    if(errorText === "Algunos productos en tu carrito tienen stock insuficiente."){
+      window.history.back();
+    }
   };
 
   const handleRedirect = () => {
@@ -193,7 +192,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       ))}
 
       {/* Mostrar descuento y costo de envío */}
-      {hayDescuento && (
+      {hayDescuento && descuento > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
           <span>Descuento</span>
           <span>- S/. {descuento.toFixed(2)}</span>

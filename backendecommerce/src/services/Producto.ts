@@ -120,6 +120,23 @@ class ProductoService extends TransactionBaseService {
         if (!productos || productos.length === 0) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "No se encontraron productos");
         }
+        //ordenar productos alfabeticamente y los que no tengan inventario al final
+        productos.sort((a, b) => {
+          const stockA = a.inventarios.reduce((acc, inv) => acc + inv.stock, 0);
+          const stockB = b.inventarios.reduce((acc, inv) => acc + inv.stock, 0);
+    
+          if (stockA === 0 && stockB > 0) {
+              return 1;
+          }
+          if (stockA > 0 && stockB === 0) {
+              return -1;
+          }
+          if (stockA !== stockB) {
+              return stockB - stockA;
+          }
+          return a.nombre.localeCompare(b.nombre);
+        });
+
         return productos;
       }
       
