@@ -23,12 +23,15 @@ export default function Nav() {
   }, []);
 
   useEffect(() => {
-    console.log('Session:', session);
+    
     if (session) {
+      console.log('Session:', session);
       console.log('id:', session.user?.id); // Log the user name
       console.log('User name:', session.user?.name); // Log the user name
       console.log('email:', session.user?.email); // Log the user name
-
+      console.log('status:', status); // Log the user name
+      //console the cookie
+      console.log('cookie:', document.cookie);
     }
   }, [session, status]);
 
