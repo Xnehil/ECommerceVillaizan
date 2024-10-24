@@ -380,7 +380,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
               nombre="categoría"
               npagination={5}
             />
-            <div className="w-full mt-8">
+            <div className="lower-buttons-container mt-8">
               <Button variant="default" onClick={handleAdd}>
                 <Plus size={20} className="mr-2" />
                 Agregar
