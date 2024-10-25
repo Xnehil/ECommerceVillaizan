@@ -6,6 +6,7 @@ import usuarioRepository from "src/repositories/Usuario";
 import MotorizadoRepository from "@repositories/Motorizado";
 import PedidoRepository from "@repositories/Pedido";
 import { Pedido } from "../models/Pedido";
+import * as bcrypt from 'bcrypt';
 
 class UsuarioService extends TransactionBaseService {
     protected usuarioRepository_: typeof usuarioRepository;
@@ -69,6 +70,8 @@ class UsuarioService extends TransactionBaseService {
     }
 
     async crear(usuario: Usuario): Promise<Usuario> {
+        const hashedPassword = await bcrypt.hash(usuario.contrasena, 10);
+        usuario.contrasena = hashedPassword;
         return this.atomicPhase_(async (manager) => {
             const usuarioRepo = manager.withRepository(this.usuarioRepository_);
             const usuarioCreado = usuarioRepo.create(usuario);
@@ -111,6 +114,15 @@ class UsuarioService extends TransactionBaseService {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedidos no encontrados");
         }
         return pedidos;
+    }
+
+    async buscarPorCorreo(correo: string): Promise<Usuario> {
+        const usuarioRepo = this.activeManager_.withRepository(this.usuarioRepository_);
+        const usuario = usuarioRepo.findByEmail(correo);
+        if (!usuario) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Usuario no encontrado");
+        }
+        return usuario;
     }
 
 }
