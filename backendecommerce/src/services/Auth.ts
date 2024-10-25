@@ -13,13 +13,14 @@ class AuthPayLoad{
     password: string;
 }
 
-class BancoService extends TransactionBaseService {
+class AuthService extends TransactionBaseService {
     protected usuarioRepository_: typeof UsuarioRepository;
     protected jwtService: JwtService;
 
     constructor(container) {
         super(container);
         this.usuarioRepository_ = container.usuarioRepository;
+        this.jwtService = container.jwtService;
     }
 
     getMessage() {
@@ -37,8 +38,9 @@ class BancoService extends TransactionBaseService {
             result: [],
           };
         }
-    
+
         const validatePassword = await bcrypt.compare(password, user.contrasena);
+        console.log("passed validated  psswd")
     
         if (!validatePassword) {
           return {
@@ -49,7 +51,10 @@ class BancoService extends TransactionBaseService {
         }
     
         const payload = { id: user.id, email: user.correo };
+        console.log("in payload")
+        console.log("payload",payload)
         const token = this.jwtService.sign(payload);
+        console.log("token generated")
     
         return {
           status: 'Success',
@@ -60,4 +65,4 @@ class BancoService extends TransactionBaseService {
       }
 }
 
-export default BancoService;
+export default AuthService;
