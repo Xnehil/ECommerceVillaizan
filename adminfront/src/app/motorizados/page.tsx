@@ -8,9 +8,11 @@ import Loading from "@/components/Loading";
 import { DataTable } from "@/components/datatable/data-table";
 import { columns } from "./columns";
 import { Motorizado } from "@/types/PaqueteMotorizado";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const MotorizadosPage: React.FC = () => {
-
+  const router = useRouter(); // Initialize useRouter
   const motorizados = useRef<Motorizado[]>([]); // Initialize motorizados
 
   const a = useRef(0);
@@ -50,9 +52,19 @@ const MotorizadosPage: React.FC = () => {
     }
   }, []);
 
+  const handleAddMotorizadoClick = () => {
+    router.push("/motorizados/agregar"); // Navigate to /agregar page
+  };
+
   return (
     <>
       <div className="header">
+        <div className="buttons-container">
+            <Button variant="default" onClick={handleAddMotorizadoClick}>
+              <Plus size={20} className="mr-2" />
+              Agregar
+            </Button>
+          </div>
       </div>
       <div className="content-container">
         {isLoading && <Loading />}
