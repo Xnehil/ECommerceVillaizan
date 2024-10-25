@@ -39,7 +39,7 @@ function RegisterPage() {
     try {
       setError(null);
 
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/usuario`, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/usuario`, {
         nombre: name,
         apellido: lastname,
         concuenta: true,

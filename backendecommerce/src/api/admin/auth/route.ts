@@ -5,19 +5,37 @@ import type {
   
 import  AuthService  from "../../../services/Auth"
 
-
-export const POST = async (
-    req: MedusaRequest,
+/*
+interface InventarioMotorizadoRequestBody {
+    id_ciudad: string;
+}
+  
+  export const POST = async (
+    req: MedusaRequest & { body: InventarioMotorizadoRequestBody },
     res: MedusaResponse
   ) => {
-    const authService: AuthService = req.scope.resolve("authService");
-    const bodyData = req.body as { email: string, password: string };
-    if (!bodyData || typeof bodyData.email !== 'string' || typeof bodyData.password !== 'string') {
-      res.status(400).json({ error: "Petición inválida, el email y password deben ser un string" });
-      return;
-    }
+    const inventarioMotorizadoService: InventarioMotorizadoService = req.scope.resolve("inventariomotorizadoService");
+    const { id_ciudad } = req.body;
   
-    const { email, password } = bodyData;
+    try {
+        const inventarios = await inventarioMotorizadoService.findByCiudadId(id_ciudad);
+        res.json({ inventarios });
+    } catch (error) {
+        res.status(404).json({ error: "Inventario motorizado no encontrado" });
+    }
+  };
+*/
+interface AuthRequestBody {
+    email: string;
+    password: string;
+}
+
+export const POST = async (
+    req: MedusaRequest & { body: AuthRequestBody },
+    res: MedusaResponse
+  ) => {
+    const authService: AuthService = req.scope.resolve("authService");  
+    const { email, password } = req.body;
   
     try {
       const response = await authService.login(email, password);
