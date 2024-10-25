@@ -23,7 +23,7 @@ export default function RootLayout({
   const url = process.env.NEXT_PUBLIC_WS_URL as string;
   useEffect(() => {
     // Initialize WebSocket connection
-    ws.current = new WebSocket(url+'?rol=admin&id='+Math.random()*100000);
+    ws.current = new WebSocket(url+'?rol=admin&id='+Math.floor(Math.random()*100000));
 
     // Handle WebSocket open event
     ws.current.onopen = () => {
@@ -33,6 +33,7 @@ export default function RootLayout({
     // Handle WebSocket message event
     ws.current.onmessage = (event) => {
       console.log('WebSocket message received:', event.data);
+      // Aquí Ami se puede hacer lo que quieras con el mensaje recibido
       toast({
         variant: "destructive",
         description: event.data,

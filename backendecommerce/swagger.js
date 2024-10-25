@@ -972,6 +972,35 @@ const options = {
             },
           ],
         },
+        Notificacion: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              asunto: {
+                type: 'string',
+                example: 'Nueva notificación',
+              },
+              descripcion: {
+                type: 'string',
+                example: 'Mensaje de la notificación',
+              },
+              leido: {
+                type: 'boolean',
+                example: false,
+              },
+              tipoNotificacion: {
+                type: 'string',
+                example: 'Información',
+              },
+              sistema: {
+                type: 'string',
+                example: 'Ecommerce',
+              },
+            },
+          ],
+        },
 
       }
     }

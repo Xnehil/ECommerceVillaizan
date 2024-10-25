@@ -6,3 +6,12 @@ export interface Ajuste extends EntidadBase {
     tag: string;
     descripcion: string;
 }
+
+export interface Notificacion extends EntidadBase {
+    asunto: string;
+    descripcion: string;
+    tipoNotificacion: string;
+    leido: boolean;
+    sistema: string;
+    idUsuario: string;
+}

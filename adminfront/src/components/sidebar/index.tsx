@@ -7,6 +7,7 @@ const Sidebar = () => {
     { name: "Productos", icon: "/icons/productos.png", href: "/productos" },
     { name: "Motorizados", icon: "/icons/tuk-tuk.png", href: "/motorizados" },
     { name: "Configuración", icon: "/icons/setting.png", href: "/configuracion" },
+    { name: "Notificaciones", icon: "/icons/notificacion.png", href: "/notificaciones" },
   ];
   // const pathname
 

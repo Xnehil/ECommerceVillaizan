@@ -98,11 +98,12 @@ CREATE TABLE vi_usuario (
 );
 
 CREATE TABLE vi_notificacion (
-    idNotificacion VARCHAR(50) PRIMARY KEY,
+    id VARCHAR(50) PRIMARY KEY,
     asunto VARCHAR(255) NOT NULL,
     descripcion TEXT,
     tipoNotificacion VARCHAR(100),
     leido BOOLEAN DEFAULT FALSE NOT NULL,
+    sistema VARCHAR(50),
     estaActivo BOOLEAN DEFAULT TRUE NOT NULL,
     eliminadoEn TIMESTAMP,
     creadoEn TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
