@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Pressable,
+  Switch,
 } from "react-native";
 import * as Progress from "react-native-progress";
 import { Link, useRouter } from "expo-router";
@@ -38,6 +39,7 @@ export default function Entregas() {
   }>({});
 
   const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [modoMultiple, setModoMultiple] = useState(false);
 
   const getDataMemory = async (): Promise<Usuario | null> => {
     try {
@@ -70,6 +72,7 @@ export default function Entregas() {
       );
       console.log(pedidosEnProceso);
       setPedidosAceptados(pedidosEnProceso);
+      setPedidoSeleccionado(pedidosEnProceso[0]);
     } catch (error) {
       console.error("Error al obtener los pedidos:", error);
     }
@@ -181,7 +184,9 @@ export default function Entregas() {
             id={String(pedido.id)}
           >
             <Pressable style={styles.verMasButton}>
-              {({ pressed }) => <Text style={styles.verMasText}>Ver detalles</Text>}
+              {({ pressed }) => (
+                <Text style={styles.verMasText}>Ver detalles</Text>
+              )}
             </Pressable>
           </Link>
           <TouchableOpacity
@@ -201,8 +206,22 @@ export default function Entregas() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.toggleContainer}>
+        <Text style={styles.toggleLabel}>
+          {modoMultiple ? "Modo Múltiple" : "Modo Único"}
+        </Text>
+        <Switch
+          value={modoMultiple}
+          onValueChange={(value) => setModoMultiple(value)}
+        />
+      </View>
       <View style={styles.containerMitad}>
-        <Mapa location={location} pedidoSeleccionado={pedidoSeleccionado} />
+        <Mapa
+          location={location}
+          pedidoSeleccionado={pedidoSeleccionado}
+          pedidos={pedidosAceptados}
+          mode = {modoMultiple}
+        />
       </View>
       <View>
         <Text style={styles.Titulo}>Tus Entregas</Text>
@@ -251,7 +270,7 @@ const styles = StyleSheet.create({
   },
   verMasButton2: {
     backgroundColor: "#ededed",
-    borderRadius:10,
+    borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
@@ -315,6 +334,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  toggleContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  toggleLabel: { fontSize: 16, fontWeight: "bold" },
   containerMitad: {
     flex: 1,
     paddingHorizontal: 20,
