@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, Heading } from "@medusajs/ui"
+import { Button, Heading, TooltipProvider } from "@medusajs/ui"
 import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
 import Link from "next/link"
@@ -28,7 +28,9 @@ const Summary = ({ carrito }: SummaryProps) => {
           Total Carrito
         </Heading>
         <Divider />
-        <CartTotals data={carrito} onSetCostoEnvio={setCostoEnvio} /> {/* Pasar el callback */}
+        <TooltipProvider >
+          <CartTotals data={carrito} onSetCostoEnvio={setCostoEnvio} /> {/* Pasar el callback */}
+        </TooltipProvider>
         {isDisabled && (
           <p className="text-red-400 text-sm font-poppins mt-2 text-center">
             El subtotal debe ser de al menos {minimo} soles para proceder al pago.
