@@ -28,9 +28,7 @@ const Summary = ({ carrito }: SummaryProps) => {
           Total Carrito
         </Heading>
         <Divider />
-        <TooltipProvider >
-          <CartTotals data={carrito} onSetCostoEnvio={setCostoEnvio} /> {/* Pasar el callback */}
-        </TooltipProvider>
+        <CartTotals data={carrito} onSetCostoEnvio={setCostoEnvio} /> {/* Pasar el callback */}
         {isDisabled && (
           <p className="text-red-400 text-sm font-poppins mt-2 text-center">
             El subtotal debe ser de al menos {minimo} soles para proceder al pago.
