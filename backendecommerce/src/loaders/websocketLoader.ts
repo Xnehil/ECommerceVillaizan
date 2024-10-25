@@ -11,6 +11,7 @@ export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, p
     ['mot_01J9PMQG49H0SZ0G6MFHM04XEV', { lat: 6.483, lng: -76.333, pedidoId: null }], // Para pruebas
   ]
 );
+const adminsConectados = new Set<WebSocket>();
 export const pedidosPorConfirmar = new Set<string>();
 const entregados = new Set<string>();
 const conexiones = new Map<string, WebSocket>();
@@ -44,6 +45,11 @@ export default async (
     if (id && rol === 'cliente') {
       pedidosPorConfirmar.add(id);
       conexiones.set(id, ws);
+    }
+
+    if (rol === 'admin') {
+      adminsConectados.add(ws);
+      console.info('Admin conectado con WebSocket, id: ' + id);
     }
 
     if (!rol || !id) {
@@ -164,9 +170,16 @@ const handleClientMessage = (
   }
 };
 
-export const enviarMensaje = (id: string, type: string, mensaje: any) => {
+export const enviarMensajeRepartidor = (id: string, type: string, mensaje: any) => {
   const ws = conexiones.get(id);
   if (ws) {
     ws.send(JSON.stringify({ type, data: mensaje }));
   }
 };
+
+export const enviarMensajeAdmins = (type: string, mensaje: any) => {
+  adminsConectados.forEach((admin) => {
+    admin.send(JSON.stringify({ type, data: mensaje }));
+  });
+  return "Mensaje enviado a" + adminsConectados.size + " admins";
+}
