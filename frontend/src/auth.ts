@@ -13,8 +13,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             email: email,
             password: password,
           });
-
-          const data = response.data;
+          
+          const response2 = response.data;
+          const data = response2.response;
 
           if (data.status !== "Success") {
             console.log("Invalid credentials");
