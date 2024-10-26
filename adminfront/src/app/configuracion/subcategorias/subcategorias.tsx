@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import InputWithLabel from "@/components/forms/inputWithLabel";
+import { Label } from "@/components/ui/label";
 
 interface SubcategoriasProps {}
 
@@ -357,7 +358,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
 
   return (
     <div className="flex p-0 flex-col items-start gap-[16px] self-stretch w-full md:w-1/3">
-      <h5>Subcategorías</h5>
+      <Label>Subcategorías</Label>
       <div className="h-full w-4/5">
         {isLoading && (
           <div className="flex flex-col space-y-3">
@@ -374,7 +375,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
               columns={columns}
               data={subcategories.current}
               nombre="subcategoría"
-              npagination={5}
+              npagination={4}
             />
             <div className="lower-buttons-container mt-8">
               <Button variant="default" onClick={handleAdd}>

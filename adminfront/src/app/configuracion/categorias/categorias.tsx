@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
 import axios from "axios";
 import { DataTable } from "@/components/datatable/data-table";
-import columns from "./columns";
 import { Skeleton } from "@/components/ui/skeleton";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +28,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Label } from "@/components/ui/label";
 
 interface CategoriasProps {}
 
@@ -361,7 +361,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
 
   return (
     <div className="flex p-0 flex-col items-start gap-[16px] self-stretch w-full md:w-1/3">
-      <h5>Categorías</h5>
+      <Label>Categorías</Label>
       <div className="h-full w-4/5">
         {isLoading && (
           <div className="flex flex-col space-y-3">
@@ -378,7 +378,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
               columns={columns}
               data={categories.current}
               nombre="categoría"
-              npagination={5}
+              npagination={4}
             />
             <div className="lower-buttons-container mt-8">
               <Button variant="default" onClick={handleAdd}>
