@@ -9,12 +9,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const { email, password } = credentials;
 
         try {
-          const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/auth`, {
+          const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/auth`, {
             email: email,
             password: password,
           });
-
-          const data = response.data;
+          
+          const response2 = response.data;
+          const data = response2.response;
 
           if (data.status !== "Success") {
             console.log("Invalid credentials");

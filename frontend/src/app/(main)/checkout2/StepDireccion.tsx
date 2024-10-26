@@ -8,10 +8,11 @@ import GoogleMapModal from "@components/GoogleMapsModal"
 import { set } from "lodash"
 
 interface StepDireccionProps {
-  setStep: (step: string) => void
+  setStep: (step: string) => void;
+  googleMapsLoaded: boolean;
 }
 
-const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
+const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded }) => {
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
   const [calle, setCalle] = useState("")
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
@@ -39,28 +40,27 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep }) => {
 
 
   const handleMapSelect = (lat: number, lng: number) => {
-    setSelectedLocation({ lat, lng })
-    console.log("Selected Location:", { lat, lng })
-    setLocationError("")
+    setSelectedLocation({ lat, lng });
+    setLocationError("");
     if (!calle || calle === "") {
-      const geocoder = new google.maps.Geocoder()
-      const latlng = new google.maps.LatLng(lat, lng)
-      geocoder.geocode({ location: latlng }, (results, status) => {
-        if (status === "OK" && results) {
-          if (results[0]) {
-            const address = results[0].formatted_address
-            // console.log("Address:", address)
-            setCalle(address)
+      if (googleMapsLoaded) {
+        const geocoder = new google.maps.Geocoder();
+        const latlng = new google.maps.LatLng(lat, lng);
+        geocoder.geocode({ location: latlng }, (results, status) => {
+          if (status === "OK" && results) {
+            if (results[0]) {
+              const address = results[0].formatted_address;
+              setCalle(address);
+            } else {
+              console.error("No se encontraron resultados.");
+            }
           } else {
-            console.error("No se encontraron resultados.")
+            console.error("Geocoder falló debido a:", status);
           }
-        } else {
-          console.error("Geocoder falló debido a:", status)
-        }
-      })
+        });
+      }
     }
-  }
-
+  };
   const fetchCart = async () => {
     try {
       const respuesta = await getOrSetCart()

@@ -80,7 +80,7 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
       setShowPopup(true);
       setSelectedImageId(id);
     } else {
-      setSelectedImageId(null);
+      setSelectedImageId(id);
     }
   };
 
@@ -98,11 +98,6 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
   const handleBackClick = () => {
     setStep("direccion");
   };
-
-  /*
-  const calcularTotal = () => {
-    return calcularSubtotal() - (hayDescuento ? descuento : 0) + (noCostoEnvio ? 0 : costoEnvio);
-  };*/
 
   const calcularTotal = () => {
     const subtotal = calcularSubtotal();
@@ -169,7 +164,7 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
         }}
       >
         <CustomRectangle
-          text="Métodos de Pago"
+          text="Pago Contraentrega"
           images={[
             {
               id: "pagoEfec",
@@ -206,7 +201,7 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
               selectedImageId={selectedImageId}
               total={total}
               vuelto={vuelto}
-              direccion={pedido?.direccion ?? defaultDireccion} // Provide a default Direccion
+              direccion={pedido?.direccion ?? defaultDireccion}
               usuario={pedido?.usuario ?? defaultUsuario}
               pedido={pedidoInput}
             />

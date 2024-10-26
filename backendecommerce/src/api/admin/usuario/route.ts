@@ -78,6 +78,12 @@ export const POST = async (
         return;
     }
     const usuarioData = req.body as Usuario;
+    const respuesta = await usuarioService.buscarPorCorreo(usuarioData.correo);
+    if(respuesta){
+        res.status(400).json({error: "Este correo ya tiene una cuenta asociada"});
+        return;
+    }
+    
     const usuario = await usuarioService.crear(usuarioData);
 
     res.json({

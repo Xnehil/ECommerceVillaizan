@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
-import Button from "components/Button";
+import { Button } from "@components/Button";
 import { signOut } from "next-auth/react";
 import { getToken } from "next-auth/jwt";
 import jwt from "jsonwebtoken";
@@ -16,11 +16,13 @@ export async function handleSignOut() {
 export default function Nav() {
   const [loginUrl, setLoginUrl] = useState('');
   const { data: session, status } = useSession();
-
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  /*
   useEffect(() => {
     const currentUrl = window.location.href;
     setLoginUrl(`http://localhost:3000/login?redirect=${encodeURIComponent(currentUrl)}`);
   }, []);
+  */
 
   useEffect(() => {
     
@@ -59,11 +61,11 @@ export default function Nav() {
               Comprar
             </Link>
 
-            {/*Antiguo INiciar Sesión*/}
+            {/*Antiguo Iniciar Sesión*/}
             {/*<a href={loginUrl} className="hover:text-ui-fg-base text-white flex items-center">
               Inicia Sesión y accede a promociones
-            </a> */}
-            {/* Acciones de usuario (oculto en móviles) */}
+            </a> 
+
             <div className="z-[51] hidden items-center space-x-2 md:flex">
               {status === "loading" ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-3"></Loader2>
@@ -76,7 +78,30 @@ export default function Nav() {
                   Inicia Sesión y accede a promociones
                 </a>
               )}
-            </div>
+            </div> */}
+            {status === "loading" ? (
+              <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
+            ) : session ? (
+              <Button
+                className="text-lg text-white"
+                onClick={() => {
+                  handleSignOut();
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Cerrar sesión
+              </Button>
+            ) : (
+              <Button className="text-lg text-white">
+                <Link
+                  href="/login"
+                  className="text-lg text-white hover:underline"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Iniciar sesión
+                </Link>
+              </Button>
+            )}
           </div>
         </nav>
       </header>

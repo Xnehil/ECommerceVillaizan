@@ -176,6 +176,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
     );
   };
 
+  const metodoPagoTexto = selectedImageId === "pagoEfec" ? "Pago en Efectivo" : 
+                        selectedImageId === "yape" ? "Yape" : 
+                        selectedImageId === "plin" ? "Plin" : "No seleccionado";
   return (
     <div style={{ padding: '20px', borderRadius: '8px', width: '500px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: '10px' }}>
@@ -211,7 +214,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       </div>
       <hr style={{ margin: '10px 0' }} />
       {/* Mostrar paymentAmount si está presente */}
-      {paymentAmount && (
+      {selectedImageId === "pagoEfec" && paymentAmount !== null && (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
             <span>Monto a pagar</span>
@@ -303,7 +306,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           nombre= {`${usuario.nombre}` }
           detalles = {detalles}
           subtotal={total}
-          metodoPago="Pago en Efectivo"
+          metodoPago={metodoPagoTexto}
           onConfirm={handleConfirmar}
           onClose={() => setShowPopup(false)}
           selectedImageId={selectedImageId}
