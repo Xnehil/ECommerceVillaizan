@@ -169,7 +169,7 @@ export default function PaginatedProducts({
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="w-full md:w-1/3 mt-4 md:mt-0 h-12 border border-gray-300 bg-white rounded-md px-4 shadow-sm focus:outline-none focus:border-blue-500"
           >
-            <option value="">Todas las Subcategorías</option>
+            <option value="">Todos los Sabores</option>
             {categories.map((category) => (
               <option key={category} value={category}>
                 {category}
@@ -182,7 +182,7 @@ export default function PaginatedProducts({
             onChange={(e) => setSelectedProductType(e.target.value)}
             className="w-full md:w-1/3 mt-4 md:mt-0 h-12 border border-gray-300 bg-white rounded-md px-4 shadow-sm focus:outline-none focus:border-blue-500"
           >
-            <option value="">Todas las Categorías</option>
+            <option value="">Todas las Presentaciones</option>
             {productTypes.map((type, index) => (
               <option key={index} value={type}>
                 {type}
@@ -190,6 +190,7 @@ export default function PaginatedProducts({
             ))}
           </select>
 
+          {/* Botón combinado de filtro y ordenación */}
           {/* Botón combinado de filtro y ordenación */}
           <button
             onClick={handleSortByPrice}
@@ -202,7 +203,11 @@ export default function PaginatedProducts({
                 className="mr-2"
               />
             )}
-            <FontAwesomeIcon icon={faFilter} />
+            <img
+              src="/images/coin.png"
+              alt="Filtro"
+              className="h-4 w-4" // Ajusta el tamaño según sea necesario
+            />
           </button>
         </div>
 

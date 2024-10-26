@@ -6,6 +6,7 @@ import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-g
 import { Pedido } from "types/PaquetePedido"
 import { getCityCookie, setCityCookie } from "../actions"
 import CiudadPopup from "@components/CiudadPopup"
+import CiudadPopup2 from "@components/CiudadPopup2"
 import SelectCity from "@components/SelectCity"
 import ConfirmChangeCityPopup from "@components/ConfirmChangeCityPopup" // Importar el popup de confirmación
 import { CityCookie } from "types/global"
@@ -71,7 +72,7 @@ const StoreTemplate = ({
       className="flex flex-col small:flex-row small:items-start py-6 content-container"
       data-testid="category-container"
     >
-      {selectCityPopup && <CiudadPopup setCity={setCity} resetCarrito={resetCarrito} />}
+      {selectCityPopup && <CiudadPopup2 setCity={setCity} resetCarrito={resetCarrito} />}
       
       {!selectCityPopup && (
         <div className="w-full">
