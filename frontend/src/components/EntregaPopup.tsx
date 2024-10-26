@@ -24,6 +24,12 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
   selectedImageId,
   paymentAmount,
 }) => {
+  const metodoPagoImages: { [key: string]: { src: string; alt: string } } = {
+    pagoEfec: { src: '/images/efectivo.png', alt: 'Pago en Efectivo' },
+    yape: { src: '/images/yape.png', alt: 'Pago con Yape' },
+    plin: { src: '/images/plin.png', alt: 'Pago con Plin' },
+  };
+
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
@@ -52,13 +58,18 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
         <p style={{ textAlign: 'left' }}>Método de pago:</p>
         <div style={{ textAlign: 'left', display: 'flex', alignItems: 'center' }}>
         
-          {selectedImageId === 'pagoEfec' && (
-            <img src="/images/efectivo.png" alt="Efectivo" style={{ marginLeft: '5px', height: '35px' }} />
+        {selectedImageId && metodoPagoImages[selectedImageId] && (
+            <img
+              src={metodoPagoImages[selectedImageId].src}
+              alt={metodoPagoImages[selectedImageId].alt}
+              style={{ marginLeft: '5px', height: '35px' }}
+            />
           )}
           <strong style={{ marginLeft: '5px'}}>{metodoPago}</strong>
         </div>
+        {/* Mostrar monto y vuelto solo para pago en efectivo */}
         {selectedImageId === 'pagoEfec' && paymentAmount !== null && (
-        <>
+          <>
           <p style={{ textAlign: 'left' }}>Monto a Pagar</p>
           <p style={{ textAlign: 'left' }}>
             <strong>S/. {paymentAmount.toFixed(2)}</strong>

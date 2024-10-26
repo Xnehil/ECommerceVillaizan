@@ -1,53 +1,46 @@
-"use client"
+"use client";
 
-import React, { use, useEffect, useRef, useState } from "react"
-import { useRouter } from "next/router"
-import { useSearchParams } from "next/navigation"
-import { Pedido } from "types/PaquetePedido"
-import MetodoPagoClient from "./MetodoPagoClient"
-import StepDireccion from "./StepDireccion"
-import { LoadScript } from "@react-google-maps/api"
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Pedido } from "types/PaquetePedido";
+import MetodoPagoClient from "./MetodoPagoClient";
+import StepDireccion from "./StepDireccion";
+import { LoadScript } from "@react-google-maps/api";
 
-// Example components for different steps
-const StepConfirmacion = () => <div>Step Confirmación</div>
+const StepConfirmacion = () => <div>Step Confirmación</div>;
 
 interface CheckoutProps {
-  pedido: Pedido
-  /*usuario?: any;
-    direccion?: any;*/
+  pedido: Pedido;
 }
 
-const Checkout: React.FC<CheckoutProps> = ({
-  pedido /*, usuario, direccion*/,
-}) => {
-  const searchParams = useSearchParams()
-  const [step, setStep] = useState(searchParams.get("step") || "aaa")
-  const [loaded, setLoaded] = useState(false)
+const Checkout: React.FC<CheckoutProps> = ({ pedido }) => {
+  const searchParams = useSearchParams();
+  const [step, setStep] = useState(searchParams.get("step") || "aaa");
+  const [isClient, setIsClient] = useState(false);
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
 
   useEffect(() => {
-    if (!loaded) {
-      setLoaded(true)
-    }
-  }),
-    [loaded]
+    setIsClient(true); // Marcar que estamos en el cliente
+  }, []);
 
   const renderStep = () => {
     switch (step) {
       case "direccion":
-        return <StepDireccion setStep={setStep} />
+        return <StepDireccion setStep={setStep} googleMapsLoaded={googleMapsLoaded} />;
       case "pago":
-        return <MetodoPagoClient pedidoInput={pedido} setStep={setStep} />
+        return <MetodoPagoClient pedidoInput={pedido} setStep={setStep} />;
       default:
-        return <div>Seleccione un paso válido</div>
+        return <div>Seleccione un paso válido</div>;
     }
-  }
+  };
 
   return (
     <div>
-      {window.google === undefined ? (
+      {isClient ? (
         <LoadScript
           googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
           libraries={["places"]}
+          onLoad={() => setGoogleMapsLoaded(true)} // Marcar como cargado
         >
           {renderStep()}
         </LoadScript>
@@ -55,7 +48,7 @@ const Checkout: React.FC<CheckoutProps> = ({
         renderStep()
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Checkout
+export default Checkout;
