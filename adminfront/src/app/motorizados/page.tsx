@@ -10,6 +10,7 @@ import { columns } from "./columns";
 import { Motorizado } from "@/types/PaqueteMotorizado";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const MotorizadosPage: React.FC = () => {
   const router = useRouter(); // Initialize useRouter
@@ -17,6 +18,8 @@ const MotorizadosPage: React.FC = () => {
 
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchMotorizados = async () => {
@@ -44,6 +47,13 @@ const MotorizadosPage: React.FC = () => {
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch motorizados", error);
+        setIsLoading(false);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            "No se pudieron cargar los motorizados. Por favor, intente de nuevo.",
+        });
       }
     };
 
