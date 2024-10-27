@@ -26,6 +26,12 @@ import { Pedido } from "src/models/Pedido";
  *           type: boolean
  *         required: false
  *         description: Si se debe recuperar el producto enriquecido
+ *       - in: query
+ *         name: estado
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: El estado del pedido (carrito, solicitado, verificado, enProgreso, entregado, cancelado, noCarrito)
  *     responses:
  *       200:
  *         description: Una lista de pedidos
@@ -46,13 +52,26 @@ export const GET = async (
 ) => {
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const enriquecido = req.query.enriquecido === 'true';
+    const estado = req.query.estado as string;
+
+    const validEstados = ['carrito', 'solicitado', 'verificado', 'enProgreso', 'entregado', 'cancelado', 'noCarrito'];
+    const filter: { estado?: string | string[] } = {};
+
+    if (validEstados.includes(estado)) {
+        if (estado === 'noCarrito') {
+            filter.estado = '!= carrito'; 
+        } else {
+            filter.estado = estado;
+        }
+    }
+    // console.log(filter);
     res.json({
         pedidos: await pedidoService.listarConPaginacion(
-            {},
+            filter,
             {
                 skip: 0,
                 take: 20,
-                relations: enriquecido ? ["motorizado","direccion","usuario"] : []
+                relations: enriquecido ? ["motorizado", "direccion", "usuario"] : []
             }
         ),
     });

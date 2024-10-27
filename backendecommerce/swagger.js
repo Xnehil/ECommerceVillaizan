@@ -770,7 +770,7 @@ const options = {
               properties: {
                 estado: {
                   type: 'string',
-                  example: 'En proceso',
+                  example: 'enProgreso',
                 },
                 prioridadEntrega: {
                   type: 'string',

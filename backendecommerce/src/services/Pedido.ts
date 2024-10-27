@@ -1,6 +1,6 @@
 import { buildQuery, FindConfig, Selector, TransactionBaseService } from "@medusajs/medusa";
 import { Pedido } from "../models/Pedido";
-import { Repository } from "typeorm";
+import { Not, Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
 import { ubicacionesDelivery, pedidosPorConfirmar, enviarMensajeRepartidor } from "../loaders/websocketLoader";
@@ -8,6 +8,7 @@ import MotorizadoRepository from "@repositories/Motorizado";
 import { Motorizado } from "@models/Motorizado";
 import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
 import { InventarioMotorizado } from "@models/InventarioMotorizado";
+
 
 class PedidoService extends TransactionBaseService {
     protected pedidoRepository_: typeof pedidoRepository;
@@ -51,9 +52,17 @@ class PedidoService extends TransactionBaseService {
             relations: [],
         }
     ): Promise<Pedido[]> {
-        const [pedidos] = await this.listarYContar(selector, config);
+        // Create a new selector if one isn't provided
+        const finalSelector: any = selector || {};
+
+        if (finalSelector.estado === '!= carrito') {
+            finalSelector.estado = Not('carrito');
+        }
+
+        const [pedidos] = await this.listarYContar(finalSelector, config);
         return pedidos;
     }
+
 
     async recuperar(
         id: string,
