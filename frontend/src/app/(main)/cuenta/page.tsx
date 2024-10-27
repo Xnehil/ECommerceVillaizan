@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import InputWithLabel from "@components/inputWithLabel";
 import { Direccion } from 'types/PaqueteEnvio';
+import AddressCard from './AddressCard'; // Import the new component
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -38,10 +39,9 @@ const Cuenta = () => {
         } catch (error) {
           console.error('Error fetching user name:', error);
         }
+      } else {
+        router.push('/');
       }
-	  else{
-		router.push('/');
-	  }
     }
 
     fetchUserName();
@@ -50,6 +50,16 @@ const Cuenta = () => {
   if (!session?.user?.id) {
     return null; // Return null while redirecting
   }
+
+  const handleEdit = (direccion: Direccion) => {
+    // Handle edit logic here
+    console.log('Edit:', direccion);
+  };
+
+  const handleDelete = (direccion: Direccion) => {
+    // Handle delete logic here
+    console.log('Delete:', direccion);
+  };
 
   return (
     <div style={{ display: 'flex' }}>
@@ -65,14 +75,12 @@ const Cuenta = () => {
         {direcciones.length > 0 ? (
           <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
             {direcciones.map((direccion, index) => (
-              <div key={index}>
-                {direccion.nombre && <p>{direccion.nombre}</p>}
-                {direccion.calle && <p>Calle: {direccion.calle}</p>}
-                {direccion.numeroExterior && <p>Número Exterior: {direccion.numeroExterior}</p>}
-                {direccion.numeroInterior && <p>Número Interior: {direccion.numeroInterior}</p>}
-                {direccion.referencia && <p>Referencia: {direccion.referencia}</p>}
-                {direccion.ciudad && direccion.ciudad.nombre && <p>Ciudad: {direccion.ciudad.nombre}</p>}
-              </div>
+              <AddressCard
+                key={index}
+                direccion={direccion}
+                onEdit={() => handleEdit(direccion)}
+                onDelete={() => handleDelete(direccion)}
+              />
             ))}
           </div>
         ) : (
