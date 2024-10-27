@@ -22,40 +22,41 @@ const Cuenta = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalState, setModalState] = useState<'Crear' | 'Editar'>('Crear');
   const [currentDireccion, setCurrentDireccion] = useState<Direccion | null>(null);
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     async function fetchUserName() {
-      if (session?.user?.id) {
-        try {
-          const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
-          console.log("response", response);
-          const user = response.data.usuario;
-          if (user) {
-            setUserNombre(user.nombre);
-            setUserApellido(user.apellido);
-            setUserCorreo(user.correo);
-            setUserTelefono(user.numerotelefono);
+      if(status !== "loading"){
+        if (session?.user?.id) {
+            try {
+              const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
+              console.log("response", response);
+              const user = response.data.usuario;
+              if (user) {
+                setUserNombre(user.nombre);
+                setUserApellido(user.apellido);
+                setUserCorreo(user.correo);
+                setUserTelefono(user.numerotelefono);
+                setUserId(user.id);
+              } else {
+                console.error('Failed to fetch user name');
+              }
+    
+              const addressResponse = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`);
+              setDirecciones(addressResponse.data.direcciones);
+    
+            } catch (error) {
+              console.error('Error fetching user name:', error);
+            }
           } else {
-            console.error('Failed to fetch user name');
+            router.push('/');
           }
-
-          const addressResponse = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`);
-          setDirecciones(addressResponse.data.direcciones);
-
-        } catch (error) {
-          console.error('Error fetching user name:', error);
-        }
-      } else {
-        router.push('/');
       }
+      
     }
 
     fetchUserName();
   }, [session]);
-
-  if (!session?.user?.id) {
-    return null; // Return null while redirecting
-  }
 
   const handleUpdateDireccion = (updatedDireccion: Direccion) => {
     setDirecciones((prevDirecciones) =>
@@ -63,6 +64,11 @@ const Cuenta = () => {
     );
     setIsModalOpen(false);
   };
+
+  const handleCreateDireccion = (newDireccion: Direccion) => {
+    setDirecciones((prevDirecciones) => [...prevDirecciones, newDireccion]);
+    setIsModalOpen(false);
+  }
 
   const handleEdit = (direccion: Direccion) => {
     setCurrentDireccion(direccion);
@@ -127,7 +133,7 @@ const Cuenta = () => {
         </div>
       </div>
       <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} />
+        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} />
       </AddressModal>
     </div>
   );

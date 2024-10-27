@@ -7,9 +7,11 @@ interface AddressFormProps {
   state: 'Editar' | 'Crear';
   direccion: Direccion | null;
   onUpdateDireccion: (updatedDireccion: Direccion) => void;
+  onCreatedDireccion: (createdDireccion: Direccion) => void;
+  userId: string;
 }
 
-const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDireccion }) => {
+const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDireccion, onCreatedDireccion, userId}) => {
   const [nombre, setNombre] = useState('');
   const [calle, setCalle] = useState('');
   const [numeroExterior, setNumeroExterior] = useState('');
@@ -67,6 +69,30 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
       } catch (error) {
         console.error('Error updating direccion:', error);
       }
+    }
+    else{
+        try {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion`, {
+                nombre: nombre,
+                calle: calle,
+                numeroExterior: numeroExterior,
+                numeroInterior: numeroInterior,
+                referencia: referencia,
+                guardada: true,
+                distrito: "",
+                ciudad:{
+                    id: ciudadId
+                },
+                usuario:{
+                    id: userId
+                }                
+              });
+            const createdDireccion = response.data.direccion;
+            onCreatedDireccion(createdDireccion);
+         }
+        catch (error) {
+            console.error('Error creating direccion:', error);
+        }
     }
   };
 
