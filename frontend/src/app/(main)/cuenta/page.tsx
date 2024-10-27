@@ -57,16 +57,35 @@ const Cuenta = () => {
     return null; // Return null while redirecting
   }
 
+  const handleUpdateDireccion = (updatedDireccion: Direccion) => {
+    setDirecciones((prevDirecciones) =>
+      prevDirecciones.map((dir) => (dir.id === updatedDireccion.id ? updatedDireccion : dir))
+    );
+    setIsModalOpen(false);
+  };
+
   const handleEdit = (direccion: Direccion) => {
     setCurrentDireccion(direccion);
     setModalState('Editar');
     setIsModalOpen(true);
   };
 
-  const handleDelete = (direccion: Direccion) => {
-    // Handle delete logic here
-    console.log('Delete:', direccion);
+  const handleDelete = async (direccion: Direccion) => {
+    try {
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${direccion.id}`
+      );
+  
+      if (response.status === 200) {
+        setDirecciones(direcciones.filter((dir) => dir.id !== direccion.id));
+      } else {
+        console.error('Failed to delete:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred during deletion:', error);
+    }
   };
+  
 
   const handleAddAddress = () => {
     setCurrentDireccion(null);
@@ -108,7 +127,7 @@ const Cuenta = () => {
         </div>
       </div>
       <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <AddressForm state={modalState} />
+        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} />
       </AddressModal>
     </div>
   );

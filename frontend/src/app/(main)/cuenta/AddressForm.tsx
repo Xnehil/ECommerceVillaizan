@@ -1,22 +1,73 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import InputWithLabel from '@components/inputWithLabel';
+import { Direccion } from 'types/PaqueteEnvio';
+import axios from 'axios';
 
 interface AddressFormProps {
   state: 'Editar' | 'Crear';
+  direccion: Direccion | null;
+  onUpdateDireccion: (updatedDireccion: Direccion) => void;
 }
 
-const AddressForm: React.FC<AddressFormProps> = ({ state }) => {
+const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDireccion }) => {
   const [nombre, setNombre] = useState('');
   const [calle, setCalle] = useState('');
   const [numeroExterior, setNumeroExterior] = useState('');
   const [numeroInterior, setNumeroInterior] = useState('');
   const [referencia, setReferencia] = useState('');
-  const [ciudad, setCiudad] = useState('');
+  const [ciudadId, setCiudadId] = useState('');
+  const [ciudades, setCiudades] = useState<{ id: string; nombre: string }[]>([]);
 
-  const handleSubmit = (event: React.FormEvent) => {
+  useEffect(() => {
+    if (state === 'Editar' && direccion) {
+      setNombre(direccion.nombre ?? '');
+      setCalle(direccion.calle ?? '');
+      setNumeroExterior(direccion.numeroExterior ?? '');
+      setNumeroInterior(direccion.numeroInterior ?? '');
+      setReferencia(direccion.referencia ?? '');
+      setCiudadId(direccion.ciudad?.id ?? '');
+    }
+  }, [state, direccion]);
+
+  useEffect(() => {
+    const fetchCiudades = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ciudad`);
+        setCiudades(response.data.ciudades);
+      } catch (error) {
+        console.error('Error fetching ciudades:', error);
+      }
+    };
+
+    fetchCiudades();
+  }, []);
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    // TODO: Add form submission logic
-    console.log({ nombre, calle, numeroExterior, numeroInterior, referencia, ciudad });
+    console.log({ nombre, calle, numeroExterior, numeroInterior, referencia, ciudadId });
+
+    if (state === 'Editar' && direccion) {
+      try {
+        const responseCiudad = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ciudad/${ciudadId}`);
+        const ciudad = responseCiudad.data.ciudad;
+
+        const direccionSubmit: Direccion = {
+          ...direccion,
+          nombre,
+          calle,
+          numeroExterior,
+          numeroInterior,
+          referencia,
+          ciudad
+        };
+
+        const response = await axios.put(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${direccion.id}`, direccionSubmit);
+        const updatedDireccion = response.data.direccion;
+        onUpdateDireccion(updatedDireccion);
+      } catch (error) {
+        console.error('Error updating direccion:', error);
+      }
+    }
   };
 
   return (
@@ -61,13 +112,17 @@ const AddressForm: React.FC<AddressFormProps> = ({ state }) => {
         <label htmlFor="ciudad">Ciudad</label>
         <select
           id="ciudad"
-          value={ciudad}
-          onChange={(e) => setCiudad(e.target.value)}
+          value={ciudadId}
+          onChange={(e) => setCiudadId(e.target.value)}
           required
           className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
         >
           <option value="">Seleccione una ciudad</option>
-          {/* TODO: Populate this dropdown with cities from the database */}
+          {ciudades.map((ciudad) => (
+            <option key={ciudad.id} value={ciudad.id}>
+              {ciudad.nombre}
+            </option>
+          ))}
         </select>
       </div>
       <button type="submit" className="px-4 py-2 text-white bg-blue-500 rounded-md">
