@@ -15,6 +15,11 @@ export default function Nav() {
   const { data: session, status } = useSession();
   const [userName, setUserName] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
+  };
 
   useEffect(() => {
     async function fetchUserName() {
@@ -24,7 +29,7 @@ export default function Nav() {
           console.log("response", response);
           const user = response.data.usuario;
           if (user) {
-            setUserName(user.nombre);  // Assuming the backend returns { name: "User Name" }
+            setUserName(user.nombre + ' ' + user.apellido);  // Assuming the backend returns { name: "User Name" }
           } else {
             console.error('Failed to fetch user name');
           }
@@ -60,32 +65,56 @@ export default function Nav() {
             <Link href="/comprar" className="hover:text-ui-fg-base text-white">
               Comprar
             </Link>
+            {/* Inicio Sesion */}
             {status === "loading" ? (
               <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
             ) : session ? (
               <>
-                <span className="text-lg text-white">Bienvenido, {userName}</span>
-                <Button
-                  className="text-lg text-white"
-                  onClick={() => {
-                    handleSignOut();
-                    setIsMobileMenuOpen(false);
-                  }}
-                >
-                  Cerrar sesión
-                </Button>
+                <span className="text-lg text-white">Hola, {userName}</span>
+                <div className="relative">
+                  <img
+                    src="/images/userIcon.png"
+                    alt="Icon"
+                    className="h-6 w-6 cursor-pointer"
+                    onClick={toggleDropdown}
+                  />
+                  {isDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+                      <Link href="/cuenta" className="block px-4 py-2 text-gray-800 hover:bg-gray-200">
+                        Ver cuenta
+                      </Link>
+                      <button
+                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
+                        onClick={() => {
+                          handleSignOut();
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        Cerrar Sesión
+                      </button>
+                    </div>
+                  )}
+                </div>
               </>
             ) : (
-              <Button className="text-lg text-white">
-                <Link
-                  href="/login"
-                  className="text-lg text-white hover:underline"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Iniciar sesión
-                </Link>
-              </Button>
+              <div className="flex items-center">
+                <Button className="text-lg text-white">
+                  <Link
+                    href="/login"
+                    className="hover:text-ui-fg-base text-white"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    ¡Inicia sesión y accede a promociones!
+                  </Link>
+                </Button>
+                <img
+                  src="/images/userIcon.png"
+                  alt="Icon"
+                  className="h-6 w-6 ml-2"
+                />
+              </div>
             )}
+            
           </div>
         </nav>
       </header>
