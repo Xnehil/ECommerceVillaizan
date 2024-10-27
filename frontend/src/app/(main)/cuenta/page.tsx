@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import InputWithLabel from "@components/inputWithLabel";
+import { Direccion } from 'types/PaqueteEnvio';
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -13,6 +14,7 @@ const Cuenta = () => {
   const [userCorreo, setUserCorreo] = useState('');
   const [userTelefono, setUserTelefono] = useState('');
   const router = useRouter();
+  const [direcciones, setDirecciones] = useState<Direccion[]>([]);
 
   useEffect(() => {
     async function fetchUserName() {
@@ -29,6 +31,10 @@ const Cuenta = () => {
           } else {
             console.error('Failed to fetch user name');
           }
+
+          const addressResponse = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`);
+          setDirecciones(addressResponse.data.direcciones);
+
         } catch (error) {
           console.error('Error fetching user name:', error);
         }
@@ -56,7 +62,22 @@ const Cuenta = () => {
       </div>
       <div style={{ flex: 1, padding: '20px' }}>
         <h2>Direcciones Guardadas</h2>
-        {/* Saved addresses go here */}
+        {direcciones.length > 0 ? (
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            {direcciones.map((direccion, index) => (
+              <div key={index}>
+                {direccion.nombre && <p>{direccion.nombre}</p>}
+                {direccion.calle && <p>Calle: {direccion.calle}</p>}
+                {direccion.numeroExterior && <p>Número Exterior: {direccion.numeroExterior}</p>}
+                {direccion.numeroInterior && <p>Número Interior: {direccion.numeroInterior}</p>}
+                {direccion.referencia && <p>Referencia: {direccion.referencia}</p>}
+                {direccion.ciudad && direccion.ciudad.nombre && <p>Ciudad: {direccion.ciudad.nombre}</p>}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No asociaste ninguna dirección a tu cuenta</p>
+        )}
       </div>
     </div>
   );

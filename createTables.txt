@@ -423,6 +423,7 @@ CREATE TABLE vi_direccion (
     codigoPostal VARCHAR(10),
     referencia VARCHAR(255),
 	guardada BOOLEAN,
+	nombre VARCHAR(250),
 	id_usuario VARCHAR(50),
     CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES vi_usuario(id),
     id_ciudad VARCHAR(50),

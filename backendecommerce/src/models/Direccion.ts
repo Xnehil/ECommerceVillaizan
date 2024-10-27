@@ -25,6 +25,9 @@ export class Direccion extends EntidadBase {
   @Column({ type: 'varchar', length: 255, nullable: true })
   referencia: string;
 
+  @Column({ type: 'varchar', length: 250, nullable: true })
+  nombre: string;
+
   @ManyToOne(() => Ciudad, ciudad => ciudad.direcciones, { eager: true })
   @JoinColumn({ name: 'id_ciudad' })
   ciudad: Ciudad;
