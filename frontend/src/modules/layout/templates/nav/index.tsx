@@ -80,7 +80,11 @@ export default function Nav() {
                   />
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                      <Link href="/cuenta" className="block px-4 py-2 text-gray-800 hover:bg-gray-200">
+                      <Link 
+                        href="/cuenta" 
+                        className="block px-4 py-2 text-gray-800 hover:bg-gray-200" 
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
                         Ver cuenta
                       </Link>
                       <button
