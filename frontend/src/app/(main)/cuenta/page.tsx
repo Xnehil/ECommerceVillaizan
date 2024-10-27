@@ -7,6 +7,9 @@ import axios from 'axios';
 import InputWithLabel from "@components/inputWithLabel";
 import { Direccion } from 'types/PaqueteEnvio';
 import AddressCard from './AddressCard'; // Import the new component
+import AddAddressButton from './AddressButton';
+import AddressModal from './AddressModal'; // Import the Modal component
+import AddressForm from './AddressForm'; // Import the AddressForm component
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -16,6 +19,9 @@ const Cuenta = () => {
   const [userTelefono, setUserTelefono] = useState('');
   const router = useRouter();
   const [direcciones, setDirecciones] = useState<Direccion[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalState, setModalState] = useState<'Crear' | 'Editar'>('Crear');
+  const [currentDireccion, setCurrentDireccion] = useState<Direccion | null>(null);
 
   useEffect(() => {
     async function fetchUserName() {
@@ -52,13 +58,24 @@ const Cuenta = () => {
   }
 
   const handleEdit = (direccion: Direccion) => {
-    // Handle edit logic here
-    console.log('Edit:', direccion);
+    setCurrentDireccion(direccion);
+    setModalState('Editar');
+    setIsModalOpen(true);
   };
 
   const handleDelete = (direccion: Direccion) => {
     // Handle delete logic here
     console.log('Delete:', direccion);
+  };
+
+  const handleAddAddress = () => {
+    setCurrentDireccion(null);
+    setModalState('Crear');
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   return (
@@ -86,7 +103,13 @@ const Cuenta = () => {
         ) : (
           <p>No asociaste ninguna dirección a tu cuenta</p>
         )}
+        <div style={{ marginLeft: '350px' }}>
+          <AddAddressButton onClick={handleAddAddress} />
+        </div>
       </div>
+      <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
+        <AddressForm state={modalState} />
+      </AddressModal>
     </div>
   );
 };
