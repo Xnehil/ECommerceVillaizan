@@ -302,7 +302,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       {/* Popup de Entrega */}
       {showPopup && (
         <EntregaPopup
-        direccion={`${direccion.calle ?? ''}${direccion.calle ? ' ' : ''}${direccion.numeroExterior ?? ''}${direccion.numeroInterior ? `, ${direccion.numeroInterior}` : ''}${direccion.distrito ? `, ${direccion.distrito}` : ''}${direccion.ciudad?.nombre ? `, ${direccion.ciudad.nombre}` : ''}`.trim().replace(/,\s*$/, '')}
+        direccion={`${direccion.nombre ?? ''}${direccion.nombre ? ' | ' : ''}${direccion.calle ?? ''}${direccion.calle ? ' ' : ''}${direccion.numeroExterior ?? ''}${direccion.numeroExterior ? ' ' : ''}${direccion.numeroInterior ? '(' : ''}${direccion.numeroInterior ?? ''}${direccion.numeroInterior ? ') ' : ''}${direccion.ciudad?.nombre ? `, ${direccion.ciudad.nombre}` : ''}`.trim().replace(/,\s*$/, '')}
           nombre= {`${usuario.nombre}` }
           detalles = {detalles}
           subtotal={total}

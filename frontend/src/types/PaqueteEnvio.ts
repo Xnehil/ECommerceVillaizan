@@ -24,7 +24,10 @@ export interface Direccion extends EntidadBase { // Placeholder, replace if nece
     referencia?: string; // Optional field
     ciudad?: Ciudad;
     ubicacion?: Ubicacion;
+    guardada?: boolean;
+    usuario?: Usuario;
     envios: Pedido[]; // One-to-many relationship
+    nombre?: string;
 }
 
 export interface Ciudad extends EntidadBase { // Placeholder, replace if necessary
