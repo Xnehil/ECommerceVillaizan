@@ -42,7 +42,7 @@ export default function LoginScreen() {
         setUsername("");
         setPassword("");
         storeUserData(repartidor);
-        console.log("Usuario encontrado:", repartidor);
+        // console.log("Usuario encontrado:", repartidor);
         router.push({
           pathname: "/home",
         });
