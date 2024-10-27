@@ -77,6 +77,21 @@ class UsuarioService extends TransactionBaseService {
         return usuario;
     }
 
+    async recuperarPorCorreo(
+        correo: string,
+        config?: FindConfig<Usuario>
+    ): Promise<Usuario> {
+        const usuarioRepo = this.activeManager_.withRepository(this.usuarioRepository_);
+        const query = buildQuery({ correo }, config);
+        const usuario = await usuarioRepo.findOne(query);
+
+        if (!usuario) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Usuario no encontrado");
+        }
+
+        return usuario;
+    }
+
     async crear(usuario: Usuario): Promise<Usuario> {
         const hashedPassword = await bcrypt.hash(usuario.contrasena, 10);
         usuario.contrasena = hashedPassword;
