@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import InputWithLabel from "@components/inputWithLabel";
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -48,7 +49,10 @@ const Cuenta = () => {
     <div style={{ display: 'flex' }}>
       <div style={{ flex: 1, padding: '20px' }}>
         <h2>Datos generales</h2>
-        {/* User details go here */}
+        <InputWithLabel label="Nombre" value={userNombre} disabled={true} />
+        <InputWithLabel label="Apellido" value={userApellido} disabled={true} />
+        <InputWithLabel label="Correo" value={userCorreo} disabled={true} />
+        <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />
       </div>
       <div style={{ flex: 1, padding: '20px' }}>
         <h2>Direcciones Guardadas</h2>

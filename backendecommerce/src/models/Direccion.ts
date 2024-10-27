@@ -3,6 +3,7 @@ import { EntidadBase } from './EntidadBase';
 import { Ciudad } from './Ciudad';
 import { Ubicacion } from './Ubicacion';
 import { generateEntityId } from '@medusajs/medusa';
+import { Usuario } from './Usuario';
 
 @Entity('vi_direccion')
 export class Direccion extends EntidadBase {
@@ -31,6 +32,13 @@ export class Direccion extends EntidadBase {
   @ManyToOne(() => Ubicacion, ubicacion => ubicacion.direcciones, { eager: true })
   @JoinColumn({ name: 'id_ubicacion' })
   ubicacion: Ubicacion;
+
+  @ManyToOne(() => Usuario, usuario => usuario.id, { eager: true })
+  @JoinColumn({ name: 'id_usuario' })
+  usuario: Usuario;
+
+  @Column({ type: 'boolean', nullable: true, default: false })
+  guardada: boolean;
 
   @BeforeInsert()
     private beforeInsert() {
