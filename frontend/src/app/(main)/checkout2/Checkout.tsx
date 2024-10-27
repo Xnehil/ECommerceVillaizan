@@ -16,12 +16,7 @@ interface CheckoutProps {
 const Checkout: React.FC<CheckoutProps> = ({ pedido }) => {
   const searchParams = useSearchParams();
   const [step, setStep] = useState(searchParams.get("step") || "aaa");
-  const [isClient, setIsClient] = useState(false);
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true); // Marcar que estamos en el cliente
-  }, []);
 
   const renderStep = () => {
     switch (step) {
@@ -36,7 +31,7 @@ const Checkout: React.FC<CheckoutProps> = ({ pedido }) => {
 
   return (
     <div>
-      {isClient ? (
+      {window.google === undefined ? (
         <LoadScript
           googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
           libraries={["places"]}
