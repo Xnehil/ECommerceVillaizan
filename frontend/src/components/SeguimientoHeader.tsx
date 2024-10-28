@@ -51,7 +51,7 @@ interface OrderDetailsProps {
             className="rounded-full w-28 h-28 object-cover mb-2 mr-6"
           />
           <div className='flex flex-col justify-center'>
-            <p className="font-bold text-gray-800">Conductor: {pedido.motorizado?.usuario?.nombre ?? "Masha"}</p>
+            <p className="font-bold text-gray-800">Conductor: {pedido.motorizado?.usuario?.nombre ?? "No asignado"}</p>
             <p className="text-gray-600">Placa: {pedido.motorizado?.placa ?? "No asignado"}</p>
           </div>
         </div>

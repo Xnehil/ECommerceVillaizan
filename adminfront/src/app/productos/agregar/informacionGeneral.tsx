@@ -2,22 +2,24 @@
 
 import InputWithLabel from "@/components/forms/inputWithLabel";
 import { Label } from "@radix-ui/react-label";
-import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useState } from "react";
 import "@/styles/general.css";
 import { Producto } from "@/types/PaqueteProducto";
 import { toast } from "@/hooks/use-toast";
-import { Checkbox } from "@/components/ui/checkbox";
 import CheckboxWithLabel from "@/components/forms/checkboxWithLabel";
 
 interface InformacionGeneralProps {
   producto: MutableRefObject<Producto>;
   isEditing: boolean;
+  imagen: MutableRefObject<File | undefined>;
 }
 
 const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   producto,
   isEditing,
+  imagen,
 }) => {
+  console.log("Renderizando InformacionGeneral");
   const [precioEcommerce, setPrecioEcommerce] = useState(
     producto.current.precioEcommerce?.toString() || ""
   );
@@ -29,7 +31,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
     producto.current.descripcion || ""
   );
   const [previewSrc, setPreviewSrc] = useState(
-    "https://placehold.co/150?text=Vista+previa"
+    producto.current.urlImagen || "https://placehold.co/150?text=Vista+previa"
   );
 
   useEffect(() => {
@@ -106,8 +108,10 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         setPreviewSrc(reader.result as string);
       };
       reader.readAsDataURL(file);
+      imagen.current = file;
     }
   };
+
   return (
     <div className="info-side-container">
       <h5>Información general</h5>
@@ -118,6 +122,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         onChange={handleNameChange}
         disabled={!isEditing}
       /> */}
+
       <div className="w-full max-w-sm flex space-x-2">
         <div className="flex-1">
           <InputWithLabel

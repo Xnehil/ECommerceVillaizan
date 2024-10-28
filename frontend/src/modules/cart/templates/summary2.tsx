@@ -1,4 +1,4 @@
-import { Button, Heading } from "@medusajs/ui";
+import { Heading } from "@medusajs/ui";
 import CartTotals from "@modules/common/components/cart-totals";
 import Divider from "@modules/common/components/divider";
 import { Pedido } from "types/PaquetePedido";
@@ -6,17 +6,28 @@ import { useState } from "react";
 
 type Summary2Props = {
   carrito: Pedido;
-  handleSubmit: () => void; // Nueva propiedad para enviar la dirección
+  handleSubmit: () => void;
+  isFormValid: boolean;
+  showWarnings: boolean;
 };
 
-const Summary2 = ({ carrito, handleSubmit }: Summary2Props) => {
+const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2Props) => {
   const subtotal = carrito.detalles.reduce((acc: number, item) => {
     return acc + Number(item.subtotal) || 0;
   }, 0);
 
-  const [costoEnvio, setCostoEnvio] = useState<number>(0); // Estado para el costo de envío
-  const minimo = 25; // Mínimo para proceder al pago
-  const isDisabled = subtotal < minimo;
+  const [costoEnvio, setCostoEnvio] = useState<number>(0);
+  const minimo = 25;
+  const isDisabled = subtotal < minimo || !isFormValid;
+  const [showNotification, setShowNotification] = useState(false); // Estado para mostrar notificación
+
+  const handleClick = () => {
+    if (isDisabled) {
+      setShowNotification(true); // Mostrar notificación si no se puede continuar
+    } else {
+      handleSubmit();
+    }
+  };
 
   return (
     <div className="bg-cremaFondo p-6 pb-12">
@@ -26,20 +37,26 @@ const Summary2 = ({ carrito, handleSubmit }: Summary2Props) => {
         </Heading>
         <Divider />
         <CartTotals data={carrito} onSetCostoEnvio={setCostoEnvio} />
-        {isDisabled && (
+
+        {subtotal < minimo && (
           <p className="text-red-400 text-sm font-poppins mt-2 text-center">
             El subtotal debe ser de al menos {minimo} soles para proceder al pago.
           </p>
         )}
+        {showWarnings && !isFormValid && (
+          <p className="text-red-400 text-sm font-poppins mt-2 text-center">
+            Por favor, complete todos los campos obligatorios.
+          </p>
+        )}
+        {showNotification && (
+          <p className="text-red-400 text-sm font-poppins mt-2 text-center">
+            Debes completar todos los campos obligatorios.
+          </p>
+        )}
         <button
-          onClick={() => {
-            if (!isDisabled) {
-              handleSubmit(); // Llama a handleSubmit para guardar la dirección y cambiar de paso
-            }
-          }}
+          onClick={handleClick}
           className="w-1/2 h-12 bg-transparent border border-black text-black rounded-2xl mx-auto mt-4 hover:bg-gray-100"
           disabled={isDisabled}
-          title={isDisabled ? "El subtotal debe ser al menos " + minimo + " para proceder al pago." : ""}
         >
           Pasa a comprar
         </button>

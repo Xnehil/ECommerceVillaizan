@@ -86,6 +86,59 @@ class ProductoService extends TransactionBaseService {
         }
         return producto;
       }
+
+      async recuperarConDetalle(id: string, options: FindConfig<Producto> = {}): Promise<Producto> {
+        const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
+        const relations = ["inventarios", ...(options.relations || [])];
+        const query = buildQuery({ id }, { relations });
+        const producto = await productoRepo.findOne(query);
+    
+        if (!producto) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+    
+        return producto;
+      }
+
+      async recuperarProductosConDetalle(options: FindConfig<Producto> = {}): Promise<Producto[]> {
+        const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
+        const relations = ["inventarios", ...(options.relations || [])];
+        const query = buildQuery({}, { relations });
+        const productos = await productoRepo.find(query);
+    
+        if (!productos || productos.length === 0) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "No se encontraron productos");
+        }
+    
+        return productos;
+      }
+
+      async recuperarProductosPorCiudad(ciudadId :string, options: FindConfig<Producto> = {}): Promise<Producto[]> {
+        //use productoRepo.findProductosWithInventariosByCiudad(ciudadId)
+        const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
+        const productos = await productoRepo.findProductosWithInventariosByCiudad(ciudadId);
+        if (!productos || productos.length === 0) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "No se encontraron productos");
+        }
+        //ordenar productos alfabeticamente y los que no tengan inventario al final
+        productos.sort((a, b) => {
+          const stockA = a.inventarios.reduce((acc, inv) => acc + inv.stock, 0);
+          const stockB = b.inventarios.reduce((acc, inv) => acc + inv.stock, 0);
+    
+          if (stockA === 0 && stockB > 0) {
+              return 1;
+          }
+          if (stockA > 0 && stockB === 0) {
+              return -1;
+          }
+          if (stockA !== stockB) {
+              return stockB - stockA;
+          }
+          return a.nombre.localeCompare(b.nombre);
+        });
+
+        return productos;
+      }
       
     
       async crear(producto: Producto): Promise<Producto> {

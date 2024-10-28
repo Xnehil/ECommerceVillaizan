@@ -3,7 +3,7 @@
 
 import { formatAmount } from "@lib/util/prices"
 import { InformationCircleSolid } from "@medusajs/icons"
-import { Tooltip } from "@medusajs/ui"
+import { Tooltip, TooltipProvider } from "@medusajs/ui"
 import React from "react"
 import { Pedido } from "types/PaquetePedido"
 
@@ -37,9 +37,11 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
         <div className="flex items-center justify-between">
           <span className="flex gap-x-1 items-center">
             Subtotal
-            <Tooltip content="Total del carrito sin envío ni descuentos">
-              <InformationCircleSolid color="var(--fg-muted)" />
-            </Tooltip>
+            <TooltipProvider>
+              <Tooltip content="Total del carrito sin envío ni descuentos">
+                <InformationCircleSolid color="var(--fg-muted)" />
+              </Tooltip>
+            </TooltipProvider>
           </span>
           <span data-testid="cart-subtotal" data-value={subtotal || 0}>
             {getAmount(subtotal)}

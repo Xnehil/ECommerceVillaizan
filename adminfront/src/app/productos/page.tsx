@@ -8,8 +8,9 @@ import { useRouter } from "next/navigation";
 import { Producto } from "@/types/PaqueteProducto";
 import axios from "axios";
 import Loading from "@/components/Loading";
-import { DataTable } from "@/app/productos/data-table";
+import { DataTable } from "@/components/datatable/data-table";
 import { columns } from "./columns";
+import { useToast } from "@/hooks/use-toast";
 
 const ProductosPage: React.FC = () => {
   const router = useRouter(); // Initialize useRouter
@@ -18,6 +19,8 @@ const ProductosPage: React.FC = () => {
 
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -45,6 +48,13 @@ const ProductosPage: React.FC = () => {
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch products", error);
+        setIsLoading(false);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            "No se pudieron cargar los productos. Por favor, intente de nuevo.",
+        });
       }
     };
 
@@ -75,7 +85,11 @@ const ProductosPage: React.FC = () => {
           descripciones, categorías, etc.
         </p>
         <div className="h-full w-full">
-          <DataTable columns={columns} data={products.current} nombre="producto"/>
+          <DataTable
+            columns={columns}
+            data={products.current}
+            nombre="producto"
+          />
         </div>
       </div>
     </>

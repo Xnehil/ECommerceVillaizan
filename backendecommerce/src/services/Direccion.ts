@@ -89,6 +89,24 @@ class DireccionService extends TransactionBaseService {
             await direccionRepo.update(id, { estaActivo: false , desactivadoEn: new Date() });
         });
     }
+
+    async listarPorUsuarioIdGuardados(idUsuario: string): Promise<Direccion[]> {
+        const direccionRepo = this.activeManager_.withRepository(this.direccionRepository_);
+        const direcciones = direccionRepo.findByUsuarioIdGuardados(idUsuario);
+        if(!direcciones) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Direcciones no encontradas");
+        }
+        return direcciones;
+    }
+
+    async listarPorUsuarioId(idUsuario: string): Promise<Direccion[]> {
+        const direccionRepo = this.activeManager_.withRepository(this.direccionRepository_);
+        const direcciones = direccionRepo.findByUsuarioId(idUsuario);
+        if(!direcciones) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Direcciones no encontradas");
+        }
+        return direcciones;
+    }
 }
 
 export default DireccionService;

@@ -43,6 +43,7 @@ const PaymentPopup: React.FC<PaymentPopupProps> = ({ totalPagar, montoMaximoDeVu
     <div style={styles.overlay}>
       <div style={styles.popup}>
         <h2>Ingrese el monto con el que va a pagar</h2>
+        <p className='text-xs'>Aceptamos billetes de hasta 100 soles</p>
         
         {errorMessage && <p style={styles.error}>{errorMessage}</p>}
         
@@ -78,7 +79,7 @@ const styles = {
     backgroundColor: 'white',
     borderRadius: '15px',
     padding: '20px',
-    width: '300px',
+    width: '340px',
     textAlign: 'center' as 'center',
   },
   input: {

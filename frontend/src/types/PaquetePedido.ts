@@ -1,5 +1,5 @@
 import { EntidadBase } from "./EntidadBase";
-import { Direccion, Motorizado } from "./PaqueteEnvio";
+import { Ciudad, Direccion, Motorizado } from "./PaqueteEnvio";
 import { Producto } from "./PaqueteProducto";
 import { Usuario } from "./PaqueteUsuario";
 
@@ -18,6 +18,7 @@ export interface Pedido extends EntidadBase {
     usuario?: Usuario;
     metodosPago: MetodoPago[]; // Many-to-many relationship
     detalles: DetallePedido[]; // One-to-many relationship
+
 }
 
 // Define any additional interfaces needed for your application

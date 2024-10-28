@@ -6,8 +6,16 @@ import {
 import WebSocket from "ws";
 
 
-export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, pedidoId: string | null }>();
+export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, pedidoId: string | null }>(
+  [
+    ['mot_01J9PMQG49H0SZ0G6MFHM04XEV', { lat: 6.483, lng: -76.333, pedidoId: null }], // Para pruebas
+  ]
+);
+const adminsConectados = new Set<WebSocket>();
+export const pedidosPorConfirmar = new Set<string>();
 const entregados = new Set<string>();
+const conexiones = new Map<string, WebSocket>();
+
 export default async (
   container: MedusaContainer,
   config: ConfigModule
@@ -19,20 +27,29 @@ export default async (
 
   const wss = new WebSocket.Server({
     port: port,
-    path: "/ws",
   });
 
 
   wss.on("connection", (ws, req) => {
     console.info("New WebSocket connection established");
 
-    // Basic authentication (for demonstration purposes)
     const params = new URLSearchParams(req.url?.split('?')[1]);
     const rol = params.get('rol'); // Si es delivery o cliente
     const id = params.get('id');
 
     if (id && rol === 'delivery') {
       ubicacionesDelivery.set(id, { lat: 0, lng: 0, pedidoId: null });
+      conexiones.set(id, ws);
+    }
+
+    if (id && rol === 'cliente') {
+      pedidosPorConfirmar.add(id);
+      conexiones.set(id, ws);
+    }
+
+    if (rol === 'admin') {
+      adminsConectados.add(ws);
+      console.info('Admin conectado con WebSocket, id: ' + id);
     }
 
     if (!rol || !id) {
@@ -42,7 +59,7 @@ export default async (
     }
 
     ws.on("message", (message) => {
-      console.info(`Received message from ${rol} (${id}): ${message}`);
+      // console.info(`Received message from ${rol} (${id}): ${message}`);
       let parsedMessage;
       try {
         parsedMessage = JSON.parse(message.toString()); // Convert RawData to string
@@ -67,6 +84,7 @@ export default async (
           ubicacionesDelivery.delete(id);
           console.info(`Se eliminó al repartidor ${id} de la lista de ubicaciones`);
         }
+        conexiones.delete(id);
       } else {
         console.info('WebSocket connection closed');
       }
@@ -125,7 +143,11 @@ const handleClientMessage = (
         console.info(`Pedido ${idPedido} ya fue entregado`);
         ws.send(JSON.stringify({ type: 'entregadoResponse', data: 'Pedido entregado' }));
         entregados.delete(idPedido);
-      } else if (location && enEntrega) {
+      } else if (pedidosPorConfirmar.has(idPedido)) {
+        ws.send(JSON.stringify({ type: 'confirmarResponse', data: 'Pedido en proceso de confirmación' }));
+
+      }
+        else if (location && enEntrega) {
         ws.send(JSON.stringify({ type: 'locationResponse', data: location }));
       } 
       else if (location && !enEntrega) {
@@ -147,3 +169,17 @@ const handleClientMessage = (
       console.warn(`Unknown message type from client: ${message.type}`);
   }
 };
+
+export const enviarMensajeRepartidor = (id: string, type: string, mensaje: any) => {
+  const ws = conexiones.get(id);
+  if (ws) {
+    ws.send(JSON.stringify({ type, data: mensaje }));
+  }
+};
+
+export const enviarMensajeAdmins = (type: string, mensaje: any) => {
+  adminsConectados.forEach((admin) => {
+    admin.send(JSON.stringify({ type, data: mensaje }));
+  });
+  return "Mensaje enviado a" + adminsConectados.size + " admins";
+}

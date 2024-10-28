@@ -6,7 +6,7 @@ import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import { Motorizado } from "@/types/PaqueteMotorizado";
 import { InventarioMotorizado, Producto } from "@/types/PaqueteProducto";
-import { DataTable } from "@/app/productos/data-table";
+import { DataTable } from "@/components/datatable/data-table";
 import { columns, columnsEdit } from "./columns";
 import Loading from "@/components/Loading";
 
@@ -41,7 +41,7 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
         console.log("Products:", productsData);
 
         console.log("Fetching inventario");
-        console.log("inventario.current", inventario.current);  
+        console.log("inventario.current", inventario.current);
 
         // check if any product is not in inventario, add it
         productsData.forEach((product) => {
@@ -74,6 +74,7 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
     };
     if (a.current === 0) {
       fetchInventario();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }
   }, []);
 

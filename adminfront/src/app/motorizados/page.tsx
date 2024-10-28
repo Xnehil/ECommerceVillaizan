@@ -2,22 +2,24 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "@/components/Loading";
-import { DataTable } from "@/app/productos/data-table";
+import { DataTable } from "@/components/datatable/data-table";
 import { columns } from "./columns";
 import { Motorizado } from "@/types/PaqueteMotorizado";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const MotorizadosPage: React.FC = () => {
   const router = useRouter(); // Initialize useRouter
-
   const motorizados = useRef<Motorizado[]>([]); // Initialize motorizados
 
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchMotorizados = async () => {
@@ -45,6 +47,13 @@ const MotorizadosPage: React.FC = () => {
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch motorizados", error);
+        setIsLoading(false);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            "No se pudieron cargar los motorizados. Por favor, intente de nuevo.",
+        });
       }
     };
 
@@ -53,9 +62,19 @@ const MotorizadosPage: React.FC = () => {
     }
   }, []);
 
+  const handleAddMotorizadoClick = () => {
+    router.push("/motorizados/agregar"); // Navigate to /agregar page
+  };
+
   return (
     <>
       <div className="header">
+        <div className="buttons-container">
+            <Button variant="default" onClick={handleAddMotorizadoClick}>
+              <Plus size={20} className="mr-2" />
+              Agregar
+            </Button>
+          </div>
       </div>
       <div className="content-container">
         {isLoading && <Loading />}
