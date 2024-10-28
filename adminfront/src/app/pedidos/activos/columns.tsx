@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Pedido } from "@/types/PaquetePedido";
+import Link from "next/link";
 
 export const columns: ColumnDef<Pedido>[] = [
   {
@@ -19,9 +20,9 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const identificador = row.original.id.substring(0, 12);
       return (
-        // <Link href={`/productos/${nombre}`} passHref>
-        <div className="font-medium hover:underline">{identificador}</div>
-        // </Link>
+        <Link href={`/pedidos/${row.original.id}`} passHref>
+          <div className="font-medium hover:underline">{identificador}</div>
+        </Link>
       );
     },
   },
@@ -77,7 +78,7 @@ export const columns: ColumnDef<Pedido>[] = [
       const router = useRouter();
 
       const handleEditClick = () => {
-        // router.push(`/productos/${name}?edit=true`);
+        router.push(`/pedidos/${identificador}`);
       };
 
       return (

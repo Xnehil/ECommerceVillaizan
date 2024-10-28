@@ -69,7 +69,7 @@ export const columns: ColumnDef<Pedido>[] = [
       const router = useRouter();
 
       const handleEditClick = () => {
-        // router.push(`/productos/${name}?edit=true`);
+        router.push(`/pedidos/${identificador}`);
       };
 
       return (
