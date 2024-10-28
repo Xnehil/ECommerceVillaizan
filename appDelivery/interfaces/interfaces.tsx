@@ -138,3 +138,23 @@ export interface Motorizado {
 export interface MotorizadoResponse {
   motorizado: Motorizado;
 }
+export interface InventarioMotorizado {
+  id: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  desactivadoEn: string | null;
+  usuarioCreacion: string;
+  usuarioActualizacion: string | null;
+  estaActivo: boolean;
+  stock: number;
+  stockMinimo: number;
+  esMerma: boolean;
+  motivoMerma: string | null;
+  urlImagenMerma: string | null;
+  motorizado: Motorizado;
+  producto: Producto;
+}
+
+export interface InventarioMotorizadoResponse {
+  inventarioMotorizadoes: InventarioMotorizado[];
+}

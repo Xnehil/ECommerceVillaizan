@@ -19,6 +19,7 @@ import {
 } from "@/interfaces/interfaces";
 import { useRouter } from "expo-router";
 import { getUserData } from "@/functions/storage";
+import { BASE_URL } from "@env"; 
 
 function Icon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -67,7 +68,7 @@ export default function TabOneScreen() {
       const userData = await getData();
       if (userData?.id) {
         const response = await axios.post<MotorizadoResponse>(
-          'http://localhost:9000/admin/motorizado/usuario',
+          `${BASE_URL}/motorizado/usuario`,
           {
             id_usuario: userData?.id
           }
@@ -100,7 +101,7 @@ export default function TabOneScreen() {
     if (motorizado?.id) {
       try {
         const response = await axios.put(
-          `http://localhost:9000/admin/motorizado/${motorizado.id}`,
+          `${BASE_URL}/motorizado/${motorizado.id}`,
           { disponible: nuevoEstado }
         );
         console.log(response.data);
@@ -152,43 +153,47 @@ export default function TabOneScreen() {
       >
         <Pressable
           style={styles.card_inside}
-          disabled={!isConnected} // Inhabilita el Pressable si no está conectado
+          disabled={!isConnected} 
         >
           <MaterialIcons name="list-alt" size={24} color="white" />
           <View style={styles.cardText}>
-            <Text style={[styles.cardTitle, styles.cardContent]}>
-              Ver mis entregas
-            </Text>
-            <Text style={styles.cardContent}>
-              Ver tus entregas activas y todos los disponibles
-            </Text>
+        <Text style={[styles.cardTitle, styles.cardContent]}>
+          Ver mis entregas
+        </Text>
+        <Text style={styles.cardContent}>
+          Ver tus entregas activas y todos los disponibles
+        </Text>
           </View>
         </Pressable>
       </Link>
 
-      <TouchableOpacity style={styles.card}>
-        <MaterialIcons name="directions-car" size={24} color="white" />
-        <View style={styles.cardText}>
-          <Text style={[styles.cardTitle, styles.cardContent]}>
-            Definir vehículo
-          </Text>
-          <Text style={styles.cardContent}>
-            Define el vehículo de la empresa con el que repartirás los pedidos
-          </Text>
-        </View>
-      </TouchableOpacity>
+      <Link to={"/home/vehicule"} style={styles.card}>
+        <Pressable style={styles.card_inside}>
+          <MaterialIcons name="directions-car" size={24} color="white" />
+          <View style={styles.cardText}>
+        <Text style={[styles.cardTitle, styles.cardContent]}>
+          Definir vehículo
+        </Text>
+        <Text style={styles.cardContent}>
+          Define el vehículo de la empresa con el que repartirás los pedidos
+        </Text>
+          </View>
+        </Pressable>
+      </Link>
 
-      <TouchableOpacity style={styles.card}>
-        <MaterialIcons name="inventory" size={24} color="white" />
-        <View style={styles.cardText}>
-          <Text style={[styles.cardTitle, styles.cardContent]}>
-            Actualizar Inventario
-          </Text>
-          <Text style={styles.cardContent}>
-            Ingresa la cantidad disponible de cada producto
-          </Text>
-        </View>
-      </TouchableOpacity>
+      <Link to={"/home/inventory"} style={styles.card}>
+        <Pressable style={styles.card_inside}>
+          <MaterialIcons name="inventory" size={24} color="white" />
+          <View style={styles.cardText}>
+        <Text style={[styles.cardTitle, styles.cardContent]}>
+          Actualizar Inventario
+        </Text>
+        <Text style={styles.cardContent}>
+          Ingresa la cantidad disponible de cada producto
+        </Text>
+          </View>
+        </Pressable>
+      </Link>
     </View>
   );
 }

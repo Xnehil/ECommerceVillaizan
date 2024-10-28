@@ -17,8 +17,7 @@ import { getUserData } from "@/functions/storage";
 import * as Location from "expo-location";
 import Mapa from "./Mapa";
 import StyledIcon from "../StyledIcon";
-
-const baseUrl = "http://localhost:9000/admin";
+import { BASE_URL } from "@env"; 
 
 export default function Entregas() {
   const [pedidosNuevos, setPedidosNuevos] = useState<Pedido[]>([]);
@@ -64,7 +63,7 @@ export default function Entregas() {
   const fetchPedidos = async () => {
     try {
       const response = await axios.get(
-        `${baseUrl}/usuario/${usuario?.id}/repartidorPedidos?enriquecido=true`
+        `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos?enriquecido=true`
       );
       const pedidosResponse: PedidosResponse = response.data;
       const pedidosEnProceso = pedidosResponse.pedidos.filter(
