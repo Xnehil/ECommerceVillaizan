@@ -21,6 +21,13 @@ import { Notificacion } from "src/models/Notificacion";
  *   get:
  *     summary: Lista todas las notificacions con paginación
  *     tags: [Notificacions]
+ *     parameters:
+ *       - in: query
+ *         name: rol
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: El rol del usuario (e.g., Admin, Motorizado)
  *     responses:
  *       200:
  *         description: Una lista de notificacions
@@ -34,16 +41,30 @@ import { Notificacion } from "src/models/Notificacion";
  *                   items:
  *                     $ref: '#/components/schemas/Notificacion'
  */
-  export const GET = async (
-    req: MedusaRequest,
-    res: MedusaResponse
-  ) => {
-    const notificacionService: NotificacionService = req.scope.resolve("notificacionService");
+export const GET = async (
+  req: MedusaRequest,
+  res: MedusaResponse
+) => {
+  const notificacionService: NotificacionService = req.scope.resolve("notificacionService");
 
-    res.json({
-      notificaciones: await notificacionService.listarConPaginacion(),
-    })
+  // Extract the role from the query parameters
+  const { rol } = req.query;
+
+  let notificaciones;
+  if (rol === "Admin" || rol === "Motorizado") {
+    // Filter notifications for admin role
+    notificaciones = await notificacionService.listarConPaginacion({
+      sistema: `ecommerce${rol}`
+    });
+  } else {
+    // Return all notifications if no role or different role is specified
+    notificaciones = await notificacionService.listarConPaginacion();
   }
+
+  res.json({
+    notificaciones,
+  });
+};
 
   /**
  * @swagger
