@@ -8,6 +8,8 @@ import Breadcrumbs from "@/components/breadcrumbs";
 import { Toaster } from "@/components/ui/toaster";
 import { useEffect, useRef } from "react";
 import { toast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { useRouter } from "next/navigation";
 
 // export const metadata: Metadata = {
 //   title: "Administrador E-commerce",
@@ -21,6 +23,7 @@ export default function RootLayout({
 }>) {
   const ws = useRef<WebSocket | null>(null);
   const url = process.env.NEXT_PUBLIC_WS_URL as string;
+  const router = useRouter();
   useEffect(() => {
     // Initialize WebSocket connection
     ws.current = new WebSocket(url+'?rol=admin&id='+Math.floor(Math.random()*100000));
@@ -33,11 +36,32 @@ export default function RootLayout({
     // Handle WebSocket message event
     ws.current.onmessage = (event) => {
       console.log('WebSocket message received:', event.data);
-      // Aquí Ami se puede hacer lo que quieras con el mensaje recibido
-      toast({
-        variant: "destructive",
-        description: event.data,
-      });
+    
+      try {
+        // Parse the JSON string
+        const data = JSON.parse(event.data);
+        if (data.message) {
+          toast({
+            title: data.title ?? "",
+            description: (
+              <div>
+                <p>{data.message}</p>
+                <ToastAction
+                  onClick={() => {router.push('/notificaciones')} }
+                  altText="Ir a la página de notificaciones"
+                  className="text-blue-600 hover:underline mt-2"
+                >
+                  Ver notificaciones
+                </ToastAction>
+              </div>
+            ),
+          });
+        } else {
+          console.error('Message property not found in WebSocket data:', data);
+        }
+      } catch (error) {
+        console.error('Failed to parse WebSocket message:', error);
+      }
     };
 
     // Handle WebSocket error event
