@@ -9,9 +9,10 @@ interface AddressFormProps {
   onUpdateDireccion: (updatedDireccion: Direccion) => void;
   onCreatedDireccion: (createdDireccion: Direccion) => void;
   userId: string;
+  onClose: () => void;
 }
 
-const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDireccion, onCreatedDireccion, userId}) => {
+const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDireccion, onCreatedDireccion, userId, onClose }) => {
   const [nombre, setNombre] = useState('');
   const [calle, setCalle] = useState('');
   const [numeroExterior, setNumeroExterior] = useState('');
@@ -151,11 +152,35 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
           ))}
         </select>
       </div>
-      <button type="submit" className="px-4 py-2 text-white bg-blue-500 rounded-md">
-        {state === 'Crear' ? 'Crear Dirección' : 'Guardar Cambios'}
-      </button>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+        <button type="submit" style={styles.confirmButton}>
+            {state === 'Crear' ? 'Crear Dirección' : 'Guardar Cambios'}
+        </button>
+        <button type="button" onClick={onClose} style={styles.cancelButton}>
+            Cancelar
+        </button>
+      </div>
+      
     </form>
   );
 };
+
+const styles = {
+    confirmButton: {
+      padding: '10px 20px',
+      borderRadius: '5px',
+      border: 'none',
+      cursor: 'pointer',
+      backgroundColor: 'black',
+      color: 'white',
+    },
+    cancelButton: {
+      padding: '10px 20px',
+      borderRadius: '5px',
+      cursor: 'pointer',
+      backgroundColor: 'white',
+      color: 'red',
+    },
+  };
 
 export default AddressForm;
