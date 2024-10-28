@@ -455,6 +455,9 @@ CREATE TABLE vi_pedido (
 	CONSTRAINT fk_direccion FOREIGN KEY (id_direccion) REFERENCES vi_direccion(id),
 	id_usuario VARCHAR(50),
 	CONSTRAINT fk_usuario FOREIGN KEY (id_usuario) REFERENCES vi_usuario(id),
+    solicitadoEn TIMESTAMP,
+    validadoEn TIMESTAMP,
+    entregadoEn TIMESTAMP,
 	--trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,

@@ -47,9 +47,8 @@ class GoogleDriveService extends TransactionBaseService{
     // FolderID de texto a ID
     const mapIds = {
       productos: "1aWXLdb3ZXVtTjp4BjphIEn67ndxptfi-",
-      categorias: "1z9J9D6yJv3ZG9ZV7MlEzXwQ7QZ3g7z5",
-      marcas: "1z9J9D6yJv3ZG9ZV7MlEzXwQ7QZ3g7z5",
-      imagenes: "1z9J9D6yJv3ZG9ZV7MlEzXwQ7QZ3g7z5",
+      yape: "1fXBwI-hH4XCP0pwQpewP58Ge_k5qot5-",
+      plin: "1-5m51RCL88mBg8LMoIigra4b9AIQ74zt",
     }
 
     folderId = mapIds[folderId] || folderId;

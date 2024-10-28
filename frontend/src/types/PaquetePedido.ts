@@ -18,7 +18,9 @@ export interface Pedido extends EntidadBase {
     usuario?: Usuario;
     metodosPago: MetodoPago[]; // Many-to-many relationship
     detalles: DetallePedido[]; // One-to-many relationship
-
+    solicitadoEn?: Date; // Optional field
+    verificadoEn?: Date; // Optional field
+    entregadoEn?: Date; // Optional field
 }
 
 // Define any additional interfaces needed for your application

@@ -42,6 +42,15 @@ export class Pedido extends EntidadBase {
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: true, name: "montoefectivopagar" })
     montoEfectivoPagar: number;
 
+    @Column({ type: "timestamp", nullable: true, name: "solicitadoen" })
+    solicitadoEn: Date;
+
+    @Column({ type: "timestamp", nullable: true, name: "verificadoen" })
+    verificadoEn: Date;
+
+    @Column({ type: "timestamp", nullable: true, name: "entregadoen" })
+    entregadoEn: Date;
+
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_motorizado" })
     // idMotorizado: string
 
