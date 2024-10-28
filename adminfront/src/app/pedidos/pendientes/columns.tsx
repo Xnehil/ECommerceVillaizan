@@ -20,9 +20,9 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const identificador = row.original.id.substring(0, 12);
       return (
-        // <Link href={`/productos/${nombre}`} passHref>
-        <div className="font-medium hover:underline">{identificador}</div>
-        // </Link>
+        <Link href={`/pedidos/${row.original.id}`} passHref>
+          <div className="font-medium hover:underline">{identificador}</div>
+        </Link>
       );
     },
   },
@@ -34,8 +34,9 @@ export const columns: ColumnDef<Pedido>[] = [
       const nombre = row.original.usuario.nombre;
       const apellido = row.original.usuario.apellido;
 
-      const fullName =
-        apellido !== "No tiene cuenta" ? `${nombre} ${apellido}` : nombre;
+      const fullName = row.original.usuario.conCuenta
+        ? `${nombre} ${apellido}`
+        : nombre;
       return <div>{fullName}</div>;
     },
   },
