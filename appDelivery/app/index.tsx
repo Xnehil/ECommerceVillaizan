@@ -34,11 +34,13 @@ export default function LoginScreen() {
         "http://localhost:9000/admin/usuario/"
       );
 
-      // Extrae el primer motorizado
-      const repartidores = response.data;
+      const repartidores = response.data.usuarios;
+      console.log(repartidores);
       let userFound = false;
-      for (const repartidor of repartidores.usuarios) {
+      for (const repartidor of repartidores) {
+        console.log(repartidor)
         if (username === repartidor.correo) {
+          console.log(repartidor);
           setUsername("");
           setPassword("");
           storeUserData(repartidor);
