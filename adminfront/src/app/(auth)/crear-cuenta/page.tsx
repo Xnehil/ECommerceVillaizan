@@ -4,10 +4,10 @@ import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button, buttonVariants } from "@components/Button";
-import { Input } from "components/input";
-import { Label } from "components/label";
-import { Separator } from "@components/Separator";
+import { Button, buttonVariants } from "../_components/Button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import ErrorMessage from "../_components/ErrorMessage";
 import SuccessMessage from "../_components/SuccessMessage";
 import InputWithLabel from "../_components/InputWithLabel";
@@ -39,7 +39,7 @@ function RegisterPage() {
     try {
       setError(null);
 
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/admin/usuario?revisar=true`, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}usuario?revisar=true`, {
         nombre: name,
         apellido: lastname,
         concuenta: true,

@@ -153,12 +153,12 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     }
     setShowWarnings(false);
     const direccionData = {
-      calle,
-      numeroExterior,
-      numeroInterior,
-      distrito,
+      calle: calle,
+      numeroExterior: numeroExterior,
+      numeroInterior: numeroInterior,
+      distrito: distrito,
       codigoPostal: null,
-      referencia,
+      referencia: referencia,
       ciudad: {
         value: ciudad,
       },
@@ -171,19 +171,21 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
 
     const usuarioData = {
       nombre: nombre,
-      apellido: "No tiene cuenta",
-      correo: null,
+      apellido: "",
       contrasena: "contrasena",
       conCuenta: false,
       numeroTelefono: telefono,
-      fechaUltimoLogin: null,
       persona: {
         tipoDocumento: "DNI",
         numeroDocumento: numeroDni,
-        razonEliminacion: null,
-        estado: null,
       },
+      rol: {
+        id: "rol-f84abb43"
+      }
     }
+
+    console.log("Datos de dirección:", direccionData)
+    console.log("Datos de usuario:", usuarioData)
 
     try {
       // Realizar ambas solicitudes POST
