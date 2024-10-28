@@ -21,11 +21,11 @@ export class InventarioMotorizado extends EntidadBase {
   @Column({ type: 'varchar', length: 255, nullable: true, name: 'urlimagenmerma' })
   urlImagenMerma: string;
 
-  @ManyToOne(() => Motorizado, motorizado => motorizado.inventarios)
+  @ManyToOne(() => Motorizado, motorizado => motorizado.inventarios, { eager: true })
   @JoinColumn({ name: 'id_motorizado' })
   motorizado: Motorizado;
 
-  @ManyToOne(() => Producto, producto => producto.inventarios)
+  @ManyToOne(() => Producto, producto => producto.inventarios, { eager: true })
   @JoinColumn({ name: 'id_producto' })
   producto: Producto;
 
