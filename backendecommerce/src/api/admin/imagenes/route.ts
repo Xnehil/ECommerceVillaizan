@@ -38,7 +38,8 @@ interface UploadRequest extends MedusaRequest {
  *                 description: Nombre del archivo a subir
  *               folderId:
  *                 type: string
- *                 description: ID de la carpeta en Google Drive
+ *                 enum: [productos, yape, plin]
+ *                 description: Carpeta en Google Drive, actualmente solo se soportan las carpetas productos, yape y plin
  *     responses:
  *       200:
  *         description: El archivo ha sido subido exitosamente.
