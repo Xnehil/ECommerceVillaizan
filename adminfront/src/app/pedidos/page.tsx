@@ -3,14 +3,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
 import Loading from "@/components/Loading";
-import { Separator } from "@/components/ui/separator";
-import Parametros from "@/app/configuracion/parametros";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Pedido } from "@/types/PaquetePedido";
+import axios from "axios";
+import Pendientes from "@/app/pedidos/pendientes/pendientes";
+import Activos from "@/app/pedidos/activos/activos";
+import Historial from "@/app/pedidos/historial/historial";
 
 const PedidosPage: React.FC = () => {
-  const pedidos = useRef<Pedido[]>([]);
+  const pedPendientes = useRef<Pedido[]>([]);
+  const pedActivos = useRef<Pedido[]>([]);
+  const pedHistorial = useRef<Pedido[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const a = useRef(0);
@@ -19,7 +23,64 @@ const PedidosPage: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-    setIsLoading(false);
+    const fetchPedidos = async () => {
+      if (
+        pedPendientes.current.length > 0 ||
+        pedActivos.current.length > 0 ||
+        pedHistorial.current.length > 0
+      )
+        return;
+
+      try {
+        a.current = a.current + 1;
+        console.log(a.current);
+        console.log("Fetching pedidos");
+        // Fetch pedidos
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}pedido?enriquecido=true&estado=noCarrito`
+        );
+        if (!response) {
+          throw new Error("Failed to fetch pedidos");
+        }
+        const data = await response.data;
+        console.log("Pedidos fetched:", data);
+
+        const pedidosData: Pedido[] = data.pedidos;
+
+        pedidosData.forEach((pedido) => {
+          switch (pedido.estado) {
+            case "solicitado":
+              pedPendientes.current.push(pedido);
+              break;
+            case "verificado":
+            case "enProgreso":
+              pedActivos.current.push(pedido);
+              break;
+            case "entregado":
+            case "cancelado":
+              pedHistorial.current.push(pedido);
+              break;
+            default:
+              // Handle any other states if necessary
+              break;
+          }
+        });
+      } catch (error) {
+        console.error("Failed to fetch pedidos", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description:
+            "No se pudieron cargar los pedidos. Por favor, intente de nuevo.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (a.current === 0) {
+      fetchPedidos();
+    }
   }, []);
 
   return (
@@ -28,7 +89,6 @@ const PedidosPage: React.FC = () => {
         {isLoading && <Loading />}
         <h4>Pedidos</h4>
         <p>Administra los pedidos realizados en el ecommerce.</p>
-        <Separator />
 
         <Tabs
           defaultValue="pendientes"
@@ -42,17 +102,17 @@ const PedidosPage: React.FC = () => {
           </TabsList>
           <TabsContent className="w-full" value="pendientes">
             <div className="information-container">
-              <Parametros />
+              {!isLoading && <Pendientes pendientes={pedPendientes} />}
             </div>
           </TabsContent>
           <TabsContent value="activos">
             <div className="information-container">
-              <Parametros />
+              {!isLoading && <Activos activos={pedActivos} />}
             </div>
           </TabsContent>
           <TabsContent value="historial">
             <div className="information-container">
-              <Parametros />
+              {!isLoading && <Historial historial={pedHistorial} />}
             </div>
           </TabsContent>
         </Tabs>
