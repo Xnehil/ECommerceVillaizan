@@ -33,8 +33,11 @@ export default function InventarioMotorizadoScreen() {
       const motorizadoData = motorizadoResponse.motorizado;
       setMotorizado(motorizadoData);
 
-      const { data: inventarioResponse } = await axios.get(
-        `${baseUrl}/usuario/${motorizadoData.id}/invetarioMotorizado`
+      const { data: inventarioResponse } = await axios.post(
+        `${baseUrl}/inventarioMotorizado/motorizado`,
+        {
+          id_motorizado: motorizadoData.id,
+        }
       );
 
       // Filtrar inventarios que no sean merma
