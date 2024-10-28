@@ -28,7 +28,6 @@ const AddressModal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
         width: '500px',
         maxWidth: '100%',
       }}>
-        <button onClick={onClose} style={{ float: 'right' }}>Close</button>
         {children}
       </div>
     </div>

@@ -10,6 +10,7 @@ import AddressCard from './AddressCard'; // Import the new component
 import AddAddressButton from './AddressButton';
 import AddressModal from './AddressModal'; // Import the Modal component
 import AddressForm from './AddressForm'; // Import the AddressForm component
+import EliminationPopUp from './EliminationPopUp'; // Import the EliminationPopUp component
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -23,6 +24,8 @@ const Cuenta = () => {
   const [modalState, setModalState] = useState<'Crear' | 'Editar'>('Crear');
   const [currentDireccion, setCurrentDireccion] = useState<Direccion | null>(null);
   const [userId, setUserId] = useState('');
+  const [isPopUpOpen, setIsPopUpOpen] = useState(false);
+  const [direccionToDelete, setDireccionToDelete] = useState<Direccion | null>(null);
 
   useEffect(() => {
     async function fetchUserName() {
@@ -76,21 +79,35 @@ const Cuenta = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (direccion: Direccion) => {
-    try {
-      const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${direccion.id}`
-      );
-  
-      if (response.status === 200) {
-        setDirecciones(direcciones.filter((dir) => dir.id !== direccion.id));
-      } else {
-        console.error('Failed to delete:', response.statusText);
+  const handleDelete = (direccion: Direccion) => {
+    setDireccionToDelete(direccion);
+    setIsPopUpOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (direccionToDelete) {
+      try {
+        const response = await axios.delete(
+          `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${direccionToDelete.id}`
+        );
+    
+        if (response.status === 200) {
+          setDirecciones(direcciones.filter((dir) => dir.id !== direccionToDelete.id));
+        } else {
+          console.error('Failed to delete:', response.statusText);
+        }
+      } catch (error) {
+        console.error('An error occurred during deletion:', error);
+      } finally {
+        setIsPopUpOpen(false);
+        setDireccionToDelete(null);
       }
-    } catch (error) {
-      console.error('An error occurred during deletion:', error);
     }
   };
+
+  const onClose = () => {
+    setIsModalOpen(false);
+  }
   
 
   const handleAddAddress = () => {
@@ -133,8 +150,13 @@ const Cuenta = () => {
         </div>
       </div>
       <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} />
+        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} onClose={onClose}/>
       </AddressModal>
+      <EliminationPopUp
+        isOpen={isPopUpOpen}
+        onConfirm={confirmDelete}
+        onClose={() => setIsPopUpOpen(false)}
+      />
     </div>
   );
 };
