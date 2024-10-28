@@ -54,11 +54,15 @@ function RootLayoutNav() {
         <Stack.Screen name="home" options={{ headerShown: false }} />
         <Stack.Screen
           name="entregar"
-          options={{ presentation: "card", title: "Entregar" }}
+          options={{ presentation: "card", title: "Entregar", headerBackVisible: true }}
+        />
+        <Stack.Screen
+          name="inventory"
+          options={{ presentation: "card", title: "Actualizar Inventario", headerBackVisible: true }}
         />
         <Stack.Screen
           name="confirmada"
-          options={{presentation: "card",title: "Entrega Confirmada",headerShown: false,}}
+          options={{presentation: "card",title: "Entrega Confirmada",headerShown: false}}
         />
         <Stack.Screen
           name="cancelada"

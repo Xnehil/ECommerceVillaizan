@@ -181,7 +181,7 @@ export default function TabOneScreen() {
         </Pressable>
       </Link>
 
-      <Link to={"/home/inventory"} style={styles.card}>
+      <Link to={"/inventory"} style={styles.card}>
         <Pressable style={styles.card_inside}>
           <MaterialIcons name="inventory" size={24} color="white" />
           <View style={styles.cardText}>
