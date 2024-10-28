@@ -7,9 +7,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       authorize: async (credentials) => {
         const { email, password } = credentials;
-
+        console.log(email, password);
         try {
-          const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/auth`, {
+          const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}auth`, {
             email: email,
             password: password,
           });
