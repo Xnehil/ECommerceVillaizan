@@ -5,7 +5,7 @@ function LogoBackHome() {
     <Link href={"/"}>
       {/*<img src="VillaizanLogo2png.png" className="w-[185px]" />*/}
       <img
-                src="/images/logo.png"
+                src="/icons/logo2.png"
                 alt="Helados Villaizan"
                 className="h-12"
               />
