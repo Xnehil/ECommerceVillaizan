@@ -1,4 +1,5 @@
 import { EntidadBase } from "./EntidadBase";
+import { Direccion, Pedido } from "./PaquetePedido";
 import { InventarioMotorizado } from "./PaqueteProducto";
 
 export interface Motorizado extends EntidadBase {
@@ -24,10 +25,6 @@ export interface Ciudad extends EntidadBase {
   direcciones?: Direccion[];
 }
 
-export interface Direccion extends EntidadBase {
-  id: string;
-}
-
 export interface Usuario extends EntidadBase {
   id: string;
   nombre: string;
@@ -39,6 +36,3 @@ export interface Usuario extends EntidadBase {
   fechaUltimoLogin: Date | null;
 }
 
-export interface Pedido extends EntidadBase {
-  id: string;
-}
