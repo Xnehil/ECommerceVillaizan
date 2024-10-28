@@ -196,6 +196,18 @@ class PedidoService extends TransactionBaseService {
                     throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles");
                 }
             }
+
+            if (pedido.estado !== data.estado) {
+                if (data.estado === "entregado") {
+                    data.entregadoEn = new Date();
+                }
+                if (data.estado === "verificado") {
+                    data.verificadoEn = new Date();
+                }
+                if (data.estado === "solicitado") {
+                    data.solicitadoEn = new Date();
+                }
+            }
     
             Object.assign(pedido, data);
             return await pedidoRepo.save(pedido);
@@ -206,7 +218,8 @@ class PedidoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
             const pedido = await this.recuperar(id);
-            pedido.estado = "confirmado";
+            pedido.estado = "verificado";
+            pedido.verificadoEn = new Date();
             pedidosPorConfirmar.delete(id);
             return await pedidoRepo.save(pedido);
         });

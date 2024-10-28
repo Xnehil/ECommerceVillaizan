@@ -15,6 +15,9 @@ export interface Pedido extends EntidadBase {
   usuario: Usuario;
   metodosPago: MetodoPago[];
   detalles: DetallePedido[];
+  solicitadoEn?: Date;
+  verificadoEn?: Date;
+  entregadoEn?: Date;
 }
 
 export interface Direccion extends EntidadBase {
