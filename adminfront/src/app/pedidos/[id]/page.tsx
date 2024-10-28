@@ -50,7 +50,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         // console.log(a.current);
         a.current = a.current + 1;
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${idPedido}/conDetalle`
+          `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${idPedido}/conDetalle?pedido=true`
         );
         if (!response) {
           throw new Error("Failed to fetch pedido");
@@ -66,7 +66,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
 
         const edit = searchParams.get("edit");
         if (edit === "true") {
-        //   handleEdit();
+          //   handleEdit();
         }
       } catch (error) {
         console.error("Error fetching pedido:", error);
@@ -86,87 +86,58 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
   }, []);
 
   const handleSave = async () => {
-    // setIsLoading(true);
-    // console.log("Saving product");
-    // // copyProducto.current.nombre = productName as string;
-    // // create a codigo for the product
-    // producto.current.seVendeEcommerce = true;
-    // document.body.style.pointerEvents = "auto";
-    // if (copyProducto.current.nombre === "") {
-    //   setIsLoading(false);
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Error",
-    //     description: "El nombre del producto es requerido.",
-    //   });
-    //   return;
-    // } else if (copyProducto.current.nombre.length < 3) {
-    //   setIsLoading(false);
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Error",
-    //     description: "El nombre del producto debe tener al menos 3 caracteres.",
-    //   });
-    //   return;
-    // }
-    // if (copyProducto.current.precioEcommerce === 0) {
-    //   setIsLoading(false);
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Error",
-    //     description: "El precio del producto es requerido.",
-    //   });
-    //   return;
-    // }
-    // console.log(copyProducto.current);
-    // try {
-    //   if (imagen.current) {
-    //     const formData = new FormData();
-    //     formData.append("file", imagen.current);
-    //     formData.append("fileName", imagen.current.name);
-    //     formData.append("folderId", "productos");
-    //     const responseImagen = await axios.post(
-    //       `${process.env.NEXT_PUBLIC_BASE_URL}imagenes`,
-    //       formData
-    //     );
-    //     console.log(responseImagen);
-    //     if (responseImagen.status !== 200) {
-    //       throw new Error("Error al guardar imagen.");
-    //     }
-    //     copyProducto.current.urlImagen = responseImagen.data.fileUrl;
-    //   }
-    //   // await new Promise((resolve) => setTimeout(resolve, 3000));
-    //   const response = await axios.put(
-    //     `${process.env.NEXT_PUBLIC_BASE_URL}producto/${producto.current.id}`,
-    //     copyProducto.current
-    //   );
-    //   if (response.status !== 200) {
-    //     throw new Error("Error al guardar producto.");
-    //   }
-    //   console.log("Product saved", response.data);
-    //   producto.current = copyProducto.current;
-    //   setIsEditing(false);
-    //   setIsLoading(false);
-    //   toast({
-    //     description: "El producto se guardó correctamente.",
-    //   });
-    // } catch (error: any) {
-    //   console.error("Error saving product", error);
-    //   setIsLoading(false);
-    //   let description =
-    //     "Ocurrió un error al guardar el producto. Por favor, intente de nuevo.";
-    //   if (
-    //     error?.response?.data?.error &&
-    //     error.response.data.error.includes("ya existe")
-    //   ) {
-    //     description = error.response.data.error;
-    //   }
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Error",
-    //     description,
-    //   });
-    // }
+    setIsLoading(true);
+    console.log("Confirmando pedido");
+    try {
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
+        {
+          ...pedido.current,
+          estado: "verificado",
+        }
+      );
+      if (response.status !== 200) {
+        throw new Error("Error al actualizar el pedido");
+      }
+      console.log("Pedido saved", response.data);
+      pedido.current.estado = "verificado";
+
+      try {
+        const respMssg = await axios.post(
+          `${process.env.NEXT_PUBLIC_BASE_URL}whatsApp`,
+          {
+            mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${pedido.current.codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${pedido.current.codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
+            numero: "999348322",
+          }
+        );
+        console.log("Respuesta de WhatsApp:", respMssg);
+        if (respMssg.status !== 201) {
+          throw new Error("Error al enviar mensaje de WhatsApp");
+        }
+        console.log("Mensaje enviado a WhatsApp.");
+      } catch (error) {
+        console.error("Error sending WhatsApp message", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Ocurrió un error al enviar el mensaje de WhatsApp.",
+        });
+      }
+
+      setIsLoading(false);
+      toast({
+        description: "Se confirmó el pedido correctamente.",
+      });
+    } catch (error: any) {
+      console.error("Error saving product", error);
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ocurrió un error al confirmar el pedido.",
+      });
+    }
   };
 
   return (
@@ -175,7 +146,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
 
       <h4>{idPedido}</h4>
       <Separator />
-      {pedido.current?.id && (
+      {!isLoading && pedido.current?.id && (
         <>
           <div className="information-container">
             <InformacionPedido pedido={pedido} />
@@ -183,32 +154,34 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
             <InformacionDireccion pedido={pedido} />
           </div>
           <div className="buttons-side-container">
-            <div className="lower-buttons-container">
-              <>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="default">Confirmar Pedido</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        ¿Estás seguro de confirmar el pedido?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Este pedido será atendido, asegúrate de que la
-                        información sea correcta.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleSave}>
-                        Confirmar Pedido
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </>
-            </div>
+            {pedido.current.estado === "solicitado" && (
+              <div className="lower-buttons-container">
+                <>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="default">Confirmar Pedido</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          ¿Estás seguro de confirmar el pedido?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Este pedido será atendido, asegúrate de que la
+                          información sea correcta.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSave}>
+                          Confirmar Pedido
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              </div>
+            )}
           </div>
         </>
       )}
