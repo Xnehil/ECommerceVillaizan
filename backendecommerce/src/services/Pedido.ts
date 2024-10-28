@@ -81,7 +81,7 @@ class PedidoService extends TransactionBaseService {
 
     async recuperarConDetalle(id: string, options: FindConfig<Pedido> = {}): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
-        const relations = ["detalles", ...(options.relations || [])];
+        const relations = ["detalles", "detalles.producto", ...(options.relations || [])];
         const query = buildQuery({ id }, { relations });
         const pedido = await pedidoRepo.findOne(query);
     
