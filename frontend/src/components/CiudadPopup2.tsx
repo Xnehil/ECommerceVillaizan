@@ -12,7 +12,7 @@ const CiudadPopup: React.FC<CiudadPopupProps> = ({ setCity, resetCarrito }) => {
 
   const handleCityChange = (city: CityCookie) => {
     setCity(city)
-    resetCarrito() // Reinicia el carrito al cambiar de ciudad
+    // resetCarrito() // Reinicia el carrito al cambiar de ciudad
   }
 
   return (
