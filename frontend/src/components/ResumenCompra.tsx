@@ -138,7 +138,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         console.log(response.data);
       }
       const pedidoActualizado = response.data.pedido;
-      let codigoSeguimiento = "123456";
+      let codigoSeguimiento = pedidoActualizado.codigoSeguimiento;
       window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
     } catch (error) {
       const axiosError = error as AxiosError;
