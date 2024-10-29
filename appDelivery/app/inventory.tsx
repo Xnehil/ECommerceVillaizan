@@ -37,7 +37,10 @@ export default function InventarioMotorizadoScreen() {
   const [motivoMerma, setMotivoMerma] = useState<string>("");
   const [fotoMerma, setFotoMerma] = useState<{
     [key: string]: string | null;
-  }>({});  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
+  }>({});
+  const [errorMotivoMerma, setErrorMotivoMerma] = useState<string | null>(null);
+  const [errorFotoMerma, setErrorFotoMerma] = useState<string | null>(null);
+  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
 
   useEffect(() => {
     if (videoStream && videoRef.current) {
@@ -52,7 +55,7 @@ export default function InventarioMotorizadoScreen() {
       transparent={true}
       onRequestClose={() => setImageOptionsVisible(false)}
     >
-      <View style={styles.modalContainer}>
+      <View style={[styles.modalContainer, styles.mainModal]}>
         <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
 
         {videoStream ? (
@@ -177,9 +180,9 @@ export default function InventarioMotorizadoScreen() {
       [id]: imageData,
     }));
 
-    videoStream?.getTracks().forEach((track) => track.stop()); 
-    setVideoStream(null); 
-    setImageOptionsVisible(false); 
+    videoStream?.getTracks().forEach((track) => track.stop());
+    setVideoStream(null);
+    setImageOptionsVisible(false);
   };
   const mostrarMensaje = (mensaje: string, tipo: string = "") => {
     setMensajeModal(mensaje);
@@ -236,53 +239,84 @@ export default function InventarioMotorizadoScreen() {
   const abrirModalResumen = () => setModalVisible(true);
   const cerrarModalResumen = () => setModalVisible(false);
 
+  const cancelarOperacion = () => {
+    console.log("Cancelado");
+    cerrarModalResumen();
+    cerrarModalResumen;
+    setModificando(false);
+    setRegistrandoMerma(false);
+    setInventarioModificado({});
+    setMermas({});
+  };
+
   const confirmarOperacion = async (tipo: "modificar" | "merma") => {
+    if (tipo === "merma") {
+      if (!motivoMerma) {
+        setErrorMotivoMerma("Debes ingresar un motivo para la merma.");
+        return;
+      }
+      if (!fotoMerma[currentImageId!]) {
+        setErrorFotoMerma("Debes seleccionar una foto para la merma.");
+        return;
+      }
+    }
+  
+    setErrorMotivoMerma(null);
+    setErrorFotoMerma(null);
+  
     const operacion = tipo === "modificar" ? inventarioModificado : mermas;
     cerrarModalResumen();
+  
     try {
-      for (const [id, cantidad] of Object.entries(operacion)) {
-        console.log("Id: " + id);
-
+      for (const [id, cantidadModificada] of Object.entries(operacion)) {
+        const item = inventario.find((inv) => inv.id === id);
+        if (!item) continue;
+  
+        const diferencia = cantidadModificada - item.stock;
+  
         if (tipo === "modificar") {
-          await axios.patch(`${baseUrl}/inventarioMotorizado/${id}/aumentar`, {
-            cantidad,
-          });
-        } else {
-          const item = inventario.find((inv) => inv.id === id);
-          if (item) {
-            await axios.post(`${baseUrl}/inventarioMotorizado`, {
-              producto: {
-                id: item.producto.id,
-              },
-              motorizado: {
-                id: item.motorizado.id,
-              },
-              stock: cantidad,
-              esMerma: true,
-              motivoMerma: "Producto dañado",
-              urlImagenMerma: "",
-              stockMinimo: 0,
+          if (diferencia > 0) {
+            await axios.post(`${baseUrl}/inventarioMotorizado/aumentar/${id}`, {
+              cantidad: diferencia,
             });
-
-            await axios.patch(
-              `${baseUrl}/inventarioMotorizado/${id}/disminuir`,
-              { cantidad }
-            );
+          } else if (diferencia < 0) {
+            await axios.post(`${baseUrl}/inventarioMotorizado/disminuir/${id}`, {
+              cantidad: Math.abs(diferencia),
+            });
           }
+        } else {
+          await axios.post(`${baseUrl}/inventarioMotorizado`, {
+            producto: { id: item.producto.id },
+            motorizado: { id: item.motorizado.id },
+            stock: cantidadModificada,
+            esMerma: true,
+            motivoMerma,
+            urlImagenMerma: fotoMerma[id] || "",
+            stockMinimo: 0,
+          });
+  
+          await axios.post(`${baseUrl}/inventarioMotorizado/disminuir/${id}`, {
+            cantidad: cantidadModificada,
+          });
         }
       }
+  
       mostrarMensaje(
-        `${
-          tipo === "modificar" ? "Inventario" : "Merma"
-        } registrado exitosamente`
+        `${tipo === "modificar" ? "Inventario" : "Merma"} registrado exitosamente`
       );
+  
       obtenerInventario();
     } catch (error) {
       console.error(`Error al registrar ${tipo}:`, error);
       mostrarMensaje(`Error al registrar la ${tipo}.`);
     }
+  
+    setModificando(false);
+    setRegistrandoMerma(false);
+    setInventarioModificado({});
+    setMermas({});
   };
-
+  
   const handleIncrement = (id: string, tipo: "modificar" | "merma") => {
     const update = tipo === "modificar" ? inventarioModificado : mermas;
     const currentValue =
@@ -417,8 +451,7 @@ export default function InventarioMotorizadoScreen() {
                 <TouchableOpacity
                   style={styles.boton}
                   onPress={() => {
-                    setModificando(false);
-                    setRegistrandoMerma(false);
+                    cancelarOperacion();
                   }}
                 >
                   <Text style={styles.botonTexto2}>Cancelar</Text>
@@ -426,7 +459,7 @@ export default function InventarioMotorizadoScreen() {
               </>
             )}
           </View>
-
+          {renderImageOptionsModal()}
           <Modal visible={modalVisible} animationType="slide" transparent>
             <View style={styles.modalContainer}>
               <Text style={styles.modalTitle}>Resumen</Text>
@@ -444,10 +477,53 @@ export default function InventarioMotorizadoScreen() {
                   );
                 })}
               </ScrollView>
+              <ScrollView>
+                {Object.entries(
+                  modificando ? inventarioModificado : mermas
+                ).map(([id, cantidad]) => {
+                  const producto = inventario.find(
+                    (item) => item.id === id
+                  )?.producto;
+                  return (
+                    <Text key={id} style={styles.modalText}>
+                      {producto?.nombre}: {cantidad} und.
+                    </Text>
+                  );
+                })}
+
+                {registrandoMerma && (
+                  <>
+                    <Text style={styles.modalText}>Motivo de la Merma:</Text>
+                    <TextInput
+                      style={styles.input2}
+                      value={motivoMerma}
+                      onChangeText={setMotivoMerma}
+                      placeholder="Escribe el motivo de la merma"
+                    />
+                    {errorMotivoMerma && (
+                      <Text style={styles.errorText}>{errorMotivoMerma}</Text>
+                    )}
+
+                    <TouchableOpacity
+                      style={styles.optionButton}
+                      onPress={() => {
+                        showImageOptions(currentImageId!);
+                      }}
+                    >
+                      <Text style={styles.optionButtonText}>
+                        Seleccionar Foto
+                      </Text>
+                    </TouchableOpacity>
+                    {errorFotoMerma && (
+                      <Text style={styles.errorText}>{errorFotoMerma}</Text>
+                    )}
+                  </>
+                )}
+              </ScrollView>
               <View style={styles.modalBotones}>
                 <TouchableOpacity
                   style={styles.boton}
-                  onPress={cerrarModalResumen}
+                  onPress={cancelarOperacion}
                 >
                   <Text style={styles.botonTexto2}>Cancelar</Text>
                 </TouchableOpacity>
@@ -478,7 +554,7 @@ export default function InventarioMotorizadoScreen() {
           </View>
         </Modal>
       )}
-      {renderImageOptionsModal()}
+      
     </View>
   );
 }
@@ -628,4 +704,19 @@ const styles = StyleSheet.create({
   motivoItemSelected: {
     backgroundColor: "#f0f0f0",
   },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginBottom: 5,
+  },
+  input2: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 10,
+  },
+  mainModal:{
+    zIndex: 1000,
+  }
 });
