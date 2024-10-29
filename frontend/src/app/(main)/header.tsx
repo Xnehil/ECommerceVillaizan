@@ -52,9 +52,10 @@ const Header = () => {
               Inicia Sesión y accede a promociones!
             </a>
           </Link>*/}
-          <a href={loginUrl} className="bg-white text-red-600 px-4 py-2 rounded-lg font-bold">
-            Inicia Sesión y accede a promociones!
-          </a>
+          <Link href="/login"> <a className="bg-white text-red-600 px-4 py-2 rounded-lg font-bold">
+              ¡Inicia Sesión y accede a promociones!
+            </a>
+          </Link>*
         </div>
       </div>
     </header>
