@@ -42,6 +42,20 @@ const EntregarPedido = () => {
   const [imageOptionsVisible, setImageOptionsVisible] = useState(false);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [mensajeModal, setMensajeModal] = useState<string | null>(null);
+  const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion">("auto");
+
+  const mostrarMensaje = (
+    mensaje: string,
+    tipo: "auto" | "confirmacion" = "auto"
+  ) => {
+    setMensajeModal(mensaje);
+    setTipoModal(tipo);
+
+    if (tipo === "auto") {
+      setTimeout(() => setMensajeModal(null), 3000); // Desvanece automáticamente después de 3 segundos
+    }
+  };
 
   useEffect(() => {
     if (videoStream && videoRef.current) {
@@ -125,16 +139,6 @@ const EntregarPedido = () => {
     setImageOptionsVisible(true);
   };
 
-  const handleImageOptionSelect = (option: "camera" | "gallery") => {
-    if (currentImageId && currentImageType) {
-      if (option === "camera") {
-        handleCameraCapture(currentImageId, currentImageType);
-      } else if (option === "gallery") {
-        handleImageSelection(currentImageId, currentImageType);
-      }
-    }
-    setImageOptionsVisible(false);
-  };
 
   const handleImageSelection = async (id: string, tipo: "pedido" | "pago") => {
     const input = document.createElement("input");
@@ -166,6 +170,8 @@ const EntregarPedido = () => {
     };
 
     input.click();
+    setImageOptionsVisible(false);
+    
   };
 
   const handleCameraCapture = async (id: string, tipo: "pedido" | "pago") => {
@@ -176,7 +182,7 @@ const EntregarPedido = () => {
       setVideoStream(stream); // Guardamos el stream para usarlo en el modal
     } catch (error) {
       console.error("Error al acceder a la cámara:", error);
-      alert("No se pudo acceder a la cámara.");
+      mostrarMensaje("No se pudo acceder a la cámara.","confirmacion");
     }
   };
 
@@ -185,7 +191,7 @@ const EntregarPedido = () => {
 
     if (!video || !video.videoWidth || !video.videoHeight) {
       console.error("El video no está listo para capturar.");
-      alert("Espere a que el video esté listo para capturar la foto.");
+      mostrarMensaje("Espere a que el video esté listo para capturar la foto.", "confirmacion");
       return;
     }
 
@@ -221,23 +227,34 @@ const EntregarPedido = () => {
       const imagenData = tipo === "pedido" ? fotoPedido[id] : fotoPago[id];
       if (!imagenData) throw new Error("No hay imagen disponible.");
 
+      // Convertimos el Data URL (Base64) a un archivo Blob
+      const byteString = atob(imagenData.split(",")[1]);
+      const mimeString = imagenData.split(",")[0].split(":")[1].split(";")[0];
+      const arrayBuffer = new ArrayBuffer(byteString.length);
+      const intArray = new Uint8Array(arrayBuffer);
+
+      for (let i = 0; i < byteString.length; i++) {
+        intArray[i] = byteString.charCodeAt(i);
+      }
+
+      const blob = new Blob([intArray], { type: mimeString });
+      const file = new File([blob], `${tipo}-${id}.png`, { type: mimeString });
+
       const formData = new FormData();
-      formData.append("imagen", imagenData);
+      formData.append("file", file);
+      formData.append("fileName", `${tipo}-${id}.png`);
+      formData.append("folderId", tipo === "pago" ? "yape" : "plin");
 
-      await axios.post(
-        `${BASE_URL}/${
-          tipo === "pedido" ? "pedido" : "metodoPago"
-        }/${id}/subirImagen`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
+      const response = await axios.post(`${BASE_URL}/imagenes`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      alert("Imagen enviada con éxito.");
+      const { fileUrl } = response.data; 
+
+      mostrarMensaje(`Imagen enviada con éxito: ${fileUrl}`);
     } catch (error) {
       console.error(`Error al enviar la imagen de ${tipo}:`, error);
-      alert(`Error al enviar la imagen de ${tipo}.`);
+      mostrarMensaje(`Error al enviar la imagen de ${tipo}.`,"confirmacion");
     }
   };
 
@@ -253,11 +270,11 @@ const EntregarPedido = () => {
         estado: "Cancelado",
         motivoCancelacion: motivo,
       });
-      alert("Entrega reasignada");
+      mostrarMensaje("Entrega reasignada");
       router.push("/cancelada");
     } catch (error) {
       console.error("Error al reasignar la entrega:", error);
-      alert("Error al reasignar la entrega");
+      mostrarMensaje("Error al reasignar la entrega","confirmacion");
     } finally {
       setModalCancelVisible(false);
     }
@@ -273,13 +290,13 @@ const EntregarPedido = () => {
       await axios.put(`${BASE_URL}/pedido/${parsedPedido.id}`, {
         estado: "Entregado",
       });
-      alert("Entrega confirmada");
+      mostrarMensaje("Entrega confirmada");
       router.push({
         pathname: "/confirmada",
       });
     } catch (error) {
       console.error("Error updating pedido:", error);
-      alert("Error al confirmar la entrega");
+      mostrarMensaje("Error al confirmar la entrega","confirmacion");
     }
   };
 
@@ -561,6 +578,28 @@ const EntregarPedido = () => {
         </View>
       </Modal>
       {renderImageOptionsModal()}
+      {mensajeModal && (
+        <Modal
+          visible={true}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setMensajeModal(null)}
+        >
+          <View style={styles.mensajeModalContainer}>
+            <View style={styles.mensajeModalContent}>
+              <Text style={styles.mensajeModalTexto}>{mensajeModal}</Text>
+              {tipoModal === "confirmacion" && (
+                <TouchableOpacity
+                  style={styles.boton}
+                  onPress={() => setMensajeModal(null)}
+                >
+                  <Text style={styles.botonTexto2}>Aceptar</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -863,12 +902,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
     marginHorizontal: 5,
-    flex: 1, // Para mantener consistencia en los botones dentro de la fila
+    flex: 1,
   },
   botonTexto2: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    textAlign: "center",
+  },
+  mensajeModalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  mensajeModalContent: {
+    width: "80%",
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  mensajeModalTexto: {
+    fontSize: 18,
     textAlign: "center",
   },
 });

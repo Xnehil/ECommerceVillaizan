@@ -99,11 +99,17 @@ export default function InventarioMotorizadoScreen() {
           const item = inventario.find((inv) => inv.id === id);
           if (item) {
             await axios.post(`${baseUrl}/inventarioMotorizado`, {
-              producto: item.producto,
-              motorizado: motorizado,
+              producto: {
+                id: item.producto.id,
+              },
+              motorizado: {
+                id: item.motorizado.id,
+              },
               stock: cantidad,
               esMerma: true,
               motivoMerma: "Producto dañado",
+              urlImagenMerma: "",
+              stockMinimo: 0
             });
   
             await axios.patch(`${baseUrl}/inventarioMotorizado/${id}/disminuir`, { cantidad });
