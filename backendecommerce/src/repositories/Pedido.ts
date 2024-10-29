@@ -17,14 +17,15 @@ export const PedidoRepository = dataSource
       });
     },
     async findByMotorizadoId(id_motorizado: string): Promise<Pedido[]> {
-        return this.find({
-          where: {
-            motorizado: {
-              id: id_motorizado,
-            },
-          },
-          relations: ['motorizado', 'direccion', 'usuario'],
-        });
+      return this.createQueryBuilder("pedido")
+        .leftJoinAndSelect("pedido.motorizado", "motorizado")
+        .where("motorizado.id = :id_motorizado", { id_motorizado })
+        .getMany();
+    },
+    async findByCodigoSeguimiento(codigoSeguimiento: string): Promise<Pedido> {
+      return this.createQueryBuilder("pedido")
+        .where("pedido.codigoSeguimiento = :codigoSeguimiento", { codigoSeguimiento })
+        .getOne();
     }
     
   })
