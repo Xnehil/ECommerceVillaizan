@@ -1,7 +1,4 @@
-import type { 
-    MedusaRequest, 
-    MedusaResponse,
-} from "@medusajs/medusa";
+import type { MedusaRequest, MedusaResponse } from "@medusajs/medusa";
 
 import PedidoService from "../../../../services/Pedido";
 import { Pedido } from "src/models/Pedido";
@@ -30,15 +27,18 @@ import { Pedido } from "src/models/Pedido";
  *         description: Pedido no encontrado
  */
 
-export const GET = async (
-    req: MedusaRequest,
-    res: MedusaResponse
-) => {
+export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const { id } = req.params;
-
+    const enriquecido = req.query.enriquecido === "true";
     try {
-        const pedido = await pedidoService.recuperar(id);
+        const pedido = await pedidoService.recuperar(id, {
+            skip: 0,
+            take: 20,
+            relations: enriquecido
+                ? ["motorizado", "direccion", "usuario"]
+                : [],
+        });
         res.json({ pedido });
     } catch (error) {
         res.status(404).json({ error: "Pedido no encontrado" });
@@ -58,6 +58,19 @@ export const GET = async (
  *           type: string
  *         required: true
  *         description: ID del pedido
+ *       - in: query
+ *         name: asignarRepartidor
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe asignar un repartidor
+ *       - in: query
+ *         name: confirmar
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe confirmar el pedido. No hace falta enviar el body
+ *
  *     requestBody:
  *       required: true
  *       content:
@@ -66,31 +79,80 @@ export const GET = async (
  *             $ref: '#/components/schemas/Pedido'
  *     responses:
  *       200:
- *         description: Pedido actualizado exitosamente
+ *         description: Pedido actualizado
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Pedido'
  *       400:
  *         description: Petición inválida
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Petición inválida
  *       404:
  *         description: Pedido no encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Pedido no encontrado
+ *       503:
+ *         description: No hay motorizados disponibles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: No hay motorizados
  */
 
-export const PUT = async (
-    req: MedusaRequest,
-    res: MedusaResponse
-) => {
+export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const { id } = req.params;
     const pedidoData = req.body as Partial<Pedido>;
+    const asignarRepartidor = req.query.asignarRepartidor === "true";
+    const confirmar = req.query.confirmar === "true";
+
+    if (confirmar) {
+        try {
+            const pedido = await pedidoService.confirmar(id);
+            res.json({ pedido });
+        } catch (error) {
+            res.status(404).json({ error: "Pedido no encontrado" });
+        }
+        return;
+    }
 
     try {
-        const pedido = await pedidoService.actualizar(id, pedidoData);
+        const pedido = await pedidoService.actualizar(
+            id,
+            pedidoData,
+            asignarRepartidor
+        );
         res.json({ pedido });
     } catch (error) {
+        // console.log(error);
         if (error.message === "Pedido no encontrado") {
             res.status(404).json({ error: "Pedido no encontrado" });
+        } else if (error.message === "No hay motorizados disponibles") {
+            res.status(503).json({ error: "No hay motorizados" });
+        } else if (
+            error.message ==
+            "No hay motorizados disponibles con suficiente stock"
+        ) {
+            res.status(504).json({
+                error: "No hay motorizados disponibles con suficiente stock",
+            });
         } else {
             res.status(400).json({ error: "Petición inválida" });
         }
@@ -117,16 +179,16 @@ export const PUT = async (
  *         description: Pedido no encontrado
  */
 
-export const DELETE = async (
-    req: MedusaRequest,
-    res: MedusaResponse
-) => {
+export const DELETE = async (req: MedusaRequest, res: MedusaResponse) => {
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const { id } = req.params;
 
     try {
         const pedido = await pedidoService.eliminar(id);
-        res.status(200).json({ message: "Pedido eliminado exitosamente", pedido });
+        res.status(200).json({
+            message: "Pedido eliminado exitosamente",
+            pedido,
+        });
     } catch (error) {
         res.status(404).json({ error: "Pedido no encontrado" });
     }

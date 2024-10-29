@@ -50,6 +50,13 @@ export const GET = async (
  *   post:
  *     summary: Crea un nuevo usuario
  *     tags: [Usuario]
+ *     parameters:
+ *     - in: query
+ *       name: revisar
+ *       schema:
+ *         type: boolean
+ *       required: false
+ *       description: Si se debe recuperar el usuario revisar
  *     requestBody:
  *       required: true
  *       content:
@@ -72,12 +79,22 @@ export const POST = async (
     res: MedusaResponse
 ) => {
     const usuarioService: UsuarioService = req.scope.resolve("usuarioService");
+    const revisar = req.query.revisar === 'true';
 
     if (!req.body) {
         res.status(400).json({ error: "Petición inválida" });
         return;
     }
     const usuarioData = req.body as Usuario;
+    if(revisar){
+        const respuesta = await usuarioService.buscarPorCorreo(usuarioData.correo);
+        if(respuesta){
+            res.status(400).json({error: "Este correo ya tiene una cuenta asociada"});
+            return;
+        }
+    }
+
+    
     const usuario = await usuarioService.crear(usuarioData);
 
     res.json({

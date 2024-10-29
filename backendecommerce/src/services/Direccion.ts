@@ -86,8 +86,26 @@ class DireccionService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const direccionRepo = manager.withRepository(this.direccionRepository_);
             const direccion = await this.recuperar(id);
-            await direccionRepo.remove([direccion]);
+            await direccionRepo.update(id, { estaActivo: false , desactivadoEn: new Date() });
         });
+    }
+
+    async listarPorUsuarioIdGuardados(idUsuario: string): Promise<Direccion[]> {
+        const direccionRepo = this.activeManager_.withRepository(this.direccionRepository_);
+        const direcciones = direccionRepo.findByUsuarioIdGuardados(idUsuario);
+        if(!direcciones) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Direcciones no encontradas");
+        }
+        return direcciones;
+    }
+
+    async listarPorUsuarioId(idUsuario: string): Promise<Direccion[]> {
+        const direccionRepo = this.activeManager_.withRepository(this.direccionRepository_);
+        const direcciones = direccionRepo.findByUsuarioId(idUsuario);
+        if(!direcciones) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Direcciones no encontradas");
+        }
+        return direcciones;
     }
 }
 

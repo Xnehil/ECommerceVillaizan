@@ -61,7 +61,6 @@ export default async function Footer() {
       <div className="content-container flex flex-col w-full">
         <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-20">
           <div>
-           <CartButton /> 
           </div>
         
         

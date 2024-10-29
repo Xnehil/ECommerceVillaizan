@@ -1,67 +1,267 @@
 import { Text } from "@medusajs/ui"
-
-import { ProductPreviewType } from "types/global"
-
-import { retrievePricedProductById } from "@lib/data"
-import { getProductPrice } from "@lib/util/get-product-price"
 import { Region } from "@medusajs/medusa"
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
-import PreviewPrice from "./price"
-import Link from "next/link"
 import { Producto } from "types/PaqueteProducto"
-import axios from "axios"
+import { useState } from "react"
+import { addItem, updateLineItem } from "@modules/cart/actions"
+import { DetallePedido, Pedido } from "types/PaquetePedido"
 
-export default async function ProductPreview({
+export default function ProductPreview({
   productPreview,
   isFeatured,
   region,
+  carrito,
+  setCarrito,
 }: {
   productPreview: Producto
   isFeatured?: boolean
   region?: Region
+  carrito: Pedido | null
+  setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>
 }) {
-  const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
-  console.log("productPreview", productPreview)
-  const response = await axios.get(`${baseUrl}/admin/producto/${productPreview.id}`)
-  const pricedProduct: Producto =  response.data.producto
+  const [isAdding, setIsAdding] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
+  const cheapestPrice = productPreview.precioEcommerce
+  const detalleAnterior = carrito?.detalles.find(
+    (detalle) => detalle.producto.id === productPreview.id
+  )
+  const cantidadActual = detalleAnterior?.cantidad || 0
 
-  //  await retrievePricedProductById({
-  //   id: productPreview.id,
-  //   regionId: region.id,
-  // }).then((product) => product)
+  const handleAddToCart = async () => {
+    if (!productPreview?.id) return null
 
-  if (!pricedProduct) {
-    return null
+    if (productPreview.inventarios[0].stock === 0) {
+      setError("Este producto está fuera de stock.")
+      return
+    }
+
+    setIsAdding(true)
+    setError(null)
+
+    try {
+      // Agregar al carritoState para que se actualice el carrito visualmente
+      const detalleAnterior = carrito?.detalles.find(
+        (detalle) => detalle.producto.id === productPreview.id
+      )
+      console.log("Detalle anterior:", detalleAnterior)
+      let nuevoDetalle: DetallePedido | null = null
+      console.log("Linea a")
+
+      if (detalleAnterior) {
+        // Actualizar la cantidad si ya existe en el carrito
+        const cantidad = detalleAnterior.cantidad + 1
+        await updateLineItem({
+          detallePedidoId: detalleAnterior.id,
+          cantidad: cantidad,
+          subtotal: productPreview.precioEcommerce * cantidad,
+        })
+        nuevoDetalle = {
+          ...detalleAnterior,
+          cantidad: cantidad,
+          subtotal: productPreview.precioEcommerce * cantidad,
+        }
+      } else {
+        // Agregar un nuevo producto al carrito si no existe
+        const response = await addItem({
+          cantidad: 1,
+          idProducto: productPreview.id || "",
+          precio: productPreview.precioEcommerce,
+          idPedido: carrito?.id || "",
+        })
+        if (
+          response &&
+          typeof response === "object" &&
+          "detallePedido" in response
+        ) {
+          nuevoDetalle = response.detallePedido
+          if (nuevoDetalle) {
+            nuevoDetalle.producto = productPreview
+          } else {
+            throw new Error(
+              "Error: No se pudo crear o actualizar el detalle del producto."
+            )
+          }
+        } else {
+          throw new Error("Error al agregar el producto al carrito.")
+        }
+      }
+
+      if (nuevoDetalle) {
+        const nuevosDetalles =
+          carrito?.detalles.map((detalle) =>
+            detalle.producto.id === productPreview.id ? nuevoDetalle : detalle
+          ) || []
+        if (!detalleAnterior) {
+          nuevosDetalles.push(nuevoDetalle)
+        }
+        setCarrito(
+          (prevCarrito) =>
+            ({
+              ...prevCarrito,
+              detalles: nuevosDetalles,
+              estado: prevCarrito?.estado || "",
+            } as Pedido)
+        )
+      }
+    } catch (error) {
+      console.error("Error in handleAddToCart:", error)
+      setError(
+        "No se pudo añadir este producto al carrito. Por favor, inténtalo de nuevo más tarde."
+      )
+    } finally {
+      setIsAdding(false)
+    }
   }
 
-  // const { cheapestPrice } = getProductPrice({
-  //   product: pricedProduct,
-  //   region,
-  // })
+  const handleRemoveFromCart = async () => {
+    if (!productPreview?.id) return null
+    setIsAdding(true)
+    setError(null) // Limpiar cualquier error anterior
 
-  const cheapestPrice = pricedProduct.precioEcommerce
-  const spacelessName = productPreview.nombre.replace(/\s/g, "-")
+    try {
+      // Verificar si ya existe el producto en el carrito y actualizar la cantidad
+      const detalleAnterior = carrito?.detalles.find(
+        (detalle) => detalle.producto.id === productPreview.id
+      )
+      if (detalleAnterior && detalleAnterior.cantidad > 1) {
+        const cantidad = detalleAnterior.cantidad - 1
+        await updateLineItem({
+          detallePedidoId: detalleAnterior.id,
+          cantidad: cantidad,
+          subtotal: productPreview.precioEcommerce * cantidad,
+        })
+        const nuevoDetalle = {
+          ...detalleAnterior,
+          cantidad: cantidad,
+          subtotal: productPreview.precioEcommerce * cantidad,
+        }
+
+        const nuevosDetalles =
+          carrito?.detalles.map((detalle) =>
+            detalle.producto.id === productPreview.id ? nuevoDetalle : detalle
+          ) || []
+
+        setCarrito(
+          (prevCarrito) =>
+            ({
+              ...prevCarrito,
+              detalles: nuevosDetalles,
+              estado: prevCarrito?.estado || "",
+            } as Pedido)
+        )
+      } else if (detalleAnterior && detalleAnterior.cantidad === 1) {
+        // Eliminar el producto si la cantidad es 1 y se presiona el botón de restar
+        await updateLineItem({
+          detallePedidoId: detalleAnterior.id,
+          cantidad: 0,
+          subtotal: 0,
+        })
+        const nuevosDetalles =
+          carrito?.detalles.filter(
+            (detalle) => detalle.producto.id !== productPreview.id
+          ) || []
+
+        setCarrito(
+          (prevCarrito) =>
+            ({
+              ...prevCarrito,
+              detalles: nuevosDetalles,
+              estado: prevCarrito?.estado || "",
+            } as Pedido)
+        )
+      }
+    } catch (error) {
+      console.error("Error in handleRemoveFromCart:", error)
+      setError(
+        "No se pudo quitar este producto del carrito. Por favor, inténtalo de nuevo más tarde."
+      )
+    } finally {
+      setIsAdding(false)
+    }
+  }
 
   return (
-    <Link
-      href={`/products/${productPreview.id}`}
-      className="group"
-    >
-      <div data-testid="product-wrapper">
-        <Thumbnail
-          // thumbnail={productPreview.urlImagen}
-          size="full"
-          isFeatured={isFeatured}
-        />
-        <div className="flex txt-compact-medium mt-4 justify-between">
-          <Text className="text-ui-fg-subtle" data-testid="product-title">{productPreview.nombre}</Text>
+    <div className="relative group bg-white shadow-md rounded-lg overflow-hidden transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
+      {/* Thumbnail */}
+      <Thumbnail
+        thumbnail={productPreview.urlImagen}
+        size="full"
+        isFeatured={isFeatured}
+      />
+  
+      {/* Botón Agregar, Cantidad, y Remover */}
+      {cantidadActual > 0 ? (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center">
+          <button
+            onClick={handleRemoveFromCart}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-colors duration-200"
+          >
+            -
+          </button>
+          <div className="mx-4 bg-white text-yellow-500 font-bold w-32 h-32 flex items-center justify-center rounded-full shadow-lg text-4xl">
+            {cantidadActual}
+          </div>
+          <button
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className={`bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-colors duration-200 ${isAdding ? "opacity-50" : ""}`}
+          >
+            {isAdding ? "Añadiendo..." : "+"}
+          </button>
+        </div>
+      ) : (
+        productPreview.inventarios[0].stock > 0 && (
+          <button
+            onClick={handleAddToCart}
+            disabled={isAdding}
+            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded shadow-lg"
+          >
+            {isAdding ? "Añadiendo..." : "Agregar"}
+          </button>
+        )
+      )}
+  
+      {/* Mensaje de error */}
+      {error && (
+        <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2 flex items-center">
+          <span className="material-icons">error_outline</span>
+          <span className="ml-2">{error}</span>
+        </div>
+      )}
+  
+      {/* Stock limitado */}
+      {!productPreview.inventarios[0].stock ? (
+        <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2">
+          Este producto no está disponible en tu ciudad
+        </div>
+      ) : (
+        productPreview.inventarios[0].stock <= productPreview.inventarios[0].stockMinimo && (
+          <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2">
+            Stock limitado: quedan pocas unidades disponibles en tu ciudad
+          </div>
+        )
+      )}
+  
+      {/* Información del producto */}
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <Text
+            className="text-xl font-semibold text-gray-800 truncate"
+            data-testid="product-title"
+          >
+            {productPreview.nombre}
+          </Text>
           <div className="flex items-center gap-x-2">
-            {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
+            {cheapestPrice && (
+              <span className="text-lg font-bold text-yellow-600">
+                {`S/. ${cheapestPrice}`}
+              </span>
+            )}
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   )
+  
 }

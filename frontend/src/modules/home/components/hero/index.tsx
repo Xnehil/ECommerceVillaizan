@@ -33,7 +33,7 @@ const Hero = () => {
                 </Link>
               }
             >
-              <CartButton />
+              {/*<CartButton />*/}
             </Suspense>
         </span>
       </div>

@@ -9,16 +9,16 @@ import { Ciudad } from "src/models/Ciudad";
 /**
  * @swagger
  * tags:
- *   name: Ciudades
+ *   name: Ciudad
  *   description: API para la gestión de ciudades
  */
 
 /**
  * @swagger
- * /ciudades:
+ * /ciudad:
  *   get:
  *     summary: Lista todas los ciudades con paginación
- *     tags: [Ciudades]
+ *     tags: [Ciudad]
  *     responses:
  *       200:
  *         description: Una lista de ciudades
@@ -45,10 +45,10 @@ import { Ciudad } from "src/models/Ciudad";
 
   /**
  * @swagger
- * /ciudades:
+ * /ciudad:
  *   post:
  *     summary: Crea una nueva ciudad
- *     tags: [Ciudades]
+ *     tags: [Ciudad]
  *     requestBody:
  *       required: true
  *       content:

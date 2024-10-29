@@ -18,6 +18,19 @@ import { Producto } from "src/models/Producto";
  *   get:
  *     summary: Lista todos los productos con paginación
  *     tags: [Producto]
+ *     parameters:
+ *       - in: query
+ *         name: enriquecido
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe recuperar el producto enriquecido
+ *       - in: query
+ *         name: ecommerce
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe recuperar solo los productos que se muestran en el ecommerce
  *     responses:
  *       200:
  *         description: Una lista de productos
@@ -36,14 +49,27 @@ import { Producto } from "src/models/Producto";
     res: MedusaResponse
   ) => {
     const productoService: ProductoService = req.scope.resolve("productoService");
-
+    const enriquecido = req.query.enriquecido === 'true';
+    const soloEcommerce = req.query.ecommerce === 'true';
     res.json({
-      productos: await productoService.listarConPaginacion(),
+      productos: await productoService.listarConPaginacion(
+        {},  
+        {
+          skip: 0,
+          take: 20,
+          relations: enriquecido ? ["tipoProducto", "subcategorias", "frutas"] : [],
+          order: {
+            nombre: "ASC"
+          }
+        },
+        soloEcommerce
+      ),
+
     })
   }
 
 
-  /**
+/**
  * @swagger
  * /producto:
  *   post:
@@ -64,6 +90,8 @@ import { Producto } from "src/models/Producto";
  *               $ref: '#/components/schemas/Producto'
  *       400:
  *         description: Petición inválida
+ *       405:
+ *         description: Ya existe un producto con ese nombre
  */
   export const POST = async (
     req: MedusaRequest,
@@ -76,11 +104,15 @@ import { Producto } from "src/models/Producto";
       return;
     }
     const productoData = req.body as Producto;
-    const producto = await productoService.crear(productoData);
+    try { 
+      const producto = await productoService.crear(productoData);
+      res.status(201).json({
+        producto,
+      });
+    } catch (error) {
+      res.status(405).json({ error: error.message });
+    }
 
-    res.status(201).json({
-      producto,
-    });
   }
 
   

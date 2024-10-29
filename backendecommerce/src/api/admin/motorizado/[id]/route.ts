@@ -26,6 +26,12 @@ import { Motorizado } from "src/models/Motorizado";
  *           type: string
  *         required: true
  *         description: ID del motorizado
+ *       - in: query
+ *         name: enriquecido
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe recuperar el producto enriquecido
  *     responses:
  *       200:
  *         description: Detalles del motorizado
@@ -37,15 +43,19 @@ import { Motorizado } from "src/models/Motorizado";
  *         description: Motorizado no encontrado
  */
 
-export const GET_BY_ID = async (
+export const GET = async (
     req: MedusaRequest,
     res: MedusaResponse
 ) => {
     const motorizadoService: MotorizadoService = req.scope.resolve("motorizadoService");
     const { id } = req.params;
-
+    const enriquecido = req.query.enriquecido === 'true';
     try {
-        const motorizado = await motorizadoService.recuperar(id);
+        const motorizado = await motorizadoService.recuperar(id,
+            {
+                relations: enriquecido ? ["usuario","ciudad","almacen"] : []
+            }
+        );
         res.json({ motorizado });
     } catch (error) {
         res.status(404).json({ error: "Motorizado no encontrado" });

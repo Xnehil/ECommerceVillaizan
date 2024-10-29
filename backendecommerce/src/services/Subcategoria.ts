@@ -62,12 +62,23 @@ class SubcategoriaService extends TransactionBaseService {
         return subcategoria;
       }
     
-      async crear(subcategoria: Subcategoria): Promise<Subcategoria> {
+      async crear(subcategoria: Subcategoria): Promise<{ subcategoria: Subcategoria, alreadyExists: boolean }> {
         return this.atomicPhase_(async (manager) => {
           const subcategoriaRepo = manager.withRepository(this.subcategoriaRepository_);
-          const subcategoriaCreado = subcategoriaRepo.create(subcategoria);
-          const result = await subcategoriaRepo.save(subcategoriaCreado);
-          return result;
+
+          // Check if a tipoProducto with the same nombre (lowercased) already exists
+          const existingSubcategoria = await subcategoriaRepo.createQueryBuilder('subcategoria')
+          .where('LOWER(subcategoria.nombre) = LOWER(:nombre)', { nombre: subcategoria.nombre })
+          .getOne();
+
+      
+          if (existingSubcategoria) {
+            return {subcategoria: existingSubcategoria, alreadyExists: true};
+          }
+      
+          const subcategoriaCreada = subcategoriaRepo.create(subcategoria);
+          const result = await subcategoriaRepo.save(subcategoriaCreada);
+          return {subcategoria: result, alreadyExists: false};
         });
       }
     
@@ -78,6 +89,16 @@ class SubcategoriaService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
           const subcategoriaRepo = manager.withRepository(this.subcategoriaRepository_);
           const subcategoria = await this.recuperar(id);
+
+          if (data.nombre) {
+            const existingSubcategoria = await subcategoriaRepo.createQueryBuilder('subcategoria')
+            .where('LOWER(subcategoria.nombre) = LOWER(:nombre)', { nombre: data.nombre })
+            .getOne();
+            if (existingSubcategoria && existingSubcategoria.id !== id) {
+              throw new Error(`Subcategoria con nombre "${data.nombre}" ya existe.`);
+            }
+          }
+
           Object.assign(subcategoria, data);
           return await subcategoriaRepo.save(subcategoria);
         });
@@ -85,11 +106,20 @@ class SubcategoriaService extends TransactionBaseService {
     
       async eliminar(id: string): Promise<void> {
         return await this.atomicPhase_(async (manager) => {
-          const subcategoriaRepo = manager.withRepository(this.subcategoriaRepository_);
-          const subcategoria = await this.recuperar(id);
-          await subcategoriaRepo.remove([subcategoria]);
+            const subcategoriaRepo = manager.withRepository(this.subcategoriaRepository_);
+            const productos = await manager.query(
+              'SELECT * FROM vi_producto_subcategoria WHERE id_subcategoria = $1',
+              [id]
+          );
+
+            if (productos.length > 0) {
+                throw new MedusaError(MedusaError.Types.NOT_ALLOWED, "productos asociados");
+            }
+    
+            const subcategoria = await this.recuperar(id);
+            await subcategoriaRepo.update(id, { estaActivo: true, desactivadoEn: new Date() });
         });
-      }
+    }
 }
 
 export default SubcategoriaService;

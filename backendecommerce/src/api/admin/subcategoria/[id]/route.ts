@@ -12,7 +12,8 @@ import { Subcategoria } from "src/models/Subcategoria";
  * /subcategoria/{id}:
  *   get:
  *     summary: Recupera un subcategoria por ID
- *     tags: [Subcategorias]
+ *     tags: 
+ *       - Subcategorias
  *     parameters:
  *       - in: path
  *         name: id
@@ -91,6 +92,10 @@ export const PUT = async (
         const subcategoria = await subcategoriaService.actualizar(id, subcategoriaData);
         res.json({ subcategoria });
     } catch (error) {
+        if (error.message.includes("Subcategoria con nombre")) {
+            res.status(404).json({ error: "Subcategoria con ese nombre ya existe" });
+            return;
+        }
         if (error.message === "subcategoria no encontrado") {
             res.status(404).json({ error: "subcategoria no encontrado" });
         } else {
@@ -104,7 +109,8 @@ export const PUT = async (
  * /subcategoria/{id}:
  *   delete:
  *     summary: Elimina un subcategoria por ID
- *     tags: [Subcategorias]
+ *     tags: 
+ *       - Subcategorias
  *     parameters:
  *       - in: path
  *         name: id
@@ -117,6 +123,8 @@ export const PUT = async (
  *         description: subcategoria eliminado exitosamente
  *       404:
  *         description: subcategoria no encontrado
+ *       406:
+ *         description: Hay productos asociados a esta subcategoría
  */
 
 export const DELETE = async (
@@ -129,8 +137,12 @@ export const DELETE = async (
     try {
         await subcategoriaService.eliminar(id);
         res.status(200).json({ message: "subcategoria eliminado exitosamente" });
-    } catch (error) {
-        res.status(404).json({ error: "subcategoria no encontrado" });
+    } catch (error ) {
+        console.log("Error: ", error.message);
+        if (error.message === "productos asociados") {
+            return res.status(406).json({ error: "Hay productos asociados a esta subcategoría" });
+        }
+        return res.status(404).json({ error: "subcategoria no encontrado" });
     }
 };
 

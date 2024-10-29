@@ -1,22 +1,9 @@
 "use server"
 
-import { LineItem } from "@medusajs/medusa"
-import { omit } from "lodash"
 import { revalidateTag } from "next/cache"
-import { cookies } from "next/headers"
-
-import {
-  addItem,
-  createCart,
-  getCart,
-  getProductsById,
-  getRegion,
-  removeItem,
-  updateCart,
-  updateItem,
-} from "@lib/data"
 import axios from "axios"
 import { DetallePedido } from "types/PaquetePedido"
+import { cookies } from "next/headers"
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 /**
@@ -26,22 +13,26 @@ const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
  * @example
  * const cart = await getOrSetCart()
  */
-export async function getOrSetCart() {
-  const cartId = cookies().get("_medusa_cart_id")?.value
-  let cart
+export async function getOrSetCart(only_get=false) {
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+  // console.log("Cart ID sacado de la cookie: ", cartId)
+  let cart;
+  let cookieValue ="alreadysaved"
 
-  if (cartId) {
-    const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
-    cart = response.data
+  if (only_get && !cartId) {
+    return null
   }
 
-  // const region = await getRegion(countryCode)
-
-  // if (!region) {
-  //   return null
-  // }
-
-  // const region_id = region.id
+  if (cartId) {
+    try {
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      cart = response.data.pedido
+      // console.log("Cart sacado de la cookie: ", cart)
+    } catch (e) {
+      cart = null
+    }
+  }
 
   if (!cart) {
     const response = await axios.post(`${baseUrl}/admin/pedido`, {
@@ -49,33 +40,68 @@ export async function getOrSetCart() {
     })
     cart = response.data.pedido
     if (cart) {
-      // console.log('Setting cookie with cart ID:', cart.id); // Log the cart ID for debugging
-
-      cookies().set('_medusa_cart_id', cart.id, {
+      console.log('Setting cookie with cart ID:', cart.id, " and cookie")
+      cookies().set("_medusa_cart_id", cart.id, {
         maxAge: 60 * 60 * 24 * 7, // 1 week
-        httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV === 'production',
-      });
+      })
+        return {
+          cart,
+          cookie: cart.id,
+      };
 
-      // console.log('Cookie set successfully'); // Log success message
+
     } else {
       console.error('Cart is null or undefined'); // Log error if cart is null or undefined
     }
-    revalidateTag("cart")
+  }
+  return {
+    cart,
+    cookie: cookieValue,
+  }
+  revalidateTag("cart")
+}
+
+export async function deleteCart() {
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+
+  if (!cartId) {
+    console.error("No hay carrito para eliminar.")
+    return null
   }
 
-  // Esto es para temas de cambio de region. De momento no se usa
-  // if (cart && cart?.region_id !== region_id) {
-  //   await updateCart(cart.id, { region_id })
-  //   revalidateTag("cart")
-  // }
+  try {
+    // Realizar la solicitud DELETE para eliminar el carrito
+    await axios.delete(`${baseUrl}/admin/pedido/${cartId}`)
 
-  return cart
+    console.log(`Carrito con ID ${cartId} eliminado.`)
+
+    // Eliminar la cookie del carrito
+    cookies().set("_medusa_cart_id", "", {
+      maxAge: -1, // Esto elimina la cookie
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    })
+
+    return {
+      success: true,
+      message: `Carrito con ID ${cartId} eliminado.`,
+    }
+  } catch (e) {
+    console.error("Error al eliminar el carrito:", e)
+    return {
+      success: false,
+      message: "Error al eliminar el carrito.",
+    }
+  }
 }
 
 export async function retrieveCart(productos: boolean = false) {
-  const cartId = cookies().get("_medusa_cart_id")?.value
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+
 
   if (!cartId) {
     return null
@@ -84,6 +110,34 @@ export async function retrieveCart(productos: boolean = false) {
   if (productos) {
     try {
       const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      return response.data.pedido
+    } catch (e) {
+      console.log(e)
+      return null
+    }
+  } else{
+      try {
+        const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
+        return response.data.pedido
+      } catch (e) {
+        console.log(e)
+        return null
+      }
+  }
+}
+
+export async function retrievePedido(productos: boolean = false) {
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+
+
+  if (!cartId) {
+    return null
+  }
+
+  if (productos) {
+    try {
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle?pedido=true`)
       return response.data.pedido
     } catch (e) {
       console.log(e)
@@ -109,7 +163,7 @@ export async function addToCart({
   cantidad: number
   precio: number
 }) {
-  const cart = await getOrSetCart()
+  const cart = (await getOrSetCart())?.cart
 
   if (!cart) {
     return "Missing cart ID"
@@ -120,27 +174,33 @@ export async function addToCart({
   }
 
   try {
-    await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio}) //Esto ya está modificado
-    revalidateTag("cart")
+    const response=await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio}) //Esto ya está modificado
+    // revalidateTag("cart")
+    console.log("Item ", idProducto, " added to cart")
+    return response
   } catch (e) {
     return "Error adding item to cart"
   }
 }
 
 export async function updateLineItem({
-  lineId,
-  quantity,
+  detallePedidoId,
+  cantidad,
+  subtotal,
 }: {
-  lineId: string
-  quantity: number
+  detallePedidoId: string
+  cantidad: number
+  subtotal: number
 }) {
-  const cartId = cookies().get("_medusa_cart_id")?.value
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+  
 
   if (!cartId) {
     return "Missing cart ID"
   }
 
-  if (!lineId) {
+  if (!detallePedidoId) {
     return "Missing lineItem ID"
   }
 
@@ -149,7 +209,10 @@ export async function updateLineItem({
   }
 
   try {
-    // await updateItem({ cartId, lineId, quantity }) modificar esto
+    const response = await axios.put(`${baseUrl}/admin/detallePedido/${detallePedidoId}`, {
+      cantidad: cantidad,
+      subtotal: subtotal
+    })
     revalidateTag("cart")
   } catch (e: any) {
     return e.toString()
@@ -157,8 +220,9 @@ export async function updateLineItem({
 }
 
 export async function deleteLineItem(lineId: string) {
-  const cartId = cookies().get("_medusa_cart_id")?.value
-
+  const cookieValues = cookies()
+  const cartId = cookieValues.get("_medusa_cart_id")?.value
+  
   if (!cartId) {
     return "Missing cart ID"
   }
@@ -181,11 +245,11 @@ export async function deleteLineItem(lineId: string) {
 
 export async function enrichLineItems(
   detalles: DetallePedido[],
-): Promise<
-  | Omit<DetallePedido, "beforeInsert" | "beforeUpdate" | "afterUpdateOrLoad">[]
-  | undefined
+): Promise<DetallePedido[]
 > {
-  // Prepare query parameters
+  if (!detalles?.length) {
+    return []
+  }
   const queryParams = {
     ids: detalles.map((lineItem) => lineItem.id),
   }
@@ -194,31 +258,94 @@ export async function enrichLineItems(
   const response = queryParams.ids.map((id) => axios.get(`${baseUrl}/admin/detallePedido/${id}`))
   const products = await Promise.all(response)
 
+  const productData = products.map((product) => product.data);
+
+  // console.log("Products Data:", productData)
+
   // If there are no line items or products, return an empty array
-  if (!products?.length || !products) {
+  if (!productData?.length || !productData) {
     return []
   }
 
-  // Enrich line items with product and variant information
+  return productData.map((product) => {
+    product.detallePedido.producto.precioEcommerce = Number(product.detallePedido.producto.precioEcommerce)
+    product.detallePedido.cantidad = Number(product.detallePedido.cantidad)
+    return product.detallePedido
+  }) as DetallePedido[]
+}
 
-  // const enrichedItems = lineItems.map((item) => {
-  //   const product = products.find((p) => p.id === item.variant.product_id)
-  //   const variant = product?.variants.find((v) => v.id === item.variant_id)
+export async function addItem({
+  idPedido,
+  idProducto,
+  cantidad,
+  precio
+}: {
+  idPedido: string
+  idProducto: string
+  cantidad: number
+  precio: number
+}) {
 
-  //   // If product or variant is not found, return the original item
-  //   if (!product || !variant) {
-  //     return item
-  //   }
+  try{
+    console.log("Adding item to cart")
+    const response = await axios.post(`${baseUrl}/admin/detallePedido`, {
+      producto:{
+        id: idProducto
+      },
+      cantidad: cantidad,
+      pedido: {
+        id: idPedido
+      },
+      subtotal: precio*cantidad
+    })
+    // console.log(response)
+    console.log("Item added to cart")
+    return response.data
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+}
 
-  //   // If product and variant are found, enrich the item
-  //   return {
-  //     ...item,
-  //     variant: {
-  //       ...variant,
-  //       product: omit(product, "variants"),
-  //     },
-  //   }
-  // }) as LineItem[]
+export async function updateItem({
+  cartId,
+  lineId,
+  quantity,
+  precio
+}: {
+  cartId: string
+  lineId: string
+  quantity: number
+  precio: number
+}) {
+  try{
+    const response = axios.put(`${process.env.NEXT_PUBLIC_MEDUSA_API_URL}/admin/detallePedido/${lineId}`, {
+      cantidad: quantity,
+      subtotal: precio*quantity
+    })
 
-  return []
+    return response
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+  
+}
+
+export async function removeItem({
+  cartId,
+  lineId,
+}: {
+  cartId: string
+  lineId: string
+}) {
+  try {
+    const response = axios.delete(`${process.env.NEXT_PUBLIC_MEDUSA_API_URL}/admin/detallePedido/${lineId}`)
+
+    return response
+  }
+  catch (e) {
+    console.log(e)
+    return null
+  }
 }

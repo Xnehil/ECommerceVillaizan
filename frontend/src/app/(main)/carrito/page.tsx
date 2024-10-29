@@ -1,47 +1,47 @@
-import { LineItem } from "@medusajs/medusa"
-import { Metadata } from "next"
-import { cookies } from "next/headers"
+import { Metadata } from "next";
+import { cookies } from "next/headers";
 
-import CartTemplate from "@modules/cart/templates"
-
-import { enrichLineItems } from "@modules/cart/actions"
-import { getCheckoutStep } from "@lib/util/get-checkout-step"
-import { CartWithCheckoutStep } from "types/global"
-import { getCart, getCustomer } from "@lib/data"
+import CartTemplate from "@modules/cart/templates";
+import { enrichLineItems, getOrSetCart } from "@modules/cart/actions";
+import { getCheckoutStep } from "@lib/util/get-checkout-step";
+import { CartWithCheckoutStep } from "types/global";
+import { getCart, getCustomer } from "@lib/data";
+import { Pedido } from "types/PaquetePedido";
 
 export const metadata: Metadata = {
-  title: "Cart",
-  description: "View your cart",
-}
+  title: "Carrito",
+  description: "Revisa los productos que has añadido a tu carrito.",
+};
 
 const fetchCart = async () => {
-  const cartId = cookies().get("_medusa_cart_id")?.value
+  const respuesta = await getOrSetCart();
+  let cart: Pedido = respuesta?.cart;
 
-  if (!cartId) {
-    return null
+  if (!cart || !cart.detalles || cart.detalles.length === 0) {
+    return null; // Retorna null si el carrito está vacío o no tiene detalles
   }
 
-  const cart = await getCart(cartId).then(
-    (cart) => cart as CartWithCheckoutStep
-  )
+  const enrichedItems = await enrichLineItems(cart.detalles);
+  cart.detalles = enrichedItems;
 
-  if (!cart) {
-    return null
-  }
-
-  if (cart?.items.length) {
-    const enrichedItems = await enrichLineItems(cart?.items, cart?.region_id)
-    cart.items = enrichedItems as LineItem[]
-  }
-
-  cart.checkout_step = cart && getCheckoutStep(cart)
-
-  return cart
-}
+  return cart;
+};
 
 export default async function Cart() {
-  const cart = await fetchCart()
-  const customer = await getCustomer()
+  const cart = await fetchCart();
 
-  return <CartTemplate cart={cart} customer={customer} />
+  // Si el carrito es null o no tiene productos, muestra el mensaje de que no hay productos.
+  if (!cart) {
+    return (
+      <div className="content-container mx-auto py-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">No has agregado productos aún :(</h1>
+        <p className="text-gray-600">
+          Navega por nuestra tienda y encuentra los productos que te gusten.
+        </p>
+      </div>
+    );
+  }
+
+  // Si el carrito tiene productos, renderiza el `CartTemplate`
+  return <CartTemplate cart={cart} />;
 }

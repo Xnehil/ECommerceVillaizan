@@ -133,3 +133,32 @@ body {
     @apply text-[32px] leading-[44px] font-semibold;
   }
 }
+
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+/* CSS para animar el clic */
+.h1:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+@keyframes fall {
+  0% {
+      transform: translateY(-100%); /* Start a bit higher */
+  }
+  100% {
+      transform: translateY(100vh);
+  }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}

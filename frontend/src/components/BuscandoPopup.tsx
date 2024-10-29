@@ -5,14 +5,31 @@ import { LoadingSpinner } from 'components/LoadingSpinner'; // Ajusta la ruta de
 interface BuscandoPopupProps {
   onClose: () => void;
   customText: string;
+  error?: boolean;
 }
 
-const BuscandoPopup: React.FC<BuscandoPopupProps> = ({ onClose, customText }) => {
+const BuscandoPopup: React.FC<BuscandoPopupProps> = ({ onClose, customText, error = false }) => {
+  const buttonText = error && customText === "Error al guardar el metodo de pago. Inténtalo de nuevo en unos minutos"
+    ? "Regresar al carrito"
+    : "Cerrar";
+
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
-        <LoadingSpinner size={140} className="custom-spinner-class" />
-        <p style={{ textAlign: 'center' }}><strong>{customText}</strong></p>
+        {error ? (
+          <div style={styles.errorContainer}>
+            <img src={"/images/motoHeladera.png"} alt="Error" style={styles.errorImage} />
+            <p style={styles.errorMessage}>
+              {customText}
+            </p>
+            <button style={styles.closeButton} onClick={onClose}>{buttonText}</button>
+          </div>
+        ) : (
+          <>
+            <LoadingSpinner size={140} className="custom-spinner-class" />
+            <p style={{ textAlign: 'center' }}><strong>{customText}</strong></p>
+          </>
+        )}
       </div>
     </div>
   );
@@ -46,6 +63,32 @@ const styles = {
     cursor: 'pointer',
     backgroundColor: 'white',
     color: 'red',
+  },
+  errorContainer: {
+    display: 'flex',
+    flexDirection: 'column' as 'column',
+    alignItems: 'center',
+  },
+  errorImage: {
+    width: '100px',
+    height: '100px',
+    marginBottom: '10px',
+  },
+  errorMessage: {
+    textAlign: 'center' as 'center',
+    color: 'black',
+    fontSize: '16px',
+    fontWeight: 'bold' as 'bold',
+  },
+  closeButton: {
+    marginTop: '10px',
+    padding: '10px 20px',
+    backgroundColor: '#BD181E',
+    color: 'white',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '14px',
   },
 };
 

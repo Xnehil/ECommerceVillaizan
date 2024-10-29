@@ -6,12 +6,14 @@ import Link from "next/link"
 import { DetallePedido, MetodoPago, Pedido } from 'types/PaquetePedido';
 import { Direccion } from 'types/PaqueteEnvio';
 import { Usuario } from 'types/PaqueteUsuario';
-import axios from "axios"
+import axios, { AxiosError } from "axios"
+import { ErrorMessage } from '@hookform/error-message';
 
 interface ResumenCompraProps {
   descuento: number;
   costoEnvio: number;
   noCostoEnvio: boolean;
+  hayDescuento: boolean;
   paymentAmount: number | null;
   selectedImageId: string | null;
   total: number;  
@@ -31,6 +33,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   descuento,
   costoEnvio,
   noCostoEnvio,
+  hayDescuento,
   paymentAmount,
   selectedImageId,
   total,
@@ -44,27 +47,35 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const [showBuscandoPopup, setShowBuscandoPopup] = useState(false);
   const isButtonDisabled = !selectedImageId || !seleccionado; // Deshabilitar el botón si no hay una imagen seleccionada
   const detalles: DetallePedido[] = pedido ? pedido.detalles : [];
-
-
-  const calcularSubtotal = () => {
-    return detalles.reduce((acc, detalle) => acc + detalle.producto.precioC * detalle.cantidad, 0);
+  const [tooltip, setTooltip] = useState<string | null>(null); // State for tooltip content
+  const [showError, setShowError] = useState(false);
+  const [errorText, setErrorText] = useState("");
+    
+  const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!isButtonDisabled) {
+      (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'black';
+      (e.currentTarget as HTMLButtonElement).style.color = 'white';
+    } else {
+      if (!seleccionado && selectedImageId) {
+        setTooltip('Debes aceptar los términos y condiciones');
+      } else if (!selectedImageId && seleccionado) {
+        setTooltip('Debes seleccionar un método de pago');
+      } else {
+        setTooltip('Debes seleccionar un método de pago y aceptar los términos y condiciones');
+      }
+    }
   };
 
-  const calcularTotal = () => {
-    return calcularSubtotal() - descuento + (noCostoEnvio ? 0 : costoEnvio);
+  const handleMouseOut = (e: React.MouseEvent<HTMLButtonElement>) => {
+    (e.currentTarget as HTMLButtonElement).style.backgroundColor = isButtonDisabled ? 'lightgrey' : 'transparent';
+    (e.currentTarget as HTMLButtonElement).style.color = isButtonDisabled ? 'darkgrey' : 'black';
+    setTooltip(null);
   };
 
-  const calcularVuelto = () => {
-    return paymentAmount ? paymentAmount - calcularTotal() : 0;
-  }
 
-  useEffect(() => {
-    calcularTotal();
-    calcularVuelto();
-  }, [detalles, descuento, costoEnvio, noCostoEnvio, paymentAmount]);
 
   const toggleSeleccion = () => {
-    setSeleccionado(!seleccionado); // Cambia el estado entre true y false
+    setSeleccionado(!seleccionado);
   };
 
   const buscarPedido = async (id: string) => {
@@ -88,48 +99,73 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   }
 
   const handleConfirmar = async () => {
-
     setShowPopup(false);
     setShowBuscandoPopup(true);
-    /*
-    const {detalles, ...pedidoSinDetalles} = pedido;
-    const pedido2 = {...pedidoSinDetalles, detalles: []};
-    console.log("Pedido a confirmar", pedido2);
-    let pedidoBD = null;
-    if (pedido && pedido.id) {
-      const idBuscar = pedido.id;
-      pedidoBD = await buscarPedido(idBuscar);
-    } else {
-      pedidoBD = await crearPedido();
+    try{
+      if(selectedImageId === "pagoEfec"){
+        const responseMetodoPago = await axios.post(`${baseUrl}/admin/metodoPago/nombre`, {
+          nombre: "Pago en Efectivo"
+        });
+        if(responseMetodoPago.data){
+          console.log("Metodo de pago encontrado");
+          console.log(responseMetodoPago.data);
+          if (!pedido.metodosPago) {
+            pedido.metodosPago = [];
+          }
+          pedido.metodosPago.push(responseMetodoPago.data.metodoPago);
+        }
+      }
     }
-    pedidoBD.estado = "solicitado";
-    const metodoPago : MetodoPago = {
-      id: "mp_01J99CS1H128G2P7486ZB5YACH",
-      nombre: '',
-      pedidos: [],
-      desactivadoEn: null,
-      usuarioCreacion: '',
-      usuarioActualizacion: '',
-      estaActivo: false
-    };
-    // Ensure metodoPago is defined
-    if (!pedidoBD.metodosPago) {
-      pedidoBD.metodosPago = {metodoPago};
+    catch(error){
+      
+      const axiosError = error as AxiosError;
+        if (axiosError.response && axiosError.response.status === 404) {
+            console.log("Pedido no encontrado");
+        } else if (axiosError.response?.status === 503) {
+            console.log("Error al guardar el metodo de pago");
+            setErrorText("Error al guardar el metodo de pago. Inténtalo de nuevo en unos minutos");
+            setShowPopup(false);
+            setShowBuscandoPopup(true);
+            setShowError(true);
+        }
     }
-    pedidoBD.montoEfectivoPagar = paymentAmount;
-    pedidoBD.codigoSeguimiento = "123456";
-    console.log("Pedido ha guardar", pedidoBD);
-    const response = await axios.put(`${baseUrl}/admin/pedido/${pedidoBD.id}`, pedidoBD);
-    if(response.data){
-      //setShowBuscandoPopup(false);
-      console.log("Pedido creado correctamente");
-      console.log(response.data);
+    pedido.estado = "solicitado";
+    pedido.montoEfectivoPagar = paymentAmount ?? 0;
+    try{
+      const response = await axios.put(`${baseUrl}/admin/pedido/${pedido.id}?asignarRepartidor=true`, pedido); // Harvy agregó esto, un parámetro extra que el back leería para saber que se debe asignar un repartidor
+      if(response.data){
+        console.log("Pedido modificado correctamente");
+        console.log(response.data);
+      }
+      const pedidoActualizado = response.data.pedido;
+      let codigoSeguimiento = "123456";
+      window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
+    } catch (error) {
+      const axiosError = error as AxiosError;
+        if (axiosError.response && axiosError.response.status === 404) {
+            console.log("Pedido no encontrado");
+        } else if (axiosError.response?.status === 503) {
+            console.log("No hay motorizados disponibles");
+            setErrorText("No hay repartidores disponibles. Inténtalo de nuevo en unos minutos");
+            setShowPopup(false);
+            setShowBuscandoPopup(true);
+            setShowError(true);
+        } else if (axiosError.response?.status === 504) {
+            console.log("Algunos productos en tu carrito tienen stock insuficiente.");
+            setErrorText("Algunos productos en tu carrito tienen stock insuficiente.");
+            setShowPopup(false);
+            setShowBuscandoPopup(true);
+            setShowError(true);
+        }
     }
-      */
+    
   };
 
   const handleCloseBuscandoPopup = () => {
     setShowBuscandoPopup(false);
+    if(errorText === "Algunos productos en tu carrito tienen stock insuficiente."){
+      window.history.back();
+    }
   };
 
   const handleRedirect = () => {
@@ -140,6 +176,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
     );
   };
 
+  const metodoPagoTexto = selectedImageId === "pagoEfec" ? "Pago en Efectivo" : 
+                        selectedImageId === "yape" ? "Yape" : 
+                        selectedImageId === "plin" ? "Plin" : "No seleccionado";
   return (
     <div style={{ padding: '20px', borderRadius: '8px', width: '500px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginBottom: '10px' }}>
@@ -151,12 +190,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           <span style={{ color: 'grey' }}>
             {detalle.producto.nombre} <strong style={{ color: 'black' }}>x</strong> {detalle.cantidad}
           </span>
-          <span>S/. {(detalle.producto.precioC * detalle.cantidad).toFixed(2)}</span>
+          <span>S/. {(detalle.producto.precioEcommerce * detalle.cantidad).toFixed(2)}</span>
         </div>
       ))}
 
       {/* Mostrar descuento y costo de envío */}
-      {descuento > 0 && (
+      {hayDescuento && descuento > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
           <span>Descuento</span>
           <span>- S/. {descuento.toFixed(2)}</span>
@@ -175,7 +214,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       </div>
       <hr style={{ margin: '10px 0' }} />
       {/* Mostrar paymentAmount si está presente */}
-      {paymentAmount && (
+      {selectedImageId === "pagoEfec" && paymentAmount !== null && (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
             <span>Monto a pagar</span>
@@ -220,41 +259,54 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           padding: '10px',
           border: isButtonDisabled ? '2px lightgrey' : '2px solid black',
           borderRadius: '5px',
-          backgroundColor: isButtonDisabled ? 'lightgrey' : 'transparent', // Cambia el color de fondo si está deshabilitado
-          color: isButtonDisabled ? 'darkgrey' : 'black', // Cambia el color del texto si está deshabilitado
+          backgroundColor: isButtonDisabled ? 'lightgrey' : 'transparent',
+          color: isButtonDisabled ? 'darkgrey' : 'black',
           fontWeight: 'bold',
-          cursor: isButtonDisabled ? 'not-allowed' : 'pointer', // Cambia el cursor si está deshabilitado
           transition: 'background-color 0.3s, color 0.3s',
-          marginTop: "10px"
+          marginTop: '10px',
+          position: 'relative' // Needed for tooltip positioning
         }}
-        onMouseOver={(e) => {
-          if (!isButtonDisabled) {
-            (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'black';
-            (e.currentTarget as HTMLButtonElement).style.color = 'white';
-          }
-        }}
-        onMouseOut={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.backgroundColor = isButtonDisabled ? 'lightgrey' : 'transparent';
-          (e.currentTarget as HTMLButtonElement).style.color = isButtonDisabled ? 'darkgrey' : 'black';
-        }}
+        onMouseOver={handleMouseOver}
+        onMouseOut={handleMouseOut}
+        disabled={isButtonDisabled}
         onClick={() => {
           if (!isButtonDisabled) {
-            setShowPopup(true); // Abre el popup al hacer clic solo si no está deshabilitado
+            setShowPopup(true);
           }
         }}
       >
         Comprar
+        {/* Tooltip */}
+        {tooltip && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '110%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'black',
+              color: 'white',
+              padding: '5px 10px',
+              borderRadius: '4px',
+              whiteSpace: 'nowrap',
+              zIndex: 1
+            }}
+          >
+            {tooltip}
+          </div>
+        )}
       </button>
+
+      
 
       {/* Popup de Entrega */}
       {showPopup && (
         <EntregaPopup
-          direccion={`${direccion.calle ?? ''} ${direccion.numeroExterior ?? ''}${direccion.numeroInterior ? `, ${direccion.numeroInterior}` : ''}, ${direccion.distrito ?? ''}, ${direccion.ciudad?.nombre ?? ''}`.trim().replace(/,\s*$/, '')}
-          nombre= {`${usuario.nombre} ${usuario.apellido}` }
+        direccion={`${direccion.nombre ?? ''}${direccion.nombre ? ' | ' : ''}${direccion.calle ?? ''}${direccion.calle ? ' ' : ''}${direccion.numeroExterior ?? ''}${direccion.numeroExterior ? ' ' : ''}${direccion.numeroInterior ? '(' : ''}${direccion.numeroInterior ?? ''}${direccion.numeroInterior ? ') ' : ''}${direccion.ciudad?.nombre ? `, ${direccion.ciudad.nombre}` : ''}`.trim().replace(/,\s*$/, '')}
+          nombre= {`${usuario.nombre}` }
           detalles = {detalles}
-          //productos={productos}
-          subtotal={calcularTotal()}
-          metodoPago="Pago a Efectivo"
+          subtotal={total}
+          metodoPago={metodoPagoTexto}
           onConfirm={handleConfirmar}
           onClose={() => setShowPopup(false)}
           selectedImageId={selectedImageId}
@@ -264,7 +316,8 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       {showBuscandoPopup && (
         <BuscandoPopup
           onClose={handleCloseBuscandoPopup}
-          customText="¡Buscando repartidor!"
+          customText={showError ? errorText : "Buscando repartidor disponible"}
+          error = {showError}
         />
       )}
     </div>

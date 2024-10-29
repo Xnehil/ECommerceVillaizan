@@ -3,8 +3,12 @@ import NavButton from "./navButton";
 
 const Sidebar = () => {
   const logoIcon = "/icons/logo.png";
-  const sidebarIcons = [{ name: "Productos", icon: "/icons/productos.png", href: "/productos" }];
-
+  const sidebarIcons = [
+    { name: "Productos", icon: "/icons/productos.png", href: "/productos" },
+    { name: "Motorizados", icon: "/icons/tuk-tuk.png", href: "/motorizados" },
+    { name: "Configuración", icon: "/icons/setting.png", href: "/configuracion" },
+    { name: "Notificaciones", icon: "/icons/notificacion.png", href: "/notificaciones" },
+  ];
   // const pathname
 
   return (
@@ -20,7 +24,7 @@ const Sidebar = () => {
               path={icon.href}
               active={true}
               // {pathname.startsWith(`/${icon.name.toLowerCase()}`)}
-            />  
+            />
           ))}
         </div>
       </div>

@@ -6,11 +6,15 @@ import {
 export const PedidoRepository = dataSource
   .getRepository(Pedido) 
   .extend({
-    async findByUsuarioId(id_usuario: string): Promise<Pedido[]> {
-      return this.createQueryBuilder("pedido")
-        .leftJoinAndSelect("pedido.usuario", "usuario")
-        .where("usuario.id = :id_usuario", { id_usuario })
-        .getMany();
+    async encontrarPorUsuarioId(id_usuario: string): Promise<Pedido[]> {
+      return this.find({
+        where: {
+          usuario: {
+            id: id_usuario,
+          },
+        },
+        relations: ['motorizado', 'direccion', 'usuario'],
+      });
     },
     async findByMotorizadoId(id_motorizado: string): Promise<Pedido[]> {
       return this.createQueryBuilder("pedido")
@@ -23,6 +27,7 @@ export const PedidoRepository = dataSource
         .where("pedido.codigoSeguimiento = :codigoSeguimiento", { codigoSeguimiento })
         .getOne();
     }
+    
   })
 
 export default PedidoRepository

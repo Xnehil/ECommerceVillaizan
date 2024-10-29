@@ -1,6 +1,9 @@
 import Link from "next/link"
 
 const Header = () => {
+  const currentUrl = window.location.href;
+  const loginUrl = `http://localhost:3000/login?redirect=${encodeURIComponent(currentUrl)}`;
+
   return (
     <header className="bg-red-600 text-white p-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -45,11 +48,13 @@ const Header = () => {
 
         {/* Botón de Sesión */}
         <div>
-          <Link href="/login">
-            <a className="bg-white text-red-600 px-4 py-2 rounded-lg font-bold">
+          {/*<Link href="/login"> <a className="bg-white text-red-600 px-4 py-2 rounded-lg font-bold">
               Inicia Sesión y accede a promociones!
             </a>
-          </Link>
+          </Link>*/}
+          <a href={loginUrl} className="bg-white text-red-600 px-4 py-2 rounded-lg font-bold">
+            Inicia Sesión y accede a promociones!
+          </a>
         </div>
       </div>
     </header>

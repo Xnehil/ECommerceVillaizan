@@ -24,6 +24,12 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
   selectedImageId,
   paymentAmount,
 }) => {
+  const metodoPagoImages: { [key: string]: { src: string; alt: string } } = {
+    pagoEfec: { src: '/images/efectivo.png', alt: 'Pago en Efectivo' },
+    yape: { src: '/images/yape.png', alt: 'Pago con Yape' },
+    plin: { src: '/images/plin.png', alt: 'Pago con Plin' },
+  };
+
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
@@ -37,14 +43,10 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
         </p>
         <p style={{ textAlign: 'left' }}>Pedido:</p>
         {detalles.map((detalle, index) => {
-          let nombreProducto = detalle.producto.nombre;
-          if (detalle.cantidad > 1 && nombreProducto.includes("Paleta")) {
-            nombreProducto = nombreProducto.replace("Paleta", "Paletas");
-          }
           return (
             <p style={{ textAlign: 'left' }} key={index}>
               <strong>
-                {detalle.cantidad} {nombreProducto}
+                {detalle.producto.nombre} ({detalle.cantidad})
               </strong>
             </p>
           );
@@ -55,13 +57,19 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
         </p>
         <p style={{ textAlign: 'left' }}>Método de pago:</p>
         <div style={{ textAlign: 'left', display: 'flex', alignItems: 'center' }}>
-        <strong>{metodoPago}</strong>
-          {selectedImageId === 'pagoEfec' && (
-            <img src="/images/efectivo.png" alt="Efectivo" style={{ marginLeft: '10px', height: '30px' }} />
+        
+        {selectedImageId && metodoPagoImages[selectedImageId] && (
+            <img
+              src={metodoPagoImages[selectedImageId].src}
+              alt={metodoPagoImages[selectedImageId].alt}
+              style={{ marginLeft: '5px', height: '35px' }}
+            />
           )}
+          <strong style={{ marginLeft: '5px'}}>{metodoPago}</strong>
         </div>
+        {/* Mostrar monto y vuelto solo para pago en efectivo */}
         {selectedImageId === 'pagoEfec' && paymentAmount !== null && (
-        <>
+          <>
           <p style={{ textAlign: 'left' }}>Monto a Pagar</p>
           <p style={{ textAlign: 'left' }}>
             <strong>S/. {paymentAmount.toFixed(2)}</strong>

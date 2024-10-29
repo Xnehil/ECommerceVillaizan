@@ -15,10 +15,10 @@ import { Direccion } from "src/models/Direccion";
 
 /**
  * @swagger
- * /direcciones:
+ * /direccion:
  *   get:
  *     summary: Lista todas los direcciones con paginación
- *     tags: [Direcciones]
+ *     tags: [Direccion]
  *     responses:
  *       200:
  *         description: Una lista de direcciones
@@ -45,10 +45,10 @@ import { Direccion } from "src/models/Direccion";
 
   /**
  * @swagger
- * /direcciones:
+ * /direccion:
  *   post:
  *     summary: Crea una nueva dirección
- *     tags: [Direcciones]
+ *     tags: [Direccion]
  *     requestBody:
  *       required: true
  *       content:

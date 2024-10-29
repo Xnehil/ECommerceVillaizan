@@ -1,5 +1,5 @@
-import { Button } from "@medusajs/ui"
-import { ArrrowRight } from "@medusajs/icons"
+import { Button } from "@medusajs/ui";
+import Link from "next/link";  // Importa el componente Link
 
 const Promotions = () => {
   return (
@@ -27,9 +27,11 @@ const Promotions = () => {
 
       {/* Botón de Catálogo de Helados */}
       <div className="mt-8">
-      <button className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold">
-          Catálogo de Helados
+        <Link href="/comprar" passHref>
+          <button className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold">
+            Catálogo de Helados
           </button>
+        </Link>
       </div>
     </div>
   );

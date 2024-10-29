@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CustomRectangle from "components/CustomRectangle";
 import PaymentPopup from "components/PaymentPopup";
 import ResumenCompra from "components/ResumenCompra";
@@ -8,27 +8,79 @@ import BackButton from "components/BackButton";
 import { Pedido } from "types/PaquetePedido";
 import { Usuario } from "types/PaqueteUsuario";
 import { Direccion } from "types/PaqueteEnvio";
+import axios from "axios";
 
 type MetodoPagoClientProps = {
-  pedido: Pedido;
-  usuario: Usuario;
-  direccion: Direccion;
+  pedidoInput: Pedido;
+  setStep: (step: string) => void;
 };
 
-export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPagoClientProps) {
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+
+const fetchPedido = async (pedido: Pedido) => {
+  try {
+    const response = await axios.get(`${baseUrl}/admin/pedido/${pedido.id}?enriquecido=true`);
+    return response.data.pedido;
+  } catch (error) {
+    console.error("Error fetching pedido:", error);
+    return null; // Return null or handle the error appropriately
+  }
+};
+
+const defaultUsuario: Usuario = {
+  nombre: "Juanito",
+  apellido: "Perez",
+  conCuenta: true,
+  correo: "",
+  contrasena: "",
+  persona: undefined,
+  id: "",
+  desactivadoEn: null,
+  usuarioCreacion: "",
+  usuarioActualizacion: "",
+  estaActivo: false,
+};
+
+const defaultDireccion: Direccion = {
+  id: "",
+  calle: "Av. Siempre Viva",
+  numeroExterior: "742",
+  distrito: "Springfield",
+  codigoPostal: "12345",
+  ciudad: undefined,
+  ubicacion: undefined,
+  envios: [],
+  desactivadoEn: null,
+  usuarioCreacion: "",
+  usuarioActualizacion: "",
+  estaActivo: false,
+};
+
+export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoClientProps) {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
-  const descuento = 10;
+  const [pedido, setPedido] = useState<Pedido | null>(null); // State to hold the fetched pedido
+  let descuento : number = 0;
+  const hayDescuento = true;
   const costoEnvio = 5;
   const noCostoEnvio = true;
+
+  useEffect(() => {
+    const getPedido = async () => {
+      const fetchedPedido = await fetchPedido(pedidoInput);
+      setPedido(fetchedPedido);
+    };
+
+    getPedido();
+  }, [pedidoInput]); // Fetch pedido whenever pedidoInput changes
 
   const handleImageClick = (id: string | null) => {
     if (id === "pagoEfec") {
       setShowPopup(true);
       setSelectedImageId(id);
     } else {
-      setSelectedImageId(null);
+      setSelectedImageId(id);
     }
   };
 
@@ -44,28 +96,60 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
   };
 
   const handleBackClick = () => {
-    window.history.back();
+    setStep("direccion");
   };
 
   const calcularTotal = () => {
-    return calcularSubtotal() - descuento + (noCostoEnvio ? 0 : costoEnvio);
-  };
+    const subtotal = calcularSubtotal();
+    const totalDescuento = hayDescuento ? descuento : 0;
+    const totalEnvio = noCostoEnvio ? 0 : costoEnvio;
+
+    let retorno = subtotal - totalDescuento + totalEnvio;
+
+    // Si el total tiene más de un decimal, redondear a un decimal
+    if (retorno * 10 % 1 !== 0) {
+        const retornoRedondeado = Math.floor(retorno * 10) / 10;
+        const parteDescontada = retorno - retornoRedondeado;
+
+        retorno = retornoRedondeado;
+
+        // Aumenta el descuento con la parte descontada, si es relevante para la lógica
+        descuento += parteDescontada;
+    }
+
+    return retorno;
+};
+
 
   const calcularSubtotal = () => {
-    return pedido.detalles.reduce((acc, detalle) => acc + detalle.producto.precioC * detalle.cantidad, 0);
+    if (!pedidoInput) {
+      return 0;
+    }
+    return pedidoInput.detalles.reduce((acc: number, item) => {
+      return acc + Number(item.subtotal) || 0;
+    }, 0);
   };
 
   const calcularVuelto = () => {
     return paymentAmount ? paymentAmount - calcularTotal() : 0;
-  }
+  };
 
   const total = calcularTotal();
   const vuelto = calcularVuelto();
 
   return (
     <>
+      {/* Banner debajo del header */}
+      <img
+        src="/images/bannerFlujoCompra.png"
+        alt="Promociones en Villaizan"
+        style={{
+          width: '100%',
+          height: 'auto',
+        }}
+      />
       <div style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "60px" }}>
-          <BackButton onClick={handleBackClick} />
+        <BackButton onClick={handleBackClick} />
       </div>
 
       <h1 style={{ marginTop: "20px", fontSize: "24px", fontWeight: "bold", paddingLeft: "80px" }}>Método Pago</h1>
@@ -80,12 +164,22 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
         }}
       >
         <CustomRectangle
-          text="Contra Entrega"
+          text="Pago Contraentrega"
           images={[
             {
               id: "pagoEfec",
               src: "/images/efectivo.png",
               hoverText: "Pago en Efectivo",
+            },
+            {
+              id: "yape",
+              src: "/images/yape.png", // Usamos la misma imagen para Yape
+              hoverText: "Pago con Yape",
+            },
+            {
+              id: "plin",
+              src: "/images/plin.png", // Usamos la misma imagen para Plin
+              hoverText: "Pago con Plin",
             },
           ]}
           width="45%"
@@ -93,22 +187,26 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
           onImageClick={handleImageClick}
           selectedImageId={selectedImageId}
           setPaymentAmount={setPaymentAmount}
+          hideCircle={true}
         />
 
-        <div style={{ marginRight: "180px", marginTop: "-20px", marginBottom: "40px" }}>
-          <ResumenCompra
-            descuento={descuento}
-            costoEnvio={costoEnvio}
-            noCostoEnvio={noCostoEnvio}
-            paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null}
-            selectedImageId={selectedImageId}
-            total={total}
-            vuelto={vuelto}
-            direccion={direccion}
-            usuario={usuario}
-            pedido={pedido}
-          />
-        </div>
+        {pedido && (
+          <div style={{ marginRight: "180px", marginTop: "-20px", marginBottom: "40px" }}>
+            <ResumenCompra
+              descuento={descuento}
+              costoEnvio={costoEnvio}
+              noCostoEnvio={noCostoEnvio}
+              hayDescuento={hayDescuento}
+              paymentAmount={selectedImageId === "pagoEfec" && paymentAmount ? paymentAmount : null}
+              selectedImageId={selectedImageId}
+              total={total}
+              vuelto={vuelto}
+              direccion={pedido?.direccion ?? defaultDireccion}
+              usuario={pedido?.usuario ?? defaultUsuario}
+              pedido={pedidoInput}
+            />
+          </div>
+        )}
       </div>
 
       {showPopup && (
@@ -116,6 +214,7 @@ export default function MetodoPagoClient({ pedido, usuario, direccion}: MetodoPa
           totalPagar={total}
           onConfirm={handlePaymentConfirm}
           onClose={handlePopupClose}
+          montoMaximoDeVuelto={100}
         />
       )}
     </>
