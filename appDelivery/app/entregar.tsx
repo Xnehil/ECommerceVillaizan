@@ -179,7 +179,7 @@ const EntregarPedido = () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-      setVideoStream(stream); // Guardamos el stream para usarlo en el modal
+      setVideoStream(stream);
     } catch (error) {
       console.error("Error al acceder a la cámara:", error);
       mostrarMensaje("No se pudo acceder a la cámara.","confirmacion");

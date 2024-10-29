@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -31,7 +31,157 @@ export default function InventarioMotorizadoScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [mensajeModal, setMensajeModal] = useState<string | null>(null);
 
-  const mostrarMensaje = (mensaje: string) => {
+  const [imageOptionsVisible, setImageOptionsVisible] = useState(false);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [motivoMerma, setMotivoMerma] = useState<string>("");
+  const [fotoMerma, setFotoMerma] = useState<{
+    [key: string]: string | null;
+  }>({});  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (videoStream && videoRef.current) {
+      videoRef.current.srcObject = videoStream; // Asigna el stream al video
+    }
+  }, [videoStream]);
+
+  const renderImageOptionsModal = () => (
+    <Modal
+      visible={imageOptionsVisible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setImageOptionsVisible(false)}
+    >
+      <View style={styles.modalContainer}>
+        <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
+
+        {videoStream ? (
+          <View style={styles.videoWrapper}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              onLoadedMetadata={() => {
+                console.log("Video cargado y listo para capturar.");
+              }}
+              style={styles.video}
+            />
+            <TouchableOpacity
+              style={styles.captureButtonOverlay}
+              onPress={() => capturePhoto(currentImageId!)}
+            >
+              <Text style={styles.captureButtonText}>Tomar Foto</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={() => handleCameraCapture(currentImageId!)}
+            >
+              <Text style={styles.optionButtonText}>Tomar Foto</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={() => handleImageSelection(currentImageId!)}
+            >
+              <Text style={styles.optionButtonText}>
+                Seleccionar de la Galería
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => {
+            videoStream?.getTracks().forEach((track) => track.stop());
+            setVideoStream(null);
+            setImageOptionsVisible(false);
+          }}
+        >
+          <Text style={styles.cancelButtonText}>Cancelar</Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+  );
+
+  const showImageOptions = (id: string) => {
+    setCurrentImageId(id);
+
+    setImageOptionsVisible(true);
+  };
+
+  const handleImageSelection = async (id: string) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "environment";
+
+    input.onchange = async (event: any) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const imageData = reader.result as string;
+
+          setFotoMerma((prevFotos) => ({
+            ...prevFotos,
+            [id]: imageData,
+          }));
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    input.click();
+    setImageOptionsVisible(false);
+  };
+
+  const handleCameraCapture = async (id: string) => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+      setVideoStream(stream); // Guardamos el stream para usarlo en el modal
+    } catch (error) {
+      console.error("Error al acceder a la cámara:", error);
+      mostrarMensaje("No se pudo acceder a la cámara.", "confirmacion");
+    }
+  };
+
+  const capturePhoto = (id: string) => {
+    const video = videoRef.current;
+
+    if (!video || !video.videoWidth || !video.videoHeight) {
+      console.error("El video no está listo para capturar.");
+      mostrarMensaje(
+        "Espere a que el video esté listo para capturar la foto.",
+        "confirmacion"
+      );
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const imageData = canvas.toDataURL("image/png");
+
+    setFotoMerma((prevFotos) => ({
+      ...prevFotos,
+      [id]: imageData,
+    }));
+
+    videoStream?.getTracks().forEach((track) => track.stop()); // Detener la cámara
+    setVideoStream(null); // Limpiar el stream
+    setImageOptionsVisible(false); // Cerrar el modal
+  };
+  const mostrarMensaje = (mensaje: string, tipo: string = "") => {
     setMensajeModal(mensaje);
     setTimeout(() => setMensajeModal(null), 3000);
   };
@@ -94,7 +244,9 @@ export default function InventarioMotorizadoScreen() {
         console.log("Id: " + id);
 
         if (tipo === "modificar") {
-          await axios.patch(`${baseUrl}/inventarioMotorizado/${id}/aumentar`, { cantidad });
+          await axios.patch(`${baseUrl}/inventarioMotorizado/${id}/aumentar`, {
+            cantidad,
+          });
         } else {
           const item = inventario.find((inv) => inv.id === id);
           if (item) {
@@ -109,21 +261,27 @@ export default function InventarioMotorizadoScreen() {
               esMerma: true,
               motivoMerma: "Producto dañado",
               urlImagenMerma: "",
-              stockMinimo: 0
+              stockMinimo: 0,
             });
-  
-            await axios.patch(`${baseUrl}/inventarioMotorizado/${id}/disminuir`, { cantidad });
+
+            await axios.patch(
+              `${baseUrl}/inventarioMotorizado/${id}/disminuir`,
+              { cantidad }
+            );
           }
         }
       }
-      mostrarMensaje(`${tipo === "modificar" ? "Inventario" : "Merma"} registrado exitosamente`);
+      mostrarMensaje(
+        `${
+          tipo === "modificar" ? "Inventario" : "Merma"
+        } registrado exitosamente`
+      );
       obtenerInventario();
     } catch (error) {
       console.error(`Error al registrar ${tipo}:`, error);
       mostrarMensaje(`Error al registrar la ${tipo}.`);
     }
   };
-  
 
   const handleIncrement = (id: string, tipo: "modificar" | "merma") => {
     const update = tipo === "modificar" ? inventarioModificado : mermas;
@@ -416,5 +574,57 @@ const styles = StyleSheet.create({
   mensajeModalTexto: {
     fontSize: 18,
     textAlign: "center",
+  },
+  videoWrapper: {
+    position: "relative",
+    width: "100%",
+    height: 400, // Ajusta según tu necesidad
+    marginBottom: 20,
+  },
+  video: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 10,
+  },
+  captureButtonOverlay: {
+    position: "absolute",
+    bottom: 20,
+    alignSelf: "center",
+    backgroundColor: "#FF6347",
+    padding: 15,
+    borderRadius: 50,
+    zIndex: 1,
+  },
+  captureButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  optionButton: {
+    backgroundColor: "#4CAF50", // Verde para las opciones de cámara y galería
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 5,
+  },
+  optionButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    backgroundColor: "#F44336", // Rojo para el botón de cancelar
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  cancelButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  motivoItemSelected: {
+    backgroundColor: "#f0f0f0",
   },
 });
