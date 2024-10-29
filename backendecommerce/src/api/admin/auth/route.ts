@@ -5,26 +5,6 @@ import type {
   
 import  AuthService  from "../../../services/Auth"
 
-/*
-interface InventarioMotorizadoRequestBody {
-    id_ciudad: string;
-}
-  
-  export const POST = async (
-    req: MedusaRequest & { body: InventarioMotorizadoRequestBody },
-    res: MedusaResponse
-  ) => {
-    const inventarioMotorizadoService: InventarioMotorizadoService = req.scope.resolve("inventariomotorizadoService");
-    const { id_ciudad } = req.body;
-  
-    try {
-        const inventarios = await inventarioMotorizadoService.findByCiudadId(id_ciudad);
-        res.json({ inventarios });
-    } catch (error) {
-        res.status(404).json({ error: "Inventario motorizado no encontrado" });
-    }
-  };
-*/
 interface AuthRequestBody {
     email: string;
     password: string;
