@@ -1,16 +1,25 @@
 "use client";
 
 import InputWithLabel from "@/components/forms/inputWithLabel";
-import React, { MutableRefObject } from "react";
+import React, { MutableRefObject, useState } from "react";
 import "@/styles/general.css";
 import { Pedido } from "@/types/PaquetePedido";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface InformacionPedidoProps {
   pedido: MutableRefObject<Pedido>;
 }
 
 const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
+  const [open, setOpen] = useState(false);
   const transformEstado = (estado: string) => {
     if (estado === "enProgreso") {
       return "En progreso";
@@ -51,14 +60,34 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
           }
         />
         <div className="h-full flex flex-col justify-end">
-          <Button
-            onClick={() => {
-              console.log("Ver detalle");
-            }}
-            variant="outline"
-          >
-            Ver detalle
-          </Button>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button
+                onClick={() => {
+                  console.log("Ver detalle");
+                }}
+                variant="outline"
+              >
+                Ver detalle
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Detalle de pedido</SheetTitle>
+                <SheetDescription>
+                  {pedido.current.detalles?.length} productos
+                </SheetDescription>
+              </SheetHeader>
+              <div className="flex flex-col space-y-2 mt-2">
+                {pedido.current.detalles?.map((detalle, index) => (
+                  <div key={index} className="flex flex-row justify-between">
+                    <p>{detalle.producto.nombre}</p>
+                    <p>{detalle.cantidad}</p>
+                  </div>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
       <InputWithLabel

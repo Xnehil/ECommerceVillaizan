@@ -63,11 +63,6 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         pedido.current = productData;
 
         console.log("Pedido:", pedido.current);
-
-        const edit = searchParams.get("edit");
-        if (edit === "true") {
-          //   handleEdit();
-        }
       } catch (error) {
         console.error("Error fetching pedido:", error);
         toast({
