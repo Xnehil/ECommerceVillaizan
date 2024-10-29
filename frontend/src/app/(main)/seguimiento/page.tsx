@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import { connectWebSocket } from "@lib/util/websocketUtils";
 import { enrichLineItems, retrievePedido } from "@modules/cart/actions";
 import { Pedido } from "types/PaquetePedido";
+import PedidoCancelado from "@components/PedidoCancelado";
 
 const MapaTracking = dynamic(() => import("@components/MapaTracking"), {
   ssr: false,
@@ -31,6 +32,20 @@ const fetchCart = async (
 ): Promise<Pedido> => {
   const respuesta = await retrievePedido(true)
   let cart: Pedido = respuesta
+
+  if (!cart) {
+    console.error("Cart is null or undefined")
+    window.location.href = "/"
+  }
+
+  if(cart.estado === "cancelado") {
+    setEnRuta("cancelado")
+    return cart
+  } else if(cart.estado === "entregado") {
+    setEnRuta("entregado")
+    return cart
+  }
+  
   let aux = cart.detalles
   const enrichedItems = await enrichLineItems(cart.detalles)
   // console.log("Detalles enriquecidos:", enrichedItems);
@@ -55,7 +70,11 @@ const fetchCart = async (
           // Actualizar la posición del motorizado
           setEnRuta("ruta")
           setDriverPosition([data.data.lat, data.data.lng])
-        } else if (data.type === "confirmarResponse") {
+        } else if (data.type === "canceladoResponse") {
+          // El pedido ha sido cancelado
+          setEnRuta("cancelado")
+          ws?.close()
+        }else if (data.type === "confirmarResponse") {
           // El pedido está en proceso de confirmación por parte del administrador
           setEnRuta("espera")
           setMensajeEspera("Estamos confirmando tu pedido. Por favor, espera un momento.")
@@ -253,6 +272,8 @@ const TrackingPage: React.FC = () => {
                     />
                   ) : enRuta === "entregado" ? (
                     <PedidoEntregado pedidoId={pedido?.id ?? "Hola"} />
+                  ) : enRuta === "cancelado" ? (
+                    <PedidoCancelado />
                   ) : null}
                 </div>
               </>

@@ -128,7 +128,7 @@ export async function retrieveCart(productos: boolean = false) {
 
 export async function retrievePedido(productos: boolean = false) {
   const cookieValues = cookies()
-  const cartId = cookieValues.get("_medusa_cart_id")?.value
+  const cartId = cookieValues.get("_medusa_pedido_id")?.value
 
 
   if (!cartId) {
