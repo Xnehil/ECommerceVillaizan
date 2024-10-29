@@ -177,9 +177,9 @@ export default function InventarioMotorizadoScreen() {
       [id]: imageData,
     }));
 
-    videoStream?.getTracks().forEach((track) => track.stop()); // Detener la cámara
-    setVideoStream(null); // Limpiar el stream
-    setImageOptionsVisible(false); // Cerrar el modal
+    videoStream?.getTracks().forEach((track) => track.stop()); 
+    setVideoStream(null); 
+    setImageOptionsVisible(false); 
   };
   const mostrarMensaje = (mensaje: string, tipo: string = "") => {
     setMensajeModal(mensaje);
@@ -478,6 +478,7 @@ export default function InventarioMotorizadoScreen() {
           </View>
         </Modal>
       )}
+      {renderImageOptionsModal()}
     </View>
   );
 }
