@@ -63,11 +63,6 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         pedido.current = productData;
 
         console.log("Pedido:", pedido.current);
-
-        const edit = searchParams.get("edit");
-        if (edit === "true") {
-          //   handleEdit();
-        }
       } catch (error) {
         console.error("Error fetching pedido:", error);
         toast({
@@ -108,7 +103,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
           `${process.env.NEXT_PUBLIC_BASE_URL}whatsApp`,
           {
             mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${pedido.current.codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${pedido.current.codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
-            numero: "999348322",
+            numero: pedido.current.usuario?.numeroTelefono,
           }
         );
         console.log("Respuesta de WhatsApp:", respMssg);
