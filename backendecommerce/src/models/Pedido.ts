@@ -45,21 +45,21 @@ export class Pedido extends EntidadBase {
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_motorizado" })
     // idMotorizado: string
 
-    @ManyToOne(() => Motorizado, motorizado => motorizado.pedidos)
+    @ManyToOne(() => Motorizado, motorizado => motorizado.pedidos, {eager: true})
     @JoinColumn({ name: "id_motorizado" })
     motorizado: Motorizado;
 
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_direccion" })
     // idDireccion: string
 
-    @ManyToOne(() => Direccion, direccion => direccion.id)
+    @ManyToOne(() => Direccion, direccion => direccion.id, {eager: true})
     @JoinColumn({ name: "id_direccion" })
     direccion: Direccion;
 
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_usuario" })
     // idUsuario: string
 
-    @ManyToOne(() => Usuario, usuario => usuario.id)
+    @ManyToOne(() => Usuario, usuario => usuario.id, {eager: true})
     @JoinColumn({ name: "id_usuario" })
     usuario: Usuario;
 

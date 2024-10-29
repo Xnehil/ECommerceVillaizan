@@ -17,6 +17,11 @@ export const PedidoRepository = dataSource
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
         .where("motorizado.id = :id_motorizado", { id_motorizado })
         .getMany();
+    },
+    async findByCodigoSeguimiento(codigoSeguimiento: string): Promise<Pedido> {
+      return this.createQueryBuilder("pedido")
+        .where("pedido.codigoSeguimiento = :codigoSeguimiento", { codigoSeguimiento })
+        .getOne();
     }
   })
 

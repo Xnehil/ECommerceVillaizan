@@ -126,6 +126,17 @@ class PedidoService extends TransactionBaseService {
         return pedidos;
     }
 
+    async buscarPorCodigoSeguimiento(codigoSeguimiento: string): Promise<Pedido> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedido = await pedidoRepo.findByCodigoSeguimiento(codigoSeguimiento);
+
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedido;
+    }
+
 }
 
 export default PedidoService;
