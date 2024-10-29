@@ -50,6 +50,7 @@ class GoogleDriveService extends TransactionBaseService{
       yape: "1fXBwI-hH4XCP0pwQpewP58Ge_k5qot5-",
       plin: "1-5m51RCL88mBg8LMoIigra4b9AIQ74zt",
       pedidos: "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb",
+      mermas: "1J4tn96Xy49MsU5gVl7bWuWgoQsZBFq1t",
     }
 
     folderId = mapIds[folderId] || folderId;
