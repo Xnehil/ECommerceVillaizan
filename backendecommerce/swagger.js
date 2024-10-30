@@ -823,6 +823,11 @@ const options = {
                     $ref: '#/components/schemas/Pago',
                   },
                 },
+                urlEvidencia: {
+                  type: 'string',
+                  example: 'http://example.com/evidencia.jpg',
+                  nullable: true,
+                },
               },
             },
           ],
