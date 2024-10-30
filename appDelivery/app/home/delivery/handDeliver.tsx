@@ -325,7 +325,7 @@ const EntregarPedido = () => {
       storeCurrentDelivery(pedidoData);
       setPedidoCompleto(pedidoData);
       console.log(pedidoData);
-      router.replace("/entregar");
+      router.replace("/home/delivery/detalles");
     } catch (error) {
       console.error("Error fetching pedido completo:", error);
     }
@@ -401,7 +401,8 @@ const EntregarPedido = () => {
             )}
             <Link
               href={{
-                pathname: "/Detalles",
+                pathname: "/home/delivery/detalles",
+                params: { id: String(parsedPedido.id) },
               }}
               asChild
               id={String(parsedPedido.id)}
@@ -452,12 +453,12 @@ const EntregarPedido = () => {
                       <View style={{ justifyContent: "center" }}>
                         {pedidoCompleto?.metodosPago?.[0]?.nombre === "plin" ? (
                           <Image
-                            source={require("../assets/images/plin.jpg")}
+                            source={require("../../../assets/images/plin.jpg")}
                             style={styles.iconoPago}
                           />
                         ) : pedidoCompleto?.metodosPago?.[0]?.nombre === "yape" ? (
                           <Image
-                            source={require("../assets/images/yape.png")}
+                            source={require("../../../assets/images/yape.png")}
                             style={styles.iconoPago}
                           />
                         ) : (

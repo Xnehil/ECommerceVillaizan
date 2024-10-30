@@ -18,7 +18,7 @@ import {
   UsuarioResponse,
 } from "@/interfaces/interfaces";
 import { useRouter } from "expo-router";
-import { getUserData } from "@/functions/storage";
+import { getUserData, storeMotorizadoData } from "@/functions/storage";
 import { BASE_URL } from "@env"; 
 
 function Icon(props: {
@@ -75,6 +75,7 @@ export default function TabOneScreen() {
         );
         const motorizado = response.data.motorizado;
         console.log(motorizado);
+        storeMotorizadoData(motorizado);
         setMotorizado(motorizado)
         const usuario = motorizado.usuario;
         setDataUsuario(usuario);
@@ -148,7 +149,7 @@ export default function TabOneScreen() {
       </Text>
 
       <Link
-        to={"/home/deliverys"}
+        to={"/home/delivery"}
         style={[styles.card, !isConnected && styles.disabledCard]}
       >
         <Pressable
