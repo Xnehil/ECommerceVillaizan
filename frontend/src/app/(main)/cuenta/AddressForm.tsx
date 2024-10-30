@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import InputWithLabel from '@components/inputWithLabel';
 import { Direccion } from 'types/PaqueteEnvio';
 import axios from 'axios';
+import { set } from 'lodash';
 
 interface AddressFormProps {
   state: 'Editar' | 'Crear';
@@ -20,6 +21,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
   const [referencia, setReferencia] = useState('');
   const [ciudadId, setCiudadId] = useState('');
   const [ciudades, setCiudades] = useState<{ id: string; nombre: string }[]>([]);
+  const [ciudadNombre, setCiudadNombre] = useState('');
 
   useEffect(() => {
     if (state === 'Editar' && direccion) {
@@ -29,6 +31,7 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
       setNumeroInterior(direccion.numeroInterior ?? '');
       setReferencia(direccion.referencia ?? '');
       setCiudadId(direccion.ciudad?.id ?? '');
+      setCiudadNombre(direccion.ciudad?.nombre ?? '');
     }
   }, [state, direccion]);
 
@@ -82,7 +85,8 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
                 guardada: true,
                 distrito: "",
                 ciudad:{
-                    id: ciudadId
+                    id: ciudadId,
+                    nombre: ciudadNombre
                 },
                 usuario:{
                     id: userId
@@ -140,7 +144,12 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
         <select
           id="ciudad"
           value={ciudadId}
-          onChange={(e) => setCiudadId(e.target.value)}
+          onChange={(e) => {
+            const selectedCiudadId = e.target.value;
+            const selectedCiudad = ciudades.find(ciudad => ciudad.id === selectedCiudadId);
+            setCiudadId(selectedCiudadId);
+            setCiudadNombre(selectedCiudad ? selectedCiudad.nombre : '');
+          }}
           required
           className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
         >
