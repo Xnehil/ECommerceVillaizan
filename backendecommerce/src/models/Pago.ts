@@ -13,6 +13,7 @@ import { EntidadBase } from "./EntidadBase";
 import { Venta } from "./Venta";
 import { MetodoPago } from "./MetodoPago";
 import { Banco } from "./Banco";
+import { Pedido } from "./Pedido";
 
 @Entity("vi_pago")
 export class Pago extends EntidadBase {
@@ -55,6 +56,10 @@ export class Pago extends EntidadBase {
     @ManyToOne(() => Banco, banco => banco.id)
     @JoinColumn({ name: "id_banco" })
     banco: Banco;
+
+    @ManyToOne(() => Pedido, pedido => pedido.id)
+    @JoinColumn({ name: "id_pedido" })
+    pedido: Pedido;
 
     @BeforeInsert()
     private beforeInsert() {
