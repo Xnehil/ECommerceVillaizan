@@ -458,6 +458,7 @@ CREATE TABLE vi_pedido (
     solicitadoEn TIMESTAMP,
     validadoEn TIMESTAMP,
     entregadoEn TIMESTAMP,
+    urlEvidencia VARCHAR(200),
 	--trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,
@@ -545,6 +546,8 @@ CREATE TABLE vi_pago (
 	CONSTRAINT fk_metodopago FOREIGN KEY (id_metodopago) REFERENCES vi_metodopago(id),
 	id_banco VARCHAR(50),
 	CONSTRAINT fk_banco FOREIGN KEY (id_banco) REFERENCES vi_banco(id),
+    id_pedido VARCHAR(50),
+    CONSTRAINT fk_pedido FOREIGN KEY (id_pedido) REFERENCES vi_pedido(id),
     --trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,

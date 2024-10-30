@@ -757,6 +757,9 @@ const options = {
                 banco: {
                   $ref: '#/components/schemas/Banco',
                 },
+                pedido: {
+                  $ref: '#/components/schemas/Pedido',
+                },
               },
             },
           ],
@@ -812,6 +815,12 @@ const options = {
                   type: 'array',
                   items: {
                     $ref: '#/components/schemas/MetodoPago',
+                  },
+                },
+                pagos: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/Pago',
                   },
                 },
               },

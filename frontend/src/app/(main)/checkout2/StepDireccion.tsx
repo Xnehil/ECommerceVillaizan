@@ -398,7 +398,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
                   htmlFor="numero"
                   className="block text-lg font-medium text-gray-700"
                 >
-                  Nro interior
+                  Número interior
                 </label>
                 <input
                   type="text"

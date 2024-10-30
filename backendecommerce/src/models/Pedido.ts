@@ -17,6 +17,7 @@ import { Motorizado } from "./Motorizado";
 import { Direccion } from "./Direccion";
 import { DetallePedido } from "./DetallePedido";
 import { Usuario } from "./Usuario";
+import { Pago } from "./Pago";
 
 @Entity("vi_pedido")
 export class Pedido extends EntidadBase {
@@ -51,6 +52,9 @@ export class Pedido extends EntidadBase {
     @Column({ type: "timestamp", nullable: true, name: "entregadoen" })
     entregadoEn: Date;
 
+    @Column({ type: "varchar", length: 200, nullable: true, name: "urlevidencia" })
+    urlEvidencia: string;
+
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_motorizado" })
     // idMotorizado: string
 
@@ -84,6 +88,9 @@ export class Pedido extends EntidadBase {
 
     @OneToMany(() => DetallePedido, detallePedido => detallePedido.pedido)
     detalles: DetallePedido[];
+
+    @OneToMany(() => Pago, pago => pago.pedido)
+    pagos: Pago[];
 
 
     @BeforeInsert()
