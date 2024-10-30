@@ -80,6 +80,8 @@ const Parametros: React.FC<ParametrosProps> = () => {
           setTiempoConfirmacion(tc?.valor || "");
 
           console.log("Parameters", parametros.current);
+          
+          setIsLoading(false);
         } catch (error) {
           console.error("Error fetching parameters", error);
           toast({
@@ -88,9 +90,7 @@ const Parametros: React.FC<ParametrosProps> = () => {
             description:
               "Ocurrió un error al obtener los parámetros. Por favor, intente de nuevo.",
           });
-        } finally {
-          setIsLoading(false);
-        }
+        } 
       }
     };
     if (a.current === 0) {

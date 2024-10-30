@@ -187,7 +187,7 @@ class PedidoService extends TransactionBaseService {
                     if (motorizadoAsignado) {
                         data.motorizado = motorizadoAsignado;
                         this.reduceStock(pedido, motorizadoAsignado);
-                        data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3);
+                        data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3)+(new Date()).getTime().toString().slice(-3);
                         enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
                     } else {
                         throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");

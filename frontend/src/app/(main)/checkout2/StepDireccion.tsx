@@ -42,23 +42,21 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   const handleMapSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
     setLocationError("");
-    if (!calle || calle === "") {
-      if (googleMapsLoaded) {
-        const geocoder = new google.maps.Geocoder();
-        const latlng = new google.maps.LatLng(lat, lng);
-        geocoder.geocode({ location: latlng }, (results, status) => {
-          if (status === "OK" && results) {
-            if (results[0]) {
-              const address = results[0].formatted_address;
-              setCalle(address);
-            } else {
-              console.error("No se encontraron resultados.");
-            }
+    if (googleMapsLoaded) {
+      const geocoder = new google.maps.Geocoder();
+      const latlng = new google.maps.LatLng(lat, lng);
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === "OK" && results) {
+          if (results[0]) {
+            const address = results[0].formatted_address;
+            setCalle(address);
           } else {
-            console.error("Geocoder falló debido a:", status);
+            console.error("No se encontraron resultados.");
           }
-        });
-      }
+        } else {
+          console.error("Geocoder falló debido a:", status);
+        }
+      });
     }
   };
   const fetchCart = async () => {
