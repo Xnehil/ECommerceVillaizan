@@ -257,8 +257,11 @@ const EntregarPedido = () => {
         motivoCancelacion: motivo,
       });
       mostrarMensaje("Entrega reasignada");
-      router.push("/cancelada");
-    } catch (error) {
+      router.push({
+        pathname: "/home/delivery/cancelada",
+        params: {},
+      });
+        } catch (error) {
       console.error("Error al reasignar la entrega:", error);
       mostrarMensaje("Error al reasignar la entrega","confirmacion");
     } finally {
@@ -280,7 +283,8 @@ const EntregarPedido = () => {
       enviarImagen(parsedPedido.id, "pago");
       mostrarMensaje("Entrega confirmada");
       router.push({
-        pathname: "/confirmada",
+        pathname: "/home/delivery/confirmada",
+        params: {},
       });
     } catch (error) {
       console.error("Error updating pedido:", error);
