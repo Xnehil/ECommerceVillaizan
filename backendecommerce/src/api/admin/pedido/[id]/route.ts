@@ -152,6 +152,7 @@ export const PUT = async (req: MedusaRequest, res: MedusaResponse) => {
                 error: "No hay motorizados disponibles con suficiente stock",
             });
         } else {
+            console.log(error);
             res.status(400).json({ error: "Petición inválida" });
         }
     }

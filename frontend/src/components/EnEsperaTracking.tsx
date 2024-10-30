@@ -80,7 +80,7 @@ const styles = {
         marginBottom: '0.5rem',
         fontSize: '1.5rem',
         color: '#B88E2F', // mostazaTexto
-        maxWidth: '60%',
+        maxWidth: '70%',
     },
     body: {
         marginTop: '8px',

@@ -43,7 +43,6 @@ export default async (
     }
 
     if (id && rol === 'cliente') {
-      pedidosPorConfirmar.add(id);
       conexiones.set(id, ws);
     }
 
@@ -157,9 +156,11 @@ const handleClientMessage = (
         ws.send(JSON.stringify({ type: 'error', error: 'Location not found' }));
       }
       break;
-    case 'orderQuery':
-      console.info(`Client order query: ${JSON.stringify(message.data)}`);
-      // Handle order query
+    case 'estado':
+      const estado = message.data.estado;
+      if (estado === 'carrito' || estado === 'solicitado') {
+        pedidosPorConfirmar.add(idPedido);
+      }
       break;
     case 'supportRequest':
       console.info(`Client support request: ${JSON.stringify(message.data)}`);

@@ -29,12 +29,12 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
 
   const estado = transformEstado(pedido.current.estado);
 
-  const fechaPedido = pedido.current.solicitadoEn;
-  const formattedDate = fechaPedido?.toLocaleDateString();
-  const formattedTime = fechaPedido?.toLocaleTimeString([], {
+  const fechaPedido = pedido.current.solicitadoEn ? new Date(pedido.current.solicitadoEn) : null;
+  const formattedDate = fechaPedido ? fechaPedido.toLocaleDateString() : "Fecha no disponible";
+  const formattedTime = fechaPedido ? fechaPedido.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
-  });
+  }) : "Hora no disponible";
 
   return (
     <div className="info-side-container">
@@ -79,7 +79,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                   <div key={index} className="flex flex-row justify-between">
                     <p>{detalle.cantidad}</p>
                     <p>{detalle.producto.nombre}</p>
-                    <p>S/. {detalle.producto.precioEcommerce.toFixed(2)}</p>
+                    <p>S/. {Number(detalle.producto.precioEcommerce).toFixed(2)}</p>
                   </div>
                 ))}
               </div>

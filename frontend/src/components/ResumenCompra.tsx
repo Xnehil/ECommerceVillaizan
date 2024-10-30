@@ -143,7 +143,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       // Eliminar cookie de carrito 
       document.cookie = "_medusa_cart_id = ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
       console.log("Ir a", `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`);
-      // window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
+      window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
     } catch (error) {
       const axiosError = error as AxiosError;
         if (axiosError.response && axiosError.response.status === 404) {

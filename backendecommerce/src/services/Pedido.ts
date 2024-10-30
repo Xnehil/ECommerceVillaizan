@@ -170,7 +170,7 @@ class PedidoService extends TransactionBaseService {
                         const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
                         console.log("Motorizado con id: ", motorizadoId);
                         if (dataMotorizado) {
-                            console.log("Motorizado encontrado: ", dataMotorizado);
+                            console.log("Motorizado encontrado: ");
                             console.log("Verificando stock");
                             const hasStock = await this.checkPedido(pedido, dataMotorizado);
                             // const mismaCiudad = dataMotorizado.ciudad.id === pedido.direccion.ciudad.id;
@@ -210,12 +210,13 @@ class PedidoService extends TransactionBaseService {
                 }
                 if (data.estado === "verificado") {
                     data.verificadoEn = new Date();
+                    pedidosPorConfirmar.delete(id);
                 }
                 if (data.estado === "solicitado") {
                     data.solicitadoEn = new Date();
                 }
             }
-    
+            console.log("Se llegó a la parte de actualizar");
             Object.assign(pedido, data);
             return await pedidoRepo.save(pedido);
         });
