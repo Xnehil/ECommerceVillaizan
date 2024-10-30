@@ -90,13 +90,6 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
     return null
   }
 
-  const crearPedido = async () => {
-    const response = await axios.post(`${baseUrl}/admin/pedido`, pedido);
-    const pedidoRespuesta = response.data.pedido;
-    console.log("Pedido creado correctamente");
-    console.log(pedidoRespuesta);
-    return pedidoRespuesta;
-  }
 
   const handleConfirmar = async () => {
     setShowPopup(false);
@@ -129,6 +122,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             setShowError(true);
         }
     }
+
     pedido.estado = "solicitado";
     pedido.montoEfectivoPagar = paymentAmount ?? 0;
     try{
@@ -143,6 +137,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       document.cookie = `_medusa_pedido_id=${pedidoActualizado.id}; path=/`;
       // Eliminar cookie de carrito 
       document.cookie = "_medusa_cart_id = ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
+      console.log("Ir a", `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`);
       window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
     } catch (error) {
       const axiosError = error as AxiosError;

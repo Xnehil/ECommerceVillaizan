@@ -150,6 +150,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
       return;
     }
     setShowWarnings(false);
+    const ciudadCookie = getCityCookie()
     const direccionData = {
       calle: calle,
       numeroExterior: numeroExterior,
@@ -158,7 +159,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
       codigoPostal: null,
       referencia: referencia,
       ciudad: {
-        value: ciudad,
+        // Get cookie city
+        id: ciudadCookie.id,
       },
       ubicacion: {
         latitud: "null",
@@ -294,7 +296,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
           className="grid grid-cols-1 gap-6 lg:col-span-2"
           onSubmit={(e) => {
             e.preventDefault()
-            handleSubmit()
+            // handleSubmit()
           }}
         >
           <div className="flex items-center gap-3">

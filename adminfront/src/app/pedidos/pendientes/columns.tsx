@@ -41,10 +41,10 @@ export const columns: ColumnDef<Pedido>[] = [
     },
   },
   {
-    accessorKey: "ciudad",
+    accessorKey: "direccion",
     header: "Ciudad",
     cell: ({ row }) => {
-      const ciudad = row.original.direccion?.ciudad;
+      const ciudad = row.original.direccion?.ciudad?.nombre;
       return ciudad ? ciudad : "Sin asignar";
     },
   },
