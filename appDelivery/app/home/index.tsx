@@ -194,6 +194,19 @@ export default function TabOneScreen() {
           </View>
         </Pressable>
       </Link>
+      <Link to={"/venta"} style={styles.card}>
+        <Pressable style={styles.card_inside}>
+          <MaterialIcons name="point-of-sale" size={24} color="white" />
+          <View style={styles.cardText}>
+        <Text style={[styles.cardTitle, styles.cardContent]}>
+          Realizar venta
+        </Text>
+        <Text style={styles.cardContent}>
+          Registra una venta externa
+        </Text>
+          </View>
+        </Pressable>
+      </Link>
     </View>
   );
 }
