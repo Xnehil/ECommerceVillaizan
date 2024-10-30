@@ -1,8 +1,8 @@
-import { useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
-import useWebSocket from 'react-use-websocket';
+import { useCallback, useImperativeHandle, forwardRef } from "react";
+import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 interface WebSocketComponentProps {
-  idMotorizado: string; // ID del motorizado para la URL del WebSocket
+  idMotorizado: string;
 }
 
 export interface WebSocketComponentRef {
@@ -11,38 +11,57 @@ export interface WebSocketComponentRef {
 }
 
 // Usamos `forwardRef` para permitir que el componente exponga funciones a su padre
-const WebSocketComponent = forwardRef<WebSocketComponentRef, WebSocketComponentProps>(({ idMotorizado }, ref) => {
+const WebSocketComponent = forwardRef<
+  WebSocketComponentRef,
+  WebSocketComponentProps
+>(({ idMotorizado }, ref) => {
+  const handleIncomingMessage = (event: MessageEvent) => {
+    const data = JSON.parse(event.data);
+    console.log("Mensaje recibido:", data);
+  };
   // Establece la conexión WebSocket con el ID del motorizado en la URL
-  const { sendMessage } = useWebSocket(`ws://localhost:9001/ws?rol=delivery&id=${idMotorizado}`, {
-    onOpen: () => console.log('Conexión WebSocket establecida'),
-    onError: (event) => console.error('Error en la conexión WebSocket', event),
-    shouldReconnect: () => true, // Reconexión automática
-  });
+  const { sendMessage, lastMessage, readyState } = useWebSocket(
+    `ws://localhost:9001/ws?rol=delivery&id=${idMotorizado}`,
+    {
+      onOpen: () => console.log("Conexión WebSocket establecida"),
+      onError: (event) =>
+        console.error("Error en la conexión WebSocket", event),
+      shouldReconnect: () => true,
+      onMessage: handleIncomingMessage, 
+    }
+  );
+
 
   // Función para enviar la ubicación
-  const sendUbicacion = useCallback((lat: number, lng: number) => {
-    const ubicacionMessage = {
-      type: "ubicacion",
-      data: {
-        lat: lat,
-        lng: lng,
-      },
-    };
-    sendMessage(JSON.stringify(ubicacionMessage)); // Envía el mensaje de ubicación
-    console.log("Ubicación enviada:", ubicacionMessage);
-  }, [sendMessage]);
+  const sendUbicacion = useCallback(
+    (lat: number, lng: number) => {
+      const ubicacionMessage = {
+        type: "ubicacion",
+        data: {
+          lat: lat,
+          lng: lng,
+        },
+      };
+      sendMessage(JSON.stringify(ubicacionMessage));
+      console.log("Ubicación enviada:", ubicacionMessage);
+    },
+    [sendMessage]
+  );
 
   // Función para enviar el ID del pedido
-  const sendPedido = useCallback((pedidoId: string) => {
-    const pedidoMessage = {
-      type: "ubicacion",
-      data: {
-        pedidoId: pedidoId,
-      },
-    };
-    sendMessage(JSON.stringify(pedidoMessage)); // Envía el mensaje del pedido
-    console.log("Pedido enviado:", pedidoMessage);
-  }, [sendMessage]);
+  const sendPedido = useCallback(
+    (pedidoId: string) => {
+      const pedidoMessage = {
+        type: "ubicacion",
+        data: {
+          pedidoId: pedidoId,
+        },
+      };
+      sendMessage(JSON.stringify(pedidoMessage)); // Envía el mensaje del pedido
+      console.log("Pedido enviado:", pedidoMessage);
+    },
+    [sendMessage]
+  );
 
   // Exponemos las funciones al componente padre a través de `ref`
   useImperativeHandle(ref, () => ({
@@ -50,6 +69,17 @@ const WebSocketComponent = forwardRef<WebSocketComponentRef, WebSocketComponentP
     sendPedido,
   }));
 
+
+  const connectionStatus = {
+    [ReadyState.CONNECTING]: 'Conectando...',
+    [ReadyState.OPEN]: 'Conexión abierta',
+    [ReadyState.CLOSING]: 'Cerrando conexión...',
+    [ReadyState.CLOSED]: 'Conexión cerrada',
+    [ReadyState.UNINSTANTIATED]: 'No inicializado',
+  }[readyState];
+
+  console.log('Estado de la conexión:', connectionStatus);
+  
   // Este componente no renderiza nada visual
   return null;
 });

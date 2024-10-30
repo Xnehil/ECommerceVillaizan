@@ -38,6 +38,7 @@ export default function InventarioMotorizadoScreen() {
   const [errorMotivoMerma, setErrorMotivoMerma] = useState<string | null>(null);
   const [errorFotoMerma, setErrorFotoMerma] = useState<string | null>(null);
   const [currentImageId, setCurrentImageId] = useState<string | null>(null);
+  const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion">("auto");
 
   useEffect(() => {
     if (videoStream && videoRef.current) {
@@ -169,9 +170,16 @@ export default function InventarioMotorizadoScreen() {
     setVideoStream(null);
     setImageOptionsVisible(false);
   };
-  const mostrarMensaje = (mensaje: string, tipo: string = "") => {
+  const mostrarMensaje = (
+    mensaje: string,
+    tipo: "auto" | "confirmacion" = "auto"
+  ) => {
     setMensajeModal(mensaje);
-    setTimeout(() => setMensajeModal(null), 3000);
+    setTipoModal(tipo);
+
+    if (tipo === "auto") {
+      setTimeout(() => setMensajeModal(null), 3000); 
+    }
   };
 
   const obtenerInventario = async () => {
@@ -588,6 +596,14 @@ export default function InventarioMotorizadoScreen() {
           <View style={styles.mensajeModalContainer}>
             <View style={styles.mensajeModalContent}>
               <Text style={styles.mensajeModalTexto}>{mensajeModal}</Text>
+              {tipoModal === "confirmacion" && (
+                <TouchableOpacity
+                  style={styles.boton}
+                  onPress={() => setMensajeModal(null)}
+                >
+                  <Text style={styles.botonTexto2}>Aceptar</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         </Modal>

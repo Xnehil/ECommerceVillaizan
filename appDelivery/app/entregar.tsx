@@ -292,7 +292,7 @@ const EntregarPedido = () => {
     try {
       // Obtener los datos del pedido
       const pedidoResponseDetalle = await axios.get(
-        `${BASE_URL}/pedido/${idPedido}/conDetalle`
+        `${BASE_URL}/pedido/${idPedido}/conDetalle?pedido=true`
       );
       const pedidoDataDetalle = pedidoResponseDetalle.data.pedido;
 
@@ -324,6 +324,7 @@ const EntregarPedido = () => {
       // Establecer el estado una vez que todos los detalles estén listos
       storeCurrentDelivery(pedidoData);
       setPedidoCompleto(pedidoData);
+      console.log(pedidoData);
       router.replace("/entregar");
     } catch (error) {
       console.error("Error fetching pedido completo:", error);
@@ -449,10 +450,19 @@ const EntregarPedido = () => {
                   {pedidoCompleto?.metodosPago?.[0]?.nombre ? (
                     <>
                       <View style={{ justifyContent: "center" }}>
-                        <Image
-                          source={require("../assets/images/yape.png")}
-                          style={styles.iconoPago}
-                        />
+                        {pedidoCompleto?.metodosPago?.[0]?.nombre === "plin" ? (
+                          <Image
+                            source={require("../assets/images/plin.jpg")}
+                            style={styles.iconoPago}
+                          />
+                        ) : pedidoCompleto?.metodosPago?.[0]?.nombre === "yape" ? (
+                          <Image
+                            source={require("../assets/images/yape.png")}
+                            style={styles.iconoPago}
+                          />
+                        ) : (
+                          <FontAwesome name="money" size={30} color="black" />
+                        )}
                       </View>
                       <Text style={styles.metodoNombre}>
                         {pedidoCompleto.metodosPago[0].nombre}

@@ -78,7 +78,7 @@ export default function TabLayout() {
         headerShown: useClientOnlyValue(false, true),
         tabBarStyle: {
           height: 70,
-          paddingBottom: 10, 
+          paddingBottom: 10,
         },
       }}
     >
@@ -95,10 +95,7 @@ export default function TabLayout() {
                   IconComponent={FontAwesome}
                 />
               </Link>
-              <WebSocketComponent
-                idMotorizado="mot_01J97FH8NJWHKNFX26KZ048KTX"
-                ref={wsRef}
-              />
+              
             </View>
           ),
           tabBarIcon: ({ color }) => (

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, Button } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Button, Image } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { Link, router } from "expo-router";
 
@@ -15,12 +15,19 @@ const DetallesPedido = () => {
 
   const fetchPedido = async () => {
     try {
-      setError(null); // Reset error state
+      setError(null); 
       const ped = await getCurrentDelivery();
       if (ped && ped.id) {
+        let pedidoCompleto = ped
         const response = await axios.get(`${BASE_URL}/pedido/${ped.id}?enriquecido=true`);
+        pedidoCompleto = response.data.pedido;
+        
+        const response2 = await axios.get(`${BASE_URL}/pedido/${ped.id}/conDetalle?pedido=true`);
+        pedidoCompleto.detalles = response2.data.pedido.detalles;
+
         if (response.data) {
-          setPedido(response.data);
+          console.log(pedidoCompleto);
+          setPedido(pedidoCompleto);
         } else {
           setError("El pedido ya no existe.");
           router.back();
@@ -45,27 +52,49 @@ const DetallesPedido = () => {
           <Text style={styles.errorText}>{error}</Text>
           <Button title="Reintentar" onPress={fetchPedido} />
         </View>
-      ) : (
-        pedido && pedido.detalles && pedido.detalles.length > 0 ? (
-          pedido.detalles.map((detalle: DetallePedido) => (
-            <View key={detalle.id} style={styles.detalleContainer}>
-              <Text style={styles.productoNombre}>
-                {detalle.producto.nombre}
-              </Text>
-              <Text style={styles.cantidad}>
-                Cantidad: {detalle.cantidad}
-              </Text>
+      ) : pedido && pedido.detalles && pedido.detalles.length > 0 ? (
+        pedido.detalles.map((detalle: DetallePedido) => (
+          <View key={detalle.id} style={styles.detalleContainer}>
+            {detalle.producto.urlImagen ? (
+              <Image
+                source={{ uri: detalle.producto.urlImagen }}
+                style={styles.productoImagen}
+              />
+            ) : (
+              <View style={styles.imagenPlaceholder}>
+                <Text style={styles.placeholderText}>Sin imagen</Text>
+              </View>
+            )}
+            <View style={styles.detalleInfo}>
+              <Text style={styles.productoNombre}>{detalle.producto.nombre}</Text>
+              <Text style={styles.cantidad}>Cantidad: {detalle.cantidad}</Text>
             </View>
-          ))
-        ) : (
-          <Text style={styles.noDetalles}>No hay detalles del pedido</Text>
-        )
+          </View>
+        ))
+      ) : (
+        <Text style={styles.noDetalles}>No hay detalles del pedido</Text>
       )}
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  imagenPlaceholder: {
+    width: 80,
+    height: 80,
+    backgroundColor: "#ccc",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  placeholderText: {
+    color: "#777",
+    fontSize: 12,
+  },
+  detalleInfo: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     padding: 20,
@@ -82,6 +111,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 10,
+    flexDirection: "row", 
   },
   productoNombre: {
     fontSize: 18,
@@ -90,6 +120,12 @@ const styles = StyleSheet.create({
   cantidad: {
     fontSize: 16,
     marginTop: 5,
+  },
+  productoImagen: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    marginRight: 10,
   },
   noDetalles: {
     fontSize: 16,

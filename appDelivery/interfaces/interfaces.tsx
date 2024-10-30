@@ -87,6 +87,7 @@ export interface Pedido {
   direccion: Direccion | null;   
   usuario: Usuario | null;  
   detalles: DetallePedido[] | null ;
+  metodosPago: MetodoDePago[] | null;
 }
 
 export interface Direccion {
