@@ -29,10 +29,9 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
 
   const estado = transformEstado(pedido.current.estado);
 
-  const actualizadoEn = pedido.current.actualizadoEn;
-  const date = new Date(actualizadoEn);
-  const formattedDate = date.toLocaleDateString();
-  const formattedTime = date.toLocaleTimeString([], {
+  const fechaPedido = pedido.current.solicitadoEn;
+  const formattedDate = fechaPedido?.toLocaleDateString();
+  const formattedTime = fechaPedido?.toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -63,9 +62,6 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button
-                onClick={() => {
-                  console.log("Ver detalle");
-                }}
                 variant="outline"
               >
                 Ver detalle
@@ -81,8 +77,9 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
               <div className="flex flex-col space-y-2 mt-2">
                 {pedido.current.detalles?.map((detalle, index) => (
                   <div key={index} className="flex flex-row justify-between">
-                    <p>{detalle.producto.nombre}</p>
                     <p>{detalle.cantidad}</p>
+                    <p>{detalle.producto.nombre}</p>
+                    <p>S/. {detalle.producto.precioEcommerce.toFixed(2)}</p>
                   </div>
                 ))}
               </div>
@@ -95,8 +92,69 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
         type="text"
         placeholder=" "
         disabled={true}
-        value={`${formattedDate} - ${formattedTime}`}
+        value={
+          formattedDate
+            ? `${formattedDate} - ${formattedTime}`
+            : "Fecha no disponible"
+        }
       />
+      {pedido.current.estado !== "pendiente" && (
+        <>
+          <InputWithLabel
+            label="Fecha y hora de verificación"
+            type="text"
+            placeholder=" "
+            disabled={true}
+            value={
+              pedido.current.verificadoEn
+                ? pedido.current.verificadoEn.toLocaleString()
+                : "Fecha no disponible"
+            }
+          />
+          <InputWithLabel
+            label="Código de seguimiento"
+            type="text"
+            placeholder=" "
+            disabled={true}
+            value={pedido.current.codigoSeguimiento}
+          />
+        </>
+      )}
+      {pedido.current.estado === "cancelado" && (
+        <>
+          <InputWithLabel
+            label="Fecha y hora de cancelación"
+            type="text"
+            placeholder=" "
+            disabled={true}
+            value={
+              formattedDate
+                ? `${formattedDate} - ${formattedTime}`
+                : "Fecha no disponible"
+            }
+          />
+          <InputWithLabel
+            label="Motivo de cancelación"
+            type="text"
+            placeholder=" "
+            disabled={true}
+            value={pedido.current.motivoCancelacion}
+          />
+        </>
+      )}
+      {pedido.current.estado === "entregado" && (
+        <InputWithLabel
+          label="Fecha y hora de entrega"
+          type="text"
+          placeholder=" "
+          disabled={true}
+          value={
+            pedido.current.entregadoEn
+              ? pedido.current.entregadoEn.toLocaleString()
+              : "Fecha no disponible"
+          }
+        />
+      )}
     </div>
   );
 };

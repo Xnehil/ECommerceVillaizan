@@ -4,25 +4,23 @@ import InputWithLabel from "@/components/forms/inputWithLabel";
 import { Label } from "@radix-ui/react-label";
 import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
-import { Producto } from "@/types/PaqueteProducto";
-import { toast } from "@/hooks/use-toast";
-import CheckboxWithLabel from "@/components/forms/checkboxWithLabel";
 import { Ciudad, Motorizado } from "@/types/PaqueteMotorizado";
 import SelectWithLabel from "@/components/forms/selectWithLabel";
 import axios from "axios";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
 
-interface InformacionGeneralProps {
+interface InformacionVehiculoProps {
   motorizado: MutableRefObject<Motorizado>;
   isEditing: boolean;
   imagen: MutableRefObject<File | undefined>;
 }
 
-const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
+const InformacionVehiculo: React.FC<InformacionVehiculoProps> = ({
   motorizado,
   isEditing,
   imagen,
 }) => {
-  console.log("Renderizando InformacionGeneral");
   const [placa, setPlaca] = useState(motorizado.current.placa || "");
   const [ciudad, setCiudad] = useState("");
   const [previewSrc, setPreviewSrc] = useState(
@@ -32,13 +30,14 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { toast } = useToast();
+
   useEffect(() => {
     setPlaca(motorizado.current.placa || "");
     if (motorizado.current?.ciudad?.id) {
       setCiudad(motorizado.current.ciudad.id);
     }
   }, [isEditing]);
-
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -66,7 +65,12 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
 
         setIsLoading(false);
       } catch (error) {
-        console.error("Error fetching categories:", error);
+        console.error("Error fetching ciudades:", error);
+        toast({
+          variant: "destructive",
+          description:
+            "No se pudieron cargar las ciudades. Por favor, intente de nuevo.",
+        });
       }
     };
 
@@ -78,7 +82,6 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
     }
   }, []);
 
-
   const handlePlacaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     // Allow only letters, digits, and hyphens
@@ -87,14 +90,14 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
       setPlaca(value);
     }
   };
-  
 
   const handlePlacaBlur = () => {
     const finalRegex = /^(?=.*[A-Za-z]{2})(?=.*-)(?=.*\d{4})[A-Za-z0-9-]{7}$/;
     if (!finalRegex.test(placa)) {
       toast({
         variant: "destructive",
-        description: "La placa solo puede tener 2 letras, un guión y 4 números.",
+        description:
+          "La placa solo puede tener 2 letras, un guión y 4 números.",
       });
       return;
     }
@@ -102,14 +105,10 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
     setPlaca(placa);
   };
 
-
   const handleCiudadChange = (value: string) => {
     setCiudad(value);
     motorizado.current.ciudad = { id: value } as Ciudad;
   };
-
-
-
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -125,14 +124,7 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
 
   return (
     <div className="info-side-container">
-      <h5>Información del vehículo</h5>
-      {/* <InputWithLabel
-        label="Nombre"
-        placeholder="Nombre del producto"
-        type="text"
-        onChange={handleNameChange}
-        disabled={!isEditing}
-      /> */}
+      <h5>Vehículo</h5>
 
       <div className="w-full max-w-sm flex space-x-2">
         <div className="flex-1">
@@ -149,15 +141,23 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
         </div>
       </div>
       <div className="w-full flex flex-column">
-      <div className="flex-1">
-          <SelectWithLabel
-            label="Ciudad"
-            options={ciudades.current}
-            onChange={handleCiudadChange}
-            value={ciudad}
-            disabled={!isEditing}
-          />
-        </div>
+        {isLoading ? (
+          <div className="grid gap-1">
+            <Skeleton className="h-6 w-64" />
+            <Skeleton className="h-8 w-64" />
+          </div>
+        ) : (
+          <div className="flex-1">
+            <SelectWithLabel
+              label="Ciudad"
+              options={ciudades.current}
+              onChange={handleCiudadChange}
+              value={ciudad}
+              disabled={!isEditing}
+              required={isEditing ? true : false}
+            />
+          </div>
+        )}
       </div>
       {isEditing && (
         <InputWithLabel
@@ -184,4 +184,4 @@ const InformacionGeneral: React.FC<InformacionGeneralProps> = ({
   );
 };
 
-export default InformacionGeneral;
+export default InformacionVehiculo;

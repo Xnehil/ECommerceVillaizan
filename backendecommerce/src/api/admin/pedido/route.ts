@@ -69,9 +69,7 @@ export const GET = async (
         pedidos: await pedidoService.listarConPaginacion(
             filter,
             {
-                skip: 0,
-                take: 20,
-                relations: enriquecido ? ["motorizado", "direccion", "usuario"] : []
+                relations: enriquecido ? ["motorizado", "direccion", "direccion.ciudad", "usuario"] : []
             }
         ),
     });

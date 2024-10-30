@@ -43,17 +43,20 @@ export const columns: ColumnDef<Pedido>[] = [
     accessorKey: "ciudad",
     header: "Ciudad",
     cell: ({ row }) => {
-      const ciudad = row.original.direccion?.ciudad;
+      const ciudad = row.original.direccion?.ciudad?.nombre;
       return ciudad ? ciudad : "Sin asignar";
     },
   },
   {
-    accessorKey: "actualizadoEn",
-    header: "Hora de pedido",
+    accessorKey: "solicitadoEn",
+    header: "Fecha de pedido",
     cell: ({ row }) => {
-      const fechahora = row.original.actualizadoEn;
-      const date = new Date(fechahora);
-      const formatted = date.toLocaleTimeString([], {
+      const fecha = row.original.solicitadoEn;
+      if (!fecha) return "Fecha no disponible";
+      const formatted = fecha.toLocaleTimeString([], {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
       });
@@ -65,7 +68,10 @@ export const columns: ColumnDef<Pedido>[] = [
     header: "Estado",
     cell: ({ row }) => {
       const estado = row.original.estado;
-      const displayEstado = estado === "enProgreso" ? "En progreso" : estado;
+      const displayEstado =
+        estado === "enProgreso"
+          ? "En progreso"
+          : estado.charAt(0).toUpperCase() + estado.slice(1);
 
       return <div>{displayEstado}</div>;
     },

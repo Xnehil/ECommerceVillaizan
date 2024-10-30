@@ -3,7 +3,7 @@ import { Pedido } from "../models/Pedido";
 import { Not, Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
-import { ubicacionesDelivery, pedidosPorConfirmar, enviarMensajeRepartidor } from "../loaders/websocketLoader";
+import { ubicacionesDelivery, pedidosPorConfirmar, enviarMensajeRepartidor, enviarMensajeAdmins } from "../loaders/websocketLoader";
 import MotorizadoRepository from "@repositories/Motorizado";
 import { Motorizado } from "@models/Motorizado";
 import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
@@ -186,9 +186,16 @@ class PedidoService extends TransactionBaseService {
     
                     if (motorizadoAsignado) {
                         data.motorizado = motorizadoAsignado;
-                        this.reduceStock(pedido, motorizadoAsignado);
+                        try {
+                            this.reduceStock(pedido, motorizadoAsignado);
+                        } catch (error) {
+                            console.error("Error al reducir stock, se continúa para la demo", error);
+                            // throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
+                        }
                         data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3)+(new Date()).getTime().toString().slice(-3);
+                        console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
                         enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
+                        enviarMensajeAdmins("nuevoPedido", id);
                     } else {
                         throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
                     }

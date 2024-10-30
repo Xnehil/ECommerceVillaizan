@@ -1,22 +1,17 @@
 "use client";
 
-import SelectWithLabel from "@/components/forms/selectWithLabel";
-import TextAreaWithLabel from "@/components/forms/textAreaWithLabel";
 import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import "@/styles/general.css";
-
-import { Subcategoria, TipoProducto } from "@/types/PaqueteProducto";
 import { Skeleton } from "@/components/ui/skeleton";
-import axios from "axios";
 import { Usuario } from "@/types/PaqueteMotorizado";
 import InputWithLabel from "@/components/forms/inputWithLabel";
 
-interface InformacionAdicionalProps {
+interface InformacionRepartidorProps {
   usuario: MutableRefObject<Usuario>;
   isEditing: boolean;
 }
 
-const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
+const InformacionRepartidor: React.FC<InformacionRepartidorProps> = ({
   usuario,
   isEditing,
 }) => {
@@ -108,4 +103,4 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   );
 };
 
-export default InformacionAdicional;
+export default InformacionRepartidor;
