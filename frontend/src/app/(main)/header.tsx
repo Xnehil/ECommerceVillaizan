@@ -2,7 +2,7 @@ import Link from "next/link"
 
 const Header = () => {
   const currentUrl = window.location.href;
-  const loginUrl = `http://localhost:3000/login?redirect=${encodeURIComponent(currentUrl)}`;
+
 
   return (
     <header className="bg-red-600 text-white p-4">

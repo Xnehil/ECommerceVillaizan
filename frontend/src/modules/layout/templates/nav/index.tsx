@@ -23,24 +23,27 @@ export default function Nav() {
 
   useEffect(() => {
     async function fetchUserName() {
-      if (session?.user?.id) {
-        try {
-          const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
-          console.log("response", response);
-          const user = response.data.usuario;
-          if (user) {
-            setUserName(user.nombre + ' ' + user.apellido);  // Assuming the backend returns { name: "User Name" }
-          } else {
-            console.error('Failed to fetch user name');
+      if(status !== "loading"){
+        if (session?.user?.id) {
+          try {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
+            console.log("response", response);
+            const user = response.data.usuario;
+            if (user) {
+              setUserName(user.nombre + ' ' + user.apellido);  // Assuming the backend returns { name: "User Name" }
+            } else {
+              console.error('Failed to fetch user name');
+            }
+          } catch (error) {
+            console.error('Error fetching user name:', error);
           }
-        } catch (error) {
-          console.error('Error fetching user name:', error);
         }
       }
     }
 
+
     fetchUserName();
-  }, [session]);
+  }, [status,session]);
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 bg-rojoVillaizan">

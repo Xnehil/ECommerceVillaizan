@@ -26,13 +26,6 @@ function LoginPage() {
     try {
       setIsLoading(true);
       const result = await handleCredentialsSignIn({ email, password, redirectTo: redirect as string || '/' });
-      /*
-      if (result?.message) {
-        // Handle error message
-      } else {
-        // Redirect to the specified URL or default to "/"
-        router.push(redirect as string || '/'); // Correct usage of router.push
-      }*/
     } catch (error) {
       console.log("An unexpected error ocurred. Please try again.");
     }
