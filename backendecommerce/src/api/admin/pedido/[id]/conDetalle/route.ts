@@ -20,11 +20,11 @@ import { Pedido } from "src/models/Pedido";
  *         required: true
  *         description: ID del pedido
  *       - in: query
-    *      name: pedido
-    *      schema:
-    *        type: string
+ *         name: pedido
+ *         schema:
+ *           type: string
  *         required: false
- *    description: Incluir detalles del pedido
+ *         description: Incluir detalles del pedido
  *     responses:
  *       200:
  *         description: Detalles del pedido

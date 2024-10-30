@@ -14,6 +14,15 @@ export const UsuarioRepository = dataSource
           relations: ['persona', 'rol'],
           
         });
+    },
+    async findById(id: string): Promise<Usuario> {
+        return this.findOne({
+          where: {
+            id: id,
+          },
+          relations: ['persona', 'rol'],
+          
+        });
     }
   })
 

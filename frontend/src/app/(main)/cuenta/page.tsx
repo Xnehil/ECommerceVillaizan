@@ -59,7 +59,7 @@ const Cuenta = () => {
     }
 
     fetchUserName();
-  }, [session]);
+  }, [status,session]);
 
   const handleUpdateDireccion = (updatedDireccion: Direccion) => {
     setDirecciones((prevDirecciones) =>

@@ -5,9 +5,20 @@ import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { Button } from "@components/Button";
 import { signOut } from "next-auth/react";
+import { cookies } from "next/headers"
 import axios from 'axios';
 
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+
 export async function handleSignOut() {
+  document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
+  document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
+  localStorage.removeItem('calle');
+  localStorage.removeItem('dni');
+  localStorage.removeItem('nombre');
+  localStorage.removeItem('nroInterior');
+  localStorage.removeItem('referencia');
+  localStorage.removeItem('telefono');
   await signOut();
 }
 
@@ -23,24 +34,68 @@ export default function Nav() {
 
   useEffect(() => {
     async function fetchUserName() {
-      if (session?.user?.id) {
-        try {
-          const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
-          console.log("response", response);
-          const user = response.data.usuario;
-          if (user) {
-            setUserName(user.nombre + ' ' + user.apellido);  // Assuming the backend returns { name: "User Name" }
-          } else {
-            console.error('Failed to fetch user name');
+      if(status !== "loading"){
+        if (session?.user?.id) {
+          try {
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
+            console.log("response", response);
+            const user = response.data.usuario;
+            if (user) {
+              setUserName(user.nombre + ' ' + user.apellido);  // Assuming the backend returns { name: "User Name" }
+            } else {
+              console.error('Failed to fetch user name');
+            }
+            console.log("compara cartId")
+
+            const getCookie = (name: string) => {
+              const value = `; ${document.cookie}`;
+              const parts = value.split(`; ${name}=`);
+              if (parts.length === 2) {
+                const part = parts.pop();
+                if (part) {
+                  return part.split(';').shift();
+                }
+              }
+              return null;
+            };
+            
+            // Now we can use this function to get `_medusa_cart_id`
+            const cartId = getCookie("_medusa_cart_id");
+            
+            console.log("cartId:", cartId);  // Check if cartId is being correctly retrieved
+            
+            if(cartId){
+              const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
+              const pedido = response.data.pedido;
+              if(pedido){
+                if(!pedido.usuario || (pedido.usuario.id !== session.user.id)){
+                  //if not equal, update pedido.usuario.id to session.user.id
+                  console.log("No coincide el usuario del pedido con el de la sesion")
+                  await axios.put(`${baseUrl}/admin/pedido/${pedido.id}`, {
+                    "usuario": {"id": session.user.id}
+                  });
+                }
+              }
+            }
+            else{
+              //search in bd if there is a pedido with the user id, if there is, put it on the cookie. the axios is axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${userId}`);
+              const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
+              const pedido = response.data.pedido;
+              if(pedido){
+                console.log("Pedido encontrado", pedido)
+                document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching user name:', error);
           }
-        } catch (error) {
-          console.error('Error fetching user name:', error);
         }
       }
     }
 
+
     fetchUserName();
-  }, [session]);
+  }, [status,session]);
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 bg-rojoVillaizan">

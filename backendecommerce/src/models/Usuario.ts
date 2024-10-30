@@ -31,11 +31,11 @@ export class Usuario extends EntidadBase {
     //@Column({ type: 'varchar', length: 50, nullable: true })
     //id_persona: string;
 
-    @ManyToOne(() => Persona, persona => persona.id)
+    @ManyToOne(() => Persona, persona => persona.id, {eager: true})
     @JoinColumn({ name: 'id_persona' })
     persona: Persona;
 
-    @ManyToOne(() => Rol, rol => rol.id)
+    @ManyToOne(() => Rol, rol => rol.id, {eager: true})
     @JoinColumn({ name: 'id_rol' })
     rol: Rol;
 
