@@ -32,12 +32,8 @@ const EntregarPedido = () => {
   const [modalCancelVisible, setModalCancelVisible] = useState(false);
   const [motivoCancelacion, setMotivoCancelacion] = useState("");
   const [otroMotivo, setOtroMotivo] = useState("");
-  const [fotoPedido, setFotoPedido] = useState<{
-    [key: string]: string | null;
-  }>({});
-  const [fotoPago, setFotoPago] = useState<{ [key: string]: string | null }>(
-    {}
-  );
+  const [fotoPedido, setFotoPedido] = useState<string | null>(null);
+  const [fotoPago, setFotoPago] = useState<string | null>(null);
 
   const [imageOptionsVisible, setImageOptionsVisible] = useState(false);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
@@ -154,15 +150,9 @@ const EntregarPedido = () => {
           const imageData = reader.result as string;
 
           if (tipo === "pedido") {
-            setFotoPedido((prevFotos) => ({
-              ...prevFotos,
-              [id]: imageData,
-            }));
+            setFotoPedido(imageData);
           } else if (tipo === "pago") {
-            setFotoPago((prevFotos) => ({
-              ...prevFotos,
-              [id]: imageData,
-            }));
+            setFotoPago(imageData);
           }
         };
         reader.readAsDataURL(file);
@@ -206,15 +196,9 @@ const EntregarPedido = () => {
     const imageData = canvas.toDataURL("image/png");
 
     if (tipo === "pedido") {
-      setFotoPedido((prevFotos) => ({
-        ...prevFotos,
-        [id]: imageData,
-      }));
+      setFotoPedido(imageData);
     } else if (tipo === "pago") {
-      setFotoPago((prevFotos) => ({
-        ...prevFotos,
-        [id]: imageData,
-      }));
+      setFotoPago(imageData);
     }
 
     videoStream?.getTracks().forEach((track) => track.stop()); // Detener la cámara
@@ -224,7 +208,7 @@ const EntregarPedido = () => {
 
   const enviarImagen = async (id: string, tipo: "pedido" | "pago") => {
     try {
-      const imagenData = tipo === "pedido" ? fotoPedido[id] : fotoPago[id];
+      const imagenData = tipo === "pedido" ? fotoPedido : fotoPago;
       if (!imagenData) throw new Error("No hay imagen disponible.");
 
       // Convertimos el Data URL (Base64) a un archivo Blob
@@ -243,15 +227,17 @@ const EntregarPedido = () => {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("fileName", `${tipo}-${id}.png`);
-      formData.append("folderId", tipo === "pago" ? "yape" : "plin");
-
-      const response = await axios.post(`${BASE_URL}/imagenes`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      if (tipo === "pago") {
+        formData.append("folderId", "1z4G9rU8EW9whmnrrVcaL76an-8vM-Ncv");
+      } else if (tipo === "pedido") {
+        formData.append("folderId", "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb");
+      }
+      const response = await axios.post(`${BASE_URL}/imagenes`, formData);
 
       const { fileUrl } = response.data; 
 
       mostrarMensaje(`Imagen enviada con éxito: ${fileUrl}`);
+      return fileUrl;
     } catch (error) {
       console.error(`Error al enviar la imagen de ${tipo}:`, error);
       mostrarMensaje(`Error al enviar la imagen de ${tipo}.`,"confirmacion");
@@ -290,6 +276,8 @@ const EntregarPedido = () => {
       await axios.put(`${BASE_URL}/pedido/${parsedPedido.id}`, {
         estado: "Entregado",
       });
+      enviarImagen(parsedPedido.id, "pedido");
+      enviarImagen(parsedPedido.id, "pago");
       mostrarMensaje("Entrega confirmada");
       router.push({
         pathname: "/confirmada",
@@ -431,7 +419,7 @@ const EntregarPedido = () => {
             <TabBarIcon
               IconComponent={FontAwesome}
               name="camera"
-              color={fotoPedido[pedidoCompleto?.id] ? "#3BD100" : "#C9CC00"}
+              color={fotoPedido ? "#3BD100" : "#C9CC00"}
               size={30}
             />
           </TouchableOpacity>
@@ -484,7 +472,7 @@ const EntregarPedido = () => {
                       IconComponent={FontAwesome}
                       name="camera"
                       color={
-                        fotoPago[pedidoCompleto?.id] ? "#3BD100" : "#C9CC00"
+                        fotoPago ? "#3BD100" : "#C9CC00"
                       } // Darker green color
                       size={30}
                     />

@@ -158,3 +158,18 @@ export interface InventarioMotorizado {
 export interface InventarioMotorizadoResponse {
   inventarioMotorizadoes: InventarioMotorizado[];
 }
+
+export interface MetodoDePago {
+  id: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  desactivadoEn: string | null;
+  usuarioCreacion: string;
+  usuarioActualizacion: string | null;
+  estaActivo: boolean;
+  nombre: string;
+}
+
+export interface MetodoDePagoResponse {
+  metodoPagos: MetodoDePago[];
+}
