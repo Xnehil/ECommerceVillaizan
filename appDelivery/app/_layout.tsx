@@ -110,7 +110,7 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <WebSocketComponent
-          idMotorizado="mot_01J97FH8NJWHKNFX26KZ048KTX"
+          idMotorizado="mot_01J9PMQG49H0SZ0G6MFHM04XEV"
           ref={wsRef}
         />
       <Stack initialRouteName="index">

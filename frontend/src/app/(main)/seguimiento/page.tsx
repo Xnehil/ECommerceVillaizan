@@ -72,6 +72,7 @@ const fetchCart = async (
           setDriverPosition([data.data.lat, data.data.lng])
         } else if (data.type === "canceladoResponse") {
           // El pedido ha sido cancelado
+          console.log("Pedido cancelado")
           setEnRuta("cancelado")
           ws?.close()
         }else if (data.type === "confirmarResponse") {
