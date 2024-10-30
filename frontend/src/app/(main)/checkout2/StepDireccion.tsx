@@ -6,10 +6,6 @@ import axios from "axios"
 import { getCityCookie } from "@modules/store/actions"
 import GoogleMapModal from "@components/GoogleMapsModal"
 import { set } from "lodash"
-import { useRouter } from 'next/navigation';
-
-import { useSession } from 'next-auth/react';
-
 
 interface StepDireccionProps {
   setStep: (step: string) => void;
@@ -41,17 +37,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   const [dniError, setDniError] = useState<string | null>(null)
   const [telefonoError, setTelefonoError] = useState<string | null>(null)
   const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
-  const [userNombre, setUserNombre] = useState('');
-  const [userApellido, setUserApellido] = useState('');
-  const [userCorreo, setUserCorreo] = useState('');
-  const [userTelefono, setUserTelefono] = useState('');
-  const [userId, setUserId] = useState('');
-  const [userConCuenta, setUserConCuenta] = useState(false);
-  const [userNroDoc, setUserNroDoc] = useState('');
-  const [userPersonaId, setUserPersonaId] = useState('');
 
 
   const handleMapSelect = (lat: number, lng: number) => {
@@ -187,7 +172,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     const usuarioData = {
       nombre: nombre,
       apellido: "",
-      contrasena: "",
+      contrasena: "contrasena",
       conCuenta: false,
       numeroTelefono: telefono,
       persona: {
@@ -201,43 +186,32 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
 
     console.log("Datos de dirección:", direccionData)
     console.log("Datos de usuario:", usuarioData)
-    let usuarioIdAux = userId
-    try {
-      if(!session?.user?.id) {
-        const usuarioResponse = await axios.post(baseUrl + "/admin/usuario", usuarioData, {
-          headers: { "Content-Type": "application/json" },
-        });
-        const usuarioId = usuarioResponse.data.usuario.id
-        usuarioIdAux = usuarioId
-      }
-      else{
-        const usuarioGuardar = {
-          id: userId,
-          nombre: nombre,
-          numeroTelefono: telefono,
-          persona: {
-            id: userPersonaId,
-            tipoDocumento: "DNI",
-            numeroDocumento: numeroDni,
-          }
-        }
-        const response = await axios.put(baseUrl+`/admin/usuario/${userId}`, usuarioGuardar)
-        console.log("Usuario actualizado:", response.data)
-      }
-      const direccionResponse = await axios.post(baseUrl + "/admin/direccion", direccionData, {
-        headers: { "Content-Type": "application/json" },
-      });
-      console.log("Respuesta de dirección:", direccionResponse.data)
-      const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
-      console.log("Pedido ID:", direccionId)
 
+    try {
+      // Realizar ambas solicitudes POST
+      const [direccionResponse, usuarioResponse] = await Promise.all([
+        axios.post(baseUrl+"/admin/direccion", direccionData, {
+          headers: { "Content-Type": "application/json" },
+        }),
+        axios.post(baseUrl+"/admin/usuario", usuarioData, {
+          headers: { "Content-Type": "application/json" },
+        }),
+      ])
+
+      console.log("Respuesta de dirección:", direccionResponse.data)
+      console.log("Respuesta de usuario:", usuarioResponse.data)
+      // Obtener los IDs de la respuesta
+      const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
+      const usuarioId = usuarioResponse.data.usuario.id // Ajusta según la estructura de la respuesta
+      console.log("Pedido ID:", direccionId)
+      console.log("Pedido ID:", usuarioId)
       // Realizar el PUT para actualizar el pedido con los IDs
       if (carritoState?.id) {
         const pedidoId = carritoState.id
         console.log("Pedido ID:", pedidoId)
         const pedidoUpdateData = {
           direccion: direccionId,
-          usuario: usuarioIdAux,
+          usuario: usuarioId,
         }
         await axios.put(
           baseUrl+`/admin/pedido/${pedidoId}?enriquecido=true`,
@@ -256,64 +230,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
       console.error("Error al enviar la dirección o el usuario:", error)
     }
   }
-
-  useEffect(() => {
-    async function fetchUserName() {
-      if (status !== "loading") {
-        if (session?.user?.id) {
-          try {
-            // Clear specific localStorage values if user is logged in
-            localStorage.removeItem('calle');
-            localStorage.removeItem('dni');
-            localStorage.removeItem('nombre');
-            localStorage.removeItem('nroInterior');
-            localStorage.removeItem('referencia');
-            localStorage.removeItem('telefono');
-  
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
-            console.log("response", response);
-            const user = response.data.usuario;
-  
-            if (user) {
-              setUserNombre(user.nombre);
-              setUserApellido(user.apellido);
-              setUserCorreo(user.correo);
-              setUserTelefono(user.numeroTelefono);
-              setUserId(user.id);
-              setUserConCuenta(user.concuenta);
-              if(user.persona && user.persona.id){
-                setUserPersonaId(user.persona.id);
-              }
-              if(user.persona && user.persona.numeroDocumento !== null){
-                setNumeroDni(user.persona.numeroDocumento);
-                localStorage.setItem('dni', user.persona.numeroDocumento);
-              }
-  
-              // Set localStorage with user data
-              localStorage.setItem('nombre', user.nombre);
-              localStorage.setItem('telefono', user.numeroTelefono);
-              
-
-              setNombre(user.nombre);
-              setTelefono(user.numeroTelefono);              
-            } else {
-              console.error('Failed to fetch user name');
-            }
-  
-            const addressResponse = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`);
-            //setDirecciones(addressResponse.data.direcciones);
-  
-          } catch (error) {
-            console.error('Error fetching user name:', error);
-          }
-        } else {
-          router.push('/');
-        }
-      }
-    }
-  
-    fetchUserName();
-  }, [session, status]);
 
   useEffect(() => {
     const savedNombre = localStorage.getItem('nombre');

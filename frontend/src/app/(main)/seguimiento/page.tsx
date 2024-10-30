@@ -28,7 +28,8 @@ const fetchCart = async (
   setDriverPosition: (position: [number, number]) => void,
   setEnRuta: (enRuta: string) => void,
   enRuta: string,
-  setMensajeEspera: (mensaje: string) => void
+  setMensajeEspera: (mensaje: string) => void,
+  ws: React.MutableRefObject<ExtendedWebSocket | null>
 ): Promise<Pedido> => {
   const respuesta = await retrievePedido(true)
   let cart: Pedido = respuesta
@@ -54,15 +55,15 @@ const fetchCart = async (
   cart.motorizado = response.data.motorizado
 //   console.log("Cart enriquecido:", cart);
 
-  let ws: ExtendedWebSocket | null = null
   //Conectar a websocket para recibir actualizaciones en tiempo real
-  if (cart.motorizado) {
+  if (cart.motorizado && ws.current === null) {
     // Conectar a websocket para recibir actualizaciones en tiempo real
-    ws = connectWebSocket(
+    ws.current = connectWebSocket(
       cart.motorizado.id, // idRepartidor
       cart.id, // idPedido
+      cart.estado, // estado
       (data) => {
-        // console.log(data);
+        console.log(data);
         if (enRuta === "entregado") {
           return
         }
@@ -74,15 +75,17 @@ const fetchCart = async (
           // El pedido ha sido cancelado
           console.log("Pedido cancelado")
           setEnRuta("cancelado")
-          ws?.close()
+          if (ws) {
+            ws.current?.close();
+          }
         }else if (data.type === "confirmarResponse") {
           // El pedido está en proceso de confirmación por parte del administrador
           setEnRuta("espera")
-          setMensajeEspera("Estamos confirmando tu pedido. Por favor, espera un momento.")
+          setMensajeEspera("Estamos verificando tu pedido. Por favor, espera un momento.")
         } else if (data.type === "notYetResponse") {
           // El motorizado está atendiendo otros pedidos
           setEnRuta("espera")
-          setMensajeEspera("El repartidor está atendiendo otros pedidos.\n Por favor, espera un momento.")
+          setMensajeEspera("Tu pedido ha sido verificado. El repartidor está atendiendo otros pedidos.\n Por favor, espera un momento.")
         } else if (data.type === "entregadoResponse") {
           // El pedido ha sido entregado
           setEnRuta("entregado")
@@ -92,13 +95,7 @@ const fetchCart = async (
       },
       () => {
         // Handle WebSocket connection close
-        console.log("WebSocket connection closed")
-        if (ws && ws.intervalId) {
-          console.log("Clearing interval with ID:", ws.intervalId)
-          clearInterval(ws.intervalId) // Clear the interval when the connection is closed
-        } else {
-          console.log("No interval ID found on WebSocket instance")
-        }
+        console.log("WebSocket connection closed");
       }
     )
   } else {
@@ -126,6 +123,7 @@ const TrackingPage: React.FC = () => {
   const [codigo, setCodigo] = useState<string | null>(
     search.get("codigo")
   );
+  const wsRef = useRef<ExtendedWebSocket | null>(null);
 
   
 
@@ -146,7 +144,7 @@ const TrackingPage: React.FC = () => {
       }
     };
 
-    fetchCart(setDriverPosition, setEnRuta, enRuta, setMensajeEspera).then((cart) => {
+    fetchCart(setDriverPosition, setEnRuta, enRuta, setMensajeEspera, wsRef).then((cart) => {
       setPedido(cart);
       setLoading(false);
       if (cart?.codigoSeguimiento && !mensajeEnviadoRef.current) { // Evita envío duplicado usando `ref`
