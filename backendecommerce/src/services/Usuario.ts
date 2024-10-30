@@ -63,12 +63,10 @@ class UsuarioService extends TransactionBaseService {
     }
 
     async recuperar(
-        id: string,
-        config?: FindConfig<Usuario>
+        id: string
     ): Promise<Usuario> {
         const usuarioRepo = this.activeManager_.withRepository(this.usuarioRepository_);
-        const query = buildQuery({ id }, config);
-        const usuario = await usuarioRepo.findOne(query);
+        const usuario = await usuarioRepo.findById(id);
 
         if (!usuario) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Usuario no encontrado");
@@ -143,6 +141,13 @@ class UsuarioService extends TransactionBaseService {
             const usuarioRepo = manager.withRepository(this.usuarioRepository_);
             const usuario = await this.recuperar(id);
             Object.assign(usuario, data);
+    
+            if (data.persona) {
+                const personaRepo = manager.withRepository(this.personaRepository_);
+                Object.assign(usuario.persona, data.persona);
+                await personaRepo.save(usuario.persona);
+            }
+    
             return await usuarioRepo.save(usuario);
         });
     }

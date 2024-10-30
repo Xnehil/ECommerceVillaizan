@@ -50,6 +50,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   const [userTelefono, setUserTelefono] = useState('');
   const [userId, setUserId] = useState('');
   const [userConCuenta, setUserConCuenta] = useState(false);
+  const [userNroDoc, setUserNroDoc] = useState('');
+  const [userPersonaId, setUserPersonaId] = useState('');
 
 
   const handleMapSelect = (lat: number, lng: number) => {
@@ -183,7 +185,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     const usuarioData = {
       nombre: nombre,
       apellido: "",
-      contrasena: "contrasena",
+      contrasena: "",
       conCuenta: false,
       numeroTelefono: telefono,
       persona: {
@@ -200,19 +202,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     let usuarioIdAux = userId
     try {
       if(!session?.user?.id) {
-        // Realizar ambas solicitudes POST
-        
-        
         const usuarioResponse = await axios.post(baseUrl + "/admin/usuario", usuarioData, {
           headers: { "Content-Type": "application/json" },
         });
-       
-        console.log("Respuesta de usuario:", usuarioResponse.data)
-        // Obtener los IDs de la respuesta
-       
-        const usuarioId = usuarioResponse.data.usuario.id // Ajusta según la estructura de la respuesta
-        
-        console.log("Pedido ID:", usuarioId)
+        const usuarioId = usuarioResponse.data.usuario.id
         usuarioIdAux = usuarioId
       }
       else{
@@ -220,6 +213,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
           id: userId,
           nombre: nombre,
           numeroTelefono: telefono,
+          persona: {
+            id: userPersonaId,
+            tipoDocumento: "DNI",
+            numeroDocumento: numeroDni,
+          }
         }
         const response = await axios.put(baseUrl+`/admin/usuario/${userId}`, usuarioGuardar)
         console.log("Usuario actualizado:", response.data)
@@ -281,13 +279,21 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
               setUserTelefono(user.numeroTelefono);
               setUserId(user.id);
               setUserConCuenta(user.concuenta);
+              if(user.persona && user.persona.id){
+                setUserPersonaId(user.persona.id);
+              }
+              if(user.persona && user.persona.numeroDocumento !== null){
+                setNumeroDni(user.persona.numeroDocumento);
+                localStorage.setItem('dni', user.persona.numeroDocumento);
+              }
   
               // Set localStorage with user data
               localStorage.setItem('nombre', user.nombre);
               localStorage.setItem('telefono', user.numeroTelefono);
+              
 
               setNombre(user.nombre);
-              setTelefono(user.numeroTelefono);
+              setTelefono(user.numeroTelefono);              
             } else {
               console.error('Failed to fetch user name');
             }
