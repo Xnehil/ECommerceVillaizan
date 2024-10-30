@@ -5,9 +5,14 @@ import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { Button } from "@components/Button";
 import { signOut } from "next-auth/react";
+import { cookies } from "next/headers"
 import axios from 'axios';
 
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+
 export async function handleSignOut() {
+  document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
+  document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
   await signOut();
 }
 
@@ -33,6 +38,38 @@ export default function Nav() {
               setUserName(user.nombre + ' ' + user.apellido);  // Assuming the backend returns { name: "User Name" }
             } else {
               console.error('Failed to fetch user name');
+            }
+            console.log("compara cartId")
+
+            const getCookie = (name: string) => {
+              const value = `; ${document.cookie}`;
+              const parts = value.split(`; ${name}=`);
+              if (parts.length === 2) {
+                const part = parts.pop();
+                if (part) {
+                  return part.split(';').shift();
+                }
+              }
+              return null;
+            };
+            
+            // Now we can use this function to get `_medusa_cart_id`
+            const cartId = getCookie("_medusa_cart_id");
+            
+            console.log("cartId:", cartId);  // Check if cartId is being correctly retrieved
+            
+            if(cartId){
+              const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
+              const pedido = response.data.pedido;
+              if(pedido){
+                if(!pedido.usuario || (pedido.usuario.id !== session.user.id)){
+                  //if not equal, update pedido.usuario.id to session.user.id
+                  console.log("No coincide el usuario del pedido con el de la sesion")
+                  await axios.put(`${baseUrl}/admin/pedido/${pedido.id}`, {
+                    "usuario": {"id": session.user.id}
+                  });
+                }
+              }
             }
           } catch (error) {
             console.error('Error fetching user name:', error);
