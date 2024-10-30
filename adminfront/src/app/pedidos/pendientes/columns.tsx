@@ -49,16 +49,24 @@ export const columns: ColumnDef<Pedido>[] = [
     },
   },
   {
-    accessorKey: "actualizadoEn",
-    header: "Hora de pedido",
+    accessorKey: "solicitadoEn",
+    header: "Hace",
     cell: ({ row }) => {
-      const fechahora = row.original.actualizadoEn;
-      const date = new Date(fechahora);
-      const formatted = date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      return <div>{formatted}</div>;
+      const fecha = row.original.solicitadoEn;
+      if (!fecha) return "Fecha no disponible";
+      // Calcular la diferencia de tiempo
+      const diff =
+        new Date().getTime() - (fecha.getTime() - 5 * 60 * 60 * 1000);
+      const diffInMinutes = Math.floor(diff / 1000 / 60);
+      const diffInHours = Math.floor(diff / 1000 / 60 / 60);
+      const diffInDays = Math.floor(diff / 1000 / 60 / 60 / 24);
+      if (diffInDays > 0) {
+        return `${diffInDays} día${diffInDays > 1 ? "s" : ""}`;
+      } else if (diffInHours > 0) {
+        return `${diffInHours} hora${diffInHours > 1 ? "s" : ""}`;
+      } else {
+        return `${diffInMinutes} minuto${diffInMinutes > 1 ? "s" : ""}`;
+      }
     },
   },
   {
