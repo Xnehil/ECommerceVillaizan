@@ -17,7 +17,7 @@ import { Usuario } from "src/models/Usuario";
  * @swagger
  * /usuario/{id}:
  *   get:
- *     summary: Recupera un usuario por ID
+ *     summary: Recupera un usuario por ID o correo
  *     tags: [Usuarios]
  *     parameters:
  *       - in: path
@@ -25,7 +25,13 @@ import { Usuario } from "src/models/Usuario";
  *         schema:
  *           type: string
  *         required: true
- *         description: ID del usuario
+ *         description: ID del usuario o correo
+ *       - in: query
+ *         name: esCorreo
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Indica si el ID es un correo
  *     responses:
  *       200:
  *         description: Detalles del usuario
@@ -43,9 +49,20 @@ export const GET = async (
 ) => {
     const usuarioService: UsuarioService = req.scope.resolve("usuarioService");
     const { id } = req.params;
+    const { esCorreo } = req.query;
 
     try {
-        const usuario = await usuarioService.recuperar(id);
+        let usuario;
+        if (esCorreo === 'true') {
+            usuario = await usuarioService.recuperarPorCorreo(id);
+        } else {
+            usuario = await usuarioService.recuperar(id);
+        }
+
+        if (!usuario) {
+            return res.status(404).json({ error: "Usuario no encontrado" });
+        }
+
         res.json({ usuario });
     } catch (error) {
         res.status(404).json({ error: "Usuario no encontrado" });

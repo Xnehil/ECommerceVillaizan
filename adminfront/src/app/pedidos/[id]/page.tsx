@@ -1,0 +1,187 @@
+"use client";
+
+import React, { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import "@/styles/general.css";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import axios from "axios";
+import Loading from "@/components/Loading";
+import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Pedido } from "@/types/PaquetePedido";
+import InformacionCliente from "@/app/pedidos/[id]/informacionCliente";
+import InformacionDireccion from "@/app/pedidos/[id]/informacionDireccion";
+import InformacionPedido from "@/app/pedidos/[id]/informacionPedido";
+
+interface PedidoPageProps {
+  params: {
+    id: string;
+  };
+}
+
+const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
+  const searchParams = useSearchParams();
+  const [idPedido, setIdPedido] = useState<string | string[]>(
+    decodeURIComponent(id)
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const pedido = useRef<Pedido>({} as Pedido);
+  const a = useRef(0);
+
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchProductByNombre = async () => {
+      if (pedido.current.id) return;
+
+      try {
+        // console.log("Fetching categories");
+        // console.log(a.current);
+        a.current = a.current + 1;
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${idPedido}/conDetalle?pedido=true`
+        );
+        if (!response) {
+          throw new Error("Failed to fetch pedido");
+        }
+        const data = await response.data;
+        console.log("Pedido fetched:", data);
+
+        const productData: Pedido = data.pedido;
+
+        pedido.current = productData;
+
+        console.log("Pedido:", pedido.current);
+      } catch (error) {
+        console.error("Error fetching pedido:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Ocurrió un error al cargar el pedido.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (a.current === 0) {
+      fetchProductByNombre();
+    }
+  }, []);
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    console.log("Confirmando pedido");
+    try {
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
+        {
+          ...pedido.current,
+          estado: "verificado",
+        }
+      );
+      if (response.status !== 200) {
+        throw new Error("Error al actualizar el pedido");
+      }
+      console.log("Pedido saved", response.data);
+      pedido.current.estado = "verificado";
+
+      try {
+        const respMssg = await axios.post(
+          `${process.env.NEXT_PUBLIC_BASE_URL}whatsApp`,
+          {
+            mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${pedido.current.codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${pedido.current.codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
+            numero: pedido.current.usuario?.numeroTelefono,
+          }
+        );
+        console.log("Respuesta de WhatsApp:", respMssg);
+        if (respMssg.status !== 201) {
+          throw new Error("Error al enviar mensaje de WhatsApp");
+        }
+        console.log("Mensaje enviado a WhatsApp.");
+      } catch (error) {
+        console.error("Error sending WhatsApp message", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Ocurrió un error al enviar el mensaje de WhatsApp.",
+        });
+      }
+
+      setIsLoading(false);
+      toast({
+        description: "Se confirmó el pedido correctamente.",
+      });
+    } catch (error: any) {
+      console.error("Error saving product", error);
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ocurrió un error al confirmar el pedido.",
+      });
+    }
+  };
+
+  return (
+    <div className="content-container">
+      {isLoading && <Loading />}
+
+      <h4>{idPedido}</h4>
+      <Separator />
+      {!isLoading && pedido.current?.id && (
+        <>
+          <div className="information-container">
+            <InformacionPedido pedido={pedido} />
+            <InformacionCliente pedido={pedido} />
+            <InformacionDireccion pedido={pedido} />
+          </div>
+          <div className="buttons-side-container">
+            {pedido.current.estado === "solicitado" && (
+              <div className="lower-buttons-container">
+                <>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="default">Confirmar Pedido</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          ¿Estás seguro de confirmar el pedido?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Este pedido será atendido, asegúrate de que la
+                          información sea correcta.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleSave}>
+                          Confirmar Pedido
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default PedidoPage;

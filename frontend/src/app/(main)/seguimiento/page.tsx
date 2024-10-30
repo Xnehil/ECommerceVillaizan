@@ -1,24 +1,18 @@
 "use client"
 
-import EnEsperaTracking from "@components/EnEsperaTracking"
-import { LoadingSpinner } from "@components/LoadingSpinner"
-import PedidoEntregado from "@components/PedidoEntregado"
-// import MapaTracking from '@components/MapaTracking';
-import SeguimientoHeader from "@components/SeguimientoHeader"
-import { connectWebSocket } from "@lib/util/websocketUtils"
-import {
-  enrichLineItems,
-  retrieveCart,
-  retrievePedido,
-} from "@modules/cart/actions"
-import axios from "axios"
-import dynamic from "next/dynamic"
-import { useSearchParams } from "next/navigation"
-import React, { useEffect, useRef } from "react"
-import { Pedido } from "types/PaquetePedido"
-
+import axios from "axios";
+import React, { useEffect, useRef, useState } from "react";
 import { Suspense } from 'react';
-
+import { useSearchParams } from "next/navigation";
+import EnEsperaTracking from "@components/EnEsperaTracking";
+import { LoadingSpinner } from "@components/LoadingSpinner";
+import PedidoEntregado from "@components/PedidoEntregado";
+import SeguimientoHeader from "@components/SeguimientoHeader";
+import dynamic from "next/dynamic";
+import { connectWebSocket } from "@lib/util/websocketUtils";
+import { enrichLineItems, retrievePedido } from "@modules/cart/actions";
+import { Pedido } from "types/PaquetePedido";
+import PedidoCancelado from "@components/PedidoCancelado";
 
 const MapaTracking = dynamic(() => import("@components/MapaTracking"), {
   ssr: false,
@@ -38,6 +32,20 @@ const fetchCart = async (
 ): Promise<Pedido> => {
   const respuesta = await retrievePedido(true)
   let cart: Pedido = respuesta
+
+  if (!cart) {
+    console.error("Cart is null or undefined")
+    window.location.href = "/"
+  }
+
+  if(cart.estado === "cancelado") {
+    setEnRuta("cancelado")
+    return cart
+  } else if(cart.estado === "entregado") {
+    setEnRuta("entregado")
+    return cart
+  }
+  
   let aux = cart.detalles
   const enrichedItems = await enrichLineItems(cart.detalles)
   // console.log("Detalles enriquecidos:", enrichedItems);
@@ -62,7 +70,11 @@ const fetchCart = async (
           // Actualizar la posición del motorizado
           setEnRuta("ruta")
           setDriverPosition([data.data.lat, data.data.lng])
-        } else if (data.type === "confirmarResponse") {
+        } else if (data.type === "canceladoResponse") {
+          // El pedido ha sido cancelado
+          setEnRuta("cancelado")
+          ws?.close()
+        }else if (data.type === "confirmarResponse") {
           // El pedido está en proceso de confirmación por parte del administrador
           setEnRuta("espera")
           setMensajeEspera("Estamos confirmando tu pedido. Por favor, espera un momento.")
@@ -96,54 +108,90 @@ const fetchCart = async (
 }
 
 const TrackingPage: React.FC = () => {
-  const [pedido, setPedido] = React.useState<Pedido | null>(null)
-  //Extract ?codigo= from URL
-  const search = useSearchParams()
-  const [codigo, setCodigo] = React.useState<string | null>(
-    search.get("codigo")
-  )
-  const [loading, setLoading] = React.useState<boolean>(true)
-  const [driverPosition, setDriverPosition] = React.useState<[number, number]>([
+  const [pedido, setPedido] = useState<Pedido | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [driverPosition, setDriverPosition] = useState<[number, number]>([
     -6.476, -76.361,
-  ])
-  const [enRuta, setEnRuta] = React.useState<string>("espera")
-  const mapRef = useRef<HTMLDivElement>(null)
-  const [mensajeEspera, setMensajeEspera] = React.useState<string>(
+  ]);
+  const [enRuta, setEnRuta] = useState<string>("espera");
+  const [mensajeEspera, setMensajeEspera] = useState<string>(
     "Tu pedido está siendo preparado. Por favor, espera un momento."
-  )
+  );
+  const [error, setError] = useState<string | null>(null);
+  const mensajeEnviadoRef = useRef<boolean>(false); // Ref para controlar el envío
+  const [mensajeEnviado, setMensajeEnviado] = useState<boolean>(false); // Control de envío único
+  const mapRef = useRef<HTMLDivElement>(null);
+  const search = useSearchParams();
+  const [codigo, setCodigo] = useState<string | null>(
+    search.get("codigo")
+  );
+
+  
 
   useEffect(() => {
+    const sendMessage = async (codigoSeguimiento: string) => {
+      if (mensajeEnviadoRef.current) return; // Verifica si ya se envió el mensaje
+      try {
+        await axios.post("http://localhost:9000/admin/whatsApp", {
+          mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
+          numero: "959183082"
+        });
+        console.log("Mensaje enviado a WhatsApp.");
+        mensajeEnviadoRef.current = true; // Marca como enviado
+        setError(null); // Limpiar el error si el mensaje se envía correctamente
+      } catch (error) {
+        console.error("Error al enviar mensaje de WhatsApp:", error);
+        setError("No se pudo enviar el mensaje de WhatsApp. Haz clic en el botón para intentar nuevamente."); // Mostrar mensaje de error
+      }
+    };
+
     fetchCart(setDriverPosition, setEnRuta, enRuta, setMensajeEspera).then((cart) => {
-      // console.log(cart);
-      setPedido(cart)
-      setLoading(false)
-    })
-  }, [])
+      setPedido(cart);
+      setLoading(false);
+      if (cart?.codigoSeguimiento && !mensajeEnviadoRef.current) { // Evita envío duplicado usando `ref`
+        sendMessage(cart.codigoSeguimiento);
+      }
+    });
+  }, []); // Ejecutar solo al montar el componente
 
   useEffect(() => {
     if (pedido) {
-      setLoading(false)
-      mapRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-      window.scrollBy(0, -30) // Adjust the value (-50) to scroll a bit higher
+      setLoading(false);
+      mapRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.scrollBy(0, -30);
     }
-  }, [pedido])
+  }, [pedido]);
 
-  // useEffect(() => {
-  //     if (driverPosition) {
-  //         console.log(driverPosition);
-  //     }
-  // } , [driverPosition]);
+  const retrySendMessage = () => {
+    const sendMessage = async (codigoSeguimiento: string) => {
+      try {
+        await axios.post("http://localhost:9000/admin/whatsApp", {
+          mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
+          numero: "959183082"
+        });
+        console.log("Mensaje enviado a WhatsApp.");
+        setMensajeEnviado(true); // Marcar como enviado para evitar duplicados
+        setError(null); // Limpiar el error si el mensaje se envía correctamente
+      } catch (error) {
+        console.error("Error al enviar mensaje de WhatsApp:", error);
+        setError("No se pudo enviar el mensaje de WhatsApp. Haz clic en el botón para intentar nuevamente."); // Mostrar mensaje de error
+      }
+    };
+    if (pedido?.codigoSeguimiento) {
+      sendMessage(pedido.codigoSeguimiento);
+    }
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault()
+    event.preventDefault();
     const inputCodigo = (event.target as HTMLFormElement).elements.namedItem(
       "codigo"
-    ) as HTMLInputElement
-    const codigoValue = inputCodigo.value
+    ) as HTMLInputElement;
+    const codigoValue = inputCodigo.value;
     if (codigoValue) {
-      window.location.href = `?codigo=${codigoValue}`
+      window.location.href = `?codigo=${codigoValue}`;
     }
-  }
+  };
 
   return (
     <div>
@@ -224,11 +272,21 @@ const TrackingPage: React.FC = () => {
                     />
                   ) : enRuta === "entregado" ? (
                     <PedidoEntregado pedidoId={pedido?.id ?? "Hola"} />
+                  ) : enRuta === "cancelado" ? (
+                    <PedidoCancelado />
                   ) : null}
                 </div>
               </>
             )}
           </>
+        )}
+        {error && (
+          <div className="error-message" style={{ color: "red", marginTop: "20px", textAlign: "center" }}>
+            <p>{error}</p>
+            <button onClick={retrySendMessage} style={{ backgroundColor: "#ff5a5f", color: "#fff", padding: "10px", borderRadius: "5px", cursor: "pointer" }}>
+              Reenviar código de seguimiento
+            </button>
+          </div>
         )}
       </div>
     </div>

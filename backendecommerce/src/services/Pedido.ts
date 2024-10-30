@@ -1,6 +1,6 @@
 import { buildQuery, FindConfig, Selector, TransactionBaseService } from "@medusajs/medusa";
 import { Pedido } from "../models/Pedido";
-import { Repository } from "typeorm";
+import { Not, Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
 import { ubicacionesDelivery, pedidosPorConfirmar, enviarMensajeRepartidor } from "../loaders/websocketLoader";
@@ -8,6 +8,7 @@ import MotorizadoRepository from "@repositories/Motorizado";
 import { Motorizado } from "@models/Motorizado";
 import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
 import { InventarioMotorizado } from "@models/InventarioMotorizado";
+
 
 class PedidoService extends TransactionBaseService {
     protected pedidoRepository_: typeof pedidoRepository;
@@ -51,9 +52,17 @@ class PedidoService extends TransactionBaseService {
             relations: [],
         }
     ): Promise<Pedido[]> {
-        const [pedidos] = await this.listarYContar(selector, config);
+        // Create a new selector if one isn't provided
+        const finalSelector: any = selector || {};
+
+        if (finalSelector.estado === '!= carrito') {
+            finalSelector.estado = Not('carrito');
+        }
+
+        const [pedidos] = await this.listarYContar(finalSelector, config);
         return pedidos;
     }
+
 
     async recuperar(
         id: string,
@@ -72,7 +81,7 @@ class PedidoService extends TransactionBaseService {
 
     async recuperarConDetalle(id: string, options: FindConfig<Pedido> = {}): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
-        const relations = ["detalles", ...(options.relations || [])];
+        const relations = ["detalles", "detalles.producto", ...(options.relations || [])];
         const query = buildQuery({ id }, { relations });
         const pedido = await pedidoRepo.findOne(query);
     
@@ -178,13 +187,25 @@ class PedidoService extends TransactionBaseService {
                     if (motorizadoAsignado) {
                         data.motorizado = motorizadoAsignado;
                         this.reduceStock(pedido, motorizadoAsignado);
-                        data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3);
+                        data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3)+(new Date()).getTime().toString().slice(-3);
                         enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
                     } else {
                         throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
                     }
                 } else {
                     throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles");
+                }
+            }
+
+            if (pedido.estado !== data.estado) {
+                if (data.estado === "entregado") {
+                    data.entregadoEn = new Date();
+                }
+                if (data.estado === "verificado") {
+                    data.verificadoEn = new Date();
+                }
+                if (data.estado === "solicitado") {
+                    data.solicitadoEn = new Date();
                 }
             }
     
@@ -197,7 +218,8 @@ class PedidoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
             const pedido = await this.recuperar(id);
-            pedido.estado = "confirmado";
+            pedido.estado = "verificado";
+            pedido.verificadoEn = new Date();
             pedidosPorConfirmar.delete(id);
             return await pedidoRepo.save(pedido);
         });

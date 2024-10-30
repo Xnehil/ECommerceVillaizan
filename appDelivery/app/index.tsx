@@ -4,9 +4,10 @@ import * as Google from "expo-auth-session/providers/google";
 import { useAuthRequest } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import axios from "axios";
-import { UsuariosResponse } from "@/interfaces/interfaces";
+import { UsuarioResponse, UsuariosResponse } from "@/interfaces/interfaces";
 import { router } from "expo-router";
 import { getUserData, storeUserData } from "@/functions/storage";
+import { BASE_URL } from "@env";
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
@@ -30,25 +31,25 @@ export default function LoginScreen() {
   async function credentialLogIn() {
     setLoading(true);
     try {
-      const response = await axios.get<UsuariosResponse>(
-        "http://localhost:9000/admin/usuario/"
+      const response = await axios.get<UsuarioResponse>(
+        `${BASE_URL}/usuario/${username}?esCorreo=true`
       );
 
       // Extrae el primer motorizado
-      const repartidores = response.data;
+      const repartidor = response.data.usuario 
       let userFound = false;
-      for (const repartidor of repartidores.usuarios) {
-        if (username === repartidor.correo) {
-          setUsername("");
-          setPassword("");
-          storeUserData(repartidor);
-          router.push({
-            pathname: "/home",
-          });
-          userFound = true;
-          break;
-        }
+
+      if (username === repartidor.correo) {
+        setUsername("");
+        setPassword("");
+        storeUserData(repartidor);
+        // console.log("Usuario encontrado:", repartidor);
+        router.push({
+          pathname: "/home",
+        });
+        userFound = true;
       }
+      
       if (!userFound) {
         alert('No se encontró su usuario');
       }

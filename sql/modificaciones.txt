@@ -1,0 +1,34 @@
+BEGIN;
+
+-- Add id_promocion to vi_notificacion
+ALTER TABLE vi_notificacion
+ADD COLUMN id_promocion VARCHAR(50),
+ADD CONSTRAINT fk_id_promocion_notificacion FOREIGN KEY (id_promocion) REFERENCES vi_promocion(id);
+
+-- Add id_promocion to vi_producto
+ALTER TABLE vi_producto
+ADD COLUMN id_promocion VARCHAR(50),
+ADD CONSTRAINT fk_id_promocion_producto FOREIGN KEY (id_promocion) REFERENCES vi_promocion(id);
+
+-- Add id_promocion to vi_detallePedido
+ALTER TABLE vi_detallePedido
+ADD COLUMN id_promocion VARCHAR(50),
+ADD CONSTRAINT fk_id_promocion_detallePedido FOREIGN KEY (id_promocion) REFERENCES vi_promocion(id);
+
+-- Add id_combo to vi_notificacion
+ALTER TABLE vi_notificacion
+ADD COLUMN id_combo VARCHAR(50),
+ADD CONSTRAINT fk_id_combo_notificacion FOREIGN KEY (id_combo) REFERENCES vi_combo(id);
+
+-- Add id_combo to vi_detallePedido
+ALTER TABLE vi_detallePedido
+ADD COLUMN id_combo VARCHAR(50),
+ADD CONSTRAINT fk_id_combo_detallePedido FOREIGN KEY (id_combo) REFERENCES vi_combo(id);
+
+
+
+
+-- If something goes wrong or you want to undo changes, run this:
+--ROLLBACK;
+commit;
+

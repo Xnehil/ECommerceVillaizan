@@ -1,67 +1,20 @@
-import { Product } from "@medusajs/medusa"
-import { Metadata } from "next"
-
-import { getCollectionsList, getProductsList, getRegion } from "@lib/data"
-import FeaturedProducts from "@modules/home/components/featured-products"
-import Hero from "@modules/home/components/hero"
+"use client"; 
+import { useState } from "react";
 import Promotions from "@modules/home/components/promotions";
-import { ProductCollectionWithPreviews } from "types/global"
-import { cache } from "react"
-import CartButton from "@modules/layout/components/cart-button"
 
-export const metadata: Metadata = {
-  title: "Helados Villaizan",
-  description:
-    "Tienda de helados Villaizan, el papá de las paletas. Encuentra los mejores helados y paletas en Villaizan.",
-}
 
-const getCollectionsWithProducts = cache(
-  async (
-    countryCode: string
-  ): Promise<ProductCollectionWithPreviews[] | null> => {
-    const { collections } = await getCollectionsList(0, 3)
+export default function Home() {
+  const [trackingCode, setTrackingCode] = useState("");
 
-    if (!collections) {
-      return null
+  const handleTrackOrder = () => {
+    if (trackingCode) {
+      window.location.href = `http://localhost:8000/seguimiento?codigo=${trackingCode}`;
+    } else {
+      alert("Por favor, ingresa un código de seguimiento.");
     }
-
-    const collectionIds = collections.map((collection) => collection.id)
-
-    await Promise.all(
-      collectionIds.map((id) =>
-        getProductsList({
-          queryParams: { collection_id: [id] },
-          countryCode,
-        })
-      )
-    ).then((responses) =>
-      responses.forEach(({ response, queryParams }) => {
-        let collection
-
-        if (collections) {
-          collection = collections.find(
-            (collection) => collection.id === queryParams?.collection_id?.[0]
-          )
-        }
-
-        if (!collection) {
-          return
-        }
-
-        collection.products = response.products as unknown as Product[]
-      })
-    )
-
-    return collections as unknown as ProductCollectionWithPreviews[]
-  }
-)
-
-export default async function Home({
-}) {
-
+  };
   return (
     <div>
-
       {/* Imagen debajo del Hero */}
       <div className="relative w-full">
         <img
@@ -70,7 +23,30 @@ export default async function Home({
           className="w-full object-cover"
         />
       </div>
+      {/* Sección de Código de Seguimiento */}
+      <div className="tracking-section py-12 bg-[#f3f4f6] flex flex-col items-center rounded-lg shadow-lg mx-6 my-12">
+        <h2 className="text-3xl font-bold text-green-600 mb-4">Rastrea tu Pedido 🛵</h2>
+        <p className="text-md text-gray-600 mb-6 max-w-md text-center">
+          Ingresa tu código de seguimiento para obtener información sobre tu pedido.
+        </p>
 
+        <div className="flex flex-col md:flex-row gap-4 items-center w-full max-w-md">
+          <input
+            type="text"
+            placeholder="Código de seguimiento"
+            value={trackingCode}
+            onChange={(e) => setTrackingCode(e.target.value)}
+            className="tracking-input w-full md:flex-1 p-3 border border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 shadow-sm"
+          />
+
+          <button
+            onClick={handleTrackOrder}
+            className="bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-all shadow-md w-full md:w-auto"
+          >
+            Rastrea tu pedido
+          </button>
+        </div>
+      </div>
       {/* Componente de Promociones */}
       <Promotions />
 

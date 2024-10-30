@@ -19,6 +19,12 @@ import { Pedido } from "src/models/Pedido";
  *           type: string
  *         required: true
  *         description: ID del pedido
+ *       - in: query
+ *         name: pedido
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Incluir detalles del pedido
  *     responses:
  *       200:
  *         description: Detalles del pedido
@@ -37,7 +43,7 @@ export const GET = async (
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const id  = req.params.id;
     const  pedido  = req.query.pedido === 'true';
-    const relations = pedido ? ["motorizado", "direccion"] : [];
+    const relations = pedido ? ["motorizado", "motorizado.usuario", "direccion", "usuario", "metodosPago"] : [];
 
     try {
         const pedidoData = await pedidoService.recuperarConDetalle(id, { relations });

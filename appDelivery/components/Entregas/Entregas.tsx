@@ -17,8 +17,8 @@ import { getUserData } from "@/functions/storage";
 import * as Location from "expo-location";
 import Mapa from "./Mapa";
 import StyledIcon from "../StyledIcon";
-
-const baseUrl = "http://localhost:9000/admin";
+import { BASE_URL } from "@env"; 
+import TabBarIcon from "../StyledIcon";
 
 export default function Entregas() {
   const [pedidosNuevos, setPedidosNuevos] = useState<Pedido[]>([]);
@@ -64,11 +64,11 @@ export default function Entregas() {
   const fetchPedidos = async () => {
     try {
       const response = await axios.get(
-        `${baseUrl}/usuario/${usuario?.id}/repartidorPedidos?enriquecido=true`
+        `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos?enriquecido=true`
       );
       const pedidosResponse: PedidosResponse = response.data;
       const pedidosEnProceso = pedidosResponse.pedidos.filter(
-        (pedido) => pedido.estado === "En proceso"
+        (pedido) => pedido.estado === "enProgreso"
       );
       console.log(pedidosEnProceso);
       setPedidosAceptados(pedidosEnProceso);
@@ -223,8 +223,11 @@ export default function Entregas() {
           mode = {modoMultiple}
         />
       </View>
-      <View>
+      <View style={{flexDirection: 'row'}}>
         <Text style={styles.Titulo}>Tus Entregas</Text>
+        <TouchableOpacity onPress={fetchPedidos} style={styles.reloadButton}>
+          <TabBarIcon IconComponent={FontAwesome} name="refresh" color="black" />
+        </TouchableOpacity>
       </View>
       <View style={styles.containerMitad}>
         <ScrollView>
@@ -447,5 +450,11 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: "#FF4500", // Un color que lo diferencie del pedido regular
+  },
+  reloadButton: {
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

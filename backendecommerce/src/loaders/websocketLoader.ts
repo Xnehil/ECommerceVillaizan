@@ -170,6 +170,13 @@ const handleClientMessage = (
   }
 };
 
+export const enviarMensajeCliente = (id: string, type: string, mensaje: any) => {
+  const ws = conexiones.get(id);
+  if (ws) {
+    ws.send(JSON.stringify({ type, data: mensaje }));
+  }
+}
+
 export const enviarMensajeRepartidor = (id: string, type: string, mensaje: any) => {
   const ws = conexiones.get(id);
   if (ws) {

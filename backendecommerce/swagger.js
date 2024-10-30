@@ -757,6 +757,9 @@ const options = {
                 banco: {
                   $ref: '#/components/schemas/Banco',
                 },
+                pedido: {
+                  $ref: '#/components/schemas/Pedido',
+                },
               },
             },
           ],
@@ -770,7 +773,7 @@ const options = {
               properties: {
                 estado: {
                   type: 'string',
-                  example: 'En proceso',
+                  example: 'enProgreso',
                 },
                 prioridadEntrega: {
                   type: 'string',
@@ -813,6 +816,17 @@ const options = {
                   items: {
                     $ref: '#/components/schemas/MetodoPago',
                   },
+                },
+                pagos: {
+                  type: 'array',
+                  items: {
+                    $ref: '#/components/schemas/Pago',
+                  },
+                },
+                urlEvidencia: {
+                  type: 'string',
+                  example: 'http://example.com/evidencia.jpg',
+                  nullable: true,
                 },
               },
             },

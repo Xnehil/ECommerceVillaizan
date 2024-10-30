@@ -33,7 +33,7 @@ export class Venta extends EntidadBase {
     totalPaletas: number;
 
     @Column({ type: "int", nullable: false, name: "totalmafeletas" })
-    totalMafelitas: number;
+    totalMafeletas: number;
 
     @Column({ type: "varchar", length: 50, nullable: false })
     estado: string;

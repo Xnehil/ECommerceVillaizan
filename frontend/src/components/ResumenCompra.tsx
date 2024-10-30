@@ -138,7 +138,11 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         console.log(response.data);
       }
       const pedidoActualizado = response.data.pedido;
-      let codigoSeguimiento = "123456";
+      let codigoSeguimiento = pedidoActualizado.codigoSeguimiento;
+      // Copiar cookie de carrito a cookie de pedido
+      document.cookie = `_medusa_pedido_id=${pedidoActualizado.id}; path=/`;
+      // Eliminar cookie de carrito 
+      document.cookie = "_medusa_cart_id = ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
       window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
     } catch (error) {
       const axiosError = error as AxiosError;
