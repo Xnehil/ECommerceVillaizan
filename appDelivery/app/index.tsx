@@ -7,6 +7,7 @@ import axios from "axios";
 import { UsuarioResponse, UsuariosResponse } from "@/interfaces/interfaces";
 import { router } from "expo-router";
 import { getUserData, storeUserData } from "@/functions/storage";
+import { BASE_URL } from "@env";
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
@@ -31,7 +32,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       const response = await axios.get<UsuarioResponse>(
-        "http://localhost:9000/admin/usuario/"+username+"?esCorreo=true"
+        `${BASE_URL}/usuario/${username}?esCorreo=true`
       );
 
       // Extrae el primer motorizado

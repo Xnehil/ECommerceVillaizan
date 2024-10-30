@@ -78,7 +78,7 @@ export default function TabLayout() {
         headerShown: useClientOnlyValue(false, true),
         tabBarStyle: {
           height: 70,
-          paddingBottom: 10, // Espaciado inferior
+          paddingBottom: 10, 
         },
       }}
     >

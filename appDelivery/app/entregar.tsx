@@ -7,6 +7,9 @@ import {
   Image,
   TouchableOpacity,
   Pressable,
+  Modal,
+  TextInput,
+  Alert,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import SwipeButton from "rn-swipe-button";
@@ -16,34 +19,250 @@ import TabBarIcon from "@/components/StyledIcon";
 import { DetallePedido } from "@/interfaces/interfaces";
 import { Link, router } from "expo-router";
 import { getCurrentDelivery, storeCurrentDelivery } from "@/functions/storage";
+import { BASE_URL } from "@env";
+import { useRef } from "react";
 
 const EntregarPedido = () => {
   const route = useRoute();
-  const { pedido } = route.params as { pedido?: string } || { pedido: null };
+  const { pedido } = (route.params as { pedido?: string }) || { pedido: null };
 
   const parsedPedido = pedido ? JSON.parse(decodeURIComponent(pedido)) : {};
 
   const [pedidoCompleto, setPedidoCompleto] = useState<any>(null);
+  const [modalCancelVisible, setModalCancelVisible] = useState(false);
+  const [motivoCancelacion, setMotivoCancelacion] = useState("");
+  const [otroMotivo, setOtroMotivo] = useState("");
+  const [fotoPedido, setFotoPedido] = useState<string | null>(null);
+  const [fotoPago, setFotoPago] = useState<string | null>(null);
+
+  const [imageOptionsVisible, setImageOptionsVisible] = useState(false);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [mensajeModal, setMensajeModal] = useState<string | null>(null);
+  const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion">("auto");
+
+  const mostrarMensaje = (
+    mensaje: string,
+    tipo: "auto" | "confirmacion" = "auto"
+  ) => {
+    setMensajeModal(mensaje);
+    setTipoModal(tipo);
+
+    if (tipo === "auto") {
+      setTimeout(() => setMensajeModal(null), 3000); // Desvanece automáticamente después de 3 segundos
+    }
+  };
+
+  useEffect(() => {
+    if (videoStream && videoRef.current) {
+      videoRef.current.srcObject = videoStream; // Asigna el stream al video
+    }
+  }, [videoStream]);
+
+  const renderImageOptionsModal = () => (
+    <Modal
+      visible={imageOptionsVisible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={() => setImageOptionsVisible(false)}
+    >
+      <View style={styles.modalContainer}>
+        <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
+
+        {videoStream ? (
+          <View style={styles.videoWrapper}>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              onLoadedMetadata={() => {
+                console.log("Video cargado y listo para capturar.");
+              }}
+              style={styles.video}
+            />
+            <TouchableOpacity
+              style={styles.captureButtonOverlay}
+              onPress={() => capturePhoto(currentImageId!, currentImageType!)}
+            >
+              <Text style={styles.captureButtonText}>Tomar Foto</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={() =>
+                handleCameraCapture(currentImageId!, currentImageType!)
+              }
+            >
+              <Text style={styles.optionButtonText}>Tomar Foto</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={() =>
+                handleImageSelection(currentImageId!, currentImageType!)
+              }
+            >
+              <Text style={styles.optionButtonText}>
+                Seleccionar de la Galería
+              </Text>
+            </TouchableOpacity>
+          </>
+        )}
+
+        <TouchableOpacity
+          style={styles.cancelButton}
+          onPress={() => {
+            videoStream?.getTracks().forEach((track) => track.stop());
+            setVideoStream(null);
+            setImageOptionsVisible(false);
+          }}
+        >
+          <Text style={styles.cancelButtonText}>Cancelar</Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+  );
+
+  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
+  const [currentImageType, setCurrentImageType] = useState<
+    "pedido" | "pago" | null
+  >(null);
+
+  const showImageOptions = (id: string, tipo: "pedido" | "pago") => {
+    setCurrentImageId(id);
+    setCurrentImageType(tipo);
+    setImageOptionsVisible(true);
+  };
 
 
-  const handleCancelEntrega = async () => {
+  const handleImageSelection = async (id: string, tipo: "pedido" | "pago") => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "environment";
+
+    input.onchange = async (event: any) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const imageData = reader.result as string;
+
+          if (tipo === "pedido") {
+            setFotoPedido(imageData);
+          } else if (tipo === "pago") {
+            setFotoPago(imageData);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    input.click();
+    setImageOptionsVisible(false);
+    
+  };
+
+  const handleCameraCapture = async (id: string, tipo: "pedido" | "pago") => {
     try {
-      const confirm = window.confirm(
-        "¿Está seguro de que desea reasginar la entrega?"
-      );
-      if (!confirm) return;
-
-      const baseUrl = "http://localhost:9000/admin";
-      await axios.put(`${baseUrl}/pedido/${parsedPedido.id}`, {
-        estado: "Cancelado",
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
       });
-      alert("Entrega reasginada");
-      router.push({
-        pathname: "/cancelada",
-      });
+      setVideoStream(stream);
     } catch (error) {
-      console.error("Error updating pedido:", error);
-      alert("Error al reasginar la entrega");
+      console.error("Error al acceder a la cámara:", error);
+      mostrarMensaje("No se pudo acceder a la cámara.","confirmacion");
+    }
+  };
+
+  const capturePhoto = (id: string, tipo: "pedido" | "pago") => {
+    const video = videoRef.current;
+
+    if (!video || !video.videoWidth || !video.videoHeight) {
+      console.error("El video no está listo para capturar.");
+      mostrarMensaje("Espere a que el video esté listo para capturar la foto.", "confirmacion");
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const imageData = canvas.toDataURL("image/png");
+
+    if (tipo === "pedido") {
+      setFotoPedido(imageData);
+    } else if (tipo === "pago") {
+      setFotoPago(imageData);
+    }
+
+    videoStream?.getTracks().forEach((track) => track.stop()); // Detener la cámara
+    setVideoStream(null); // Limpiar el stream
+    setImageOptionsVisible(false); // Cerrar el modal
+  };
+
+  const enviarImagen = async (id: string, tipo: "pedido" | "pago") => {
+    try {
+      const imagenData = tipo === "pedido" ? fotoPedido : fotoPago;
+      if (!imagenData) throw new Error("No hay imagen disponible.");
+
+      // Convertimos el Data URL (Base64) a un archivo Blob
+      const byteString = atob(imagenData.split(",")[1]);
+      const mimeString = imagenData.split(",")[0].split(":")[1].split(";")[0];
+      const arrayBuffer = new ArrayBuffer(byteString.length);
+      const intArray = new Uint8Array(arrayBuffer);
+
+      for (let i = 0; i < byteString.length; i++) {
+        intArray[i] = byteString.charCodeAt(i);
+      }
+
+      const blob = new Blob([intArray], { type: mimeString });
+      const file = new File([blob], `${tipo}-${id}.png`, { type: mimeString });
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fileName", `${tipo}-${id}.png`);
+      if (tipo === "pago") {
+        formData.append("folderId", "1z4G9rU8EW9whmnrrVcaL76an-8vM-Ncv");
+      } else if (tipo === "pedido") {
+        formData.append("folderId", "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb");
+      }
+      const response = await axios.post(`${BASE_URL}/imagenes`, formData);
+
+      const { fileUrl } = response.data; 
+
+      mostrarMensaje(`Imagen enviada con éxito: ${fileUrl}`);
+      return fileUrl;
+    } catch (error) {
+      console.error(`Error al enviar la imagen de ${tipo}:`, error);
+      mostrarMensaje(`Error al enviar la imagen de ${tipo}.`,"confirmacion");
+    }
+  };
+
+  const handleCancelEntrega = () => {
+    setModalCancelVisible(true); // Mostrar el modal de cancelación
+  };
+
+  const confirmarCancelacion = async () => {
+    try {
+      const motivo =
+        motivoCancelacion === "Otro" ? otroMotivo : motivoCancelacion;
+      await axios.put(`${BASE_URL}/pedido/${parsedPedido.id}`, {
+        estado: "Cancelado",
+        motivoCancelacion: motivo,
+      });
+      mostrarMensaje("Entrega reasignada");
+      router.push("/cancelada");
+    } catch (error) {
+      console.error("Error al reasignar la entrega:", error);
+      mostrarMensaje("Error al reasignar la entrega","confirmacion");
+    } finally {
+      setModalCancelVisible(false);
     }
   };
 
@@ -54,32 +273,31 @@ const EntregarPedido = () => {
       );
       if (!confirm) return;
 
-      const baseUrl = "http://localhost:9000/admin";
-      await axios.put(`${baseUrl}/pedido/${parsedPedido.id}`, {
+      await axios.put(`${BASE_URL}/pedido/${parsedPedido.id}`, {
         estado: "Entregado",
       });
-      alert("Entrega confirmada");
+      enviarImagen(parsedPedido.id, "pedido");
+      enviarImagen(parsedPedido.id, "pago");
+      mostrarMensaje("Entrega confirmada");
       router.push({
         pathname: "/confirmada",
       });
     } catch (error) {
       console.error("Error updating pedido:", error);
-      alert("Error al confirmar la entrega");
+      mostrarMensaje("Error al confirmar la entrega","confirmacion");
     }
   };
 
   const fetchPedidoCompleto = async (idPedido: string) => {
     try {
-      const baseUrl = "http://localhost:9000/admin";
-
       // Obtener los datos del pedido
       const pedidoResponseDetalle = await axios.get(
-        `${baseUrl}/pedido/${idPedido}/conDetalle`
+        `${BASE_URL}/pedido/${idPedido}/conDetalle`
       );
       const pedidoDataDetalle = pedidoResponseDetalle.data.pedido;
 
       const pedidoResponse = await axios.get(
-        `${baseUrl}/pedido/${idPedido}?enriquecido=true`
+        `${BASE_URL}/pedido/${idPedido}?enriquecido=true`
       );
       let pedidoData = pedidoResponse.data.pedido;
       pedidoData.detalles = pedidoDataDetalle.detalles;
@@ -87,7 +305,7 @@ const EntregarPedido = () => {
       const detallesPromises = pedidoData.detalles.map(async (detalle: any) => {
         try {
           const detalleResponse = await axios.get(
-            `${baseUrl}/detallePedido/${detalle.id}`
+            `${BASE_URL}/detallePedido/${detalle.id}`
           );
           return detalleResponse.data.detallePedido;
         } catch (error) {
@@ -106,7 +324,7 @@ const EntregarPedido = () => {
       // Establecer el estado una vez que todos los detalles estén listos
       storeCurrentDelivery(pedidoData);
       setPedidoCompleto(pedidoData);
-      router.replace('/entregar')
+      router.replace("/entregar");
     } catch (error) {
       console.error("Error fetching pedido completo:", error);
     }
@@ -194,11 +412,14 @@ const EntregarPedido = () => {
               </Pressable>
             </Link>
           </View>
-          <TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => showImageOptions(pedidoCompleto?.id, "pedido")}
+          >
             <TabBarIcon
               IconComponent={FontAwesome}
               name="camera"
-              color="#C9CC00"
+              color={fotoPedido ? "#3BD100" : "#C9CC00"}
               size={30}
             />
           </TouchableOpacity>
@@ -244,14 +465,18 @@ const EntregarPedido = () => {
                   )}
                 </View>
                 <View style={styles.rightInfo}>
-                  <View style={{ justifyContent: "center" }}>
+                  <TouchableOpacity
+                    onPress={() => showImageOptions(pedidoCompleto?.id, "pago")}
+                  >
                     <TabBarIcon
                       IconComponent={FontAwesome}
                       name="camera"
-                      color="#C9CC00"
+                      color={
+                        fotoPago ? "#3BD100" : "#C9CC00"
+                      } // Darker green color
                       size={30}
                     />
-                  </View>
+                  </TouchableOpacity>
                 </View>
               </View>
             </View>
@@ -277,6 +502,92 @@ const EntregarPedido = () => {
           <Text style={styles.confirmButtonText}>Confirmar entrega</Text>
         </TouchableOpacity>
       </View>
+      <Modal
+        visible={modalCancelVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalCancelVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Cancelar Entrega</Text>
+          <Text style={styles.modalSubtitle}>Selecciona el motivo:</Text>
+          <ScrollView>
+            {[
+              "Pedido excede stock",
+              "Problemas mecánicos",
+              "Condiciones climáticas adversas",
+              "Pedido en hora no disponible",
+              "Ubicación insegura",
+              "Problemas de salud",
+              "Falta de medios de pago",
+              "Otro",
+            ].map((motivo) => (
+              <TouchableOpacity
+                key={motivo}
+                onPress={() => setMotivoCancelacion(motivo)}
+                style={[
+                  styles.motivoItem,
+                  motivoCancelacion === motivo && styles.motivoItemSelected,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.motivoText,
+                    motivoCancelacion === motivo && styles.motivoTextSelected,
+                  ]}
+                >
+                  {motivo}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            {motivoCancelacion === "Otro" && (
+              <TextInput
+                style={styles.input}
+                placeholder="Especifica el motivo"
+                value={otroMotivo}
+                onChangeText={setOtroMotivo}
+              />
+            )}
+          </ScrollView>
+          <View style={styles.modalBotones}>
+            <TouchableOpacity
+              style={styles.boton}
+              onPress={() => setModalCancelVisible(false)}
+            >
+              <Text style={styles.botonTexto2}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.boton}
+              onPress={confirmarCancelacion}
+            >
+              <Text style={styles.botonTexto2}>Confirmar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {renderImageOptionsModal()}
+      {mensajeModal && (
+        <Modal
+          visible={true}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setMensajeModal(null)}
+        >
+          <View style={styles.mensajeModalContainer}>
+            <View style={styles.mensajeModalContent}>
+              <Text style={styles.mensajeModalTexto}>{mensajeModal}</Text>
+              {tipoModal === "confirmacion" && (
+                <TouchableOpacity
+                  style={styles.boton}
+                  onPress={() => setMensajeModal(null)}
+                >
+                  <Text style={styles.botonTexto2}>Aceptar</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };
@@ -369,6 +680,26 @@ const styles = StyleSheet.create({
   rightInfo: {
     justifyContent: "center",
   },
+  videoContainer: {
+    width: "100%",
+    height: 300,
+    marginVertical: 20,
+    backgroundColor: "#000",
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  captureButton: {
+    backgroundColor: "#4CAF50",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  captureButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   metodoNombre: {
     paddingHorizontal: 10,
     fontSize: 16,
@@ -424,6 +755,26 @@ const styles = StyleSheet.create({
     flex: 1,
     fontWeight: "bold",
   },
+  videoWrapper: {
+    position: "relative",
+    width: "100%",
+    height: 400, // Ajusta según tu necesidad
+    marginBottom: 20,
+  },
+  video: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 10,
+  },
+  captureButtonOverlay: {
+    position: "absolute",
+    bottom: 20,
+    alignSelf: "center",
+    backgroundColor: "#FF6347",
+    padding: 15,
+    borderRadius: 50,
+    zIndex: 1,
+  },
   iconoPago: {
     width: 40,
     height: 40,
@@ -457,6 +808,112 @@ const styles = StyleSheet.create({
   },
   swipeButtonContainer: {
     marginTop: 30,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "white",
+    padding: 20,
+    marginHorizontal: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  motivoItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  motivoText: {
+    fontSize: 16,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 10,
+  },
+  motivoTextSelected: {
+    fontWeight: "bold",
+    color: "#aa0000",
+  },
+  optionButton: {
+    backgroundColor: "#4CAF50", // Verde para las opciones de cámara y galería
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 5,
+  },
+  optionButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    backgroundColor: "#F44336", // Rojo para el botón de cancelar
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  cancelButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  motivoItemSelected: {
+    backgroundColor: "#f0f0f0",
+  },
+  modalBotones: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  boton: {
+    backgroundColor: "#aa0000", // Rojo oscuro
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 10,
+    marginHorizontal: 5,
+    flex: 1,
+  },
+  botonTexto2: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  mensajeModalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  mensajeModalContent: {
+    width: "80%",
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  mensajeModalTexto: {
+    fontSize: 18,
+    textAlign: "center",
   },
 });
 
