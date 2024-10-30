@@ -11,7 +11,7 @@ const DeliverySuccessScreen = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push({
-        pathname: "/home/deliverys",
+        pathname: "/home/delivery",
       });
     }, 3000);
 

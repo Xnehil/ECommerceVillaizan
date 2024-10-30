@@ -44,6 +44,8 @@ const getUserData = async (): Promise<Usuario | null> => {
   }
 };
 
+
+
 const storeCurrentDelivery = async (delivery: Pedido) => {
   try {
     await AsyncStorage.setItem('@current_delivery', JSON.stringify(delivery));
@@ -67,3 +69,27 @@ const getCurrentDelivery = async (): Promise<Pedido | null> => {
 
 
 export { storeUserSession, getUserSession, storeUserData, getUserData, getCurrentDelivery,  storeCurrentDelivery};
+import { Motorizado } from "@/interfaces/interfaces";
+
+const storeMotorizadoData = async (data: Motorizado) => {
+  try {
+    await AsyncStorage.setItem('@motorizado_data', JSON.stringify(data));
+  } catch (e) {
+    console.error('Error saving motorizado data', e);
+  }
+};
+
+const getMotorizadoData = async (): Promise<Motorizado | null> => {
+  try {
+    const data = await AsyncStorage.getItem('@motorizado_data');
+    if (data !== null) {
+      return JSON.parse(data) as Motorizado;
+    }
+    return null;
+  } catch (e) {
+    console.error('Error retrieving motorizado data', e);
+    return null;
+  }
+};
+
+export { storeMotorizadoData, getMotorizadoData };
