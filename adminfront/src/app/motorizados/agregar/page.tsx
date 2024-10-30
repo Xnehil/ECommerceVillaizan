@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import "@/styles/general.css";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import InformacionGeneral from "./informacionGeneral";
-import InformacionAdicional from "./informacionAdicional";
-import { Input } from "@/components/ui/input";
+import InformacionVehiculo from "@/app/motorizados/agregar/informacionVehiculo";
+import InformacionRepartidor from "@/app/motorizados/agregar/informacionRepartidor";
 import { Producto } from "@/types/PaqueteProducto";
 import axios from "axios";
 import Loading from "@/components/Loading";
 import { useToast } from "@/hooks/use-toast";
-import { Label } from "@/components/ui/label";
 
 import {
   AlertDialog,
@@ -51,8 +49,6 @@ const AgregarPage: React.FC = () => {
     router.back();
   };
 
-
-
   const handleSave = async () => {
     setIsLoading(true);
     console.log("Saving product");
@@ -79,7 +75,7 @@ const AgregarPage: React.FC = () => {
       return;
     }
 
-    if(!imagen.current) {
+    if (!imagen.current) {
       setIsLoading(false);
       toast({
         variant: "destructive",
@@ -96,7 +92,6 @@ const AgregarPage: React.FC = () => {
       formData.append("file", imagen.current);
       formData.append("fileName", imagen.current.name);
       formData.append("folderId", "productos");
-      
 
       const responseImagen = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}imagenes`,
@@ -151,24 +146,15 @@ const AgregarPage: React.FC = () => {
   return (
     <div className="content-container">
       {isLoading && <Loading />}
-      <div className="flex flex-row items-center space-x-2">
-        <>
-          {isEditing ? (
-            <h4>
-              Nuevo motorizado
-            </h4>
-          ) : (
-            <h4>
-              Motorizado
-            </h4>
-          )}
-          {/* {isEditing && <span className="text-red-500">*</span>} */}
-        </>
-      </div>
+      {isEditing ? <h4>Nuevo motorizado</h4> : <h4>Motorizado</h4>}
       <Separator />
       <div className="information-container">
-        <InformacionGeneral motorizado={motorizado} isEditing={isEditing} imagen={imagen} />
-        <InformacionAdicional usuario={usuario} isEditing={isEditing} />
+        <InformacionVehiculo
+          motorizado={motorizado}
+          isEditing={isEditing}
+          imagen={imagen}
+        />
+        <InformacionRepartidor usuario={usuario} isEditing={isEditing} />
         <div className="buttons-side-container">
           <div className="lower-buttons-container">
             {isEditing ? (
