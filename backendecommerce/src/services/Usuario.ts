@@ -92,6 +92,19 @@ class UsuarioService extends TransactionBaseService {
         return usuario;
     }
 
+    async cambiarContrasena(
+        id: string,
+        nuevaContrasena: string
+    ): Promise<Usuario> {
+        return this.atomicPhase_(async (manager) => {
+            const usuarioRepo = manager.withRepository(this.usuarioRepository_);
+            const usuario = await this.recuperar(id);
+            const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
+            usuario.contrasena = hashedPassword;
+            return await usuarioRepo.save(usuario);
+        });
+    }
+
     async crear(usuario: Usuario): Promise<Usuario> {
         const hashedPassword = await bcrypt.hash(usuario.contrasena, 10);
         usuario.contrasena = hashedPassword;
