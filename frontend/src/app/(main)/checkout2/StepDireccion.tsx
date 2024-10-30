@@ -10,6 +10,9 @@ import { useRouter } from 'next/navigation';
 
 import { useSession } from 'next-auth/react';
 
+import LoggedInAddresses from "./LoggedInAddresses";
+import { Button } from "@components/Button"
+
 
 interface StepDireccionProps {
   setStep: (step: string) => void;
@@ -52,7 +55,12 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   const [userConCuenta, setUserConCuenta] = useState(false);
   const [userNroDoc, setUserNroDoc] = useState('');
   const [userPersonaId, setUserPersonaId] = useState('');
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
+  const handleToggleAddress = (addressId: string | null) => {
+    setSelectedAddressId(addressId);
+    console.log('Selected Address ID:', addressId);
+  };
 
   const handleMapSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
@@ -447,78 +455,80 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
                   placeholder="Lima"
                   disabled={true}
                 />
-                <button
-                  className="px-4 py-2 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2"
-                  onClick={() => setShowMapModal(true)}
-                >
-                  <img src="/images/mapa.png" alt="Mapa" className="h-8" />
-                  Selecciona en el mapa
-                </button>
+                {!session?.user?.id && (
+                  <button
+                    className="px-4 py-2 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2"
+                    onClick={() => setShowMapModal(true)}
+                  >
+                    <img src="/images/mapa.png" alt="Mapa" className="h-8" />
+                    Selecciona en el mapa
+                  </button>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="w-full grid grid-cols-2 gap-2">
-              <div>
-                <label
-                  htmlFor="direccion"
-                  className="block text-lg font-medium text-gray-700"
-                >
-                  Dirección <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="direccion"
-                  value={calle}
-                  onChange={handleCalleChange}
-                  className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="Calle Malvinas 123"
-                  ref={inputRef}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="numero"
-                  className="block text-lg font-medium text-gray-700"
-                >
-                  Número interior
-                </label>
-                <input
-                  type="text"
-                  id="numero"
-                  value={numeroInterior}
-                  onChange={handleNroInteriorChange}
-                  className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="No rellenar si no aplica"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <img
-              src="/images/referencia.png"
-              alt="Referencia"
-              className="h-14"
-            />
-            <div className="w-full">
-              <label
-                htmlFor="referencia"
-                className="block text-lg font-medium text-gray-700"
-              >
-                Referencia
-              </label>
-              <input
-                type="text"
-                id="referencia"
-                value={referencia}
-                onChange={handleReferenciaChange}
-                className="mt-1 block w-full p-2 border rounded-md"
-                placeholder="Esquina del parque Tres Marías"
-              />
-            </div>
-          </div>
+          {status === "loading" ? (
+            <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
+          ) : !session?.user?.id ? (
+            <><div className="flex items-center gap-3">
+                <div className="w-full grid grid-cols-2 gap-2">
+                  <div>
+                    <label
+                      htmlFor="direccion"
+                      className="block text-lg font-medium text-gray-700"
+                    >
+                      Dirección <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      id="direccion"
+                      value={calle}
+                      onChange={handleCalleChange}
+                      className="mt-1 block w-full p-2 border rounded-md"
+                      placeholder="Calle Malvinas 123"
+                      ref={inputRef} />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="numero"
+                      className="block text-lg font-medium text-gray-700"
+                    >
+                      Número interior
+                    </label>
+                    <input
+                      type="text"
+                      id="numero"
+                      value={numeroInterior}
+                      onChange={handleNroInteriorChange}
+                      className="mt-1 block w-full p-2 border rounded-md"
+                      placeholder="No rellenar si no aplica" />
+                  </div>
+                </div>
+              </div><div className="flex items-center gap-3">
+                  <img
+                    src="/images/referencia.png"
+                    alt="Referencia"
+                    className="h-14" />
+                  <div className="w-full">
+                    <label
+                      htmlFor="referencia"
+                      className="block text-lg font-medium text-gray-700"
+                    >
+                      Referencia
+                    </label>
+                    <input
+                      type="text"
+                      id="referencia"
+                      value={referencia}
+                      onChange={handleReferenciaChange}
+                      className="mt-1 block w-full p-2 border rounded-md"
+                      placeholder="Esquina del parque Tres Marías" />
+                  </div>
+                </div></>
+          ) : (
+            <LoggedInAddresses userId={session.user.id} ciudad={ciudad} toggleAllowed={true} onToggleAddress={handleToggleAddress}/>
+          )}
 
           <div className="flex items-center gap-3">
             <img src="/images/telefono.png" alt="Teléfono" className="h-14" />

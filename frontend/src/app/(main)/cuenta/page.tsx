@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import InputWithLabel from "@components/inputWithLabel";
 import { Direccion } from 'types/PaqueteEnvio';
-import AddressCard from './AddressCard'; // Import the new component
-import AddAddressButton from './AddressButton';
-import AddressModal from './AddressModal'; // Import the Modal component
-import AddressForm from './AddressForm'; // Import the AddressForm component
-import EliminationPopUp from './EliminationPopUp'; // Import the EliminationPopUp component
+import AddressCard from '../../../components/address/AddressCard'; // Import the new component
+import AddAddressButton from '../../../components/address/AddressButton';
+import AddressModal from '../../../components/address/AddressModal'; // Import the Modal component
+import AddressForm from '../../../components/address/AddressForm'; // Import the AddressForm component
+import EliminationPopUp from '../../../components/address/EliminationPopUp'; // Import the EliminationPopUp component
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -139,6 +139,8 @@ const Cuenta = () => {
                 direccion={direccion}
                 onEdit={() => handleEdit(direccion)}
                 onDelete={() => handleDelete(direccion)}
+                showBorder={true}
+                size="medium"
               />
             ))}
           </div>
@@ -150,7 +152,7 @@ const Cuenta = () => {
         </div>
       </div>
       <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} onClose={onClose}/>
+        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} onClose={onClose} mandatoryCiudad={false} mandatoryCiudadNombre=''/>
       </AddressModal>
       <EliminationPopUp
         isOpen={isPopUpOpen}

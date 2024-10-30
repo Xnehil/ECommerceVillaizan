@@ -11,9 +11,11 @@ interface AddressFormProps {
   onCreatedDireccion: (createdDireccion: Direccion) => void;
   userId: string;
   onClose: () => void;
+  mandatoryCiudad: boolean;
+  mandatoryCiudadNombre: string;
 }
 
-const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDireccion, onCreatedDireccion, userId, onClose }) => {
+const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDireccion, onCreatedDireccion, userId, onClose, mandatoryCiudad, mandatoryCiudadNombre }) => {
   const [nombre, setNombre] = useState('');
   const [calle, setCalle] = useState('');
   const [numeroExterior, setNumeroExterior] = useState('');
@@ -141,25 +143,35 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
       />
       <div>
         <label htmlFor="ciudad">Ciudad</label>
-        <select
-          id="ciudad"
-          value={ciudadId}
-          onChange={(e) => {
-            const selectedCiudadId = e.target.value;
-            const selectedCiudad = ciudades.find(ciudad => ciudad.id === selectedCiudadId);
-            setCiudadId(selectedCiudadId);
-            setCiudadNombre(selectedCiudad ? selectedCiudad.nombre : '');
-          }}
-          required
-          className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        >
-          <option value="">Seleccione una ciudad</option>
-          {ciudades.map((ciudad) => (
-            <option key={ciudad.id} value={ciudad.id}>
-              {ciudad.nombre}
-            </option>
-          ))}
-        </select>
+        {mandatoryCiudad ? (
+          <input
+            type="text"
+            id="ciudad"
+            value={mandatoryCiudadNombre}
+            readOnly
+            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          />
+        ) : (
+          <select
+            id="ciudad"
+            value={ciudadId}
+            onChange={(e) => {
+              const selectedCiudadId = e.target.value;
+              const selectedCiudad = ciudades.find(ciudad => ciudad.id === selectedCiudadId);
+              setCiudadId(selectedCiudadId);
+              setCiudadNombre(selectedCiudad ? selectedCiudad.nombre : '');
+            }}
+            required
+            className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          >
+            <option value="">Seleccione una ciudad</option>
+            {ciudades.map((ciudad) => (
+              <option key={ciudad.id} value={ciudad.id}>
+                {ciudad.nombre}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
         <button type="submit" style={styles.confirmButton}>
