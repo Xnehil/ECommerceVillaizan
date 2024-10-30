@@ -47,6 +47,9 @@ const PedidosPage: React.FC = () => {
 
         const pedidosData: Pedido[] = data.pedidos;
 
+        // reverse the array to show the most recent orders first
+        pedidosData.reverse();
+
         pedidosData.forEach((pedido) => {
           switch (pedido.estado) {
             case "solicitado":
