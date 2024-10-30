@@ -33,10 +33,8 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     const enriquecido = req.query.enriquecido === "true";
     try {
         const pedido = await pedidoService.recuperar(id, {
-            skip: 0,
-            take: 20,
             relations: enriquecido
-                ? ["motorizado", "direccion", "usuario"]
+                ? ["motorizado", "direccion", "usuario", "metodosPago"]
                 : [],
         });
         res.json({ pedido });
