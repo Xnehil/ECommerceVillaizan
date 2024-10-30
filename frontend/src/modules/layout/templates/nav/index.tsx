@@ -71,6 +71,15 @@ export default function Nav() {
                 }
               }
             }
+            else{
+              //search in bd if there is a pedido with the user id, if there is, put it on the cookie. the axios is axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${userId}`);
+              const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
+              const pedido = response.data.pedido;
+              if(pedido){
+                console.log("Pedido encontrado", pedido)
+                document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
+              }
+            }
           } catch (error) {
             console.error('Error fetching user name:', error);
           }
