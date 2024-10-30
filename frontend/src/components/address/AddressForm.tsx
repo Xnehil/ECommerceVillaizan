@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import InputWithLabel from '@components/inputWithLabel';
 import { Direccion } from 'types/PaqueteEnvio';
 import axios from 'axios';
-import { set } from 'lodash';
 
 interface AddressFormProps {
   state: 'Editar' | 'Crear';
@@ -15,7 +14,16 @@ interface AddressFormProps {
   mandatoryCiudadNombre: string;
 }
 
-const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDireccion, onCreatedDireccion, userId, onClose, mandatoryCiudad, mandatoryCiudadNombre }) => {
+const AddressForm: React.FC<AddressFormProps> = ({
+  state,
+  direccion,
+  onUpdateDireccion,
+  onCreatedDireccion,
+  userId,
+  onClose,
+  mandatoryCiudad,
+  mandatoryCiudadNombre
+}) => {
   const [nombre, setNombre] = useState('');
   const [calle, setCalle] = useState('');
   const [numeroExterior, setNumeroExterior] = useState('');
@@ -51,14 +59,15 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
+    console.log('Form submitted'); // Check if this runs
     event.preventDefault();
-    console.log({ nombre, calle, numeroExterior, numeroInterior, referencia, ciudadId });
-
-    if (state === 'Editar' && direccion) {
-      try {
+    /*console.log('Prevented default'); // Check if this runs
+    try {
+      console.log({ nombre, calle, numeroExterior, numeroInterior, referencia, ciudadId });
+      if (state === 'Editar' && direccion) {
         const responseCiudad = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ciudad/${ciudadId}`);
         const ciudad = responseCiudad.data.ciudad;
-
+  
         const direccionSubmit: Direccion = {
           ...direccion,
           nombre,
@@ -68,40 +77,36 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
           referencia,
           ciudad
         };
-
+  
         const response = await axios.put(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${direccion.id}`, direccionSubmit);
         const updatedDireccion = response.data.direccion;
         onUpdateDireccion(updatedDireccion);
-      } catch (error) {
-        console.error('Error updating direccion:', error);
+      } else {
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion`, {
+          nombre: nombre,
+          calle: calle,
+          numeroExterior: numeroExterior,
+          numeroInterior: numeroInterior,
+          referencia: referencia,
+          guardada: true,
+          distrito: "",
+          ciudad: {
+            id: ciudadId,
+            nombre: ciudadNombre
+          },
+          usuario: {
+            id: userId
+          }
+        });
+        const createdDireccion = response.data.direccion;
+        onCreatedDireccion(createdDireccion);
       }
-    }
-    else{
-        try {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion`, {
-                nombre: nombre,
-                calle: calle,
-                numeroExterior: numeroExterior,
-                numeroInterior: numeroInterior,
-                referencia: referencia,
-                guardada: true,
-                distrito: "",
-                ciudad:{
-                    id: ciudadId,
-                    nombre: ciudadNombre
-                },
-                usuario:{
-                    id: userId
-                }                
-              });
-            const createdDireccion = response.data.direccion;
-            onCreatedDireccion(createdDireccion);
-         }
-        catch (error) {
-            console.error('Error creating direccion:', error);
-        }
-    }
+    } catch (error) {
+      console.error('Error occurred while submitting:', error);
+      alert('An error occurred. Please check the console for more details.');
+    }*/
   };
+  
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -175,33 +180,32 @@ const AddressForm: React.FC<AddressFormProps> = ({ state, direccion, onUpdateDir
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
         <button type="submit" style={styles.confirmButton}>
-            {state === 'Crear' ? 'Crear Dirección' : 'Guardar Cambios'}
+          {state === 'Crear' ? 'Crear Dirección' : 'Guardar Cambios'}
         </button>
         <button type="button" onClick={onClose} style={styles.cancelButton}>
-            Cancelar
+          Cancelar
         </button>
       </div>
-      
     </form>
   );
 };
 
 const styles = {
-    confirmButton: {
-      padding: '10px 20px',
-      borderRadius: '5px',
-      border: 'none',
-      cursor: 'pointer',
-      backgroundColor: 'black',
-      color: 'white',
-    },
-    cancelButton: {
-      padding: '10px 20px',
-      borderRadius: '5px',
-      cursor: 'pointer',
-      backgroundColor: 'white',
-      color: 'red',
-    },
-  };
+  confirmButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+    backgroundColor: 'black',
+    color: 'white',
+  },
+  cancelButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    backgroundColor: 'white',
+    color: 'red',
+  },
+};
 
 export default AddressForm;

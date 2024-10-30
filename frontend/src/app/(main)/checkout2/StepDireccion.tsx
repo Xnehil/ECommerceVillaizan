@@ -167,7 +167,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     )
   }
 
-  const handleSubmit = async () => {
+  const handleSubmitPadre = async () => {
+    console.log("SUBMIT PADRE")
     if  (!isFormValid()) {
       setShowWarnings(true);
       return;
@@ -312,8 +313,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
           } catch (error) {
             console.error('Error fetching user name:', error);
           }
-        } else {
-          router.push('/');
         }
       }
     }
@@ -385,8 +384,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
         <form
           className="grid grid-cols-1 gap-6 lg:col-span-2"
           onSubmit={(e) => {
-            e.preventDefault()
-            handleSubmit()
+            e.preventDefault();
+            handleSubmitPadre();
           }}
         >
           <div className="flex items-center gap-3">
@@ -430,8 +429,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
                 placeholder="12345678"
               />
               {dniError && (
-                <p className="text-red-500 mt-2">{dniError}</p>  // Render the error message if it's set
-                )}
+                <p className="text-red-500 mt-2">{dniError}</p> 
+              )}
             </div>
           </div>
 
@@ -468,68 +467,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
             </div>
           </div>
 
-          {status === "loading" ? (
-            <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
-          ) : !session?.user?.id ? (
-            <><div className="flex items-center gap-3">
-                <div className="w-full grid grid-cols-2 gap-2">
-                  <div>
-                    <label
-                      htmlFor="direccion"
-                      className="block text-lg font-medium text-gray-700"
-                    >
-                      Dirección <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="direccion"
-                      value={calle}
-                      onChange={handleCalleChange}
-                      className="mt-1 block w-full p-2 border rounded-md"
-                      placeholder="Calle Malvinas 123"
-                      ref={inputRef} />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="numero"
-                      className="block text-lg font-medium text-gray-700"
-                    >
-                      Número interior
-                    </label>
-                    <input
-                      type="text"
-                      id="numero"
-                      value={numeroInterior}
-                      onChange={handleNroInteriorChange}
-                      className="mt-1 block w-full p-2 border rounded-md"
-                      placeholder="No rellenar si no aplica" />
-                  </div>
-                </div>
-              </div><div className="flex items-center gap-3">
-                  <img
-                    src="/images/referencia.png"
-                    alt="Referencia"
-                    className="h-14" />
-                  <div className="w-full">
-                    <label
-                      htmlFor="referencia"
-                      className="block text-lg font-medium text-gray-700"
-                    >
-                      Referencia
-                    </label>
-                    <input
-                      type="text"
-                      id="referencia"
-                      value={referencia}
-                      onChange={handleReferenciaChange}
-                      className="mt-1 block w-full p-2 border rounded-md"
-                      placeholder="Esquina del parque Tres Marías" />
-                  </div>
-                </div></>
-          ) : (
-            <LoggedInAddresses userId={session.user.id} ciudad={ciudad} toggleAllowed={true} onToggleAddress={handleToggleAddress}/>
-          )}
-
           <div className="flex items-center gap-3">
             <img src="/images/telefono.png" alt="Teléfono" className="h-14" />
             <div className="w-full">
@@ -549,27 +486,47 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
                 onChange={handleTelefonoChange}
               />
               {telefonoError && (
-                <p className="text-red-500 mt-2">{telefonoError}</p>  // Render the error message if it's set
+                <p className="text-red-500 mt-2">{telefonoError}</p>
               )}
             </div>
           </div>
+
+          {status === "loading" ? (
+            <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
+          ) : (
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md"
+            >
+              Submit
+            </button>
+          )}
         </form>
 
-        {/* Map modal */}
-        {showMapModal && (
-          <GoogleMapModal
-            onSelectLocation={handleMapSelect}
-            city={ciudad}
-            closeModal={() => setShowMapModal(false)}
-            {...(selectedLocation && { location: selectedLocation })}
+        {session?.user?.id && (
+          <LoggedInAddresses
+            userId={session.user.id}
+            ciudad={ciudad}
+            toggleAllowed={true}
+            onToggleAddress={handleToggleAddress}
           />
         )}
+
+          {/* Map modal */}
+          {showMapModal && (
+            <GoogleMapModal
+              onSelectLocation={handleMapSelect}
+              city={ciudad}
+              closeModal={() => setShowMapModal(false)}
+              {...(selectedLocation && { location: selectedLocation })}
+            />
+          )}
 
         <div className="bg-white py-6">
           {carritoState ? (
             <Summary2
               carrito={carritoState}
-              handleSubmit={handleSubmit}
+              handleSubmit={handleSubmitPadre}
               isFormValid={isFormValid()}
               showWarnings={showWarnings}
             />

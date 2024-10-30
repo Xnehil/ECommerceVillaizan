@@ -17,13 +17,14 @@ interface LoggedInAddressesProps {
 }
 
 const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, toggleAllowed, onToggleAddress }) => {
-  const [addresses, setAddresses] = useState<Direccion[]>([]);
+
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalState, setModalState] = useState<'Crear' | 'Editar'>('Crear');
   const [currentAddress, setCurrentAddress] = useState<Direccion | null>(null);
   const [isPopUpOpen, setIsPopUpOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<Direccion | null>(null);
+  const [direcciones, setDirecciones] = useState<Direccion[]>([]);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -31,9 +32,7 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
         const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${userId}?guardada=true`);
         if (ciudad) {
           const filteredAddresses = response.data.direcciones.filter((address: Direccion) => address.ciudad && address.ciudad.nombre === ciudad);
-          setAddresses(filteredAddresses);
-        } else {
-          setAddresses(response.data.direcciones);
+          setDirecciones(filteredAddresses);
         }
       } catch (error) {
         console.error("Error fetching addresses:", error);
@@ -59,7 +58,7 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
       try {
         const response = await axios.delete(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${addressToDelete.id}`);
         if (response.status === 200) {
-          setAddresses(addresses.filter((addr) => addr.id !== addressToDelete.id));
+          setDirecciones(direcciones.filter((dir) => dir.id !== addressToDelete.id));
         } else {
           console.error('Failed to delete:', response.statusText);
         }
@@ -78,17 +77,17 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
     setIsModalOpen(true);
   };
 
-  const handleUpdateAddress = (updatedAddress: Direccion) => {
-    setAddresses((prevAddresses) =>
-      prevAddresses.map((addr) => (addr.id === updatedAddress.id ? updatedAddress : addr))
-    );
+  const handleUpdateDireccion = (updatedDireccion: Direccion) => {
+    //setDirecciones((prevDirecciones) =>
+    //  prevDirecciones.map((dir) => (dir.id === updatedDireccion.id ? updatedDireccion : dir))
+    //);
     setIsModalOpen(false);
   };
 
-  const handleCreateAddress = (newAddress: Direccion) => {
-    setAddresses((prevAddresses) => [...prevAddresses, newAddress]);
+  const handleCreateDireccion = (newDireccion: Direccion) => {
+    setDirecciones((prevDirecciones) => [...prevDirecciones, newDireccion]);
     setIsModalOpen(false);
-  };
+  }
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -103,28 +102,28 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
   return (
     <div>
       <h2>Direcciones Guardadas</h2>
-      {addresses.length > 0 ? (
+      {direcciones.length > 0 ? (
         <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-          {addresses.map((address, index) => (
+          {direcciones.map((direccion, index) => (
             <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
               {toggleAllowed && (
                 <div
-                  onClick={() => handleToggleAddress(address.id)}
+                  onClick={() => handleToggleAddress(direccion.id)}
                   style={{
                     width: '20px',
                     height: '20px',
                     borderRadius: '50%',
                     border: '1px solid black',
-                    backgroundColor: selectedAddressId === address.id ? 'black' : 'white',
+                    backgroundColor: selectedAddressId === direccion.id ? 'black' : 'white',
                     cursor: 'pointer',
                     marginRight: '10px',
                   }}
                 />
               )}
               <AddressCard
-                direccion={address}
-                onEdit={() => handleEdit(address)}
-                onDelete={() => handleDelete(address)}
+                direccion={direccion}
+                onEdit={() => handleEdit(direccion)}
+                onDelete={() => handleDelete(direccion)}
                 showBorder={false}
                 size="large"
               />
@@ -139,8 +138,8 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
         <AddressForm
           state={modalState}
           direccion={currentAddress}
-          onUpdateDireccion={handleUpdateAddress}
-          onCreatedDireccion={handleCreateAddress}
+          onUpdateDireccion={handleUpdateDireccion}
+          onCreatedDireccion={handleCreateDireccion}
           userId={userId}
           onClose={handleCloseModal}
           mandatoryCiudad={true}
