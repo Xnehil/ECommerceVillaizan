@@ -20,6 +20,7 @@ const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 const fetchPedido = async (pedido: Pedido) => {
   try {
     const response = await axios.get(`${baseUrl}/admin/pedido/${pedido.id}?enriquecido=true`);
+    // console.log("Fetched pedido:", response.data.pedido);
     return response.data.pedido;
   } catch (error) {
     console.error("Error fetching pedido:", error);

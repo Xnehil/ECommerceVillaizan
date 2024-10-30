@@ -125,6 +125,11 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
 
     pedido.estado = "solicitado";
     pedido.montoEfectivoPagar = paymentAmount ?? 0;
+    pedido.direccion = direccion;
+    pedido.usuario = usuario;
+    
+
+    console.log("Pedido a enviar", pedido);
     try{
       const response = await axios.put(`${baseUrl}/admin/pedido/${pedido.id}?asignarRepartidor=true`, pedido); // Harvy agregó esto, un parámetro extra que el back leería para saber que se debe asignar un repartidor
       if(response.data){
@@ -138,7 +143,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       // Eliminar cookie de carrito 
       document.cookie = "_medusa_cart_id = ; expires = Thu, 01 Jan 1970 00:00:00 GMT";
       console.log("Ir a", `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`);
-      window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
+      // window.location.href = `/seguimiento?codigo=${pedidoActualizado.codigoSeguimiento??codigoSeguimiento}`;
     } catch (error) {
       const axiosError = error as AxiosError;
         if (axiosError.response && axiosError.response.status === 404) {
