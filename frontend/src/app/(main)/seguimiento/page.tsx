@@ -109,7 +109,6 @@ const downloadXMLFile = async (pedido: Pedido) => {
   </cac:LegalMonetaryTotal>
 </Invoice>
 `;
-
   // Crear un Blob a partir del contenido XML
   const blob = new Blob([xmlContent], { type: 'application/xml' });
   
@@ -132,6 +131,17 @@ const downloadXMLFile = async (pedido: Pedido) => {
   }
 };
 
+const sendMessageConfirmation = async () => {
+  try {
+    await axios.post("http://localhost:9000/admin/whatsApp", {
+      mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉`,
+      numero: "959183082",
+    });
+    console.log("Mensaje de confirmación enviado a WhatsApp.");
+  } catch (error) {
+    console.error("Error al enviar mensaje de WhatsApp:", error);
+  }
+};
 
 const fetchCart = async (
   setDriverPosition: (position: [number, number]) => void,
@@ -238,8 +248,6 @@ const TrackingPage: React.FC = () => {
   );
   const wsRef = useRef<ExtendedWebSocket | null>(null);
 
-  
-
   useEffect(() => {
     const sendMessage = async (codigoSeguimiento: string) => {
       if (mensajeEnviadoRef.current) return; // Verifica si ya se envió el mensaje
@@ -266,6 +274,13 @@ const TrackingPage: React.FC = () => {
       }
     });
   }, []); // Ejecutar solo al montar el componente
+
+
+  useEffect(() => {
+    if (enRuta === "entregado") {
+      sendMessageConfirmation(); // Envía el mensaje de confirmación
+    }
+  }, [enRuta]);
 
   useEffect(() => {
     if (pedido) {
