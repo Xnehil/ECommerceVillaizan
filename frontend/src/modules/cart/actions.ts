@@ -126,15 +126,31 @@ export async function retrieveCart(productos: boolean = false) {
   }
 }
 
-export async function retrievePedido(productos: boolean = false) {
+export async function retrievePedido(productos: boolean = false, codigoSeguimiento: string | null = null) {
   const cookieValues = cookies()
-  const cartId = cookieValues.get("_medusa_pedido_id")?.value
-
-
-  if (!cartId) {
+  let cartId = cookieValues.get("_medusa_pedido_id")?.value
+  // console.log("En retrievePedido")
+  
+  if (!cartId && !codigoSeguimiento) {
+    console.log("No hay ID de pedido ni código de seguimiento")
     return null
   }
 
+  if (codigoSeguimiento && !cartId) {
+    try {
+      // console.log("Haciendno post a" , `${baseUrl}/admin/pedido/codigoSeguimiento`, " con body ", {codigoSeguimiento: codigoSeguimiento})
+      const response = await axios.post(`${baseUrl}/admin/pedido/codigoSeguimiento`,
+        {
+          codigoSeguimiento: codigoSeguimiento
+        })
+      cartId = response.data.pedido.id
+      // console.log("Pedido encontrado con id ", cartId)
+    } catch (e) {
+      console.log(e)
+      return null
+    }
+  }
+  console.log("Pedido ID: ", cartId)
   if (productos) {
     try {
       const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle?pedido=true`)

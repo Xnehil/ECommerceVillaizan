@@ -148,9 +148,12 @@ const fetchCart = async (
   setEnRuta: (enRuta: string) => void,
   enRuta: string,
   setMensajeEspera: (mensaje: string) => void,
-  ws: React.MutableRefObject<ExtendedWebSocket | null>
+  ws: React.MutableRefObject<ExtendedWebSocket | null>,
+  codigoSeguimiento?: string | null
 ): Promise<Pedido> => {
-  const respuesta = await retrievePedido(true)
+  // console.log("Fetching cart with code:", codigoSeguimiento);
+  const respuesta = await retrievePedido(true, codigoSeguimiento);
+  console.log("Respuesta:", respuesta);
   let cart: Pedido = respuesta
   downloadXMLFile(cart); // paraPruebas
   if (!cart) {
@@ -173,7 +176,7 @@ const fetchCart = async (
   const response = await axios.get(baseUrl + "/admin/motorizado/"+cart.motorizado?.id+"?enriquecido=true")
   cart.motorizado = response.data.motorizado
 //   console.log("Cart enriquecido:", cart);
-
+  // console.log("Motorizado enriquecido y ws:", cart.motorizado, ws.current);
   //Conectar a websocket para recibir actualizaciones en tiempo real
   if (cart.motorizado && ws.current === null) {
     // Conectar a websocket para recibir actualizaciones en tiempo real
@@ -236,7 +239,7 @@ const TrackingPage: React.FC = () => {
   ]);
   const [enRuta, setEnRuta] = useState<string>("espera");
   const [mensajeEspera, setMensajeEspera] = useState<string>(
-    "Tu pedido está siendo preparado. Por favor, espera un momento."
+    "Estamos verificando tu pedido. Por favor, espera un momento."
   );
   const [error, setError] = useState<string | null>(null);
   const mensajeEnviadoRef = useRef<boolean>(false); // Ref para controlar el envío
@@ -249,29 +252,29 @@ const TrackingPage: React.FC = () => {
   const wsRef = useRef<ExtendedWebSocket | null>(null);
 
   useEffect(() => {
-    const sendMessage = async (codigoSeguimiento: string) => {
-      if (mensajeEnviadoRef.current) return; // Verifica si ya se envió el mensaje
-      try {
-        await axios.post("http://localhost:9000/admin/whatsApp", {
-          mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
-          numero: "959183082"
-        });
+    // const sendMessage = async (codigoSeguimiento: string) => {
+    //   if (mensajeEnviadoRef.current) return; // Verifica si ya se envió el mensaje
+    //   try {
+    //     await axios.post("http://localhost:9000/admin/whatsApp", {
+    //       mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
+    //       numero: "959183082"
+    //     });
 
-        console.log("Mensaje enviado a WhatsApp.");
-        mensajeEnviadoRef.current = true; 
-        setError(null); // Limpiar el error si el mensaje se envía correctamente
-      } catch (error) {
-        console.error("Error al enviar mensaje de WhatsApp:", error);
-        setError("No se pudo enviar el mensaje de WhatsApp. Haz clic en el botón para intentar nuevamente."); // Mostrar mensaje de error
-      }
-    };
+    //     console.log("Mensaje enviado a WhatsApp.");
+    //     mensajeEnviadoRef.current = true; 
+    //     setError(null); // Limpiar el error si el mensaje se envía correctamente
+    //   } catch (error) {
+    //     console.error("Error al enviar mensaje de WhatsApp:", error);
+    //     setError("No se pudo enviar el mensaje de WhatsApp. Haz clic en el botón para intentar nuevamente."); // Mostrar mensaje de error
+    //   }
+    // };
 
-    fetchCart(setDriverPosition, setEnRuta, enRuta, setMensajeEspera, wsRef).then((cart) => {
+    fetchCart(setDriverPosition, setEnRuta, enRuta, setMensajeEspera, wsRef, codigo).then((cart) => {
       setPedido(cart);
       setLoading(false);
-      if (cart?.codigoSeguimiento && !mensajeEnviadoRef.current) { // Evita envío duplicado usando `ref`
-        sendMessage(cart.codigoSeguimiento);
-      }
+      // if (cart?.codigoSeguimiento && !mensajeEnviadoRef.current) { // Evita envío duplicado usando `ref`
+      //   sendMessage(cart.codigoSeguimiento);
+      // }
     });
   }, []); // Ejecutar solo al montar el componente
 

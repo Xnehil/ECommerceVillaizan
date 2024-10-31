@@ -21,6 +21,8 @@ export interface WebSocketComponentRef {
   sendPedido: (pedidoId: string) => void;
 }
 
+const ws_url = process.env.WS_URL || "ws://localhost:9001/ws";
+
 // Usamos `forwardRef` para permitir que el componente exponga funciones a su padre
 const WebSocketComponent = forwardRef<
   WebSocketComponentRef,
@@ -37,7 +39,7 @@ const WebSocketComponent = forwardRef<
   };
   // Establece la conexión WebSocket con el ID del motorizado en la URL
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    `ws://localhost:9001/ws?rol=delivery&id=${idMotorizado}`,
+    `${ws_url}?rol=delivery&id=${idMotorizado}`,
     {
       onOpen: () => console.log("Conexión WebSocket establecida"),
       onError: (event) =>
@@ -119,7 +121,7 @@ const WebSocketComponent = forwardRef<
     [ReadyState.UNINSTANTIATED]: "No inicializado",
   }[readyState];
 
-  console.log("Estado de la conexión:", connectionStatus);
+  // console.log("Estado de la conexión:", connectionStatus);
 
   return (
     <>

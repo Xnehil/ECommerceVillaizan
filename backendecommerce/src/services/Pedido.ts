@@ -3,23 +3,27 @@ import { Pedido } from "../models/Pedido";
 import { Not, Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
-import { ubicacionesDelivery, pedidosPorConfirmar, enviarMensajeRepartidor, enviarMensajeAdmins } from "../loaders/websocketLoader";
+import { ubicacionesDelivery, estadoPedidos, enviarMensajeRepartidor, enviarMensajeAdmins } from "../loaders/websocketLoader";
 import MotorizadoRepository from "@repositories/Motorizado";
 import { Motorizado } from "@models/Motorizado";
 import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
 import { InventarioMotorizado } from "@models/InventarioMotorizado";
+import { Notificacion } from "../models/Notificacion";
+import NotificacionService from "./Notificacion";
 
 
 class PedidoService extends TransactionBaseService {
     protected pedidoRepository_: typeof pedidoRepository;
     protected motorizadoRepository_: typeof MotorizadoRepository;
     protected inventarioMotorizadoRepository_: typeof InventarioMotorizadoRepository;
+    protected notificacionService_: NotificacionService
 
     constructor(container) {
         super(container);
         this.pedidoRepository_ = container.pedidoRepository;
         this.motorizadoRepository_ = container.motorizadoRepository;
         this.inventarioMotorizadoRepository_ = container.inventariomotorizadoRepository;
+        this.notificacionService_ = container.notificacionService;
     }
 
     getMessage() {
@@ -196,6 +200,18 @@ class PedidoService extends TransactionBaseService {
                         console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
                         enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
                         enviarMensajeAdmins("nuevoPedido", id);
+                        let nuevaNoti = new Notificacion();
+                        nuevaNoti.asunto = "Nuevo pedido";
+                        nuevaNoti.descripcion = "El pedido " + id + " está pendiente de confirmación";
+                        nuevaNoti.tipoNotificacion = "pedido";
+                        nuevaNoti.sistema = "ecommerceAdmin";
+                        nuevaNoti.leido = false;
+                        try {
+                            await this.notificacionService_.crear(nuevaNoti);
+                        }
+                        catch (error) {
+                            console.error("Error al crear notificación", error);
+                        }
                     } else {
                         throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
                     }
@@ -207,13 +223,17 @@ class PedidoService extends TransactionBaseService {
             if (pedido.estado !== data.estado) {
                 if (data.estado === "entregado") {
                     data.entregadoEn = new Date();
+                    estadoPedidos.set(id, "entregado");
                 }
                 if (data.estado === "verificado") {
                     data.verificadoEn = new Date();
-                    pedidosPorConfirmar.delete(id);
+                    estadoPedidos.set(id, "verificado");
                 }
                 if (data.estado === "solicitado") {
                     data.solicitadoEn = new Date();
+                }
+                if (data.estado === "enProgreso") {
+                    estadoPedidos.set(id, "enProgreso");
                 }
             }
             console.log("Se llegó a la parte de actualizar");
@@ -228,7 +248,7 @@ class PedidoService extends TransactionBaseService {
             const pedido = await this.recuperar(id);
             pedido.estado = "verificado";
             pedido.verificadoEn = new Date();
-            pedidosPorConfirmar.delete(id);
+            estadoPedidos.delete(id);
             return await pedidoRepo.save(pedido);
         });
     }

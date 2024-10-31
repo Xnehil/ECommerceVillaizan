@@ -54,9 +54,12 @@ function LoginPage() {
           <Link className={buttonVariants({ variant: "link" })} href={"/crear-cuenta"}>
             Crea una cuenta
           </Link>
-          <Link className={buttonVariants({ variant: "link" })} href={"/recuperar-contrasena"}>
+          {/* Recuperar contraseña */}
+          
+          {/*<Link className={buttonVariants({ variant: "link" })} href={"/recuperar-contrasena"}>
             Recuperar contraseña
-          </Link>
+          </Link>*/}
+          
         </section>
       </div>
     </div>

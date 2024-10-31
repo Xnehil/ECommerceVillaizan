@@ -3,13 +3,17 @@ import { Direccion } from "../models/Direccion";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import direccionRepository from "src/repositories/Direccion";
+import { Ubicacion } from "../models/Ubicacion"; // Add this import
+import ubicacionRepository from "src/repositories/Ubicacion"; // Add this import
 
 class DireccionService extends TransactionBaseService {
     protected direccionRepository_: typeof direccionRepository;
+    protected ubicacionRepository_: typeof ubicacionRepository; // Add this line
 
     constructor(container) {
         super(container);
         this.direccionRepository_ = container.direccionRepository;
+        this.ubicacionRepository_ = container.ubicacionRepository; // Add this line
     }
 
     getMessage() {
@@ -64,6 +68,12 @@ class DireccionService extends TransactionBaseService {
     async crear(direccion: Direccion): Promise<Direccion> {
         return this.atomicPhase_(async (manager) => {
             const direccionRepo = manager.withRepository(this.direccionRepository_);
+            if (direccion.ubicacion) {
+                const ubicacionRepo = manager.withRepository(this.ubicacionRepository_);
+                const ubicacionCreada = ubicacionRepo.create(direccion.ubicacion);
+                const ubicacionResult = await ubicacionRepo.save(ubicacionCreada);
+                direccion.ubicacion.id = ubicacionResult.id;
+            }
             const direccionCreado = direccionRepo.create(direccion);
             const result = await direccionRepo.save(direccionCreado);
             return result;

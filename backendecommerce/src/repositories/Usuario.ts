@@ -23,6 +23,17 @@ export const UsuarioRepository = dataSource
           relations: ['persona', 'rol'],
           
         });
+    },
+    async findByRolNombre(nombre: string): Promise<Usuario[]> {
+        return this.find({
+          where: {
+            rol: {
+              nombre: nombre,
+            },
+          },
+          relations: ['persona', 'rol'],
+          
+        });
     }
   })
 
