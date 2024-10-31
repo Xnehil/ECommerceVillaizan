@@ -8,6 +8,7 @@ import AddAddressButton from '../../../components/address/AddressButton';
 import AddressModal from '../../../components/address/AddressModal';
 import EliminationPopUp from '@components/address/EliminationPopUp';
 import AddressForm from '@components/address/AddressForm';
+import { Button } from "@components/Button";
 
 interface LoggedInAddressesProps {
   userId: string;
@@ -31,11 +32,13 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
   const [ciudadIdInternal, setCiudadIdInternal] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
         setUserIdInternal(userId);
+        setLoading(true);
         const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${userId}?guardada=true`);
         if (ciudadNombre) {
           const filteredAddresses = response.data.direcciones.filter((address: Direccion) => address.ciudad && address.ciudad.nombre === ciudadNombre);
@@ -47,6 +50,8 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
         setErrorMessage('Error al cargar las direcciones. Intente de nuevo más tarde.');
         setIsErrorPopupVisible(true);
         console.error("Error fetching addresses:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -135,7 +140,10 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
       )}
       <div>
         <h2>Direcciones Guardadas en {ciudadNombre}</h2>
-        {direcciones.length > 0 ? (
+        {loading ? (
+        <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button> // Show loading button
+        ) :
+        (direcciones.length > 0 ? (
           <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
             {direcciones.map((direccion, index) => (
               <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
@@ -165,7 +173,7 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
           </div>
         ) : (
           <p>No asociaste ninguna dirección a tu cuenta</p>
-        )}
+        ))}
         <AddAddressButton onClick={handleAddAddress} />
         <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
           <AddressForm

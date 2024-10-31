@@ -11,6 +11,7 @@ import AddAddressButton from '../../../components/address/AddressButton';
 import AddressModal from '../../../components/address/AddressModal'; // Import the Modal component
 import AddressForm from '../../../components/address/AddressForm'; // Import the AddressForm component
 import EliminationPopUp from '../../../components/address/EliminationPopUp'; // Import the EliminationPopUp component
+import { Button } from '@components/Button';
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -28,9 +29,11 @@ const Cuenta = () => {
   const [direccionToDelete, setDireccionToDelete] = useState<Direccion | null>(null);
   const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [loadingInternal, setLoadingInternal] = useState(true);
 
   useEffect(() => {
     async function fetchUserName() {
+      setLoadingInternal(true);
       if(status !== "loading"){
         if (session?.user?.id) {
             try {
@@ -57,9 +60,12 @@ const Cuenta = () => {
               setErrorMessage('Error al cargar los datos de usuario. Intente de nuevo más tarde.');
               setIsErrorPopupVisible(true);
             }
-          } else {
-            router.push('/');
-          }
+            finally {
+              setLoadingInternal(false);
+            }
+        } else {
+          router.push('/');
+        }
       }
       
     }
@@ -159,7 +165,10 @@ const Cuenta = () => {
         </div>
         <div style={{ flex: 1, padding: '20px' }}>
           <h2>Direcciones Guardadas</h2>
-          {direcciones.length > 0 ? (
+          {loadingInternal ? (
+          <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button> // Show loading button
+          ) :
+          (direcciones.length > 0 ? (
             <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
               {direcciones.map((direccion, index) => (
                 <AddressCard
@@ -174,7 +183,7 @@ const Cuenta = () => {
             </div>
           ) : (
             <p>No asociaste ninguna dirección a tu cuenta</p>
-          )}
+          ))}
           <div style={{ marginLeft: '350px' }}>
             <AddAddressButton onClick={handleAddAddress} />
           </div>
