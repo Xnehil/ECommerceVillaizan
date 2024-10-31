@@ -46,6 +46,12 @@ class NotificacionService extends TransactionBaseService {
         const [notificacions] = await this.listarYContar(selector, config);
         return notificacions;
       }
+
+      async listarPorUsuario(idUsuario: string): Promise<Notificacion[]> {
+        const notificacionRepo = this.activeManager_.withRepository(this.notificacionRepository_);
+        const query = buildQuery({ usuario: { id: idUsuario } }, { relations: ["usuario"] });
+        return notificacionRepo.find(query);
+      }
     
       async recuperar(
         id: string,
