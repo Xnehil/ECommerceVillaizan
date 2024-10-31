@@ -16,17 +16,27 @@ export const PedidoRepository = dataSource
         relations: ['motorizado', 'direccion', 'usuario'],
       });
     },
-    async findByMotorizadoId(id_motorizado: string): Promise<Pedido[]> {
-      return this.createQueryBuilder("pedido")
-        .leftJoinAndSelect("pedido.direccion", "direccion")
-        .leftJoinAndSelect("pedido.usuario", "usuario")
-        .leftJoinAndSelect("pedido.motorizado", "motorizado")
-        .where("motorizado.id = :id_motorizado", { id_motorizado })
-        .getMany();
+    async findByMotorizadoId(id_motorizado: string, estados: string | string[] = []): Promise<Pedido[]> {
+      const queryBuilder = this.createQueryBuilder("pedido")
+      .leftJoinAndSelect("pedido.direccion", "direccion")
+      .leftJoinAndSelect("direccion.ciudad", "ciudad")
+      .leftJoinAndSelect("direccion.ubicacion", "ubicacion")
+      .leftJoinAndSelect("pedido.usuario", "usuario")
+      .leftJoinAndSelect("pedido.motorizado", "motorizado")
+      .where("motorizado.id = :id_motorizado", { id_motorizado });
+  
+    if (Array.isArray(estados) && estados.length > 0) {
+      queryBuilder.andWhere("pedido.estado IN (:...estados)", { estados });
+    } else if (typeof estados === "string" && estados) {
+      queryBuilder.andWhere("pedido.estado = :estado", { estado: estados });
+    }
+  
+    return queryBuilder.getMany();
     },
     async findByCodigoSeguimiento(codigoSeguimiento: string): Promise<Pedido> {
       return this.createQueryBuilder("pedido")
         .leftJoinAndSelect("pedido.direccion", "direccion")
+        .leftJoinAndSelect("direccion.ciudad", "ciudad") // Add this line to include ciudad
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
         .leftJoinAndSelect("pedido.usuario", "usuario")
         .where("pedido.codigoSeguimiento = :codigoSeguimiento", { codigoSeguimiento })
@@ -35,6 +45,7 @@ export const PedidoRepository = dataSource
     async encontrarUltimoPorUsuarioId(id_usuario: string): Promise<Pedido> {
       return this.createQueryBuilder("pedido")
         .leftJoinAndSelect("pedido.direccion", "direccion")
+        .leftJoinAndSelect("direccion.ciudad", "ciudad") // Add this line to include ciudad
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
         .leftJoinAndSelect("pedido.usuario", "usuario")      
         .where("pedido.id_usuario = :id_usuario", { id_usuario })
@@ -44,6 +55,7 @@ export const PedidoRepository = dataSource
     async encontrarUltimoCarritoPorUsuarioId(id_usuario: string): Promise<Pedido> {
       return this.createQueryBuilder("pedido")
         .leftJoinAndSelect("pedido.direccion", "direccion")
+        .leftJoinAndSelect("direccion.ciudad", "ciudad") // Add this line to include ciudad
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
         .leftJoinAndSelect("pedido.usuario", "usuario")
         .where("pedido.id_usuario = :id_usuario", { id_usuario })

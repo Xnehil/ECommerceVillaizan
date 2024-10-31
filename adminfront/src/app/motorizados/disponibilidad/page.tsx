@@ -5,14 +5,11 @@ import "@/styles/general.css";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "@/components/Loading";
-import { DataTable } from "@/components/datatable/data-table";
-import { columns } from "./columns";
 import { Motorizado } from "@/types/PaqueteMotorizado";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const MotorizadosPage: React.FC = () => {
+const HorariosPage: React.FC = () => {
   const router = useRouter(); // Initialize useRouter
   const motorizados = useRef<Motorizado[]>([]); // Initialize motorizados
 
@@ -72,34 +69,16 @@ const MotorizadosPage: React.FC = () => {
 
   return (
     <>
-      <div className="header">
-        <div className="buttons-container">
-          <Button variant="default" >
-            Horarios de disponibilidad
-          </Button>
-          <Button variant="default" onClick={handleRepartidoresClick}>
-            Repartidores
-          </Button>
-          <Button variant="default" onClick={handleAddMotorizadoClick}>
-            <Plus size={20} className="mr-2" />
-            Agregar
-          </Button>
-        </div>
-      </div>
       <div className="content-container">
         {isLoading && <Loading />}
-        <h4>Motorizados</h4>
-        <p>Administra el inventario de los motorizados.</p>
+        <h4>Horarios de disponibilidad</h4>
+        <p>Administra los horarios de disponibilidad de los motorizados.</p>
         <div className="h-full w-full">
-          <DataTable
-            columns={columns}
-            data={motorizados.current}
-            nombre="motorizado"
-          />
+
         </div>
       </div>
     </>
   );
 };
 
-export default MotorizadosPage;
+export default HorariosPage;

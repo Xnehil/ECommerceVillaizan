@@ -14,8 +14,7 @@ import { Notificacion } from "src/models/Notificacion";
  * 
   */
 
-
- /**
+/**
  * @swagger
  * /notificacion:
  *   get:
@@ -28,6 +27,12 @@ import { Notificacion } from "src/models/Notificacion";
  *           type: string
  *         required: false
  *         description: El rol del usuario (e.g., Admin, Motorizado)
+ *       - in: query
+ *         name: id_usuario
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: El ID del usuario
  *     responses:
  *       200:
  *         description: Una lista de notificacions
@@ -48,10 +53,13 @@ export const GET = async (
   const notificacionService: NotificacionService = req.scope.resolve("notificacionService");
 
   // Extract the role from the query parameters
-  const { rol } = req.query;
+  const { rol, id_usuario } = req.query as { rol: string, id_usuario: string };
 
   let notificaciones;
-  if (rol === "Admin" || rol === "Motorizado") {
+  console.log(rol, id_usuario);
+  if (id_usuario) {
+    notificaciones = await notificacionService.listarPorUsuario(id_usuario);
+  } else if (rol === "Admin" || rol === "Motorizado") {
     // Filter notifications for admin role
     notificaciones = await notificacionService.listarConPaginacion({
       sistema: `ecommerce${rol}`

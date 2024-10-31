@@ -29,12 +29,21 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
 
   const estado = transformEstado(pedido.current.estado);
 
-  const fechaPedido = pedido.current.solicitadoEn;
-  const formattedDate = fechaPedido?.toLocaleDateString();
-  const formattedTime = fechaPedido?.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const fecha = pedido.current.solicitadoEn;
+
+  let formattedDate = null;
+  let formattedTime = "";
+
+  if (fecha) {
+    const fechaPedido = new Date(fecha);
+    if (!isNaN(fechaPedido.getTime())) {
+      formattedDate = fechaPedido.toLocaleDateString();
+      formattedTime = fechaPedido.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+  }
 
   return (
     <div className="info-side-container">
@@ -61,11 +70,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
         <div className="h-full flex flex-col justify-end">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="outline"
-              >
-                Ver detalle
-              </Button>
+              <Button variant="outline">Ver detalle</Button>
             </SheetTrigger>
             <SheetContent>
               <SheetHeader>
@@ -79,7 +84,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                   <div key={index} className="flex flex-row justify-between">
                     <p>{detalle.cantidad}</p>
                     <p>{detalle.producto.nombre}</p>
-                    <p>S/. {detalle.producto.precioEcommerce.toFixed(2)}</p>
+                    <p>S/. {Number(detalle.producto.precioEcommerce).toFixed(2)}</p>
                   </div>
                 ))}
               </div>

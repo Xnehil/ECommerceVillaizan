@@ -3,6 +3,7 @@ import { EntidadBase } from "./EntidadBase"
 import { generateEntityId } from "@medusajs/medusa"
 import { Producto } from "./Producto";
 import { ContenidoEducativo } from "./ContenidoEducativo";
+import { Usuario } from "./Usuario";
 
 @Entity("vi_notificacion")
 export class Notificacion extends EntidadBase {
@@ -20,6 +21,11 @@ export class Notificacion extends EntidadBase {
 
     @Column({ type: "varchar", length: 50 })
     sistema: string;
+
+    @ManyToOne(() => Usuario , usuario => usuario.notificaciones)
+    @JoinColumn({ name: "id_usuario" })
+    usuario: Usuario;
+
 
     @BeforeInsert()
     private beforeInsert() {

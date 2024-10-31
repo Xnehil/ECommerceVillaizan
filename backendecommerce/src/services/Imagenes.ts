@@ -51,6 +51,7 @@ class GoogleDriveService extends TransactionBaseService{
       plin: "1-5m51RCL88mBg8LMoIigra4b9AIQ74zt",
       pedidos: "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb",
       mermas: "1J4tn96Xy49MsU5gVl7bWuWgoQsZBFq1t",
+      xml: "1yv33LutaSFyRaUhczDieam7P5vwgtwqr",
     }
 
     folderId = mapIds[folderId] || folderId;

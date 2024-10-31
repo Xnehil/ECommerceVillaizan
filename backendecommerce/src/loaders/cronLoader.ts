@@ -33,7 +33,7 @@ import { enviarMensajeCliente } from "./websocketLoader";
       for (const pedido of pedidosToCancel) {
         pedido.estado = 'cancelado';
         await pedidoRepository.save(pedido);
-        enviarMensajeCliente(pedido.id,  "canceladoResponse", "El pedido no ha podido ser confirmado por nuestros administradores. Por favor, realice un nuevo pedido.");
+        enviarMensajeCliente(pedido.id,  "canceladoResponse", "El pedido no ha podido ser confirmado por nuestros administradores.");
       }
   
     //   console.log(`Checked and canceled ${pedidosToCancel.length} pedidos.`);
