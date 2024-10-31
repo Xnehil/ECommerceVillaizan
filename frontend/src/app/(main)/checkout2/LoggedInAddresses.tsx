@@ -16,9 +16,10 @@ interface LoggedInAddressesProps {
   ciudadNombre: string;
   toggleAllowed: boolean;
   onToggleAddress: (addressId: string | null) => void;
+  googleMapsLoaded: boolean;
 }
 
-const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId, ciudadNombre, toggleAllowed, onToggleAddress }) => {
+const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId, ciudadNombre, toggleAllowed, onToggleAddress,googleMapsLoaded }) => {
 
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,6 +61,7 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
 
   const handleEdit = (address: Direccion) => {
     setCurrentAddress(address);
+    
     setModalState('Editar');
     setIsModalOpen(true);
   };
@@ -188,6 +190,7 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
             mandatoryCiudad={true}
             mandatoryCiudadId = {ciudadIdInternal}
             mandatoryCiudadNombre={ciudadNombreInternal}
+            googleMapsLoaded={googleMapsLoaded}
           />
         </AddressModal>
         <EliminationPopUp
