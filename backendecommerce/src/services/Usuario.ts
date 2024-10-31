@@ -55,7 +55,7 @@ class UsuarioService extends TransactionBaseService {
         config: FindConfig<Usuario> = {
             skip: 0,
             take: 20,
-            relations: [],
+            relations: ["persona", "rol" ],
         }
     ): Promise<Usuario[]> {
         const [usuarios] = await this.listarYContar(selector, config);
@@ -184,6 +184,15 @@ class UsuarioService extends TransactionBaseService {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Usuario no encontrado");
         }
         return usuario;
+    }
+
+    async buscarPorRolNombre(nombre: string): Promise<Usuario[]> {
+        const usuarioRepo = this.activeManager_.withRepository(this.usuarioRepository_);
+        const usuarios = usuarioRepo.findByRolNombre(nombre);
+        if (!usuarios) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Usuarios no encontrados");
+        }
+        return usuarios;
     }
 
 }
