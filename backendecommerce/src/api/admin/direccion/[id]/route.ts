@@ -87,7 +87,6 @@ export const PUT = async (
         const direccion = await direccionService.actualizar(id, direccionData);
         res.json({ direccion });
     } catch (error) {
-        console.log(error.message);
         if (error.message === "direccion no encontrada") {
             res.status(404).json({ error: "direccion no encontrada" });
         } else {
