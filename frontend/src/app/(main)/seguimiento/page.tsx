@@ -13,6 +13,7 @@ import { connectWebSocket } from "@lib/util/websocketUtils";
 import { enrichLineItems, retrievePedido } from "@modules/cart/actions";
 import { Pedido } from "types/PaquetePedido";
 import PedidoCancelado from "@components/PedidoCancelado";
+import fs from 'fs'; // Importa fs para Node.js
 
 const MapaTracking = dynamic(() => import("@components/MapaTracking"), {
   ssr: false,
@@ -22,7 +23,125 @@ interface ExtendedWebSocket extends WebSocket {
   intervalId?: NodeJS.Timeout
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL 
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+
+// Función para crear y descargar el archivo XML en el cliente
+const downloadXMLFile = async (pedido: Pedido) => {
+  // Construir el contenido XML a partir del objeto `pedido` siguiendo el estándar UBL
+  // Hay que reunirnos si o si porque hay datos que tienen que estar estandarizados si o si
+  const xmlContent = `
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+  <cbc:CustomizationID>2.0</cbc:CustomizationID>
+  <cbc:ID>BO65-00005157</cbc:ID>
+  <cbc:IssueDate>${new Date().toISOString().split("T")[0]}</cbc:IssueDate>
+  <cbc:IssueTime>${new Date().toISOString().split("T")[1].split(".")[0]}</cbc:IssueTime>
+  <cbc:InvoiceTypeCode listID="0101">01</cbc:InvoiceTypeCode>
+  <cbc:DocumentCurrencyCode>PEN</cbc:DocumentCurrencyCode>
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <cac:PartyIdentification>
+        <cbc:ID schemeID="6">20608493604</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PartyName>
+        <cbc:Name><![CDATA[VILLAIZAN EIRL]]></cbc:Name>
+      </cac:PartyName>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName><![CDATA[VILLAIZAN E.I.R.L.]]></cbc:RegistrationName>
+        <cac:RegistrationAddress>
+          <cbc:ID>220901</cbc:ID>
+          <cbc:AddressTypeCode>0000</cbc:AddressTypeCode>
+          <cbc:CityName>SAN MARTIN</cbc:CityName>
+          <cbc:CountrySubentity>SAN MARTIN</cbc:CountrySubentity>
+          <cbc:District>TARAPOTO</cbc:District>
+          <cac:AddressLine>
+            <cbc:Line><![CDATA[JR. ALFONSO UGARTE NRO. 2211 DPTO. 8B URB. HUAYCO]]></cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>PE</cbc:IdentificationCode>
+          </cac:Country>
+        </cac:RegistrationAddress>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <cac:PartyIdentification>
+        <cbc:ID schemeID="6">${pedido.usuario?.persona?.numeroDocumento || "Sin Documento"}</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName><![CDATA[${pedido.usuario?.nombre || "Cliente"}]]></cbc:RegistrationName>
+        <cac:RegistrationAddress>
+          <cac:AddressLine>
+            <cbc:Line><![CDATA[${pedido.direccion?.calle || "Sin Dirección"}]]></cbc:Line>
+          </cac:AddressLine>
+          <cac:Country>
+            <cbc:IdentificationCode>PE</cbc:IdentificationCode>
+          </cac:Country>
+        </cac:RegistrationAddress>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:PaymentTerms>
+    <cbc:ID>FormaPago</cbc:ID>
+    <cbc:PaymentMeansID>${pedido.metodosPago.map(mp => mp.nombre).join(", ")}</cbc:PaymentMeansID>
+    <cbc:Amount currencyID="PEN">${pedido.total}</cbc:Amount>
+  </cac:PaymentTerms>
+  ${pedido.detalles.map((detalle, index) => `
+    <cac:InvoiceLine>
+      <cbc:ID>${index + 1}</cbc:ID>
+      <cbc:InvoicedQuantity unitCode="NIU">${detalle.cantidad}</cbc:InvoicedQuantity>
+      <cbc:LineExtensionAmount currencyID="PEN">${detalle.subtotal}</cbc:LineExtensionAmount>
+      <cac:Item>
+        <cbc:Description><![CDATA[${detalle.producto.nombre}]]></cbc:Description>
+      </cac:Item>
+      <cac:Price>
+        <cbc:PriceAmount currencyID="PEN">${detalle.producto.precioEcommerce}</cbc:PriceAmount>
+      </cac:Price>
+    </cac:InvoiceLine>
+  `).join("")}
+  <cac:TaxTotal>
+    <cbc:TaxAmount currencyID="PEN">0.00</cbc:TaxAmount>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="PEN">${pedido.total}</cbc:LineExtensionAmount>
+    <cbc:PayableAmount currencyID="PEN">${pedido.total}</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+</Invoice>
+`;
+  // Crear un Blob a partir del contenido XML
+  const blob = new Blob([xmlContent], { type: 'application/xml' });
+  
+  // Crear FormData y adjuntar el archivo XML
+  const formData = new FormData();
+  formData.append("file", blob, `pedido_${pedido.id}.xml`);
+  formData.append("fileName", `pedido_${pedido.id}.xml`);
+  formData.append("folderId", "xml");
+
+  try {
+    // Enviar el archivo XML al servicio mediante una solicitud POST
+    const responseImagen = await axios.post(
+      `${process.env.NEXT_PUBLIC_BASE_URL}imagenes?esArchivo=true`,
+      formData
+    );
+    
+    console.log("Archivo XML guardado en el servicio:", responseImagen.data);
+  } catch (error) {
+    console.error("Error al subir el archivo XML:", error);
+  }
+};
+
+const sendMessageConfirmation = async () => {
+  try {
+    await axios.post("http://localhost:9000/admin/whatsApp", {
+      mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉`,
+      numero: "959183082",
+    });
+    console.log("Mensaje de confirmación enviado a WhatsApp.");
+  } catch (error) {
+    console.error("Error al enviar mensaje de WhatsApp:", error);
+  }
+};
 
 const fetchCart = async (
   setDriverPosition: (position: [number, number]) => void,
@@ -33,7 +152,7 @@ const fetchCart = async (
 ): Promise<Pedido> => {
   const respuesta = await retrievePedido(true)
   let cart: Pedido = respuesta
-
+  downloadXMLFile(cart); // paraPruebas
   if (!cart) {
     console.error("Cart is null or undefined")
     window.location.href = "/"
@@ -70,6 +189,7 @@ const fetchCart = async (
         if (data.type === "locationResponse") {
           // Actualizar la posición del motorizado
           setEnRuta("ruta")
+          
           setDriverPosition([data.data.lat, data.data.lng])
         } else if (data.type === "canceladoResponse") {
           // El pedido ha sido cancelado
@@ -81,6 +201,7 @@ const fetchCart = async (
         }else if (data.type === "confirmarResponse") {
           // El pedido está en proceso de confirmación por parte del administrador
           setEnRuta("espera")
+          
           setMensajeEspera("Estamos verificando tu pedido. Por favor, espera un momento.")
         } else if (data.type === "notYetResponse") {
           // El motorizado está atendiendo otros pedidos
@@ -88,8 +209,10 @@ const fetchCart = async (
           setMensajeEspera("Tu pedido ha sido verificado. El repartidor está atendiendo otros pedidos.\n Por favor, espera un momento.")
         } else if (data.type === "entregadoResponse") {
           // El pedido ha sido entregado
+          //downloadXMLFile(cart); // paraPRD
           setEnRuta("entregado")
           // De momento lo enviamos a la página de inicio
+          
           window.location.href = "/"
         }
       },
@@ -125,8 +248,6 @@ const TrackingPage: React.FC = () => {
   );
   const wsRef = useRef<ExtendedWebSocket | null>(null);
 
-  
-
   useEffect(() => {
     const sendMessage = async (codigoSeguimiento: string) => {
       if (mensajeEnviadoRef.current) return; // Verifica si ya se envió el mensaje
@@ -135,8 +256,9 @@ const TrackingPage: React.FC = () => {
           mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
           numero: "959183082"
         });
+
         console.log("Mensaje enviado a WhatsApp.");
-        mensajeEnviadoRef.current = true; // Marca como enviado
+        mensajeEnviadoRef.current = true; 
         setError(null); // Limpiar el error si el mensaje se envía correctamente
       } catch (error) {
         console.error("Error al enviar mensaje de WhatsApp:", error);
@@ -152,6 +274,13 @@ const TrackingPage: React.FC = () => {
       }
     });
   }, []); // Ejecutar solo al montar el componente
+
+
+  useEffect(() => {
+    if (enRuta === "entregado") {
+      sendMessageConfirmation(); // Envía el mensaje de confirmación
+    }
+  }, [enRuta]);
 
   useEffect(() => {
     if (pedido) {
@@ -180,7 +309,7 @@ const TrackingPage: React.FC = () => {
       sendMessage(pedido.codigoSeguimiento);
     }
   };
-
+  
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     const inputCodigo = (event.target as HTMLFormElement).elements.namedItem(
@@ -291,6 +420,8 @@ const TrackingPage: React.FC = () => {
     </div>
   )
 }
+
+
 
 const SeguimientoPageWrapper = () => (
   <Suspense fallback={<div>Loading...</div>}>
