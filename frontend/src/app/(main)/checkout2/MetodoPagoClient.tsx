@@ -76,14 +76,39 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
     getPedido();
   }, [pedidoInput]); // Fetch pedido whenever pedidoInput changes
 
-  const handleImageClick = (id: string | null) => {
+  const handleImageClick = async (id: string | null) => {
+    setSelectedImageId(id);
+  
+    if (pedido && pedido.id) {
+      try {
+        // Configura el cuerpo de la solicitud con la estructura específica
+        const pedidoUpdateData = {
+          metodosPago: {
+            nombre: id === "yape" ? "Yape" : id === "plin" ? "Plin" : "Pago en Efectivo"
+          }
+        };
+  
+        await axios.put(
+          `${baseUrl}/admin/pedido/${pedido.id}?enriquecido=true`,
+          pedidoUpdateData,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+  
+        console.log("Pedido actualizado con método de pago:", pedidoUpdateData.metodosPago.nombre);
+      } catch (error) {
+        console.error("Error al actualizar el método de pago:", error);
+      }
+    } else {
+      console.error("No se encontró el ID del pedido.");
+    }
+  
     if (id === "pagoEfec") {
       setShowPopup(true);
-      setSelectedImageId(id);
-    } else {
-      setSelectedImageId(id);
     }
   };
+
 
   const handlePaymentConfirm = (amount: number) => {
     setPaymentAmount(amount);
