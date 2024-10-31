@@ -12,10 +12,9 @@ import { useSession } from "next-auth/react"
 
 import LoggedInAddresses from "./LoggedInAddresses"
 import { Button } from "@components/Button"
-import AddressFormParent from "./AddressFormParent";
+import AddressFormParent from "./AddressFormParent"
 import BackButton from "@components/BackButton"
 import { Heading } from "@medusajs/ui"
-
 
 interface StepDireccionProps {
   setStep: (step: string) => void
@@ -47,7 +46,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number
     lng: number
-  } | null>(null)
+  } | null>({ lat: -6.485001917368323, lng: -76.36796974234515 })
   const [dniError, setDniError] = useState<string | null>(null)
   const [telefonoError, setTelefonoError] = useState<string | null>(null)
   const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
@@ -181,10 +180,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         numeroDni.length === 8 &&
         telefono.length === 9 &&
         calle.trim() !== "" &&
-        referencia.trim() !== "" &&
-        selectedLocation !== null &&
-        selectedLocation?.lat !== null &&
-        selectedLocation?.lng !== null
+        referencia.trim() !== "" 
+        // selectedLocation !== null &&
+        // selectedLocation?.lat !== null &&
+        // selectedLocation?.lng !== null
       )
     } else {
       return (
@@ -222,7 +221,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
       },
     }
     direccionData.ubicacion.latitud = selectedLocation?.lat.toString() || "null"
-    direccionData.ubicacion.longitud = selectedLocation?.lng.toString() || "null"
+    direccionData.ubicacion.longitud =
+      selectedLocation?.lng.toString() || "null"
 
     const usuarioData = {
       nombre: nombre,
@@ -420,12 +420,22 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
   return (
     <>
-      <div className="py-6" style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "60px" }}>
-            <BackButton onClick={() => window.history.back()}/>
-        </div>
+      <div
+        className="py-6"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: "20px",
+          paddingLeft: "60px",
+        }}
+      >
+        <BackButton onClick={() => window.history.back()} />
+      </div>
       <div className="content-container mx-auto py-6">
-        <Heading className="text-[2rem] leading-[2.75rem] mb-4">Coloca tus Datos</Heading>
-    
+        <Heading className="text-[2rem] leading-[2.75rem] mb-4">
+          Coloca tus Datos
+        </Heading>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AddressForm Component - Top Left */}
           <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
@@ -452,7 +462,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
               telefonoError={telefonoError}
             />
           </div>
-    
+
           {/* Summary2 Component - Top Right */}
           <div className="bg-white py-6 lg:col-span-1 lg:h-full">
             {carritoState ? (
@@ -466,7 +476,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
               <p>Cargando carrito...</p>
             )}
           </div>
-    
+
           {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
           {session?.user?.id && (
             <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
@@ -480,24 +490,19 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
             </div>
           )}
         </div>
-    
+
         {/* Map modal */}
-        {showMapModal && (
+        {/* {showMapModal && (
           <GoogleMapModal
             onSelectLocation={handleMapSelect}
             city={ciudadNombre}
             closeModal={() => setShowMapModal(false)}
             {...(selectedLocation && { location: selectedLocation })}
           />
-        )}
+        )} */}
       </div>
     </>
-  );
-  
-  
-  
-  
-  
+  )
 }
 
 export default StepDireccion
