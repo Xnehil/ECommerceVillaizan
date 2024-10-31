@@ -70,11 +70,15 @@ const MotorizadosPage: React.FC = () => {
     router.push("/motorizados/repartidores"); // Navigate to /repartidores page
   };
 
+  const handleHorarioClick = () => {
+    router.push("/motorizados/disponibilidad"); // Navigate to /horarios page
+  }
+
   return (
     <>
       <div className="header">
         <div className="buttons-container">
-          <Button variant="default" >
+          <Button variant="default" onClick={handleHorarioClick} >
             Horarios de disponibilidad
           </Button>
           <Button variant="default" onClick={handleRepartidoresClick}>
