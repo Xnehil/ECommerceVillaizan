@@ -39,6 +39,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
   const [mandatoryCiudadIdInternal, setMandatoryCiudadIdInternal] = useState('');
   const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [localError, setLocalError] = useState('');
 
   useEffect(() => {
     if (state === 'Editar' && direccion) {
@@ -76,8 +77,49 @@ const AddressForm: React.FC<AddressFormProps> = ({
     fetchCiudades();
   }, []);
 
+  const countWords = (text: string) => text.trim().split(/\s+/).length;
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    // Validation
+    if (nombre.trim() === '' || calle.trim() === '' || referencia.trim() === '') {
+      let errorMessage = 'Todos los campos obligatorios deben estar completos.';
+      if (nombre.trim() === '' && calle.trim() === '' && referencia.trim() === '') {
+        errorMessage = 'Nombre, Calle y Referencia deben estar completos.';
+      } else if (nombre.trim() === '' && calle.trim() === '') {
+        errorMessage = 'Nombre y Calle deben estar completos.';
+      } else if (nombre.trim() === '' && referencia.trim() === '') {
+        errorMessage = 'Nombre y Referencia deben estar completos.';
+      } else if (calle.trim() === '' && referencia.trim() === '') {
+        errorMessage = 'Calle y Referencia deben estar completos.';
+      } else if (nombre.trim() === '') {
+        errorMessage = 'Nombre debe estar completo.';
+      } else if (calle.trim() === '') {
+        errorMessage = 'Calle debe estar completa.';
+      } else if (referencia.trim() === '') {
+        errorMessage = 'Referencia debe estar completa.';
+      }
+      setLocalError(errorMessage);
+      return;
+    }
+
+    if (countWords(nombre) > 250) {
+      setLocalError('El nombre no puede superar los 250 palabras.');
+      return;
+    }
+
+    if (countWords(calle) > 255) {
+      setLocalError('La calle no puede superar las 255 palabras.');
+      return;
+    }
+
+    if (countWords(referencia) > 255) {
+      setLocalError('La referencia no puede superar las 255 palabras.');
+      return;
+    }
+
+    setLocalError(''); // Clear error if validation passes
+
     try {
       if (state === 'Editar' && direccion) {
         const responseCiudad = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ciudad/${ciudadId}`);
@@ -137,7 +179,6 @@ const AddressForm: React.FC<AddressFormProps> = ({
               style={styles.confirmButton}
               onClick={() => {
                 setIsErrorPopupVisible(false); // Hide popup
-                onClose();
               }}
             >
               Volver
@@ -164,6 +205,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
           onChange={(e) => setCalle(e.target.value)}
           required
           placeholder="Av. La Republica"
+          tooltip="Máximo 255 palabras"
         />
         <InputWithLabel
           label="Número Exterior"
@@ -217,6 +259,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
             </select>
           )}
         </div>
+        {/* Error Message Display */}
+        {localError && (
+          <p style={{ color: 'red', textAlign: 'center', marginBottom: '10px' }}>
+            {localError}
+          </p>
+        )}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
           <button type="submit" style={styles.confirmButton}>
             {state === 'Crear' ? 'Crear Dirección' : 'Guardar Cambios'}
