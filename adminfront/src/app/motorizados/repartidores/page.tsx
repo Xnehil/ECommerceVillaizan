@@ -6,15 +6,14 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "@/components/Loading";
 import { DataTable } from "@/components/datatable/data-table";
-import { columns } from "./columns";
-import { Motorizado } from "@/types/PaqueteMotorizado";
+import { Motorizado, Usuario } from "@/types/PaqueteMotorizado";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const MotorizadosPage: React.FC = () => {
+const RepartidoresPage: React.FC = () => {
   const router = useRouter(); // Initialize useRouter
-  const motorizados = useRef<Motorizado[]>([]); // Initialize motorizados
+  const repartidores = useRef<Usuario[]>([]); // Initialize motorizados
 
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -22,15 +21,15 @@ const MotorizadosPage: React.FC = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchMotorizados = async () => {
-      if (motorizados.current.length > 0) return;
+    const fetchRepartidores = async () => {
+      if (repartidores.current.length > 0) return;
 
       setIsLoading(true);
 
       try {
         a.current = a.current + 1;
         console.log(a.current);
-        console.log("Fetching motorizados");
+        console.log("Fetching repartidores");
         // Fetch motorizados
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}motorizado?enriquecido=true`
@@ -39,11 +38,11 @@ const MotorizadosPage: React.FC = () => {
           throw new Error("Failed to fetch motorizados");
         }
         const data = await response.data;
-        console.log("Motorizados fetched:", data);
+        console.log("Repartidores fetched:", data);
 
-        const motorizadosData: Motorizado[] = data.motorizados;
-        motorizados.current = motorizadosData;
-        console.log("Motorizados:", motorizados.current);
+        const repartidoresData: Usuario[] = data.usuarios;
+        repartidores.current = repartidoresData;
+        console.log("Repartidores:", repartidores.current);
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch motorizados", error);
@@ -52,35 +51,24 @@ const MotorizadosPage: React.FC = () => {
           variant: "destructive",
           title: "Error",
           description:
-            "No se pudieron cargar los motorizados. Por favor, intente de nuevo.",
+            "No se pudieron cargar los repartidores. Por favor, intente de nuevo.",
         });
       }
     };
 
     if (a.current === 0) {
-      fetchMotorizados();
     }
   }, []);
 
-  const handleAddMotorizadoClick = () => {
-    router.push("/motorizados/agregar"); // Navigate to /agregar page
-  };
-
   const handleRepartidoresClick = () => {
-    router.push("/motorizados/repartidores"); // Navigate to /repartidores page
+    router.push("/motorizados/repartidores/agregar"); // Navigate to /repartidores page
   };
 
   return (
     <>
       <div className="header">
         <div className="buttons-container">
-          <Button variant="default" >
-            Horarios de disponibilidad
-          </Button>
           <Button variant="default" onClick={handleRepartidoresClick}>
-            Repartidores
-          </Button>
-          <Button variant="default" onClick={handleAddMotorizadoClick}>
             <Plus size={20} className="mr-2" />
             Agregar
           </Button>
@@ -88,18 +76,14 @@ const MotorizadosPage: React.FC = () => {
       </div>
       <div className="content-container">
         {isLoading && <Loading />}
-        <h4>Motorizados</h4>
-        <p>Administra el inventario de los motorizados.</p>
+        <h4>Repartidores</h4>
+        <p>Administra los usuarios de los repartidores.</p>
         <div className="h-full w-full">
-          <DataTable
-            columns={columns}
-            data={motorizados.current}
-            nombre="motorizado"
-          />
+          
         </div>
       </div>
     </>
   );
 };
 
-export default MotorizadosPage;
+export default RepartidoresPage;

@@ -29,12 +29,21 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
 
   const estado = transformEstado(pedido.current.estado);
 
-  const fechaPedido = pedido.current.solicitadoEn ? new Date(pedido.current.solicitadoEn) : null;
-  const formattedDate = fechaPedido ? fechaPedido.toLocaleDateString() : "Fecha no disponible";
-  const formattedTime = fechaPedido ? fechaPedido.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  }) : "Hora no disponible";
+  const fecha = pedido.current.solicitadoEn;
+
+  let formattedDate = null;
+  let formattedTime = "";
+
+  if (fecha) {
+    const fechaPedido = new Date(fecha);
+    if (!isNaN(fechaPedido.getTime())) {
+      formattedDate = fechaPedido.toLocaleDateString();
+      formattedTime = fechaPedido.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+  }
 
   return (
     <div className="info-side-container">
@@ -61,11 +70,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
         <div className="h-full flex flex-col justify-end">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
-              <Button
-                variant="outline"
-              >
-                Ver detalle
-              </Button>
+              <Button variant="outline">Ver detalle</Button>
             </SheetTrigger>
             <SheetContent>
               <SheetHeader>

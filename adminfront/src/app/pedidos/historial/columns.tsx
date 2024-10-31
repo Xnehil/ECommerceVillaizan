@@ -53,7 +53,9 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const fecha = row.original.solicitadoEn;
       if (!fecha) return "Fecha no disponible";
-      const formatted = fecha.toLocaleTimeString([], {
+      // Convertir fecha a un objeto Date
+      const fechaDate = new Date(fecha);
+      const formatted = fechaDate.toLocaleTimeString([], {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",

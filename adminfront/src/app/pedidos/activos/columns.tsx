@@ -53,9 +53,14 @@ export const columns: ColumnDef<Pedido>[] = [
     cell: ({ row }) => {
       const fecha = row.original.solicitadoEn;
       if (!fecha) return "Fecha no disponible";
+
+      // Convertir fecha a un objeto Date
+      const fechaDate = new Date(fecha);
+      if (isNaN(fechaDate.getTime())) return "Fecha no disponible";
+
       // Calcular la diferencia de tiempo
       const diff =
-        new Date().getTime() - (fecha.getTime() - 5 * 60 * 60 * 1000);
+        new Date().getTime() - (fechaDate.getTime() - 5 * 60 * 60 * 1000);
       const diffInMinutes = Math.floor(diff / 1000 / 60);
       const diffInHours = Math.floor(diff / 1000 / 60 / 60);
       const diffInDays = Math.floor(diff / 1000 / 60 / 60 / 24);
