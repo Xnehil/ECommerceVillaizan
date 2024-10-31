@@ -12,6 +12,22 @@ export default function DeliveryLayout() {
         name="detalles"
         options={{ title: "Detalles de entrega", headerShown: true }}
       />
+      <Stack.Screen
+          name="confirmada"
+          options={{
+            presentation: "card",
+            title: "Entrega Confirmada",
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="cancelada"
+          options={{
+            presentation: "card",
+            title: "Entrega Confirmada",
+            headerShown: false,
+          }}
+        />
     </Stack>
   );
 }

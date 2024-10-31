@@ -4,7 +4,9 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "@constants/*": ["/constants/*"],
+      "@assets/*": ["/assets/*"]
     }
   },
   "include": [

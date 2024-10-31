@@ -66,22 +66,7 @@ function RootLayoutNav() {
             headerBackVisible: true,
           }}
         />
-        <Stack.Screen
-          name="confirmada"
-          options={{
-            presentation: "card",
-            title: "Entrega Confirmada",
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen
-          name="cancelada"
-          options={{
-            presentation: "card",
-            title: "Entrega Confirmada",
-            headerShown: false,
-          }}
-        />
+        
         <Stack.Screen
           name="venta"
           options={{

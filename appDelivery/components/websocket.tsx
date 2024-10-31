@@ -17,7 +17,7 @@ const WebSocketComponent = forwardRef<
 >(({ idMotorizado }, ref) => {
   const handleIncomingMessage = (event: MessageEvent) => {
     const data = JSON.parse(event.data);
-    console.log("Mensaje recibido:", data);
+    console.log("Mensaje recibido:", data, "Tipo:", data.type);
   };
   // Establece la conexión WebSocket con el ID del motorizado en la URL
   const { sendMessage, lastMessage, readyState } = useWebSocket(
