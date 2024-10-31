@@ -18,6 +18,7 @@ import {
   DetallePedido,
   MetodoDePago,
   Pedido,
+  Usuario,
 } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
 import { FontAwesome } from "@expo/vector-icons";
@@ -51,16 +52,97 @@ export default function SeleccionarProductos({ navigation }: any) {
 
   const confirmarVenta = async () => {
     try {
-      const venta = {
-        productos: productosSeleccionados.map((p: any) => ({
-          id: p.producto.id,
-          cantidad: p.cantidad,
-        })),
-        metodoPago,
-        imagenPago,
+      // Crear los DetallePedido y obtener sus IDs
+      const detallePedidosPromises = productosSeleccionados.map(async (productoSeleccionado) => {
+        const detallePedido = {
+          id: "",
+          creadoEn: new Date().toISOString(),
+          actualizadoEn: new Date().toISOString(),
+          desactivadoEn: null,
+          usuarioCreacion: "per_01JBDSEB0CF7M1SWX7G53N1HWQ",
+          usuarioActualizacion: null,
+          estaActivo: true,
+          cantidad: productoSeleccionado.cantidad,
+          subtotal: (parseFloat(productoSeleccionado.producto.precioA) * productoSeleccionado.cantidad).toString(),
+          producto: productoSeleccionado.producto,
+        };
+  
+        const response = await axios.post(`${BASE_URL}/detallePedidos`, detallePedido);
+        return response.data.detallePedido;
+      });
+  
+      const detalles = await Promise.all(detallePedidosPromises);
+  
+      // Crear Pedido con los DetallePedidos generados
+      const pedidoCompleto = {
+        id: "",
+        creadoEn: new Date().toISOString(),
+        actualizadoEn: new Date().toISOString(),
+        desactivadoEn: null,
+        usuarioCreacion: "per_01JBDSEB0CF7M1SWX7G53N1HWQ",
+        usuarioActualizacion: null,
+        estaActivo: true,
+        estado: "Pendiente",
+        prioridadEntrega: null,
+        total: totalResumen.toString(),
+        puntosOtorgados: 0,
+        motivoCancelacion: null,
+        codigoSeguimiento: "",
+        montoEfectivoPagar: totalResumen.toString(),
+        motorizado: null,
+        direccion: null,
+        usuario: { id: "per_01JBDSEB0CF7M1SWX7G53N1HWQ" } as Usuario,
+        urlEvidencia: null,
+        detalles,
+        metodosPago: metodosPago.filter((mp) => mp.nombre === metodoPago),
       };
-
-      await axios.post(`${BASE_URL}/ventas`, venta);
+  
+      const pedidoResponse = await axios.post(`${BASE_URL}/pedidos`, pedidoCompleto);
+      const pedidoId = pedidoResponse.data.pedido.id;
+  
+      // Crear la Venta con el Pedido
+      const venta = {
+        tipoComprobante: "Boleta",
+        fechaVenta: new Date(),
+        numeroComprobante: "001-000001",
+        montoTotal: parseFloat(pedidoCompleto.total),
+        totalPaletas: detalles.filter((d) => d.producto.tipoProducto.nombre === "Paleta").reduce((acc, d) => acc + d.cantidad, 0),
+        totalMafaletas: detalles.filter((d) => d.producto.tipoProducto.nombre === "Mafaleta").reduce((acc, d) => acc + d.cantidad, 0),
+        estado: "Entregado",
+        totalIgv: parseFloat(pedidoCompleto.total) * 0.18,
+        pedido: pedidoId,
+      };
+  
+      const ventaResponse = await axios.post(`${BASE_URL}/ventas`, venta);
+      const ventaId = ventaResponse.data.id;
+  
+      // Crear el Pago con el Venta y Pedido generados
+      const pago = {
+        esTransferencia: true,
+        montoCobrado: parseFloat(pedidoCompleto.total),
+        numeroOperacion: null,
+        urlEvidencia: imagenPago,
+        codigoTransaccion: null,
+        venta: ventaId,
+        metodoPago: pedidoCompleto.metodosPago[0].id,
+        banco: null,
+        pedido: pedidoId,
+      };
+  
+      await axios.post(`${BASE_URL}/pagos`, pago);
+  
+      // Actualizar inventario de cada producto en base a la cantidad seleccionada
+      const inventarioUpdates = productosSeleccionados.map(async (productoSeleccionado) => {
+        const inventarioProducto = inventario.find((item) => item.producto.id === productoSeleccionado.producto.id);
+        if (inventarioProducto) {
+          await axios.patch(`${BASE_URL}/inventarioMotorizado/${inventarioProducto.id}`, {
+            stock: inventarioProducto.stock - productoSeleccionado.cantidad,
+          });
+        }
+      });
+  
+      await Promise.all(inventarioUpdates);
+  
       Alert.alert("Éxito", "Venta registrada exitosamente.");
       navigation.goBack();
     } catch (error) {
@@ -68,7 +150,7 @@ export default function SeleccionarProductos({ navigation }: any) {
       Alert.alert("Error", "No se pudo registrar la venta.");
     }
   };
-
+  
   const mostrarMensaje = (
     mensaje: string,
     tipo: "auto" | "confirmacion" = "auto"

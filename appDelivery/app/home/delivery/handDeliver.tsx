@@ -276,12 +276,55 @@ const EntregarPedido = () => {
       );
       if (!confirm) return;
 
+      const urlPedido = enviarImagen(parsedPedido.id, "pedido");
+      const urlPago =enviarImagen(parsedPedido.id, "pago");
+
+      //Crear Venta
+      const response_detalle = await axios.get(`${BASE_URL}/pedido/${pedidoCompleto.id}/conDetalle?pedido=true`);
+      pedidoCompleto.detalles = response_detalle.data.pedido.detalles;
+      const detalles = pedidoCompleto.detalles || [];
+      const totalPaletas = detalles.filter((detalle: DetallePedido) => detalle.producto.tipoProducto.nombre === "Paleta").reduce((acc: number, detalle: DetallePedido) => acc + detalle.cantidad, 0);
+      const totalMafaletas = detalles.filter((detalle: DetallePedido) => detalle.producto.tipoProducto.nombre === "Mafaleta").reduce((acc: number, detalle: DetallePedido) => acc + detalle.cantidad, 0);
+
+      const venta = await axios.post(`${BASE_URL}/ventas`, {
+        tipoComprobante: "Boleta",
+        fechaVenta: new Date(),
+        numeroComprobante: "001-000001", 
+        montoTotal: parseFloat(pedidoCompleto.total),
+        totalPaletas: totalPaletas,
+        totalMafaletas: totalMafaletas,
+        estado: "Entregado",
+        totalIgv: parseFloat(pedidoCompleto.total) * 0.18,
+        pedido: parsedPedido.id,
+      });
+      const pago = await axios.post(`${BASE_URL}/pago`, {
+        esTransferencia: true,
+        montoCobrado: parseFloat(pedidoCompleto.total),
+        numeroOperacion: null,
+        urlEvidencia: urlPago,
+        codigoTransaccion: null,
+        venta: venta.data.id,
+        metodoPago: pedidoCompleto.metodosPago[0].id,
+        banco: null,
+        pedido: pedidoCompleto.id,
+      });
+
+      //Registrar venta
+      const response_venta = await axios.post(`${BASE_URL}/venta`,venta);
+      const ventaData = response_venta.data.venta;
+      console.log(ventaData);
+
+      //Registrar pago
+      const response_pago = await axios.post(`${BASE_URL}/pago`,pago);
+      const pagoData = response_pago.data.pago;
+      console.log(pagoData);
+      
+      mostrarMensaje("Entrega confirmada");
       await axios.put(`${BASE_URL}/pedido/${parsedPedido.id}`, {
         estado: "Entregado",
+        urlEvidencia: urlPedido,
       });
-      enviarImagen(parsedPedido.id, "pedido");
-      enviarImagen(parsedPedido.id, "pago");
-      mostrarMensaje("Entrega confirmada");
+      
       router.push({
         pathname: "/home/delivery/confirmada",
         params: {},

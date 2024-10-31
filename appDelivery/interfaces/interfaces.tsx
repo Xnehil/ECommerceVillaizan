@@ -66,6 +66,7 @@ export interface Producto {
   informacionNutricional: string;
   razonEliminacion: string | null;
   seVendeEcommerce: boolean;
+  tipoProducto: TipoProducto;
 }
 
 export interface Pedido {
@@ -86,6 +87,7 @@ export interface Pedido {
   motorizado: Motorizado | null; 
   direccion: Direccion | null;   
   usuario: Usuario | null;  
+  urlEvidencia: string | null;
   detalles: DetallePedido[] | null ;
   metodosPago: MetodoDePago[] | null;
 }
@@ -173,4 +175,75 @@ export interface MetodoDePago {
 
 export interface MetodoDePagoResponse {
   metodoPagos: MetodoDePago[];
+}
+
+export interface Venta {
+  tipoComprobante: string;
+  fechaVenta: Date;
+  numeroComprobante: string;
+  montoTotal: number;
+  totalPaletas: number;
+  totalMafeletas: number;
+  estado: string;
+  totalIgv: number;
+  pedido: Pedido;
+  ordenSerie: null;
+}
+
+export interface Pago {
+  id: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  desactivadoEn: string | null;
+  usuarioCreacion: string;
+  usuarioActualizacion: string | null;
+  estaActivo: boolean;
+  esTransferencia: boolean;
+  montoCobrado: number;
+  numeroOperacion: string | null;
+  urlEvidencia: string | null;
+  codigoTransaccion: string | null;
+  venta: Venta;
+  metodoPago: MetodoDePago;
+  banco: Banco | null;
+  pedido: Pedido;
+}
+
+export interface Banco {
+  id: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  desactivadoEn: string | null;
+  usuarioCreacion: string;
+  usuarioActualizacion: string | null;
+  estaActivo: boolean;
+  nombre: string;
+}
+
+export interface PagoResponse {
+  pago: Pago;
+}
+
+export interface TipoProducto {
+  id: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  desactivadoEn: string | null;
+  usuarioCreacion: string;
+  usuarioActualizacion: string | null;
+  estaActivo: boolean;
+  nombre: string;
+  subcategorias: Subcategoria[];
+}
+
+export interface Subcategoria {
+  id: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  desactivadoEn: string | null;
+  usuarioCreacion: string;
+  usuarioActualizacion: string | null;
+  estaActivo: boolean;
+  nombre: string;
+  tipoProducto: TipoProducto[];
 }
