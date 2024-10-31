@@ -5,20 +5,26 @@ import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { Button } from "@components/Button";
 import { signOut } from "next-auth/react";
-import { cookies } from "next/headers"
 import axios from 'axios';
 
-const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
 export async function handleSignOut() {
   document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
   document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
+  localStorage.removeItem('calle');
+  localStorage.removeItem('dni');
+  localStorage.removeItem('nombre');
+  localStorage.removeItem('nroInterior');
+  localStorage.removeItem('referencia');
+  localStorage.removeItem('telefono');
   await signOut();
 }
 
 export default function Nav() {
   const { data: session, status } = useSession();
   const [userName, setUserName] = useState('');
+  const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false); // Popup visibility state
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -28,18 +34,17 @@ export default function Nav() {
 
   useEffect(() => {
     async function fetchUserName() {
-      if(status !== "loading"){
+      if (status !== "loading") {
         if (session?.user?.id) {
           try {
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
-            console.log("response", response);
+            const response = await axios.get(`${baseUrl}/admin/usuario/${session.user.id}`);
             const user = response.data.usuario;
             if (user) {
-              setUserName(user.nombre + ' ' + user.apellido);  // Assuming the backend returns { name: "User Name" }
+              setUserName(user.nombre + ' ' + user.apellido);
             } else {
               console.error('Failed to fetch user name');
+              setIsErrorPopupVisible(true);
             }
-            console.log("compara cartId")
 
             const getCookie = (name: string) => {
               const value = `; ${document.cookie}`;
@@ -52,44 +57,47 @@ export default function Nav() {
               }
               return null;
             };
-            
-            // Now we can use this function to get `_medusa_cart_id`
+
             const cartId = getCookie("_medusa_cart_id");
-            
-            console.log("cartId:", cartId);  // Check if cartId is being correctly retrieved
-            
-            if(cartId){
+
+            if (cartId) {
               const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
               const pedido = response.data.pedido;
-              if(pedido){
-                if(!pedido.usuario || (pedido.usuario.id !== session.user.id)){
-                  //if not equal, update pedido.usuario.id to session.user.id
-                  console.log("No coincide el usuario del pedido con el de la sesion")
+              if (pedido) {
+                if (!pedido.usuario || (pedido.usuario.id !== session.user.id)) {
                   await axios.put(`${baseUrl}/admin/pedido/${pedido.id}`, {
-                    "usuario": {"id": session.user.id}
+                    "usuario": { "id": session.user.id }
                   });
                 }
               }
-            }
-            else{
-              //search in bd if there is a pedido with the user id, if there is, put it on the cookie. the axios is axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${userId}`);
+            } else {
               const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
               const pedido = response.data.pedido;
-              if(pedido){
-                console.log("Pedido encontrado", pedido)
+              if (pedido) {
                 document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
               }
             }
           } catch (error) {
             console.error('Error fetching user name:', error);
+            setIsErrorPopupVisible(true);
+            if (axios.isAxiosError(error)) {
+              if (error.response) {
+                console.error(`Server error: ${error.response.status}`);
+              } else if (error.request) {
+                console.error('Network error: Please check your internet connection.');
+              } else {
+                console.error('An unexpected error occurred.');
+              }
+            } else {
+              console.error('An unexpected error occurred.');
+            }
           }
         }
       }
     }
 
-
     fetchUserName();
-  }, [status,session]);
+  }, [status, session]);
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 bg-rojoVillaizan">
@@ -98,42 +106,25 @@ export default function Nav() {
           {/* Logo */}
           <div className="flex items-center h-full">
             <Link href="/" className="flex items-center">
-              <img
-                src="/images/logo.png"
-                alt="Helados Villaizan"
-                className="h-12"
-              />
+              <img src="/images/logo.png" alt="Helados Villaizan" className="h-12" />
             </Link>
           </div>
 
-          {/* Menú de navegación */}
+          {/* Main Navigation */}
           <div className="flex items-center gap-x-6">
-            <Link href="/" className="hover:text-ui-fg-base text-white">
-              Home
-            </Link>
-            <Link href="/comprar" className="hover:text-ui-fg-base text-white">
-              Comprar
-            </Link>
-            {/* Inicio Sesion */}
+            <Link href="/" className="hover:text-ui-fg-base text-white">Home</Link>
+            <Link href="/comprar" className="hover:text-ui-fg-base text-white">Comprar</Link>
+            
             {status === "loading" ? (
               <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
             ) : session ? (
               <>
                 <span className="text-lg text-white">Hola, {userName}</span>
                 <div className="relative">
-                  <img
-                    src="/images/userIcon.png"
-                    alt="Icon"
-                    className="h-6 w-6 cursor-pointer"
-                    onClick={toggleDropdown}
-                  />
+                  <img src="/images/userIcon.png" alt="Icon" className="h-6 w-6 cursor-pointer" onClick={toggleDropdown} />
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                      <Link 
-                        href="/cuenta" 
-                        className="block px-4 py-2 text-gray-800 hover:bg-gray-200" 
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
+                      <Link href="/cuenta" className="block px-4 py-2 text-gray-800 hover:bg-gray-200" onClick={() => setIsDropdownOpen(false)}>
                         Ver cuenta
                       </Link>
                       <button
@@ -152,25 +143,45 @@ export default function Nav() {
             ) : (
               <div className="flex items-center">
                 <Button className="text-lg text-white">
-                  <Link
-                    href="/login"
-                    className="hover:text-ui-fg-base text-white"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
+                  <Link href="/login" className="hover:text-ui-fg-base text-white" onClick={() => setIsMobileMenuOpen(false)}>
                     ¡Inicia sesión y accede a promociones!
                   </Link>
                 </Button>
-                <img
-                  src="/images/userIcon.png"
-                  alt="Icon"
-                  className="h-6 w-6 ml-2"
-                />
+                <img src="/images/userIcon.png" alt="Icon" className="h-6 w-6 ml-2" />
               </div>
             )}
-            
           </div>
         </nav>
       </header>
+
+      {/* Error Popup */}
+      {isErrorPopupVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-md text-center">
+            <p className="text-black-600 mb-4">No se pudo cargar los datos de la cuenta. Por favor, intenta nuevamente</p>
+            <button
+              style={styles.confirmButton}
+              onClick={() => {
+                setIsErrorPopupVisible(false); // Hide popup
+                window.location.href = "/"; // Redirect to home
+              }}
+            >
+              Volver al Inicio
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+const styles = {
+  confirmButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+    backgroundColor: 'black',
+    color: 'white',
+  },
 }
