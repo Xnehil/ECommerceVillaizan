@@ -24,7 +24,7 @@ export async function handleSignOut() {
 export default function Nav() {
   const { data: session, status } = useSession();
   const [userName, setUserName] = useState('');
-  const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false); // Popup visibility state
+  const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -163,6 +163,7 @@ export default function Nav() {
               style={styles.confirmButton}
               onClick={() => {
                 setIsErrorPopupVisible(false); // Hide popup
+                handleSignOut(); // Sign out
                 window.location.href = "/"; // Redirect to home
               }}
             >

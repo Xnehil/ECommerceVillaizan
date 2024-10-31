@@ -26,6 +26,8 @@ const Cuenta = () => {
   const [userId, setUserId] = useState('');
   const [isPopUpOpen, setIsPopUpOpen] = useState(false);
   const [direccionToDelete, setDireccionToDelete] = useState<Direccion | null>(null);
+  const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     async function fetchUserName() {
@@ -43,6 +45,8 @@ const Cuenta = () => {
                 setUserId(user.id);
               } else {
                 console.error('Failed to fetch user name');
+                setErrorMessage('Error al cargar los datos de usuario. Intente de nuevo más tarde.');
+                setIsErrorPopupVisible(true);
               }
     
               const addressResponse = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`);
@@ -50,6 +54,8 @@ const Cuenta = () => {
     
             } catch (error) {
               console.error('Error fetching user name:', error);
+              setErrorMessage('Error al cargar los datos de usuario. Intente de nuevo más tarde.');
+              setIsErrorPopupVisible(true);
             }
           } else {
             router.push('/');
@@ -95,9 +101,13 @@ const Cuenta = () => {
           setDirecciones(direcciones.filter((dir) => dir.id !== direccionToDelete.id));
         } else {
           console.error('Failed to delete:', response.statusText);
+          setErrorMessage('Error al eliminar la dirección. Intente de nuevo más tarde.');
+          setIsErrorPopupVisible(true);
         }
       } catch (error) {
         console.error('An error occurred during deletion:', error);
+        setErrorMessage('Error al eliminar la dirección. Intente de nuevo más tarde.');
+        setIsErrorPopupVisible(true);
       } finally {
         setIsPopUpOpen(false);
         setDireccionToDelete(null);
@@ -121,46 +131,78 @@ const Cuenta = () => {
   };
 
   return (
-    <div style={{ display: 'flex' }}>
-      <div style={{ flex: 1, padding: '20px' }}>
-        <h2>Datos generales</h2>
-        <InputWithLabel label="Nombre" value={userNombre} disabled={true} />
-        <InputWithLabel label="Apellido" value={userApellido} disabled={true} />
-        <InputWithLabel label="Correo" value={userCorreo} disabled={true} />
-        <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />
-      </div>
-      <div style={{ flex: 1, padding: '20px' }}>
-        <h2>Direcciones Guardadas</h2>
-        {direcciones.length > 0 ? (
-          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-            {direcciones.map((direccion, index) => (
-              <AddressCard
-                key={index}
-                direccion={direccion}
-                onEdit={() => handleEdit(direccion)}
-                onDelete={() => handleDelete(direccion)}
-                showBorder={true}
-                size="medium"
-              />
-            ))}
+    <>
+      {/* Error Popup */}
+      {isErrorPopupVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-md text-center">
+            <p className="text-black-600 mb-4">{errorMessage}</p>
+            <button
+              style={styles.confirmButton}
+              onClick={() => {
+                setIsErrorPopupVisible(false); // Hide popup
+                onClose();
+                window.location.href = "/";
+              }}
+            >
+              Volver al Inicio
+            </button>
           </div>
-        ) : (
-          <p>No asociaste ninguna dirección a tu cuenta</p>
-        )}
-        <div style={{ marginLeft: '350px' }}>
-          <AddAddressButton onClick={handleAddAddress} />
         </div>
+      )}
+      <div style={{ display: 'flex' }}>
+        <div style={{ flex: 1, padding: '20px' }}>
+          <h2>Datos generales</h2>
+          <InputWithLabel label="Nombre" value={userNombre} disabled={true} />
+          <InputWithLabel label="Apellido" value={userApellido} disabled={true} />
+          <InputWithLabel label="Correo" value={userCorreo} disabled={true} />
+          <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />
+        </div>
+        <div style={{ flex: 1, padding: '20px' }}>
+          <h2>Direcciones Guardadas</h2>
+          {direcciones.length > 0 ? (
+            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+              {direcciones.map((direccion, index) => (
+                <AddressCard
+                  key={index}
+                  direccion={direccion}
+                  onEdit={() => handleEdit(direccion)}
+                  onDelete={() => handleDelete(direccion)}
+                  showBorder={true}
+                  size="medium"
+                />
+              ))}
+            </div>
+          ) : (
+            <p>No asociaste ninguna dirección a tu cuenta</p>
+          )}
+          <div style={{ marginLeft: '350px' }}>
+            <AddAddressButton onClick={handleAddAddress} />
+          </div>
+        </div>
+        <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
+          <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} onClose={onClose} mandatoryCiudad={false} mandatoryCiudadId='' mandatoryCiudadNombre=''/>
+        </AddressModal>
+        <EliminationPopUp
+          isOpen={isPopUpOpen}
+          onConfirm={confirmDelete}
+          onClose={() => setIsPopUpOpen(false)}
+        />
       </div>
-      <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} onClose={onClose} mandatoryCiudad={false} mandatoryCiudadId='' mandatoryCiudadNombre=''/>
-      </AddressModal>
-      <EliminationPopUp
-        isOpen={isPopUpOpen}
-        onConfirm={confirmDelete}
-        onClose={() => setIsPopUpOpen(false)}
-      />
-    </div>
+    </>
   );
 };
+
+const styles = {
+  confirmButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+    backgroundColor: 'black',
+    color: 'white',
+  }
+};
+
 
 export default Cuenta;
