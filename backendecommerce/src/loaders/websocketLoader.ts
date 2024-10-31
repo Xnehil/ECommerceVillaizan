@@ -12,7 +12,7 @@ export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, p
   ]
 );
 const adminsConectados = new Set<WebSocket>();
-export const pedidosPorConfirmar = new Set<string>();
+export const estadoPedidos = new Map<string, string>();
 const entregados = new Set<string>();
 const conexiones = new Map<string, WebSocket>();
 
@@ -43,7 +43,6 @@ export default async (
     }
 
     if (id && rol === 'cliente') {
-      pedidosPorConfirmar.add(id);
       conexiones.set(id, ws);
     }
 
@@ -83,6 +82,9 @@ export default async (
         if (rol === 'delivery') {
           ubicacionesDelivery.delete(id);
           console.info(`Se eliminó al repartidor ${id} de la lista de ubicaciones`);
+        }
+        if (rol === 'cliente') {
+          estadoPedidos.delete(id);
         }
         conexiones.delete(id);
       } else {
@@ -137,13 +139,13 @@ const handleClientMessage = (
       // Retrieve the location of the requested delivery person
       const deliveryId = message.data.deliveryId;
       const location = deliveryLocations.get(deliveryId);
-      const enEntrega = location?.pedidoId === idPedido;
-      const entregado = entregados.has(idPedido);
+      const enEntrega = estadoPedidos.get(idPedido) === 'enProgreso';
+      const entregado = estadoPedidos.get(idPedido) === 'entregado';
       if (entregado) {
         console.info(`Pedido ${idPedido} ya fue entregado`);
         ws.send(JSON.stringify({ type: 'entregadoResponse', data: 'Pedido entregado' }));
         entregados.delete(idPedido);
-      } else if (pedidosPorConfirmar.has(idPedido)) {
+      } else if (estadoPedidos.get(idPedido) === 'solicitado') {
         ws.send(JSON.stringify({ type: 'confirmarResponse', data: 'Pedido en proceso de confirmación' }));
 
       }
@@ -157,9 +159,9 @@ const handleClientMessage = (
         ws.send(JSON.stringify({ type: 'error', error: 'Location not found' }));
       }
       break;
-    case 'orderQuery':
-      console.info(`Client order query: ${JSON.stringify(message.data)}`);
-      // Handle order query
+    case 'estado':
+      const estado = message.data.estado;
+      estadoPedidos.set(idPedido, estado);
       break;
     case 'supportRequest':
       console.info(`Client support request: ${JSON.stringify(message.data)}`);

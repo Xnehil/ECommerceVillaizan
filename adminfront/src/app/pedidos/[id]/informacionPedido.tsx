@@ -84,7 +84,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                   <div key={index} className="flex flex-row justify-between">
                     <p>{detalle.cantidad}</p>
                     <p>{detalle.producto.nombre}</p>
-                    <p>S/. {detalle.producto.precioEcommerce}</p>
+                    <p>S/. {Number(detalle.producto.precioEcommerce).toFixed(2)}</p>
                   </div>
                 ))}
               </div>

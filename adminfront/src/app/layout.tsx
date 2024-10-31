@@ -40,23 +40,19 @@ export default function RootLayout({
       try {
         // Parse the JSON string
         const data = JSON.parse(event.data);
+        // console.log('Parsed WebSocket message:', data);
         if (data.message) {
           toast({
             title: data.title ?? "",
             description: (
               <div>
                 <p>{data.message}</p>
-                <ToastAction
-                  onClick={() => {router.push('/notificaciones')} }
-                  altText="Ir a la página de notificaciones"
-                  className="text-blue-600 hover:underline mt-2"
-                >
-                  Ver notificaciones
-                </ToastAction>
               </div>
             ),
           });
-        } else {
+        } else if (data.type && data.data){
+             mapearMensaje(data.type, router);
+        }else {
           console.error('Message property not found in WebSocket data:', data);
         }
       } catch (error) {
@@ -96,3 +92,40 @@ export default function RootLayout({
     </html>
   );
 }
+
+const mapearMensaje = (tipo: string, router: any) => {
+  let dataBonita;
+  switch (tipo) {
+    case "nuevoPedido":
+      dataBonita = {
+        type: "Nuevo pedido",
+        data: "Ha llegado un nuevo pedido, ve a la página de Pedidos para confirmarlo",
+        action: "/pedidos",
+        button: "Ver pedidos",
+      };
+      break;
+    default:
+      dataBonita = {
+        type: "Mensaje",
+        data: "Se ha recibido un mensaje",
+        action: "/notificaciones",
+        button: "Ver notificaciones",
+      };
+  }
+
+  toast({
+    title: dataBonita.type,
+    description: (
+      <div>
+        <p>{dataBonita.data}</p>
+        <ToastAction
+          onClick={() => { router.push(dataBonita.action); }}
+          altText="Ir a la página de notificaciones"
+          className="text-blue-600 hover:underline mt-2"
+        >
+          {dataBonita.button}
+        </ToastAction>
+      </div>
+    ),
+  });
+};

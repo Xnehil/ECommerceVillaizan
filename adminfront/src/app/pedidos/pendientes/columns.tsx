@@ -61,7 +61,7 @@ export const columns: ColumnDef<Pedido>[] = [
 
       // Calcular la diferencia de tiempo
       const diff =
-        new Date().getTime() - (fechaDate.getTime() - 5 * 60 * 60 * 1000);
+        new Date().getTime() - (fechaDate.getTime() - 5 * 60 * 60 * 1000 +18000000);
       const diffInMinutes = Math.floor(diff / 1000 / 60);
       const diffInHours = Math.floor(diff / 1000 / 60 / 60);
       const diffInDays = Math.floor(diff / 1000 / 60 / 60 / 24);

@@ -12,14 +12,17 @@ import {
 } from "react-native";
 import axios from "axios";
 import { BASE_URL } from "@env";
+import { IGV, GENERIC_USER } from "@/constants/Constantes";
 import {
   InventarioMotorizado,
   Producto,
   DetallePedido,
   MetodoDePago,
   Pedido,
+  Usuario,
+  Venta,
 } from "@/interfaces/interfaces";
-import { getUserData } from "@/functions/storage";
+import { getMotorizadoData, getUserData } from "@/functions/storage";
 import { FontAwesome } from "@expo/vector-icons";
 
 export default function SeleccionarProductos({ navigation }: any) {
@@ -31,7 +34,9 @@ export default function SeleccionarProductos({ navigation }: any) {
   const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion">("auto");
 
   const [metodosPago, setMetodosPago] = useState<MetodoDePago[]>([]);
-  const [metodoPago, setMetodoPago] = useState<string | null>(null);
+  const [metodoPagoSelect, setMetodoPagoSelect] = useState<MetodoDePago | null>(
+    null
+  );
   const [imagenPago, setImagenPago] = useState<string | null>(null);
   const [mostrarResumen, setMostrarResumen] = useState<boolean>(false);
   const [totalResumen, setTotalResumen] = useState<number>(0);
@@ -43,6 +48,7 @@ export default function SeleccionarProductos({ navigation }: any) {
   const obtenerMetodosPago = async () => {
     try {
       const response = await axios.get(`${BASE_URL}/metodoPago`);
+
       setMetodosPago(response.data.metodoPagos);
     } catch (error) {
       console.error("Error al obtener métodos de pago:", error);
@@ -50,22 +56,132 @@ export default function SeleccionarProductos({ navigation }: any) {
   };
 
   const confirmarVenta = async () => {
+    if (metodoPagoSelect === null || metodoPagoSelect.nombre === null) {
+      mostrarMensaje("Seleccione un método de pago");
+      return;
+    }
     try {
-      const venta = {
-        productos: productosSeleccionados.map((p: any) => ({
-          id: p.producto.id,
-          cantidad: p.cantidad,
-        })),
-        metodoPago,
-        imagenPago,
-      };
+      // Crear los DetallePedido y obtener sus IDs
+      const detallePedidosPromises = productosSeleccionados.map(
+        async (productoSeleccionado) => {
+          const detallePedido = {
+            id: "",
+            creadoEn: new Date().toISOString(),
+            actualizadoEn: new Date().toISOString(),
+            desactivadoEn: null,
+            usuarioCreacion: "per_01JBDSEB0CF7M1SWX7G53N1HWQ",
+            usuarioActualizacion: null,
+            estaActivo: true,
+            cantidad: productoSeleccionado.cantidad,
+            subtotal: (
+              parseFloat(productoSeleccionado.producto.precioA) *
+              productoSeleccionado.cantidad
+            ).toString(),
+            producto: productoSeleccionado.producto,
+          };
+          const response = await axios.post(
+            `${BASE_URL}/detallePedido`,
+            detallePedido
+          );
+          return response.data.detallePedido;
+          //return detallePedido;
+        }
+      );
 
-      await axios.post(`${BASE_URL}/ventas`, venta);
-      Alert.alert("Éxito", "Venta registrada exitosamente.");
-      navigation.goBack();
+      const detalles = await Promise.all(detallePedidosPromises);
+
+      const motorizado = await getMotorizadoData();
+
+      const pedidoCompleto = {
+        id: "",
+        estado: "Pendiente",
+        prioridadEntrega: null,
+        total: totalResumen.toString(),
+        puntosOtorgados: 0,
+        motivoCancelacion: null,
+        montoEfectivoPagar: totalResumen.toString(),
+        motorizado: motorizado,
+        direccion: null,
+        usuario: { id: GENERIC_USER } as Usuario,
+        urlEvidencia: null,
+        detalles,
+        metodosPago:
+          metodoPagoSelect && metodoPagoSelect.nombre
+            ? metodosPago.filter((mp) => mp.nombre === metodoPagoSelect.nombre)
+            : [],
+      };
+      const pedidoResponse = await axios.post(
+        `${BASE_URL}/pedido`,
+        pedidoCompleto
+      );
+      const pedidoId = pedidoResponse.data.pedido.id;
+      console.log(pedidoResponse);
+
+      // Crear la Venta con el Pedido
+      const venta: Venta = {
+        tipoComprobante: "Boleta",
+        fechaVenta: new Date(),
+        numeroComprobante: "001-000001",
+        montoTotal: parseFloat(pedidoCompleto.total),
+        totalPaletas:
+          detalles
+            .filter((d) => d.producto.tipoProducto?.nombre === "Paleta")
+            .reduce((acc, d) => acc + d.cantidad, 0) || 0,
+        totalMafeletas:
+          detalles
+            .filter((d) => d.producto.tipoProducto?.nombre === "Mafaleta")
+            .reduce((acc, d) => acc + d.cantidad, 0) || 0,
+        estado: "Entregado",
+        totalIgv: parseFloat(pedidoCompleto.total) * IGV,
+        pedido: pedidoId,
+        ordenSerie: null,
+      };
+      console.log(venta);
+      const ventaResponse = await axios.post(`${BASE_URL}/venta`, venta);
+      console.log(ventaResponse);
+      const ventaId = ventaResponse.data.id;
+
+      // Crear el Pago con el Venta y Pedido generados
+      const pago = {
+        esTransferencia: true,
+        montoCobrado: parseFloat(pedidoCompleto.total),
+        numeroOperacion: null,
+        urlEvidencia: null,
+        codigoTransaccion: null,
+        venta: ventaId,
+        metodoPago: pedidoCompleto.metodosPago[0].id,
+        banco: null,
+        pedido: pedidoId,
+      };
+      const pagoResponse = await axios.post(`${BASE_URL}/pago`, pago);
+      console.log(pagoResponse);
+
+      // Actualizar inventario de cada producto en base a la cantidad seleccionada
+      const inventarioUpdates = productosSeleccionados.map(
+        async (productoSeleccionado) => {
+          const inventarioProducto = inventario.find(
+            (item) => item.producto.id === productoSeleccionado.producto.id
+          );
+          if (inventarioProducto) {
+              return axios.post(
+                `${BASE_URL}/inventarioMotorizado/disminuir/${inventarioProducto.id}`,
+                {
+                  cantidad: Math.abs(productoSeleccionado.cantidad),
+                }
+              );
+            
+          }
+        }
+      );
+
+      await Promise.all(inventarioUpdates);
+      obtenerInventario();
+      mostrarMensaje("Éxito, venta registrada exitosamente.");
+      restablecerVenta();
+      setMostrarResumen(false);
     } catch (error) {
       console.error("Error al confirmar venta:", error);
-      Alert.alert("Error", "No se pudo registrar la venta.");
+      mostrarMensaje("Error, no se pudo registrar la venta.");
     }
   };
 
@@ -77,7 +193,7 @@ export default function SeleccionarProductos({ navigation }: any) {
     setTipoModal(tipo);
 
     if (tipo === "auto") {
-      setTimeout(() => setMensajeModal(null), 3000); // Desvanece automáticamente después de 3 segundos
+      setTimeout(() => setMensajeModal(null), 3000);
     }
   };
   useEffect(() => {
@@ -154,9 +270,7 @@ export default function SeleccionarProductos({ navigation }: any) {
 
     // Ajusta el inventario según la d  iferencia de la cantidad
     const diferencia = cantidad - cantidadActual;
-    setTotalResumen(
-      (prevTotal) => prevTotal + parseFloat(producto.precioA) * diferencia
-    );
+
     actualizarInventario(producto.id, -diferencia);
   };
 
@@ -168,7 +282,6 @@ export default function SeleccionarProductos({ navigation }: any) {
     const productoEnVenta = productosSeleccionados.find(
       (p) => p.producto.id === producto.id
     );
-    setTotalResumen(totalResumen + parseFloat(producto.precioA));
     // Verifica si el inventario tiene stock suficiente
     if (inventarioProducto && inventarioProducto.stock > 0) {
       setProductosSeleccionados((prev) => {
@@ -211,7 +324,6 @@ export default function SeleccionarProductos({ navigation }: any) {
             )
             .filter((p) => p.cantidad > 0) // Elimina productos con cantidad 0
       );
-      setTotalResumen(totalResumen - parseFloat(producto.precioA));
 
       // Aumentar stock en inventario solo si la cantidad seleccionada era mayor a 0
       actualizarInventario(producto.id, 1);
@@ -234,8 +346,10 @@ export default function SeleccionarProductos({ navigation }: any) {
   };
 
   const restablecerVenta = () => {
-    setProductosSeleccionados([]);
-    obtenerInventario(); // Reinicia el inventario al estado inicial.
+    setProductosSeleccionados([]); 
+    setTotalResumen(0);
+    setMetodoPagoSelect(null);
+    obtenerInventario();
   };
 
   const abrirResumenVenta = () => {
@@ -243,6 +357,12 @@ export default function SeleccionarProductos({ navigation }: any) {
       mostrarMensaje("No has seleccionado ningún producto.", "confirmacion");
       return;
     }
+    const total = productosSeleccionados.reduce((acc, item) => {
+      const precio = parseFloat(item.producto.precioA);
+      return acc + (isNaN(precio) ? 0 : precio) * item.cantidad;
+    }, 0);
+    setTotalResumen(total);
+
     setMostrarResumen(true);
   };
 
@@ -256,6 +376,7 @@ export default function SeleccionarProductos({ navigation }: any) {
         <View style={styles.cardContent}>
           <Text style={styles.productoNombre}>{item.producto.nombre}</Text>
           <Text style={styles.stock}>Disponible: {item.stock} unidades</Text>
+          <Text style={styles.stock}>Precio: S/. {item.producto.precioA}</Text>
         </View>
         <View style={styles.cantidadContainer}>
           <TouchableOpacity onPress={() => quitarProducto(item.producto)}>
@@ -275,6 +396,10 @@ export default function SeleccionarProductos({ navigation }: any) {
     );
   };
 
+  const handleCancelar = () => {
+    setMostrarResumen(false);
+    restablecerVenta();
+  };
   return (
     <View style={styles.container}>
       <FlatList
@@ -342,28 +467,36 @@ export default function SeleccionarProductos({ navigation }: any) {
               <Text style={styles.subtitulo}>Seleccionar Método de Pago:</Text>
               <FlatList
                 data={metodosPago}
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => setMetodoPago(item.nombre)}>
-                    <View style={styles.metodoPagoContainer}>
-                      {item.nombre === "plin" ? (
-                        <Image
-                          source={require("../assets/images/plin.jpg")}
-                          style={styles.iconoPago}
-                        />
-                      ) : item.nombre === "yape" ? (
-                        <Image
-                          source={require("../assets/images/yape.png")}
-                          style={styles.iconoPago}
-                        />
-                      ) : (
-                        <View style={{padding:5, paddingRight:10}}>
-                          <FontAwesome name="money" size={30} color="black" />
-                        </View>
-                      )}
-                      <Text style={styles.metodoTexto}>{item.nombre}</Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
+                renderItem={({ item }) => {
+                  const isSelected = metodoPagoSelect?.id === item.id;
+                  return (
+                    <TouchableOpacity onPress={() => setMetodoPagoSelect(item)}>
+                      <View
+                        style={[
+                          styles.metodoPagoContainer,
+                          isSelected && styles.metodoPagoContainerSelected,
+                        ]}
+                      >
+                        {item.nombre === "plin" ? (
+                          <Image
+                            source={require("../assets/images/plin.jpg")}
+                            style={styles.iconoPago}
+                          />
+                        ) : item.nombre === "yape" ? (
+                          <Image
+                            source={require("../assets/images/yape.png")}
+                            style={styles.iconoPago}
+                          />
+                        ) : (
+                          <View style={{ padding: 5, paddingRight: 10 }}>
+                            <FontAwesome name="money" size={30} color="black" />
+                          </View>
+                        )}
+                        <Text style={styles.metodoTexto}>{item.nombre}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                }}
                 keyExtractor={(item) => item.id}
               />
 
@@ -372,7 +505,7 @@ export default function SeleccionarProductos({ navigation }: any) {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.botonCancelar}
-                onPress={() => setMostrarResumen(false)}
+                onPress={handleCancelar}
               >
                 <Text style={styles.botonTexto3}>Cancelar</Text>
               </TouchableOpacity>
@@ -505,6 +638,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginVertical: 10,
+  },
+  metodoPagoContainerSelected: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 10,
+    backgroundColor: "#d3f8d3",
+    borderColor: "#4CAF50",
+    borderWidth: 2,
+    borderRadius: 8,
   },
   iconoPago: {
     width: 40,

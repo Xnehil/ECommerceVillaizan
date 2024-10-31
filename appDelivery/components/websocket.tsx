@@ -1,14 +1,27 @@
-import { useCallback, useImperativeHandle, forwardRef } from "react";
-import useWebSocket, { ReadyState } from 'react-use-websocket';
+import { Link } from "expo-router";
+import {
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+  useState,
+  useRef,
+  useEffect,
+} from "react";
+import { Animated, Text, Dimensions, View } from "react-native";
+import useWebSocket, { ReadyState } from "react-use-websocket";
 
 interface WebSocketComponentProps {
   idMotorizado: string;
 }
 
+const { width, height } = Dimensions.get("window");
+
 export interface WebSocketComponentRef {
   sendUbicacion: (lat: number, lng: number) => void;
   sendPedido: (pedidoId: string) => void;
 }
+
+const ws_url = process.env.WS_URL || "ws://localhost:9001/ws";
 
 // Usamos `forwardRef` para permitir que el componente exponga funciones a su padre
 const WebSocketComponent = forwardRef<
@@ -17,20 +30,24 @@ const WebSocketComponent = forwardRef<
 >(({ idMotorizado }, ref) => {
   const handleIncomingMessage = (event: MessageEvent) => {
     const data = JSON.parse(event.data);
-    console.log("Mensaje recibido:", data);
+    console.log("Mensaje recibido:", data, "Tipo:", data.type);
+    if (data.type === "pedido") {
+      // Aquí se hara la notificación
+      setShowNotification(true); // Mostrar la notificación
+      console.log("Pedido recibido:", data.data.pedidoId);
+    }
   };
   // Establece la conexión WebSocket con el ID del motorizado en la URL
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    `ws://localhost:9001/ws?rol=delivery&id=${idMotorizado}`,
+    `${ws_url}?rol=delivery&id=${idMotorizado}`,
     {
       onOpen: () => console.log("Conexión WebSocket establecida"),
       onError: (event) =>
         console.error("Error en la conexión WebSocket", event),
       shouldReconnect: () => true,
-      onMessage: handleIncomingMessage, 
+      onMessage: handleIncomingMessage,
     }
   );
-
 
   // Función para enviar la ubicación
   const sendUbicacion = useCallback(
@@ -68,20 +85,79 @@ const WebSocketComponent = forwardRef<
     sendUbicacion,
     sendPedido,
   }));
+  const [showNotification, setShowNotification] = useState(false);
+  const slideAnim = useRef(new Animated.Value(-100)).current;
 
+  useEffect(() => {
+    if (showNotification) {
+      // Iniciar la animación de deslizamiento hacia abajo
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
 
+      // Ocultar la notificación después de 3 segundos
+      setTimeout(() => {
+        Animated.timing(slideAnim, {
+          toValue: -100,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setShowNotification(false));
+      }, 3000);
+    }
+  }, [showNotification, slideAnim]);
+/*
+  useEffect(() => {
+    console.log("Mostrando notifications");
+    setShowNotification(true);
+  }, []);
+*/
   const connectionStatus = {
-    [ReadyState.CONNECTING]: 'Conectando...',
-    [ReadyState.OPEN]: 'Conexión abierta',
-    [ReadyState.CLOSING]: 'Cerrando conexión...',
-    [ReadyState.CLOSED]: 'Conexión cerrada',
-    [ReadyState.UNINSTANTIATED]: 'No inicializado',
+    [ReadyState.CONNECTING]: "Conectando...",
+    [ReadyState.OPEN]: "Conexión abierta",
+    [ReadyState.CLOSING]: "Cerrando conexión...",
+    [ReadyState.CLOSED]: "Conexión cerrada",
+    [ReadyState.UNINSTANTIATED]: "No inicializado",
   }[readyState];
 
-  console.log('Estado de la conexión:', connectionStatus);
-  
-  // Este componente no renderiza nada visual
-  return null;
+  // console.log("Estado de la conexión:", connectionStatus);
+
+  return (
+    <>
+      {showNotification && (
+        <Animated.View
+          style={{
+            position: "absolute",
+            top: width * 0.1,
+            right: 20,
+            width: width * 0.4,
+            padding: 10,
+            backgroundColor: "orange",
+            transform: [{ translateY: slideAnim }],
+            zIndex: 1,
+            borderRadius: 10,
+            height: height * 0.15,
+            justifyContent: "center",
+          }}
+        >
+            <Text
+            style={{ color: "white", textAlign: "center", marginBottom: 10 }}
+            >
+            ¡Nuevo pedido recibido!
+            </Text>
+            <View style={{ backgroundColor: "darkred", padding: 5, borderRadius: 5 }}>
+            <Link
+              href="/home/delivery"
+              style={{ color: "white", textAlign: "center" }}
+            >
+              Ver
+            </Link>
+            </View>
+        </Animated.View>
+      )}
+    </>
+  );
 });
 
 export default WebSocketComponent;

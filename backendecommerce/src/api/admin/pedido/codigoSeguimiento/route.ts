@@ -3,7 +3,7 @@ import type {
     MedusaResponse,
 } from "@medusajs/medusa"
 
-import PedidoService from "../../../../services/Pedido"
+import PedidoService from "@services/Pedido";
 import { Pedido } from "src/models/Pedido";
 
 /**

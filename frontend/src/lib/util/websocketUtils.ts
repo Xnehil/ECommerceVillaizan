@@ -4,13 +4,15 @@ interface ExtendedWebSocket extends WebSocket {
     intervalId?: NodeJS.Timeout;
 }
 
-export const connectWebSocket = (idRepartidor: string, idPedido: string,
+export const connectWebSocket = (idRepartidor: string, idPedido: string, estado: string,
     onMessage: (data: any) => void, onClose: () => void): ExtendedWebSocket => {
     const ws: ExtendedWebSocket = new WebSocket(`${baseUrl}/ws?rol=cliente&id=${idPedido}`) as ExtendedWebSocket;
 
     ws.onopen = () => {
         console.log('Se conectó al websocket');
-        ws.send(JSON.stringify({ type: 'ubicacion', data: { "deliveryId": idRepartidor } }));
+        // ws.send(JSON.stringify({ type: 'ubicacion', data: { "deliveryId": idRepartidor } }));
+        // El primer mensaje envía el estado del pedido
+        ws.send(JSON.stringify({ type: 'estado', data: { "estado": estado } }));
     
         const intervalId = setInterval(() => {
             const message = JSON.stringify({

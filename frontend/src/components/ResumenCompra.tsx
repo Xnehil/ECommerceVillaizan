@@ -125,6 +125,13 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
 
     pedido.estado = "solicitado";
     pedido.montoEfectivoPagar = paymentAmount ?? 0;
+    pedido.total = total;
+    pedido.puntosOtorgados = 0;
+    pedido.direccion = direccion;
+    pedido.usuario = usuario;
+    
+
+    console.log("Pedido a enviar", pedido);
     try{
       const response = await axios.put(`${baseUrl}/admin/pedido/${pedido.id}?asignarRepartidor=true`, pedido); // Harvy agregó esto, un parámetro extra que el back leería para saber que se debe asignar un repartidor
       if(response.data){

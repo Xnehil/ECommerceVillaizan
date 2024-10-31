@@ -19,7 +19,7 @@ const NotificacionesPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [filterTipo, setFilterTipo] = useState<string | null>(null);
   const [filterLeido, setFilterLeido] = useState<boolean | null>(false);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     const fetchNotificaciones = async () => {
@@ -41,7 +41,7 @@ const NotificacionesPage: React.FC = () => {
         const data = await response.data;
         console.log("Notificaciones fetched:", data);
 
-        const notificacionesData: Notificacion[] = data.notificaciones;
+        const notificacionesData: Notificacion[] = data.notificaciones
         setNotificaciones(notificacionesData);
         console.log("Notificaciones:", notificaciones);
         setIsLoading(false);

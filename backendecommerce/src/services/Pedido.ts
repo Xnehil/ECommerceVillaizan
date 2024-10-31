@@ -3,23 +3,27 @@ import { Pedido } from "../models/Pedido";
 import { Not, Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
-import { ubicacionesDelivery, pedidosPorConfirmar, enviarMensajeRepartidor, enviarMensajeAdmins } from "../loaders/websocketLoader";
+import { ubicacionesDelivery, estadoPedidos, enviarMensajeRepartidor, enviarMensajeAdmins } from "../loaders/websocketLoader";
 import MotorizadoRepository from "@repositories/Motorizado";
 import { Motorizado } from "@models/Motorizado";
 import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
 import { InventarioMotorizado } from "@models/InventarioMotorizado";
+import { Notificacion } from "../models/Notificacion";
+import NotificacionService from "./Notificacion";
 
 
 class PedidoService extends TransactionBaseService {
     protected pedidoRepository_: typeof pedidoRepository;
     protected motorizadoRepository_: typeof MotorizadoRepository;
     protected inventarioMotorizadoRepository_: typeof InventarioMotorizadoRepository;
+    protected notificacionService_: NotificacionService
 
     constructor(container) {
         super(container);
         this.pedidoRepository_ = container.pedidoRepository;
         this.motorizadoRepository_ = container.motorizadoRepository;
         this.inventarioMotorizadoRepository_ = container.inventariomotorizadoRepository;
+        this.notificacionService_ = container.notificacionService;
     }
 
     getMessage() {
@@ -170,7 +174,7 @@ class PedidoService extends TransactionBaseService {
                         const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
                         console.log("Motorizado con id: ", motorizadoId);
                         if (dataMotorizado) {
-                            console.log("Motorizado encontrado: ", dataMotorizado);
+                            console.log("Motorizado encontrado: ");
                             console.log("Verificando stock");
                             const hasStock = await this.checkPedido(pedido, dataMotorizado);
                             // const mismaCiudad = dataMotorizado.ciudad.id === pedido.direccion.ciudad.id;
@@ -196,6 +200,18 @@ class PedidoService extends TransactionBaseService {
                         console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
                         enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
                         enviarMensajeAdmins("nuevoPedido", id);
+                        let nuevaNoti = new Notificacion();
+                        nuevaNoti.asunto = "Nuevo pedido";
+                        nuevaNoti.descripcion = "El pedido " + id + " está pendiente de confirmación";
+                        nuevaNoti.tipoNotificacion = "pedido";
+                        nuevaNoti.sistema = "ecommerceAdmin";
+                        nuevaNoti.leido = false;
+                        try {
+                            await this.notificacionService_.crear(nuevaNoti);
+                        }
+                        catch (error) {
+                            console.error("Error al crear notificación", error);
+                        }
                     } else {
                         throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
                     }
@@ -207,15 +223,20 @@ class PedidoService extends TransactionBaseService {
             if (pedido.estado !== data.estado) {
                 if (data.estado === "entregado") {
                     data.entregadoEn = new Date();
+                    estadoPedidos.set(id, "entregado");
                 }
                 if (data.estado === "verificado") {
                     data.verificadoEn = new Date();
+                    estadoPedidos.set(id, "verificado");
                 }
                 if (data.estado === "solicitado") {
                     data.solicitadoEn = new Date();
                 }
+                if (data.estado === "enProgreso") {
+                    estadoPedidos.set(id, "enProgreso");
+                }
             }
-    
+            console.log("Se llegó a la parte de actualizar");
             Object.assign(pedido, data);
             return await pedidoRepo.save(pedido);
         });
@@ -227,7 +248,7 @@ class PedidoService extends TransactionBaseService {
             const pedido = await this.recuperar(id);
             pedido.estado = "verificado";
             pedido.verificadoEn = new Date();
-            pedidosPorConfirmar.delete(id);
+            estadoPedidos.delete(id);
             return await pedidoRepo.save(pedido);
         });
     }
@@ -267,6 +288,28 @@ class PedidoService extends TransactionBaseService {
     async buscarPorCodigoSeguimiento(codigoSeguimiento: string): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const pedido = await pedidoRepo.findByCodigoSeguimiento(codigoSeguimiento);
+
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedido;
+    }
+
+    async encontrarUltimoPorUsuarioId(idUsuario: string): Promise<Pedido> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedido = await pedidoRepo.encontrarUltimoPorUsuarioId(idUsuario);
+
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedido;
+    }
+
+    async encontrarUltimoCarritoPorUsuarioId(idUsuario: string): Promise<Pedido> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedido = await pedidoRepo.encontrarUltimoCarritoPorUsuarioId(idUsuario);
 
         if (!pedido) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");

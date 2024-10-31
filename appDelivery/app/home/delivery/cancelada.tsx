@@ -11,7 +11,7 @@ const DeliverySuccessScreen = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       router.push({
-        pathname: "/home/deliverys",
+        pathname: "/home/delivery",
       });
     }, 3000);
 
@@ -21,7 +21,7 @@ const DeliverySuccessScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Entrega exitosa!</Text>
+      <Text style={styles.text}>Entrega reasginada!</Text>
       <TabBarIcon 
         name="check-circle" 
         color="black" 

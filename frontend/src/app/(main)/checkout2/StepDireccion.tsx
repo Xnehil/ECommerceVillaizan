@@ -6,6 +6,14 @@ import axios from "axios"
 import { getCityCookie } from "@modules/store/actions"
 import GoogleMapModal from "@components/GoogleMapsModal"
 import { set } from "lodash"
+import { useRouter } from 'next/navigation';
+
+import { useSession } from 'next-auth/react';
+
+import LoggedInAddresses from "./LoggedInAddresses";
+import { Button } from "@components/Button"
+import AddressFormParent from "./AddressFormParent";
+
 
 interface StepDireccionProps {
   setStep: (step: string) => void;
@@ -20,7 +28,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
 
   const [numeroExterior, setNumeroExterior] = useState("")
   const [numeroInterior, setNumeroInterior] = useState("")
-  const [ciudad, setCiudad] = useState("")
+  const [ciudadNombre, setCiudadNombre] = useState("")
+  const [ciudadId, setCiudadId] = useState("")
   const [referencia, setReferencia] = useState("")
   const [distrito, setDistrito] = useState("")
   const [nombre, setNombre] = useState("") // Nuevo estado para nombre
@@ -37,7 +46,23 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   const [dniError, setDniError] = useState<string | null>(null)
   const [telefonoError, setTelefonoError] = useState<string | null>(null)
   const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
+  const [userNombre, setUserNombre] = useState('');
+  const [userApellido, setUserApellido] = useState('');
+  const [userCorreo, setUserCorreo] = useState('');
+  const [userTelefono, setUserTelefono] = useState('');
+  const [userId, setUserId] = useState('');
+  const [userConCuenta, setUserConCuenta] = useState(false);
+  const [userNroDoc, setUserNroDoc] = useState('');
+  const [userPersonaId, setUserPersonaId] = useState('');
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
+  const handleToggleAddress = (addressId: string | null) => {
+    setSelectedAddressId(addressId);
+    console.log('Selected Address ID:', addressId);
+  };
 
   const handleMapSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
@@ -65,7 +90,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
       let cart: Pedido = respuesta?.cart
 
       const city = getCityCookie()
-      setCiudad(city.nombre)
+      setCiudadNombre(city.nombre)
+      setCiudadId(city.id)
 
       if (!cart) {
         console.error("No se obtuvo un carrito válido.")
@@ -129,6 +155,12 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     localStorage.setItem('calle', value); // Save to localStorage
   };
 
+  const handleCiudadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCiudadNombre(value);
+    localStorage.setItem('ciudad', value)
+  }
+
   const handleReferenciaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setReferencia(value);
@@ -136,15 +168,26 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   };
   
   const isFormValid = () => {
-    return (
-      nombre.trim() !== "" &&
-      numeroDni.length === 8 &&
-      telefono.length === 9 &&
-      calle.trim() !== ""
-    )
+    if(!session?.user?.id && showMapModal == false){
+      return (
+        nombre.trim() !== "" &&
+        numeroDni.length === 8 &&
+        telefono.length === 9 &&
+        calle.trim() !== ""
+      )
+    }
+    else{
+      return (
+        nombre.trim() !== "" &&
+        numeroDni.length === 8 &&
+        telefono.length === 9 &&
+        selectedAddressId !== null
+      )
+    }
   }
 
-  const handleSubmit = async () => {
+  const handleSubmitPadre = async () => {
+    console.log("SUBMIT PADRE")
     if  (!isFormValid()) {
       setShowWarnings(true);
       return;
@@ -172,7 +215,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     const usuarioData = {
       nombre: nombre,
       apellido: "",
-      contrasena: "contrasena",
+      contrasena: "",
       conCuenta: false,
       numeroTelefono: telefono,
       persona: {
@@ -186,32 +229,47 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
 
     console.log("Datos de dirección:", direccionData)
     console.log("Datos de usuario:", usuarioData)
-
+    let usuarioIdAux = userId
+    let direccionIdAux = selectedAddressId;
     try {
-      // Realizar ambas solicitudes POST
-      const [direccionResponse, usuarioResponse] = await Promise.all([
-        axios.post(baseUrl+"/admin/direccion", direccionData, {
+      if(!session?.user?.id) {
+        const usuarioResponse = await axios.post(baseUrl + "/admin/usuario", usuarioData, {
           headers: { "Content-Type": "application/json" },
-        }),
-        axios.post(baseUrl+"/admin/usuario", usuarioData, {
-          headers: { "Content-Type": "application/json" },
-        }),
-      ])
+        });
+        const usuarioId = usuarioResponse.data.usuario.id
+        usuarioIdAux = usuarioId
 
-      console.log("Respuesta de dirección:", direccionResponse.data)
-      console.log("Respuesta de usuario:", usuarioResponse.data)
-      // Obtener los IDs de la respuesta
-      const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
-      const usuarioId = usuarioResponse.data.usuario.id // Ajusta según la estructura de la respuesta
-      console.log("Pedido ID:", direccionId)
-      console.log("Pedido ID:", usuarioId)
+        const direccionResponse = await axios.post(baseUrl + "/admin/direccion", direccionData, {
+          headers: { "Content-Type": "application/json" },
+        });
+        console.log("Respuesta de dirección:", direccionResponse.data)
+        const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
+        console.log("Pedido ID:", direccionId)
+        direccionIdAux = direccionId
+      }
+      else{
+        const usuarioGuardar = {
+          id: userId,
+          nombre: nombre,
+          numeroTelefono: telefono,
+          persona: {
+            id: userPersonaId,
+            tipoDocumento: "DNI",
+            numeroDocumento: numeroDni,
+          }
+        }
+        const response = await axios.put(baseUrl+`/admin/usuario/${userId}`, usuarioGuardar)
+        console.log("Usuario actualizado:", response.data)
+      }
+      
+
       // Realizar el PUT para actualizar el pedido con los IDs
       if (carritoState?.id) {
         const pedidoId = carritoState.id
         console.log("Pedido ID:", pedidoId)
         const pedidoUpdateData = {
-          direccion: direccionId,
-          usuario: usuarioId,
+          direccion: direccionIdAux,
+          usuario: usuarioIdAux,
         }
         await axios.put(
           baseUrl+`/admin/pedido/${pedidoId}?enriquecido=true`,
@@ -230,6 +288,62 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
       console.error("Error al enviar la dirección o el usuario:", error)
     }
   }
+
+  useEffect(() => {
+    async function fetchUserName() {
+      if (status !== "loading") {
+        if (session?.user?.id) {
+          try {
+            // Clear specific localStorage values if user is logged in
+            localStorage.removeItem('calle');
+            localStorage.removeItem('dni');
+            localStorage.removeItem('nombre');
+            localStorage.removeItem('nroInterior');
+            localStorage.removeItem('referencia');
+            localStorage.removeItem('telefono');
+  
+            const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
+            console.log("response", response);
+            const user = response.data.usuario;
+  
+            if (user) {
+              setUserNombre(user.nombre);
+              setUserApellido(user.apellido);
+              setUserCorreo(user.correo);
+              setUserTelefono(user.numeroTelefono);
+              setUserId(user.id);
+              setUserConCuenta(user.concuenta);
+              if(user.persona && user.persona.id){
+                setUserPersonaId(user.persona.id);
+              }
+              if(user.persona && user.persona.numeroDocumento !== null){
+                setNumeroDni(user.persona.numeroDocumento);
+                localStorage.setItem('dni', user.persona.numeroDocumento);
+              }
+  
+              // Set localStorage with user data
+              localStorage.setItem('nombre', user.nombre);
+              localStorage.setItem('telefono', user.numeroTelefono);
+              
+
+              setNombre(user.nombre);
+              setTelefono(user.numeroTelefono);              
+            } else {
+              console.error('Failed to fetch user name');
+            }
+  
+            const addressResponse = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`);
+            //setDirecciones(addressResponse.data.direcciones);
+  
+          } catch (error) {
+            console.error('Error fetching user name:', error);
+          }
+        }
+      }
+    }
+  
+    fetchUserName();
+  }, [session, status]);
 
   useEffect(() => {
     const savedNombre = localStorage.getItem('nombre');
@@ -285,199 +399,45 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     <div className="content-container mx-auto py-8">
       <button
         className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800"
-        onClick={() => window.history.back() /*setStep('previous')*/}
+        onClick={() => window.history.back()}
       >
         <img src="/images/back.png" alt="Volver" className="h-8" /> Volver
       </button>
       <h1 className="text-3xl font-bold mb-6">Coloca tus Datos</h1>
-
+  
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <form
-          className="grid grid-cols-1 gap-6 lg:col-span-2"
-          onSubmit={(e) => {
-            e.preventDefault()
-            // handleSubmit()
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <img
-              src="/images/servicio-al-cliente.png"
-              alt="Nombre completo"
-              className="h-14"
-            />
-            <div className="w-full">
-              <label
-                htmlFor="nombre"
-                className="block text-lg font-medium text-gray-700"
-              >
-                Nombre <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="nombre"
-                value={nombre}
-                onChange={handleNombreChange}
-                className="mt-1 block w-full p-2 border rounded-md"
-                placeholder="Juan Perez"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="w-full">
-              <label
-                htmlFor="dni"
-                className="block text-lg font-medium text-gray-700"
-              >
-                DNI <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="dni"
-                value={numeroDni}
-                onChange={handleDniChange}
-                className="mt-1 block w-full p-2 border rounded-md"
-                placeholder="12345678"
-              />
-              {dniError && (
-                <p className="text-red-500 mt-2">{dniError}</p>  // Render the error message if it's set
-                )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <img src="/images/casa.png" alt="Ciudad" className="h-14" />
-            <div className="w-full">
-              <label
-                htmlFor="ciudad"
-                className="block text-lg font-medium text-gray-700"
-              >
-                Ciudad <span className="text-red-500">*</span>
-              </label>
-              {locationError && <p className="text-red-500">{locationError}</p>}
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  id="ciudad"
-                  value={ciudad}
-                  onChange={(e) => setCiudad(e.target.value)}
-                  className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="Lima"
-                  disabled={true}
-                />
-                <button
-                  className="px-4 py-2 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2"
-                  onClick={() => setShowMapModal(true)}
-                >
-                  <img src="/images/mapa.png" alt="Mapa" className="h-8" />
-                  Selecciona en el mapa
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="w-full grid grid-cols-2 gap-2">
-              <div>
-                <label
-                  htmlFor="direccion"
-                  className="block text-lg font-medium text-gray-700"
-                >
-                  Dirección <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="direccion"
-                  value={calle}
-                  onChange={handleCalleChange}
-                  className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="Calle Malvinas 123"
-                  ref={inputRef}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="numero"
-                  className="block text-lg font-medium text-gray-700"
-                >
-                  Número interior
-                </label>
-                <input
-                  type="text"
-                  id="numero"
-                  value={numeroInterior}
-                  onChange={handleNroInteriorChange}
-                  className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="No rellenar si no aplica"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <img
-              src="/images/referencia.png"
-              alt="Referencia"
-              className="h-14"
-            />
-            <div className="w-full">
-              <label
-                htmlFor="referencia"
-                className="block text-lg font-medium text-gray-700"
-              >
-                Referencia
-              </label>
-              <input
-                type="text"
-                id="referencia"
-                value={referencia}
-                onChange={handleReferenciaChange}
-                className="mt-1 block w-full p-2 border rounded-md"
-                placeholder="Esquina del parque Tres Marías"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <img src="/images/telefono.png" alt="Teléfono" className="h-14" />
-            <div className="w-full">
-              <label
-                htmlFor="telefono"
-                className="block text-lg font-medium text-gray-700"
-              >
-                Teléfono <span className="text-red-500">*</span>
-              </label>
-              {error && <p className="text-red-500">{error}</p>}
-              <input
-                type="text"
-                id="telefono"
-                value={telefono}
-                className="mt-1 block w-full p-2 border rounded-md"
-                placeholder="987654321"
-                onChange={handleTelefonoChange}
-              />
-              {telefonoError && (
-                <p className="text-red-500 mt-2">{telefonoError}</p>  // Render the error message if it's set
-              )}
-            </div>
-          </div>
-        </form>
-
-        {/* Map modal */}
-        {showMapModal && (
-          <GoogleMapModal
-            onSelectLocation={handleMapSelect}
-            city={ciudad}
-            closeModal={() => setShowMapModal(false)}
-            {...(selectedLocation && { location: selectedLocation })}
+        {/* AddressForm Component - Top Left */}
+        <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
+          <AddressFormParent
+            nombre={nombre}
+            numeroDni={numeroDni}
+            ciudad={ciudadNombre}
+            telefono={telefono}
+            calle={calle}
+            numeroInterior={numeroInterior}
+            referencia={referencia}
+            handleNombreChange={handleNombreChange}
+            handleDniChange={handleDniChange}
+            handleTelefonoChange={handleTelefonoChange}
+            handleCiudadChange={handleCiudadChange}
+            handleCalleChange={handleCalleChange}
+            handleNroInteriorChange={handleNroInteriorChange}
+            handleReferenciaChange={handleReferenciaChange}
+            handleClickMapa={() => setShowMapModal(true)}
+            status={status}
+            handleSubmitPadre={handleSubmitPadre}
+            dniError={dniError}
+            locationError={locationError}
+            telefonoError={telefonoError}
           />
-        )}
-
-        <div className="bg-white py-6">
+        </div>
+  
+        {/* Summary2 Component - Top Right */}
+        <div className="bg-white py-6 lg:col-span-1 lg:h-full">
           {carritoState ? (
             <Summary2
               carrito={carritoState}
-              handleSubmit={handleSubmit}
+              handleSubmit={handleSubmitPadre}
               isFormValid={isFormValid()}
               showWarnings={showWarnings}
             />
@@ -485,9 +445,37 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
             <p>Cargando carrito...</p>
           )}
         </div>
+  
+        {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
+        {session?.user?.id && (
+          <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
+            <LoggedInAddresses
+              userId={session.user.id}
+              ciudadId={ciudadId}
+              ciudadNombre={ciudadNombre}
+              toggleAllowed={true}
+              onToggleAddress={handleToggleAddress}
+            />
+          </div>
+        )}
       </div>
+  
+      {/* Map modal */}
+      {showMapModal && (
+        <GoogleMapModal
+          onSelectLocation={handleMapSelect}
+          city={ciudadNombre}
+          closeModal={() => setShowMapModal(false)}
+          {...(selectedLocation && { location: selectedLocation })}
+        />
+      )}
     </div>
-  )
+  );
+  
+  
+  
+  
+  
 }
 
 export default StepDireccion

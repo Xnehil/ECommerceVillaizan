@@ -63,12 +63,10 @@ class UsuarioService extends TransactionBaseService {
     }
 
     async recuperar(
-        id: string,
-        config?: FindConfig<Usuario>
+        id: string
     ): Promise<Usuario> {
         const usuarioRepo = this.activeManager_.withRepository(this.usuarioRepository_);
-        const query = buildQuery({ id }, config);
-        const usuario = await usuarioRepo.findOne(query);
+        const usuario = await usuarioRepo.findById(id);
 
         if (!usuario) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Usuario no encontrado");
@@ -90,6 +88,19 @@ class UsuarioService extends TransactionBaseService {
         }
 
         return usuario;
+    }
+
+    async cambiarContrasena(
+        id: string,
+        nuevaContrasena: string
+    ): Promise<Usuario> {
+        return this.atomicPhase_(async (manager) => {
+            const usuarioRepo = manager.withRepository(this.usuarioRepository_);
+            const usuario = await this.recuperar(id);
+            const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
+            usuario.contrasena = hashedPassword;
+            return await usuarioRepo.save(usuario);
+        });
     }
 
     async crear(usuario: Usuario): Promise<Usuario> {
@@ -130,6 +141,13 @@ class UsuarioService extends TransactionBaseService {
             const usuarioRepo = manager.withRepository(this.usuarioRepository_);
             const usuario = await this.recuperar(id);
             Object.assign(usuario, data);
+    
+            if (data.persona) {
+                const personaRepo = manager.withRepository(this.personaRepository_);
+                Object.assign(usuario.persona, data.persona);
+                await personaRepo.save(usuario.persona);
+            }
+    
             return await usuarioRepo.save(usuario);
         });
     }
@@ -144,14 +162,15 @@ class UsuarioService extends TransactionBaseService {
         });
     }
 
-    async listarPedidosRepartidor(id_usuario: string): Promise<Pedido[]> {
+    async listarPedidosRepartidor(id_usuario: string, filter: { estado?: string | string[] }): Promise<Pedido[]> {
         const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const motorizado = await motorizadoRepo.encontrarPorUsuarioId(id_usuario);
         if (!motorizado) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
         }
-        const pedidos = await pedidoRepo.findByMotorizadoId(motorizado.id);
+        let estados = filter.estado;
+        const pedidos = await pedidoRepo.findByMotorizadoId(motorizado.id, estados);
         if (!pedidos) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedidos no encontrados");
         }

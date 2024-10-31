@@ -23,6 +23,13 @@ interface UploadRequest extends MedusaRequest {
  *   post:
  *     summary: Sube un archivo a Google Drive
  *     tags: [Imagenes]
+ *     parameters:
+ *       - in: query
+ *         name: esArchivo
+ *         schema:
+ *           type: boolean
+ *         required: true
+ *         description: Indica si se debe realizar una acción diferente
  *     requestBody:
  *       required: true
  *       content:
@@ -38,8 +45,8 @@ interface UploadRequest extends MedusaRequest {
  *                 description: Nombre del archivo a subir
  *               folderId:
  *                 type: string
- *                 enum: [productos, yape, plin, pedidos, mermas]
- *                 description: Carpeta en Google Drive, actualmente solo se soportan las carpetas productos, yape y plin
+ *                 enum: [productos, yape, plin, pedidos, mermas, xml]
+ *                 description: Carpeta en Google Drive, actualmente solo se soportan esas carpetas
  *     responses:
  *       200:
  *         description: El archivo ha sido subido exitosamente.
@@ -64,6 +71,7 @@ export const POST = async (req: UploadRequest, res: MedusaResponse) => {
 
     const googleDriveService: GoogleDriveService = req.scope.resolve("imagenesService");
     const { fileName, folderId } = req.body as { fileName: string; folderId: string };
+    const esArchivo = req.query.esArchivo === 'true';
     const filePath = req.file?.path;
 
     if (!filePath || !fileName || !folderId) {
@@ -75,8 +83,13 @@ export const POST = async (req: UploadRequest, res: MedusaResponse) => {
       await googleDriveService.authorize();
       const file = await googleDriveService.uploadFile(filePath, fileName, folderId);
       // Ejemplo https://drive.google.com/uc?export=view&id=1MHmg-xuRiiHPwVcqLqcSuncFyIjtVY0e
-      const fileUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w500`;
-      res.status(200).json({ fileUrl });
+      if (esArchivo) {
+        res.status(200).json({ fileId: file.id });
+        return;
+      }else {
+        const fileUrl = `https://drive.google.com/thumbnail?id=${file.id}&sz=w500`;
+        res.status(200).json({ fileUrl });
+      }
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: error.message });

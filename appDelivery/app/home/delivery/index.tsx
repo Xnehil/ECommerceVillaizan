@@ -15,15 +15,13 @@ import axios from "axios";
 import { Usuario, Pedido, PedidosResponse } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
 import * as Location from "expo-location";
-import Mapa from "./Mapa";
-import StyledIcon from "../StyledIcon";
 import { BASE_URL } from "@env"; 
-import TabBarIcon from "../StyledIcon";
+import Mapa from "@/components/Entregas/Mapa";
+import StyledIcon from "@/components/StyledIcon";
+import TabBarIcon from "@/components/StyledIcon";
 
 export default function Entregas() {
-  const [pedidosNuevos, setPedidosNuevos] = useState<Pedido[]>([]);
   const [pedidosAceptados, setPedidosAceptados] = useState<Pedido[]>([]);
-  const [idCounter, setIdCounter] = useState(1);
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<Pedido | null>(
     null
   );
@@ -56,6 +54,22 @@ export default function Entregas() {
     }
   };
 
+  const handlePrimerPedido = async (pedido: Pedido) => {
+    if (pedido) {
+      if (pedido.estado !== "enProgreso") {
+        const response = await axios.put(
+          `${BASE_URL}/pedido/${pedido.id}`,
+          {
+            estado: "enProgreso",
+          }
+        );
+      }
+      setPedidoSeleccionado(pedido);
+
+      
+    }
+  }
+
   useEffect(() => {
     getDataMemory();
   }, []);
@@ -64,15 +78,21 @@ export default function Entregas() {
   const fetchPedidos = async () => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos?enriquecido=true`
+        `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos?estado=verificado&estado=enProgreso`
       );
       const pedidosResponse: PedidosResponse = response.data;
-      const pedidosEnProceso = pedidosResponse.pedidos.filter(
-        (pedido) => pedido.estado === "enProgreso"
-      );
+      const pedidosEnProceso = pedidosResponse.pedidos;
+      // Sort. First enProgreso, then verificado. Sort by solicitadoEn
+      pedidosEnProceso.sort((a, b) => {
+        if (a.estado === b.estado) {
+          return (new Date(a.solicitadoEn?? 0).getTime()) - (new Date(b.solicitadoEn?? 0).getTime());
+        }
+        return a.estado === "enProgreso" ? -1 : 1;
+      });
+      console.log("Pedidos en proceso:");
       console.log(pedidosEnProceso);
       setPedidosAceptados(pedidosEnProceso);
-      setPedidoSeleccionado(pedidosEnProceso[0]);
+      handlePrimerPedido(pedidosEnProceso[0]);
     } catch (error) {
       console.error("Error al obtener los pedidos:", error);
     }
@@ -115,16 +135,7 @@ export default function Entregas() {
     }
   }, [usuario]);
 
-  useEffect(() => {
-    pedidosNuevos.forEach((pedido) => {
-      if (!tiemposRestantes[pedido.id]) {
-        setTiemposRestantes((prevTiempos) => ({
-          ...prevTiempos,
-          [pedido.id]: 5000,
-        }));
-      }
-    });
-  }, [pedidosNuevos]);
+
 
   const PedidoNotification: React.FC<{
     pedido: Pedido;
@@ -175,7 +186,7 @@ export default function Entregas() {
         <View style={styles.buttonsContainer}>
           <Link
             href={{
-              pathname: "/entregar",
+              pathname: "/home/delivery/handDeliver",
               params: {
                 pedido: encodeURIComponent(JSON.stringify(pedido)),
               },
@@ -246,7 +257,17 @@ export default function Entregas() {
   );
 }
 
-/**<View style={styles.containerMitad}>
+/**  useEffect(() => {
+    pedidosNuevos.forEach((pedido) => {
+      if (!tiemposRestantes[pedido.id]) {
+        setTiemposRestantes((prevTiempos) => ({
+          ...prevTiempos,
+          [pedido.id]: 5000,
+        }));
+      }
+    });
+  }, [pedidosNuevos]);
+ * <View style={styles.containerMitad}>
         <ScrollView>
           {Array.isArray(pedidosNuevos) && pedidosNuevos.length > 0 ? (
             pedidosNuevos.map((pedido) => (

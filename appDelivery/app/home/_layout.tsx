@@ -12,6 +12,8 @@ import { View } from "react-native";
 import WebSocketComponent, {
   WebSocketComponentRef,
 } from "@/components/websocket";
+import { Motorizado } from "@/interfaces/interfaces";
+import { getMotorizadoData } from "@/functions/storage";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -20,6 +22,30 @@ export default function TabLayout() {
     latitude: number;
     longitude: number;
   } | null>(null);
+  const [motorizado, setMotorizado] = useState<Motorizado | null>(null);
+
+  useEffect(() => {
+    const fetchMotorizadoData = async () => {
+      try {
+        const data = await getMotorizadoData();
+        // console.log("Datos del motorizado:", data);
+
+        setMotorizado(data);
+      } catch (error) {
+        console.log("Error al obtener los datos del motorizado:", error);
+      }
+    };
+
+    // Consultar el motorizado al cargar el componente
+    fetchMotorizadoData();
+
+    // Consultar el motorizado cada 10 segundos
+    const motorizadoInterval = setInterval(fetchMotorizadoData, 10000);
+
+    return () => {
+      clearInterval(motorizadoInterval);
+    };
+  }, []);
 
   const enviarUbicacion = () => {
     const lat = location?.latitude;
@@ -28,7 +54,9 @@ export default function TabLayout() {
     if (lat !== undefined && lng !== undefined && wsRef.current) {
       wsRef.current.sendUbicacion(lat, lng);
     } else {
-      console.log("No se pudo enviar la ubicación o el WebSocket no está listo");
+      console.log(
+        "No se pudo enviar la ubicación o el WebSocket no está listo"
+      );
     }
   };
 
@@ -72,82 +100,91 @@ export default function TabLayout() {
   }, [location]);
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: useClientOnlyValue(false, true),
-        tabBarStyle: {
-          height: 70,
-          paddingBottom: 10,
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Inicio",
-          headerRight: () => (
-            <View style={{ padding: 10 }}>
-              <Link href="/">
-                <StyledIcon
-                  name="sign-out"
-                  color={"black"}
-                  IconComponent={FontAwesome}
-                />
-              </Link>
-              
-            </View>
-          ),
-          tabBarIcon: ({ color }) => (
-            <StyledIcon name="home" color={color} IconComponent={FontAwesome} />
-          ),
-          tabBarLabelPosition: "below-icon",
+    <>
+      {motorizado && (
+        <WebSocketComponent idMotorizado={motorizado.id} ref={wsRef} />
+      )}
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+          headerShown: useClientOnlyValue(false, true),
+          tabBarStyle: {
+            height: 70,
+            paddingBottom: 10,
+          },
         }}
-      />
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Inicio",
+            headerRight: () => (
+              <View style={{ padding: 10 }}>
+                <Link href="/">
+                  <StyledIcon
+                    name="sign-out"
+                    color={"black"}
+                    IconComponent={FontAwesome}
+                  />
+                </Link>
+              </View>
+            ),
+            tabBarIcon: ({ color }) => (
+              <StyledIcon
+                name="home"
+                color={color}
+                IconComponent={FontAwesome}
+              />
+            ),
+            tabBarLabelPosition: "below-icon",
+          }}
+        />
 
-      <Tabs.Screen
-        name="deliverys"
-        options={{
-          title: "Entregas",
-          tabBarIcon: ({ color }) => (
-            <StyledIcon
-              name="solution1"
-              color={color}
-              IconComponent={AntDesign}
-            />
-          ),
-          tabBarLabelPosition: "below-icon",
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Ajustes",
-          tabBarIcon: ({ color }) => (
-            <StyledIcon
-              name="settings"
-              color={color}
-              IconComponent={Ionicons}
-            />
-          ),
-          tabBarLabelPosition: "below-icon",
-        }}
-      />
+        <Tabs.Screen
+          name="delivery"
+          options={{
+            title: "Entregas",
+            tabBarIcon: ({ color }) => (
+              <StyledIcon
+                name="solution1"
+                color={color}
+                IconComponent={AntDesign}
+              />
+            ),
+            tabBarLabelPosition: "below-icon",
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            tabBarIcon: ({ color }) => (
+              <StyledIcon
+                name="settings"
+                color={color}
+                IconComponent={Ionicons}
+              />
+            ),
+            tabBarLabelPosition: "below-icon",
+            headerShown: false,
+          }}
+        />
 
-      <Tabs.Screen
-        name="notifications"
-        options={{
-          title: "Notificaciones",
-          tabBarIcon: ({ color }) => (
-            <StyledIcon
-              name="notifications"
-              color={color}
-              IconComponent={Ionicons}
-            />
-          ),
-          tabBarLabelPosition: "below-icon",
-        }}
-      />
-    </Tabs>
+        <Tabs.Screen
+          name="notifications"
+          options={{
+            title: "Notificaciones",
+            tabBarIcon: ({ color }) => (
+              <StyledIcon
+                name="notifications"
+                color={color}
+                IconComponent={Ionicons}
+              />
+            ),
+            tabBarLabelPosition: "below-icon",
+          }}
+        />
+      </Tabs>
+    </>
   );
 }
