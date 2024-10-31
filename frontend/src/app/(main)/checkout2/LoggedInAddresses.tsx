@@ -139,12 +139,14 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
         </div>
       )}
       <div>
-        <h2>Direcciones Guardadas en {ciudadNombre}</h2>
+      <h2 className="block text-lg font-medium text-gray-700">
+          Direcciones Guardadas en {ciudadNombre} <span className="text-red-500">*</span>
+      </h2>
         {loading ? (
         <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button> // Show loading button
         ) :
         (direcciones.length > 0 ? (
-          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+          <div style={{ maxHeight: '180px', overflowY: 'auto' }}>
             {direcciones.map((direccion, index) => (
               <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
                 {toggleAllowed && (

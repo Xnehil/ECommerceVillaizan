@@ -30,6 +30,15 @@ const Cuenta = () => {
   const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [loadingInternal, setLoadingInternal] = useState(true);
+  const headerStyle: React.CSSProperties = {
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'left',
+    margin: '20px 0',
+    borderBottom: '2px solid #ccc',
+    paddingBottom: '10px'
+  };
 
   useEffect(() => {
     async function fetchUserName() {
@@ -156,20 +165,20 @@ const Cuenta = () => {
         </div>
       )}
       <div style={{ display: 'flex' }}>
-        <div style={{ flex: 1, padding: '20px' }}>
-          <h2>Datos generales</h2>
+        <div style={{ flex: 1, padding: '20px', marginBottom: '200px' }}>
+          <h2 style={headerStyle}>Datos generales</h2>
           <InputWithLabel label="Nombre" value={userNombre} disabled={true} />
           <InputWithLabel label="Apellido" value={userApellido} disabled={true} />
           <InputWithLabel label="Correo" value={userCorreo} disabled={true} />
           <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />
         </div>
         <div style={{ flex: 1, padding: '20px' }}>
-          <h2>Direcciones Guardadas</h2>
+          <h2 style={headerStyle}>Direcciones Guardadas</h2>
           {loadingInternal ? (
           <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button> // Show loading button
           ) :
           (direcciones.length > 0 ? (
-            <div style={{ maxHeight: '800px', overflowY: 'auto' }}>
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {direcciones.map((direccion, index) => (
                 <AddressCard
                   key={index}
