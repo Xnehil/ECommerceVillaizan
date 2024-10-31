@@ -28,7 +28,7 @@ export default function TabLayout() {
     const fetchMotorizadoData = async () => {
       try {
         const data = await getMotorizadoData();
-        console.log("Datos del motorizado:", data);
+        // console.log("Datos del motorizado:", data);
 
         setMotorizado(data);
       } catch (error) {

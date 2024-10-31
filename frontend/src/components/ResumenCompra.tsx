@@ -125,6 +125,8 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
 
     pedido.estado = "solicitado";
     pedido.montoEfectivoPagar = paymentAmount ?? 0;
+    pedido.total = total;
+    pedido.puntosOtorgados = 0;
     pedido.direccion = direccion;
     pedido.usuario = usuario;
     

@@ -90,6 +90,9 @@ export interface Pedido {
   urlEvidencia: string | null;
   detalles: DetallePedido[] | null ;
   metodosPago: MetodoDePago[] | null;
+  solicitadoEn?: Date;
+  verificadoEn?: Date;
+  entregadoEn?: Date;
 }
 
 export interface Direccion {

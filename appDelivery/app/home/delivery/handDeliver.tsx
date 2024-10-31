@@ -286,26 +286,40 @@ const EntregarPedido = () => {
       );
       pedidoCompleto.detalles = response_detalle.data.pedido.detalles;
       const detalles = pedidoCompleto.detalles || [];
-      const totalPaletas = detalles
-        .filter(
-          (detalle: DetallePedido) =>
-            detalle.producto.tipoProducto.nombre === "Paleta"
-        )
-        .reduce(
-          (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
-          0
-        );
-      const totalMafaletas = detalles
-        .filter(
-          (detalle: DetallePedido) =>
-            detalle.producto.tipoProducto.nombre === "Mafaleta"
-        )
-        .reduce(
-          (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
-          0
-        );
+      let totalPaletas = 0;
+      let totalMafaletas = 0;
 
-      const venta = await axios.post(`${BASE_URL}/ventas`, {
+      try {
+        totalPaletas = detalles
+          .filter(
+            (detalle: DetallePedido) =>
+              detalle.producto.tipoProducto.nombre === "Paleta"
+          )
+          .reduce(
+            (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
+            0
+          );
+      } catch (error) {
+        console.error("Error calculating totalPaletas:", error);
+        totalPaletas = 0;
+      }
+
+      try {
+        totalMafaletas = detalles
+          .filter(
+            (detalle: DetallePedido) =>
+              detalle.producto.tipoProducto.nombre === "Mafaleta"
+          )
+          .reduce(
+            (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
+            0
+          );
+      } catch (error) {
+        console.error("Error calculating totalMafaletas:", error);
+        totalMafaletas = 0;
+      }
+
+      const venta = await axios.post(`${BASE_URL}/venta`, {
         tipoComprobante: "Boleta",
         fechaVenta: new Date(),
         numeroComprobante: "001-000001",
