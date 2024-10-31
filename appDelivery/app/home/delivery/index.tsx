@@ -95,7 +95,7 @@ export default function Entregas() {
       setPedidosAceptados(pedidosEnProceso);
       const pedidosHistorial = pedidosResponse.pedidos.filter(
         (pedido) =>
-          pedido.estado === "entregado" || pedido.estado === "cancelado"
+          pedido.estado === "entregado" 
       );
       setHistorialPedidos(pedidosHistorial);
 
