@@ -12,7 +12,6 @@ import AddressModal from '../../../components/address/AddressModal'; // Import t
 import AddressForm from '../../../components/address/AddressForm'; // Import the AddressForm component
 import EliminationPopUp from '../../../components/address/EliminationPopUp'; // Import the EliminationPopUp component
 import { Button } from '@components/Button';
-import { LoadScript } from "@react-google-maps/api";
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -31,7 +30,6 @@ const Cuenta = () => {
   const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [loadingInternal, setLoadingInternal] = useState(true);
-  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
   const headerStyle: React.CSSProperties = {
     fontSize: '1.2rem',
     fontWeight: 'bold',
@@ -45,41 +43,44 @@ const Cuenta = () => {
   useEffect(() => {
     async function fetchUserName() {
       setLoadingInternal(true);
-      if (status !== "loading") {
+      if(status !== "loading"){
         if (session?.user?.id) {
-          try {
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
-            const user = response.data.usuario;
-            if (user) {
-              setUserNombre(user.nombre);
-              setUserApellido(user.apellido);
-              setUserCorreo(user.correo);
-              setUserTelefono(user.numeroTelefono);
-              setUserId(user.id);
-            } else {
-              console.error('Failed to fetch user name');
+            try {
+              const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
+              console.log("response", response);
+              const user = response.data.usuario;
+              if (user) {
+                setUserNombre(user.nombre);
+                setUserApellido(user.apellido);
+                setUserCorreo(user.correo);
+                setUserTelefono(user.numeroTelefono);
+                setUserId(user.id);
+              } else {
+                console.error('Failed to fetch user name');
+                setErrorMessage('Error al cargar los datos de usuario. Intente de nuevo más tarde.');
+                setIsErrorPopupVisible(true);
+              }
+    
+              const addressResponse = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`);
+              setDirecciones(addressResponse.data.direcciones);
+    
+            } catch (error) {
+              console.error('Error fetching user name:', error);
               setErrorMessage('Error al cargar los datos de usuario. Intente de nuevo más tarde.');
               setIsErrorPopupVisible(true);
             }
-
-            const addressResponse = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`);
-            setDirecciones(addressResponse.data.direcciones);
-
-          } catch (error) {
-            console.error('Error fetching user name:', error);
-            setErrorMessage('Error al cargar los datos de usuario. Intente de nuevo más tarde.');
-            setIsErrorPopupVisible(true);
-          } finally {
-            setLoadingInternal(false);
-          }
+            finally {
+              setLoadingInternal(false);
+            }
         } else {
           router.push('/');
         }
       }
+      
     }
 
     fetchUserName();
-  }, [status, session]);
+  }, [status,session]);
 
   const handleUpdateDireccion = (updatedDireccion: Direccion) => {
     setDirecciones((prevDirecciones) =>
@@ -91,7 +92,7 @@ const Cuenta = () => {
   const handleCreateDireccion = (newDireccion: Direccion) => {
     setDirecciones((prevDirecciones) => [...prevDirecciones, newDireccion]);
     setIsModalOpen(false);
-  };
+  }
 
   const handleEdit = (direccion: Direccion) => {
     setCurrentDireccion(direccion);
@@ -110,7 +111,7 @@ const Cuenta = () => {
         const response = await axios.delete(
           `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${direccionToDelete.id}`
         );
-
+    
         if (response.status === 200) {
           setDirecciones(direcciones.filter((dir) => dir.id !== direccionToDelete.id));
         } else {
@@ -131,7 +132,8 @@ const Cuenta = () => {
 
   const onClose = () => {
     setIsModalOpen(false);
-  };
+  }
+  
 
   const handleAddAddress = () => {
     setCurrentDireccion(null);
@@ -143,98 +145,68 @@ const Cuenta = () => {
     setIsModalOpen(false);
   };
 
-  const renderStep = () => {
-    return (
-      <>
-        {/* Error Popup */}
-        {isErrorPopupVisible && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-md shadow-md text-center">
-              <p className="text-black-600 mb-4">{errorMessage}</p>
-              <button
-                style={styles.confirmButton}
-                onClick={() => {
-                  setIsErrorPopupVisible(false); // Hide popup
-                  window.location.href = "/"; // Redirect to home
-                }}
-              >
-                Volver al Inicio
-              </button>
-            </div>
-          </div>
-        )}
-        <div style={{ display: 'flex' }}>
-          <div style={{ flex: 1, padding: '20px', marginBottom: '200px' }}>
-            <h2 style={headerStyle}>Datos generales</h2>
-            {userNombre && <InputWithLabel label="Nombre" value={userNombre} disabled={true} />}
-            {userApellido && <InputWithLabel label="Apellido" value={userApellido} disabled={true} />}
-            {userCorreo && <InputWithLabel label="Correo" value={userCorreo} disabled={true} />}
-            {userTelefono && <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />}
-          </div>
-          <div style={{ flex: 1, padding: '20px' }}>
-            <h2 style={headerStyle}>Direcciones Guardadas</h2>
-            {loadingInternal ? (
-              <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button> // Show loading button
-            ) : (
-              (direcciones.length > 0 ? (
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  {direcciones.map((direccion, index) => (
-                    <AddressCard
-                      key={index}
-                      direccion={direccion}
-                      onEdit={() => handleEdit(direccion)}
-                      onDelete={() => handleDelete(direccion)}
-                      showBorder={true}
-                      size="medium"
-                    />
-                  ))}
-                </div>
-              ) : (
-                <p>No asociaste ninguna dirección a tu cuenta</p>
-              ))
-            )}
-            <div style={{ marginLeft: '350px' }}>
-              <AddAddressButton onClick={handleAddAddress} />
-            </div>
-          </div>
-          <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
-            <AddressForm
-              state={modalState}
-              direccion={currentDireccion}
-              onUpdateDireccion={handleUpdateDireccion}
-              onCreatedDireccion={handleCreateDireccion}
-              userId={userId}
-              onClose={onClose}
-              mandatoryCiudad={false}
-              mandatoryCiudadId=''
-              mandatoryCiudadNombre=''
-              googleMapsLoaded={googleMapsLoaded}
-            />
-          </AddressModal>
-          <EliminationPopUp
-            isOpen={isPopUpOpen}
-            onConfirm={confirmDelete}
-            onClose={() => setIsPopUpOpen(false)}
-          />
-        </div>
-      </>
-    );
-  };
-
   return (
-    <div>
-      {typeof window === 'undefined' || window.google === undefined ? (
-        <LoadScript
-          googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
-          libraries={["places"]}
-          onLoad={() => setGoogleMapsLoaded(true)} // Mark as loaded
-        >
-          {renderStep()}
-        </LoadScript>
-      ) : (
-        renderStep()
+    <>
+      {/* Error Popup */}
+      {isErrorPopupVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-md text-center">
+            <p className="text-black-600 mb-4">{errorMessage}</p>
+            <button
+              style={styles.confirmButton}
+              onClick={() => {
+                setIsErrorPopupVisible(false); // Hide popup
+                window.location.href = "/";
+              }}
+            >
+              Volver al Inicio
+            </button>
+          </div>
+        </div>
       )}
-    </div>
+      <div style={{ display: 'flex' }}>
+        <div style={{ flex: 1, padding: '20px', marginBottom: '200px' }}>
+          <h2 style={headerStyle}>Datos generales</h2>
+          {userNombre && <InputWithLabel label="Nombre" value={userNombre} disabled={true} />}
+          {userApellido && <InputWithLabel label="Apellido" value={userApellido} disabled={true} />}
+          {userCorreo && <InputWithLabel label="Correo" value={userCorreo} disabled={true} />}
+          {userTelefono && <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />}
+        </div>
+        <div style={{ flex: 1, padding: '20px' }}>
+          <h2 style={headerStyle}>Direcciones Guardadas</h2>
+          {loadingInternal ? (
+          <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button> // Show loading button
+          ) :
+          (direcciones.length > 0 ? (
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              {direcciones.map((direccion, index) => (
+                <AddressCard
+                  key={index}
+                  direccion={direccion}
+                  onEdit={() => handleEdit(direccion)}
+                  onDelete={() => handleDelete(direccion)}
+                  showBorder={true}
+                  size="medium"
+                />
+              ))}
+            </div>
+          ) : (
+            <p>No asociaste ninguna dirección a tu cuenta</p>
+          ))}
+          <div style={{ marginLeft: '350px' }}>
+            <AddAddressButton onClick={handleAddAddress} />
+          </div>
+        </div>
+        <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
+          <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} onClose={onClose} mandatoryCiudad={false} mandatoryCiudadId='' mandatoryCiudadNombre=''/>
+        </AddressModal>
+        <EliminationPopUp
+          isOpen={isPopUpOpen}
+          onConfirm={confirmDelete}
+          onClose={() => setIsPopUpOpen(false)}
+        />
+      </div>
+    </>
   );
 };
 
@@ -248,5 +220,6 @@ const styles = {
     color: 'white',
   }
 };
+
 
 export default Cuenta;
