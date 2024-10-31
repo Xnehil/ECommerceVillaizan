@@ -31,7 +31,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
   // Message for the tooltip when the button is disabled
   const tooltipMessage = subtotal < minimo 
     ? `El subtotal debe ser de al menos ${minimo} soles para proceder al pago.`
-    : `Por favor, complete todos los campos obligatorios.`;
+    : `Por favor, complete todos los campos obligatorios. Recuerde seleccionar su ubicación en el mapa.`;
 
   return (
     <div className="bg-cremaFondo p-6 pb-12">
@@ -49,7 +49,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
         )}
         {showWarnings && !isFormValid && (
           <p className="text-red-400 text-sm font-poppins mt-2 text-center">
-            Por favor, complete todos los campos obligatorios.
+            Por favor, complete todos los campos obligatorios. Recuerde seleccionar su ubicación en el mapa.
           </p>
         )}
         <button
