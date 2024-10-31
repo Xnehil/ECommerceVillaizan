@@ -141,7 +141,6 @@ const Cuenta = () => {
               style={styles.confirmButton}
               onClick={() => {
                 setIsErrorPopupVisible(false); // Hide popup
-                onClose();
                 window.location.href = "/";
               }}
             >

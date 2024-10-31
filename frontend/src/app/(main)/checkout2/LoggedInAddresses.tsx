@@ -29,6 +29,8 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
   const [userIdInternal, setUserIdInternal] = useState('');
   const [ciudadNombreInternal, setCiudadNombreInternal] = useState('');
   const [ciudadIdInternal, setCiudadIdInternal] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
 
   useEffect(() => {
     const fetchAddresses = async () => {
@@ -42,6 +44,8 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
           setCiudadIdInternal(ciudadId);
         }
       } catch (error) {
+        setErrorMessage('Error al cargar las direcciones. Intente de nuevo más tarde.');
+        setIsErrorPopupVisible(true);
         console.error("Error fetching addresses:", error);
       }
     };
@@ -68,8 +72,12 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
           setDirecciones(direcciones.filter((dir) => dir.id !== addressToDelete.id));
         } else {
           console.error('Failed to delete:', response.statusText);
+          setErrorMessage('Error al eliminar la dirección. Intente de nuevo más tarde.');
+          setIsErrorPopupVisible(true);
         }
       } catch (error) {
+        setErrorMessage('Error al eliminar la dirección. Intente de nuevo más tarde.');
+        setIsErrorPopupVisible(true);
         console.error('An error occurred during deletion:', error);
       } finally {
         setIsPopUpOpen(false);
@@ -107,60 +115,90 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
   };
 
   return (
-    <div>
-      <h2>Direcciones Guardadas en {ciudadNombre}</h2>
-      {direcciones.length > 0 ? (
-        <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-          {direcciones.map((direccion, index) => (
-            <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
-              {toggleAllowed && (
-                <div
-                  onClick={() => handleToggleAddress(direccion.id)}
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    border: '1px solid black',
-                    backgroundColor: selectedAddressId === direccion.id ? 'black' : 'white',
-                    cursor: 'pointer',
-                    marginRight: '10px',
-                  }}
-                />
-              )}
-              <AddressCard
-                direccion={direccion}
-                onEdit={() => handleEdit(direccion)}
-                onDelete={() => handleDelete(direccion)}
-                showBorder={false}
-                size="large"
-              />
-            </div>
-          ))}
+    <>
+      {/* Error Popup */}
+      {isErrorPopupVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-md text-center">
+            <p className="text-black-600 mb-4">{errorMessage}</p>
+            <button
+              style={styles.confirmButton}
+              onClick={() => {
+                setIsErrorPopupVisible(false); // Hide popup
+                window.location.reload();
+              }}
+            >
+              Volver
+            </button>
+          </div>
         </div>
-      ) : (
-        <p>No asociaste ninguna dirección a tu cuenta</p>
       )}
-      <AddAddressButton onClick={handleAddAddress} />
-      <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <AddressForm
-          state={modalState}
-          direccion={currentAddress}
-          onUpdateDireccion={handleUpdateDireccion}
-          onCreatedDireccion={handleCreateDireccion}
-          userId={userIdInternal}
-          onClose={handleCloseModal}
-          mandatoryCiudad={true}
-          mandatoryCiudadId = {ciudadIdInternal}
-          mandatoryCiudadNombre={ciudadNombreInternal}
+      <div>
+        <h2>Direcciones Guardadas en {ciudadNombre}</h2>
+        {direcciones.length > 0 ? (
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            {direcciones.map((direccion, index) => (
+              <div key={index} style={{ display: 'flex', alignItems: 'center' }}>
+                {toggleAllowed && (
+                  <div
+                    onClick={() => handleToggleAddress(direccion.id)}
+                    style={{
+                      width: '20px',
+                      height: '20px',
+                      borderRadius: '50%',
+                      border: '1px solid black',
+                      backgroundColor: selectedAddressId === direccion.id ? 'black' : 'white',
+                      cursor: 'pointer',
+                      marginRight: '10px',
+                    }}
+                  />
+                )}
+                <AddressCard
+                  direccion={direccion}
+                  onEdit={() => handleEdit(direccion)}
+                  onDelete={() => handleDelete(direccion)}
+                  showBorder={false}
+                  size="large"
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p>No asociaste ninguna dirección a tu cuenta</p>
+        )}
+        <AddAddressButton onClick={handleAddAddress} />
+        <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
+          <AddressForm
+            state={modalState}
+            direccion={currentAddress}
+            onUpdateDireccion={handleUpdateDireccion}
+            onCreatedDireccion={handleCreateDireccion}
+            userId={userIdInternal}
+            onClose={handleCloseModal}
+            mandatoryCiudad={true}
+            mandatoryCiudadId = {ciudadIdInternal}
+            mandatoryCiudadNombre={ciudadNombreInternal}
+          />
+        </AddressModal>
+        <EliminationPopUp
+          isOpen={isPopUpOpen}
+          onConfirm={confirmDelete}
+          onClose={() => setIsPopUpOpen(false)}
         />
-      </AddressModal>
-      <EliminationPopUp
-        isOpen={isPopUpOpen}
-        onConfirm={confirmDelete}
-        onClose={() => setIsPopUpOpen(false)}
-      />
-    </div>
+      </div>
+    </>
   );
+};
+
+const styles = {
+  confirmButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+    backgroundColor: 'black',
+    color: 'white',
+  }
 };
 
 export default LoggedInAddresses;

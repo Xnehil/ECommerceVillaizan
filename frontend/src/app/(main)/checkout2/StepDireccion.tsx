@@ -332,9 +332,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
               console.error('Failed to fetch user name');
             }
   
-            const addressResponse = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`);
-            //setDirecciones(addressResponse.data.direcciones);
-  
           } catch (error) {
             console.error('Error fetching user name:', error);
           }
