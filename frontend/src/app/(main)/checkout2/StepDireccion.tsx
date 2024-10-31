@@ -176,7 +176,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
         numeroDni.length === 8 &&
         telefono.length === 9 &&
         calle.trim() !== "" &&
-        referencia.trim() !== ""
+        referencia.trim() !== "" &&
+        selectedLocation !== null &&
+        selectedLocation?.lat !== null &&
+        selectedLocation?.lng !== null
       )
     }
     else{
@@ -214,6 +217,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
         direcciones: [{ value: "null" }, { value: "null" }],
       },
     }
+    direccionData.ubicacion.latitud = selectedLocation?.lat.toString() || "null"
+    direccionData.ubicacion.longitud = selectedLocation?.lng.toString() || "null"
 
     const usuarioData = {
       nombre: nombre,
