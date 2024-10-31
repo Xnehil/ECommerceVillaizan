@@ -47,6 +47,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_FRONTEND_HOST }} << 'EOF'
             cd ECommerceVillaizan/
+            git checkout -- frontend/yarn.lock  # Reset yarn.lock changes
             git pull origin master
             cd frontend/ 
             yarn
