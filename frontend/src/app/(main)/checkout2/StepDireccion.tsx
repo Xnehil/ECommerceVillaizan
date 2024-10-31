@@ -12,6 +12,7 @@ import { useSession } from 'next-auth/react';
 
 import LoggedInAddresses from "./LoggedInAddresses";
 import { Button } from "@components/Button"
+import AddressFormParent from "./AddressFormParent";
 
 
 interface StepDireccionProps {
@@ -374,155 +375,33 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     <div className="content-container mx-auto py-8">
       <button
         className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800"
-        onClick={() => window.history.back() /*setStep('previous')*/}
+        onClick={() => window.history.back()}
       >
         <img src="/images/back.png" alt="Volver" className="h-8" /> Volver
       </button>
       <h1 className="text-3xl font-bold mb-6">Coloca tus Datos</h1>
-
+  
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <form
-          className="grid grid-cols-1 gap-6 lg:col-span-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmitPadre();
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <img
-              src="/images/servicio-al-cliente.png"
-              alt="Nombre completo"
-              className="h-14"
-            />
-            <div className="w-full">
-              <label
-                htmlFor="nombre"
-                className="block text-lg font-medium text-gray-700"
-              >
-                Nombre <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="nombre"
-                value={nombre}
-                onChange={handleNombreChange}
-                className="mt-1 block w-full p-2 border rounded-md"
-                placeholder="Juan Perez"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="w-full">
-              <label
-                htmlFor="dni"
-                className="block text-lg font-medium text-gray-700"
-              >
-                DNI <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="dni"
-                value={numeroDni}
-                onChange={handleDniChange}
-                className="mt-1 block w-full p-2 border rounded-md"
-                placeholder="12345678"
-              />
-              {dniError && (
-                <p className="text-red-500 mt-2">{dniError}</p> 
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <img src="/images/casa.png" alt="Ciudad" className="h-14" />
-            <div className="w-full">
-              <label
-                htmlFor="ciudad"
-                className="block text-lg font-medium text-gray-700"
-              >
-                Ciudad <span className="text-red-500">*</span>
-              </label>
-              {locationError && <p className="text-red-500">{locationError}</p>}
-              <div className="flex gap-3">
-                <input
-                  type="text"
-                  id="ciudad"
-                  value={ciudad}
-                  onChange={(e) => setCiudad(e.target.value)}
-                  className="mt-1 block w-full p-2 border rounded-md"
-                  placeholder="Lima"
-                  disabled={true}
-                />
-                {!session?.user?.id && (
-                  <button
-                    className="px-4 py-2 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2"
-                    onClick={() => setShowMapModal(true)}
-                  >
-                    <img src="/images/mapa.png" alt="Mapa" className="h-8" />
-                    Selecciona en el mapa
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <img src="/images/telefono.png" alt="Teléfono" className="h-14" />
-            <div className="w-full">
-              <label
-                htmlFor="telefono"
-                className="block text-lg font-medium text-gray-700"
-              >
-                Teléfono <span className="text-red-500">*</span>
-              </label>
-              {error && <p className="text-red-500">{error}</p>}
-              <input
-                type="text"
-                id="telefono"
-                value={telefono}
-                className="mt-1 block w-full p-2 border rounded-md"
-                placeholder="987654321"
-                onChange={handleTelefonoChange}
-              />
-              {telefonoError && (
-                <p className="text-red-500 mt-2">{telefonoError}</p>
-              )}
-            </div>
-          </div>
-
-          {status === "loading" ? (
-            <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
-          ) : (
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md"
-            >
-              Submit
-            </button>
-          )}
-        </form>
-
-        {session?.user?.id && (
-          <LoggedInAddresses
-            userId={session.user.id}
+        {/* AddressForm Component - Top Left */}
+        <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
+          <AddressFormParent
+            nombre={nombre}
+            numeroDni={numeroDni}
             ciudad={ciudad}
-            toggleAllowed={true}
-            onToggleAddress={handleToggleAddress}
+            telefono={telefono}
+            handleNombreChange={handleNombreChange}
+            handleDniChange={handleDniChange}
+            handleTelefonoChange={handleTelefonoChange}
+            status={status}
+            handleSubmitPadre={handleSubmitPadre}
+            dniError={dniError}
+            locationError={locationError}
+            telefonoError={telefonoError}
           />
-        )}
-
-          {/* Map modal */}
-          {showMapModal && (
-            <GoogleMapModal
-              onSelectLocation={handleMapSelect}
-              city={ciudad}
-              closeModal={() => setShowMapModal(false)}
-              {...(selectedLocation && { location: selectedLocation })}
-            />
-          )}
-
-        <div className="bg-white py-6">
+        </div>
+  
+        {/* Summary2 Component - Top Right */}
+        <div className="bg-white py-6 lg:col-span-1 lg:h-full">
           {carritoState ? (
             <Summary2
               carrito={carritoState}
@@ -534,9 +413,36 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
             <p>Cargando carrito...</p>
           )}
         </div>
+  
+        {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
+        {session?.user?.id && (
+          <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
+            <LoggedInAddresses
+              userId={session.user.id}
+              ciudad={ciudad}
+              toggleAllowed={true}
+              onToggleAddress={handleToggleAddress}
+            />
+          </div>
+        )}
       </div>
+  
+      {/* Map modal */}
+      {showMapModal && (
+        <GoogleMapModal
+          onSelectLocation={handleMapSelect}
+          city={ciudad}
+          closeModal={() => setShowMapModal(false)}
+          {...(selectedLocation && { location: selectedLocation })}
+        />
+      )}
     </div>
-  )
+  );
+  
+  
+  
+  
+  
 }
 
 export default StepDireccion

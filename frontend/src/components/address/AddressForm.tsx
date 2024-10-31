@@ -59,9 +59,9 @@ const AddressForm: React.FC<AddressFormProps> = ({
   }, []);
 
   const handleSubmit = async (event: React.FormEvent) => {
-    console.log('Form submitted'); // Check if this runs
+    console.log('Form submitted');
     event.preventDefault();
-    /*console.log('Prevented default'); // Check if this runs
+    console.log('Prevented default');
     try {
       console.log({ nombre, calle, numeroExterior, numeroInterior, referencia, ciudadId });
       if (state === 'Editar' && direccion) {
@@ -103,8 +103,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
       }
     } catch (error) {
       console.error('Error occurred while submitting:', error);
-      alert('An error occurred. Please check the console for more details.');
-    }*/
+    }
   };
   
 
