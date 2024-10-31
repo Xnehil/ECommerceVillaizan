@@ -133,7 +133,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
                   placeholder="Lima"
                   disabled={true}
                 />
-                {!session?.user?.id && <button
+                {!session?.user?.id && <button type="button"
                   className="px-4 py-2 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2"
                   onClick={handleClickMapa}
                 >
