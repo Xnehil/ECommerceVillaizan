@@ -170,12 +170,13 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   };
   
   const isFormValid = () => {
-    if(!session?.user?.id && showMapModal == false){
+    if(!session?.user?.id){
       return (
         nombre.trim() !== "" &&
         numeroDni.length === 8 &&
         telefono.length === 9 &&
-        calle.trim() !== ""
+        calle.trim() !== "" &&
+        referencia.trim() !== ""
       )
     }
     else{
