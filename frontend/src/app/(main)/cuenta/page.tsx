@@ -53,7 +53,7 @@ const Cuenta = () => {
                 setUserNombre(user.nombre);
                 setUserApellido(user.apellido);
                 setUserCorreo(user.correo);
-                setUserTelefono(user.numerotelefono);
+                setUserTelefono(user.numeroTelefono);
                 setUserId(user.id);
               } else {
                 console.error('Failed to fetch user name');
@@ -167,10 +167,10 @@ const Cuenta = () => {
       <div style={{ display: 'flex' }}>
         <div style={{ flex: 1, padding: '20px', marginBottom: '200px' }}>
           <h2 style={headerStyle}>Datos generales</h2>
-          <InputWithLabel label="Nombre" value={userNombre} disabled={true} />
-          <InputWithLabel label="Apellido" value={userApellido} disabled={true} />
-          <InputWithLabel label="Correo" value={userCorreo} disabled={true} />
-          <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />
+          {userNombre && <InputWithLabel label="Nombre" value={userNombre} disabled={true} />}
+          {userApellido && <InputWithLabel label="Apellido" value={userApellido} disabled={true} />}
+          {userCorreo && <InputWithLabel label="Correo" value={userCorreo} disabled={true} />}
+          {userTelefono && <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />}
         </div>
         <div style={{ flex: 1, padding: '20px' }}>
           <h2 style={headerStyle}>Direcciones Guardadas</h2>

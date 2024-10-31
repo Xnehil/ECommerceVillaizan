@@ -13,6 +13,8 @@ import { useSession } from 'next-auth/react';
 import LoggedInAddresses from "./LoggedInAddresses";
 import { Button } from "@components/Button"
 import AddressFormParent from "./AddressFormParent";
+import BackButton from "@components/BackButton"
+import { Heading } from "@medusajs/ui"
 
 
 interface StepDireccionProps {
@@ -393,80 +395,79 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   }, [])
 
   return (
-    <div className="content-container mx-auto py-8">
-      <button
-        className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-800"
-        onClick={() => window.history.back()}
-      >
-        <img src="/images/back.png" alt="Volver" className="h-8" /> Volver
-      </button>
-      <h1 className="text-3xl font-bold mb-6">Coloca tus Datos</h1>
-  
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* AddressForm Component - Top Left */}
-        <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
-          <AddressFormParent
-            nombre={nombre}
-            numeroDni={numeroDni}
-            ciudad={ciudadNombre}
-            telefono={telefono}
-            calle={calle}
-            numeroInterior={numeroInterior}
-            referencia={referencia}
-            handleNombreChange={handleNombreChange}
-            handleDniChange={handleDniChange}
-            handleTelefonoChange={handleTelefonoChange}
-            handleCiudadChange={handleCiudadChange}
-            handleCalleChange={handleCalleChange}
-            handleNroInteriorChange={handleNroInteriorChange}
-            handleReferenciaChange={handleReferenciaChange}
-            handleClickMapa={() => setShowMapModal(true)}
-            status={status}
-            handleSubmitPadre={handleSubmitPadre}
-            dniError={dniError}
-            locationError={locationError}
-            telefonoError={telefonoError}
-          />
+    <>
+      <div className="py-6" style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "60px" }}>
+            <BackButton onClick={() => window.history.back()}/>
         </div>
-  
-        {/* Summary2 Component - Top Right */}
-        <div className="bg-white py-6 lg:col-span-1 lg:h-full">
-          {carritoState ? (
-            <Summary2
-              carrito={carritoState}
-              handleSubmit={handleSubmitPadre}
-              isFormValid={isFormValid()}
-              showWarnings={showWarnings}
-            />
-          ) : (
-            <p>Cargando carrito...</p>
-          )}
-        </div>
-  
-        {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
-        {session?.user?.id && (
-          <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
-            <LoggedInAddresses
-              userId={session.user.id}
-              ciudadId={ciudadId}
-              ciudadNombre={ciudadNombre}
-              toggleAllowed={true}
-              onToggleAddress={handleToggleAddress}
+      <div className="content-container mx-auto py-6">
+        <Heading className="text-[2rem] leading-[2.75rem] mb-4">Coloca tus Datos</Heading>
+    
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* AddressForm Component - Top Left */}
+          <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
+            <AddressFormParent
+              nombre={nombre}
+              numeroDni={numeroDni}
+              ciudad={ciudadNombre}
+              telefono={telefono}
+              calle={calle}
+              numeroInterior={numeroInterior}
+              referencia={referencia}
+              handleNombreChange={handleNombreChange}
+              handleDniChange={handleDniChange}
+              handleTelefonoChange={handleTelefonoChange}
+              handleCiudadChange={handleCiudadChange}
+              handleCalleChange={handleCalleChange}
+              handleNroInteriorChange={handleNroInteriorChange}
+              handleReferenciaChange={handleReferenciaChange}
+              handleClickMapa={() => setShowMapModal(true)}
+              status={status}
+              handleSubmitPadre={handleSubmitPadre}
+              dniError={dniError}
+              locationError={locationError}
+              telefonoError={telefonoError}
             />
           </div>
+    
+          {/* Summary2 Component - Top Right */}
+          <div className="bg-white py-6 lg:col-span-1 lg:h-full">
+            {carritoState ? (
+              <Summary2
+                carrito={carritoState}
+                handleSubmit={handleSubmitPadre}
+                isFormValid={isFormValid()}
+                showWarnings={showWarnings}
+              />
+            ) : (
+              <p>Cargando carrito...</p>
+            )}
+          </div>
+    
+          {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
+          {session?.user?.id && (
+            <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
+              <LoggedInAddresses
+                userId={session.user.id}
+                ciudadId={ciudadId}
+                ciudadNombre={ciudadNombre}
+                toggleAllowed={true}
+                onToggleAddress={handleToggleAddress}
+              />
+            </div>
+          )}
+        </div>
+    
+        {/* Map modal */}
+        {showMapModal && (
+          <GoogleMapModal
+            onSelectLocation={handleMapSelect}
+            city={ciudadNombre}
+            closeModal={() => setShowMapModal(false)}
+            {...(selectedLocation && { location: selectedLocation })}
+          />
         )}
       </div>
-  
-      {/* Map modal */}
-      {showMapModal && (
-        <GoogleMapModal
-          onSelectLocation={handleMapSelect}
-          city={ciudadNombre}
-          closeModal={() => setShowMapModal(false)}
-          {...(selectedLocation && { location: selectedLocation })}
-        />
-      )}
-    </div>
+    </>
   );
   
   
