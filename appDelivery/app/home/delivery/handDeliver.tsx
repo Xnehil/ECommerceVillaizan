@@ -500,12 +500,12 @@ const EntregarPedido = () => {
                       <View style={{ justifyContent: "center" }}>
                         {pedidoCompleto?.metodosPago?.[0]?.nombre === "plin" ? (
                           <Image
-                            source={require("../../../assets/images/plin.jpg")}
+                            source={require("@assets/images/plin.jpg")}
                             style={styles.iconoPago}
                           />
                         ) : pedidoCompleto?.metodosPago?.[0]?.nombre === "yape" ? (
                           <Image
-                            source={require("../../../assets/images/yape.png")}
+                            source={require("@assets/images/yape.png")}
                             style={styles.iconoPago}
                           />
                         ) : (

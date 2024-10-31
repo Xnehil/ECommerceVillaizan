@@ -9,6 +9,13 @@ module.exports = function (api) {
           moduleName: '@env',
           path: '.env',
         },
+        'module-resolver',
+        {
+          alias: {
+            "@constants": "./constants",
+            "@assets": "./assets",
+          },
+        },
       ],
     ],
   };

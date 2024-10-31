@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import axios from "axios";
 import { BASE_URL } from "@env";
+import { IGV, GENERIC_USER } from "@/constants/Constantes";
 import {
   InventarioMotorizado,
   Producto,
@@ -91,7 +92,7 @@ export default function SeleccionarProductos({ navigation }: any) {
         montoEfectivoPagar: totalResumen.toString(),
         motorizado: null,
         direccion: null,
-        usuario: { id: "per_01JBDSEB0CF7M1SWX7G53N1HWQ" } as Usuario,
+        usuario: { id: GENERIC_USER } as Usuario,
         urlEvidencia: null,
         detalles,
         metodosPago: metodosPago.filter((mp) => mp.nombre === metodoPago),
@@ -109,7 +110,7 @@ export default function SeleccionarProductos({ navigation }: any) {
         totalPaletas: detalles.filter((d) => d.producto.tipoProducto.nombre === "Paleta").reduce((acc, d) => acc + d.cantidad, 0),
         totalMafaletas: detalles.filter((d) => d.producto.tipoProducto.nombre === "Mafaleta").reduce((acc, d) => acc + d.cantidad, 0),
         estado: "Entregado",
-        totalIgv: parseFloat(pedidoCompleto.total) * 0.18,
+        totalIgv: parseFloat(pedidoCompleto.total) * IGV,
         pedido: pedidoId,
       };
   
