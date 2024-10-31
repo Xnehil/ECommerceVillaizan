@@ -1,3 +1,4 @@
+// babel.config.js
 module.exports = function (api) {
   api.cache(true);
   return {
@@ -9,12 +10,15 @@ module.exports = function (api) {
           moduleName: '@env',
           path: '.env',
         },
+      ],
+      [
         'module-resolver',
         {
           alias: {
             "@constants": "./constants",
             "@assets": "./assets",
           },
+          extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
         },
       ],
     ],

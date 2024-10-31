@@ -1,12 +1,12 @@
+// tsconfig.json
 {
   "compilerOptions": {
     "strict": true,
+    "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ],
-      "@constants/*": ["/constants/*"],
-      "@assets/*": ["/assets/*"]
+      "@/*": ["./*"],
+      "@constants/*": ["./constants/*"],
+      "@assets/*": ["./assets/*"]
     }
   },
   "include": [

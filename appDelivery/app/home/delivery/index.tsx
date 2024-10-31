@@ -68,6 +68,7 @@ export default function Entregas() {
       const pedidosEnProceso = pedidosResponse.pedidos.filter(
         (pedido) => pedido.estado === "enProgreso"
       );
+      console.log("Pedidos en proceso:");
       console.log(pedidosEnProceso);
       setPedidosAceptados(pedidosEnProceso);
       setPedidoSeleccionado(pedidosEnProceso[0]);
