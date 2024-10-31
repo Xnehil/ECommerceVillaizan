@@ -247,3 +247,19 @@ export interface Subcategoria {
   nombre: string;
   tipoProducto: TipoProducto[];
 }
+
+export interface Notificacion {
+  id: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  desactivadoEn: string | null;
+  usuarioCreacion: string;
+  usuarioActualizacion: string | null;
+  estaActivo: boolean;
+  asunto: string;
+  descripcion: string | null;
+  tipoNotificacion: string;
+  leido: boolean;
+  sistema: string;
+  usuario: Usuario;
+}
