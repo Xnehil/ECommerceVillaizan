@@ -218,7 +218,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
       ubicacion: {
         latitud: selectedLocation?.lat || "null",
         longitud: selectedLocation?.lng || "null",
-        direcciones: [{ value: "null" }, { value: "null" }],
       },
     }
     direccionData.ubicacion.latitud = selectedLocation?.lat.toString() || "null"
@@ -476,6 +475,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
                 ciudadNombre={ciudadNombre}
                 toggleAllowed={true}
                 onToggleAddress={handleToggleAddress}
+                googleMapsLoaded={googleMapsLoaded}
               />
             </div>
           )}

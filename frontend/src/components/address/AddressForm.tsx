@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import InputWithLabel from '@components/inputWithLabel';
 import { Direccion } from 'types/PaqueteEnvio';
 import axios from 'axios';
+import GoogleMapModal from "@components/GoogleMapsModal"
 
 interface AddressFormProps {
   state: 'Editar' | 'Crear';
@@ -13,6 +14,7 @@ interface AddressFormProps {
   mandatoryCiudad: boolean;
   mandatoryCiudadId: string;
   mandatoryCiudadNombre: string;
+  googleMapsLoaded: boolean;
 }
 
 const AddressForm: React.FC<AddressFormProps> = ({
@@ -24,7 +26,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
   onClose,
   mandatoryCiudad,
   mandatoryCiudadId,
-  mandatoryCiudadNombre
+  mandatoryCiudadNombre,
+  googleMapsLoaded
 }) => {
   const [nombre, setNombre] = useState('');
   const [calle, setCalle] = useState('');
@@ -40,6 +43,33 @@ const AddressForm: React.FC<AddressFormProps> = ({
   const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [localError, setLocalError] = useState('');
+  const [showMapModal, setShowMapModal] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number
+    lng: number
+  } | null>(null)
+  const [locationError, setLocationError] = useState("")
+
+  const handleMapSelect = (lat: number, lng: number) => {
+    setSelectedLocation({ lat, lng });
+    setLocationError("");
+    if (googleMapsLoaded) {
+      const geocoder = new google.maps.Geocoder();
+      const latlng = new google.maps.LatLng(lat, lng);
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === "OK" && results) {
+          if (results[0]) {
+            const address = results[0].formatted_address;
+            setCalle(address);
+          } else {
+            console.error("No se encontraron resultados.");
+          }
+        } else {
+          console.error("Geocoder falló debido a:", status);
+        }
+      });
+    }
+  };
 
   useEffect(() => {
     if (state === 'Editar' && direccion) {
@@ -51,6 +81,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
       setCiudadId(direccion.ciudad?.id ?? '');
       setCiudadNombre(direccion.ciudad?.nombre ?? '');
       setUserIdInternal(userId);
+
+        // If ubicacion exists, set selectedLocation based on its latitud and longitud
+      if (direccion.ubicacion) {
+        setSelectedLocation({
+          lat: parseFloat(direccion.ubicacion?.latitud?.toString() || '0'),
+          lng: parseFloat(direccion.ubicacion?.longitud?.toString() || '0'),
+        });
+      }
     }
   }, [state, direccion, userId]);
 
@@ -76,6 +114,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
     };
     fetchCiudades();
   }, []);
+
+
 
   const countWords = (text: string) => text.trim().split(/\s+/).length;
 
@@ -118,6 +158,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
       return;
     }
 
+    if(selectedLocation === null){
+      setLocationError("Por favor selecciona una ubicación en el mapa")
+      setLocalError("Por favor selecciona una ubicación en el mapa")
+      return;
+    }
+
     setLocalError(''); // Clear error if validation passes
 
     try {
@@ -125,16 +171,23 @@ const AddressForm: React.FC<AddressFormProps> = ({
         const responseCiudad = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ciudad/${ciudadId}`);
         const ciudad = responseCiudad.data.ciudad;
   
-        const direccionSubmit: Direccion = {
+        const direccionSubmit = {
           ...direccion,
           nombre,
           calle,
           numeroExterior,
           numeroInterior,
           referencia,
-          ciudad
+          ciudad,
+          ...(selectedLocation && {
+            ubicacion: {
+              latitud: selectedLocation.lat.toString(),
+              longitud: selectedLocation.lng.toString(),
+            },
+          }),
         };
-  
+
+        console.log('Updating address ',direccionSubmit);  
         const response = await axios.put(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${direccion.id}`, direccionSubmit);
         const updatedDireccion = response.data.direccion;
         onUpdateDireccion(updatedDireccion);
@@ -258,6 +311,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
               ))}
             </select>
           )}
+          <button
+            type="button"
+            className="px-4 py-2 mt-4 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2"
+            onClick={() => setShowMapModal(true)}
+          >
+            <img src="/images/mapa.png" alt="Mapa" className="h-8" />
+            Selecciona en el mapa
+          </button>
         </div>
         {/* Error Message Display */}
         {localError && (
@@ -274,6 +335,15 @@ const AddressForm: React.FC<AddressFormProps> = ({
           </button>
         </div>
       </form>
+      {/* Map modal */}
+      {showMapModal && (
+          <GoogleMapModal
+            onSelectLocation={handleMapSelect}
+            city={ciudadNombre}
+            closeModal={() => setShowMapModal(false)}
+            {...(selectedLocation && { location: selectedLocation })}
+          />
+        )}
     </>
   );
 };
