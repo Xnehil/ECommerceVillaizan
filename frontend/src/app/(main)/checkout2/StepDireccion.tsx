@@ -28,7 +28,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
 
   const [numeroExterior, setNumeroExterior] = useState("")
   const [numeroInterior, setNumeroInterior] = useState("")
-  const [ciudad, setCiudad] = useState("")
+  const [ciudadNombre, setCiudadNombre] = useState("")
+  const [ciudadId, setCiudadId] = useState("")
   const [referencia, setReferencia] = useState("")
   const [distrito, setDistrito] = useState("")
   const [nombre, setNombre] = useState("") // Nuevo estado para nombre
@@ -89,7 +90,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
       let cart: Pedido = respuesta?.cart
 
       const city = getCityCookie()
-      setCiudad(city.nombre)
+      setCiudadNombre(city.nombre)
+      setCiudadId(city.id)
 
       if (!cart) {
         console.error("No se obtuvo un carrito válido.")
@@ -153,6 +155,12 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     localStorage.setItem('calle', value); // Save to localStorage
   };
 
+  const handleCiudadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCiudadNombre(value);
+    localStorage.setItem('ciudad', value)
+  }
+
   const handleReferenciaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setReferencia(value);
@@ -160,12 +168,22 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   };
   
   const isFormValid = () => {
-    return (
-      nombre.trim() !== "" &&
-      numeroDni.length === 8 &&
-      telefono.length === 9 &&
-      calle.trim() !== ""
-    )
+    if(!session?.user?.id && showMapModal == false){
+      return (
+        nombre.trim() !== "" &&
+        numeroDni.length === 8 &&
+        telefono.length === 9 &&
+        calle.trim() !== ""
+      )
+    }
+    else{
+      return (
+        nombre.trim() !== "" &&
+        numeroDni.length === 8 &&
+        telefono.length === 9 &&
+        selectedAddressId !== null
+      )
+    }
   }
 
   const handleSubmitPadre = async () => {
@@ -183,7 +201,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
       codigoPostal: null,
       referencia: referencia,
       ciudad: {
-        value: ciudad,
+        value: ciudadNombre,
       },
       ubicacion: {
         latitud: "null",
@@ -210,6 +228,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     console.log("Datos de dirección:", direccionData)
     console.log("Datos de usuario:", usuarioData)
     let usuarioIdAux = userId
+    let direccionIdAux = selectedAddressId;
     try {
       if(!session?.user?.id) {
         const usuarioResponse = await axios.post(baseUrl + "/admin/usuario", usuarioData, {
@@ -217,6 +236,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
         });
         const usuarioId = usuarioResponse.data.usuario.id
         usuarioIdAux = usuarioId
+
+        const direccionResponse = await axios.post(baseUrl + "/admin/direccion", direccionData, {
+          headers: { "Content-Type": "application/json" },
+        });
+        console.log("Respuesta de dirección:", direccionResponse.data)
+        const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
+        console.log("Pedido ID:", direccionId)
+        direccionIdAux = direccionId
       }
       else{
         const usuarioGuardar = {
@@ -232,19 +259,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
         const response = await axios.put(baseUrl+`/admin/usuario/${userId}`, usuarioGuardar)
         console.log("Usuario actualizado:", response.data)
       }
-      const direccionResponse = await axios.post(baseUrl + "/admin/direccion", direccionData, {
-        headers: { "Content-Type": "application/json" },
-      });
-      console.log("Respuesta de dirección:", direccionResponse.data)
-      const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
-      console.log("Pedido ID:", direccionId)
+      
 
       // Realizar el PUT para actualizar el pedido con los IDs
       if (carritoState?.id) {
         const pedidoId = carritoState.id
         console.log("Pedido ID:", pedidoId)
         const pedidoUpdateData = {
-          direccion: direccionId,
+          direccion: direccionIdAux,
           usuario: usuarioIdAux,
         }
         await axios.put(
@@ -383,15 +405,23 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* AddressForm Component - Top Left */}
-        <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
+        <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
           <AddressFormParent
             nombre={nombre}
             numeroDni={numeroDni}
-            ciudad={ciudad}
+            ciudad={ciudadNombre}
             telefono={telefono}
+            calle={calle}
+            numeroInterior={numeroInterior}
+            referencia={referencia}
             handleNombreChange={handleNombreChange}
             handleDniChange={handleDniChange}
             handleTelefonoChange={handleTelefonoChange}
+            handleCiudadChange={handleCiudadChange}
+            handleCalleChange={handleCalleChange}
+            handleNroInteriorChange={handleNroInteriorChange}
+            handleReferenciaChange={handleReferenciaChange}
+            handleClickMapa={() => setShowMapModal(true)}
             status={status}
             handleSubmitPadre={handleSubmitPadre}
             dniError={dniError}
@@ -419,7 +449,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
           <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
             <LoggedInAddresses
               userId={session.user.id}
-              ciudad={ciudad}
+              ciudadId={ciudadId}
+              ciudadNombre={ciudadNombre}
               toggleAllowed={true}
               onToggleAddress={handleToggleAddress}
             />
@@ -431,7 +462,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
       {showMapModal && (
         <GoogleMapModal
           onSelectLocation={handleMapSelect}
-          city={ciudad}
+          city={ciudadNombre}
           closeModal={() => setShowMapModal(false)}
           {...(selectedLocation && { location: selectedLocation })}
         />

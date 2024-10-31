@@ -11,12 +11,13 @@ import AddressForm from '@components/address/AddressForm';
 
 interface LoggedInAddressesProps {
   userId: string;
-  ciudad: string;
+  ciudadId: string;
+  ciudadNombre: string;
   toggleAllowed: boolean;
   onToggleAddress: (addressId: string | null) => void;
 }
 
-const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, toggleAllowed, onToggleAddress }) => {
+const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId, ciudadNombre, toggleAllowed, onToggleAddress }) => {
 
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,14 +26,20 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
   const [isPopUpOpen, setIsPopUpOpen] = useState(false);
   const [addressToDelete, setAddressToDelete] = useState<Direccion | null>(null);
   const [direcciones, setDirecciones] = useState<Direccion[]>([]);
+  const [userIdInternal, setUserIdInternal] = useState('');
+  const [ciudadNombreInternal, setCiudadNombreInternal] = useState('');
+  const [ciudadIdInternal, setCiudadIdInternal] = useState('');
 
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
+        setUserIdInternal(userId);
         const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${userId}?guardada=true`);
-        if (ciudad) {
-          const filteredAddresses = response.data.direcciones.filter((address: Direccion) => address.ciudad && address.ciudad.nombre === ciudad);
+        if (ciudadNombre) {
+          const filteredAddresses = response.data.direcciones.filter((address: Direccion) => address.ciudad && address.ciudad.nombre === ciudadNombre);
           setDirecciones(filteredAddresses);
+          setCiudadNombreInternal(ciudadNombre);
+          setCiudadIdInternal(ciudadId);
         }
       } catch (error) {
         console.error("Error fetching addresses:", error);
@@ -40,7 +47,7 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
     };
 
     fetchAddresses();
-  }, [userId, ciudad]);
+  }, [userId, ciudadNombre, ciudadId]);
 
   const handleEdit = (address: Direccion) => {
     setCurrentAddress(address);
@@ -78,9 +85,9 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
   };
 
   const handleUpdateDireccion = (updatedDireccion: Direccion) => {
-    //setDirecciones((prevDirecciones) =>
-    //  prevDirecciones.map((dir) => (dir.id === updatedDireccion.id ? updatedDireccion : dir))
-    //);
+    setDirecciones((prevDirecciones) =>
+      prevDirecciones.map((dir) => (dir.id === updatedDireccion.id ? updatedDireccion : dir))
+    );
     setIsModalOpen(false);
   };
 
@@ -101,7 +108,7 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
 
   return (
     <div>
-      <h2>Direcciones Guardadas</h2>
+      <h2>Direcciones Guardadas en {ciudadNombre}</h2>
       {direcciones.length > 0 ? (
         <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
           {direcciones.map((direccion, index) => (
@@ -140,10 +147,11 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudad, t
           direccion={currentAddress}
           onUpdateDireccion={handleUpdateDireccion}
           onCreatedDireccion={handleCreateDireccion}
-          userId={userId}
+          userId={userIdInternal}
           onClose={handleCloseModal}
           mandatoryCiudad={true}
-          mandatoryCiudadNombre={ciudad}
+          mandatoryCiudadId = {ciudadIdInternal}
+          mandatoryCiudadNombre={ciudadNombreInternal}
         />
       </AddressModal>
       <EliminationPopUp

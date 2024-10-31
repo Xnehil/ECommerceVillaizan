@@ -11,6 +11,7 @@ interface AddressFormProps {
   userId: string;
   onClose: () => void;
   mandatoryCiudad: boolean;
+  mandatoryCiudadId: string;
   mandatoryCiudadNombre: string;
 }
 
@@ -22,6 +23,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
   userId,
   onClose,
   mandatoryCiudad,
+  mandatoryCiudadId,
   mandatoryCiudadNombre
 }) => {
   const [nombre, setNombre] = useState('');
@@ -32,6 +34,9 @@ const AddressForm: React.FC<AddressFormProps> = ({
   const [ciudadId, setCiudadId] = useState('');
   const [ciudades, setCiudades] = useState<{ id: string; nombre: string }[]>([]);
   const [ciudadNombre, setCiudadNombre] = useState('');
+  const [userIdInternal, setUserIdInternal] = useState('');
+  const [mandatoryCiudadNombreInternal, setMandatoryCiudadNombreInternal] = useState('');
+  const [mandatoryCiudadIdInternal, setMandatoryCiudadIdInternal] = useState('');
 
   useEffect(() => {
     if (state === 'Editar' && direccion) {
@@ -42,8 +47,18 @@ const AddressForm: React.FC<AddressFormProps> = ({
       setReferencia(direccion.referencia ?? '');
       setCiudadId(direccion.ciudad?.id ?? '');
       setCiudadNombre(direccion.ciudad?.nombre ?? '');
+      setUserIdInternal(userId);
     }
-  }, [state, direccion]);
+  }, [state, direccion, userId]);
+
+  useEffect(() => {
+    if(mandatoryCiudad){
+      setMandatoryCiudadNombreInternal(mandatoryCiudadNombre);
+      setMandatoryCiudadIdInternal(mandatoryCiudadId);
+      setCiudadId(mandatoryCiudadId);
+      setCiudadNombre(mandatoryCiudadNombre);
+    }    
+  }, [mandatoryCiudad, mandatoryCiudadId, mandatoryCiudadNombre]);
 
   useEffect(() => {
     const fetchCiudades = async () => {
@@ -82,12 +97,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
         const updatedDireccion = response.data.direccion;
         onUpdateDireccion(updatedDireccion);
       } else {
-        const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion`, {
-          nombre: nombre,
-          calle: calle,
-          numeroExterior: numeroExterior,
-          numeroInterior: numeroInterior,
-          referencia: referencia,
+        const dataDireccion = {
+          nombre,
+          calle,
+          numeroExterior,
+          numeroInterior,
+          referencia,
           guardada: true,
           distrito: "",
           ciudad: {
@@ -97,7 +112,9 @@ const AddressForm: React.FC<AddressFormProps> = ({
           usuario: {
             id: userId
           }
-        });
+        };
+        console.log('Creating new address ',dataDireccion);
+        const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion`, dataDireccion);
         const createdDireccion = response.data.direccion;
         onCreatedDireccion(createdDireccion);
       }
@@ -109,7 +126,10 @@ const AddressForm: React.FC<AddressFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2>{state === 'Crear' ? 'Crear Dirección' : 'Editar Dirección'}</h2>
+      <h2>
+        {state === 'Crear' ? 'Crear Dirección' : 'Editar Dirección'}
+        {mandatoryCiudad ? ` en ${mandatoryCiudadNombre}` : ''}
+      </h2>
       <InputWithLabel
         label="Nombre"
         value={nombre}

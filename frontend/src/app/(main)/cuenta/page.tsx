@@ -152,7 +152,7 @@ const Cuenta = () => {
         </div>
       </div>
       <AddressModal isOpen={isModalOpen} onClose={handleCloseModal}>
-        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} onClose={onClose} mandatoryCiudad={false} mandatoryCiudadNombre=''/>
+        <AddressForm state={modalState} direccion={currentDireccion}  onUpdateDireccion={handleUpdateDireccion} onCreatedDireccion={handleCreateDireccion} userId={userId} onClose={onClose} mandatoryCiudad={false} mandatoryCiudadId='' mandatoryCiudadNombre=''/>
       </AddressModal>
       <EliminationPopUp
         isOpen={isPopUpOpen}
