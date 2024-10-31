@@ -169,7 +169,7 @@ const Cuenta = () => {
           <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button> // Show loading button
           ) :
           (direcciones.length > 0 ? (
-            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            <div style={{ maxHeight: '800px', overflowY: 'auto' }}>
               {direcciones.map((direccion, index) => (
                 <AddressCard
                   key={index}
