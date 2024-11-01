@@ -7,24 +7,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Credentials({
       authorize: async (credentials) => {
         const { email, password } = credentials;
-
+      
         try {
           const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/auth`, {
-            email: email,
-            password: password,
+            email,
+            password,
           });
-          
-          const response2 = response.data;
-          const data = response2.response;
-
-          if (data.status !== "Success") {
-            console.log("Invalid credentials");
+      
+          const data = response.data.response;
+      
+          if (!data || data.status !== "Success") {
+            console.log("Invalid credentials or unexpected response format:", data);
             return null;
           }
-
-          return data.user;
+      
+          return data.user; // Ensure that this contains `id`, `name`, and `email` as expected.
         } catch (error) {
-          console.log("See the error: ", error);
+          console.error("Error during authentication:", error);
           return null;
         }
       },
