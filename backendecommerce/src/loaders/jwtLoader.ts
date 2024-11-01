@@ -11,7 +11,6 @@ import { JwtService, JwtModuleOptions } from '@nestjs/jwt';
  */
 export default (container: AwilixContainer, config: Record<string, unknown>): void => {
   // Define your JwtModuleOptions
-  console.log("Registering jwtService in container");
   const jwtOptions: JwtModuleOptions = {
     secret: 'lñmk90123ngjnasd09', // Replace with your actual secret
     signOptions: {
