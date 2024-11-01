@@ -19,7 +19,7 @@ import {
 } from "@/interfaces/interfaces";
 import { useRouter } from "expo-router";
 import { getUserData, storeMotorizadoData } from "@/functions/storage";
-import { BASE_URL } from "@env"; 
+const BASE_URL = process.env.BASE_URL; 
 
 function Icon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];

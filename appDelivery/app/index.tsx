@@ -7,7 +7,7 @@ import axios from "axios";
 import { UsuarioResponse, UsuariosResponse } from "@/interfaces/interfaces";
 import { router } from "expo-router";
 import { getUserData, storeUserData } from "@/functions/storage";
-import { BASE_URL } from "@env";
+const BASE_URL = process.env.BASE_URL;
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");

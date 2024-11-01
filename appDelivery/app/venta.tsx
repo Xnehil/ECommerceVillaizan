@@ -11,7 +11,7 @@ import {
   Image,
 } from "react-native";
 import axios from "axios";
-import { BASE_URL } from "@env";
+const BASE_URL = process.env.BASE_URL;
 import { IGV, GENERIC_USER } from "@/constants/Constantes";
 import {
   InventarioMotorizado,
