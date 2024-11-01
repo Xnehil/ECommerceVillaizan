@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master  # Or your production branch
+  workflow_dispatch:
+      
 
 jobs:
   deploy-backend:
