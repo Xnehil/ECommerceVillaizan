@@ -34,6 +34,9 @@ const DATABASE_URL =
 
 const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
 
+const path = require('path');
+const jwtLoader = require(path.resolve(__dirname, './dist/loaders/jwtLoader')).default;
+
 const plugins = [
   // `medusa-fulfillment-manual`,
   // `medusa-payment-manual`,
@@ -42,7 +45,8 @@ const plugins = [
     options: {
       upload_dir: "uploads",
     },
-  },
+
+  }
   
   // {
   //   resolve: "@medusajs/admin",
@@ -89,4 +93,8 @@ module.exports = {
   projectConfig,
   plugins,
   modules,
+  loaders: [
+    (container) => jwtLoader(container, {}) // Load jwtLoader directly
+  ]
+  
 };
