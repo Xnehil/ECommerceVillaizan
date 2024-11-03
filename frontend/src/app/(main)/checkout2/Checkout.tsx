@@ -37,17 +37,7 @@ const Checkout: React.FC<CheckoutProps> = ({ pedido }) => {
 
   return (
     <div>
-      {isClient && !googleMapsLoaded ? (
-        <LoadScript
-          googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
-          libraries={["places"]}
-          onLoad={() => setGoogleMapsLoaded(true)} // Mark as loaded
-        >
-          {renderStep()}
-        </LoadScript>
-      ) : (
-        renderStep()
-      )}
+      {renderStep()}
     </div>
   );
 };
