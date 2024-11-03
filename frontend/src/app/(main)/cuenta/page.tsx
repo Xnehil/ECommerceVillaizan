@@ -191,7 +191,7 @@ const Cuenta = () => {
               ))}
             </div>
           ) : (
-            <p>No asociaste ninguna dirección a tu cuenta</p>
+            <p style={{ margin: '20px 0' }}>No asociaste ninguna dirección a tu cuenta</p>
           ))}
           <div style={{ marginLeft: '180px' }}>
             <AddAddressButton onClick={handleAddAddress} />
