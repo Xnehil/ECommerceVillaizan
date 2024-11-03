@@ -165,14 +165,14 @@ const Cuenta = () => {
         </div>
       )}
       <div style={{ display: 'flex' }}>
-        <div style={{ flex: 1, padding: '20px', marginBottom: '200px' }}>
+      <div style={{ flex: 1, padding: '20px', marginBottom: '200px', marginLeft: '320px' }}>
           <h2 style={headerStyle}>Datos generales</h2>
           {userNombre && <InputWithLabel label="Nombre" value={userNombre} disabled={true} />}
           {userApellido && <InputWithLabel label="Apellido" value={userApellido} disabled={true} />}
           {userCorreo && <InputWithLabel label="Correo" value={userCorreo} disabled={true} />}
           {userTelefono && <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />}
         </div>
-        <div style={{ flex: 1, padding: '20px' }}>
+        <div style={{ flex: 1, padding: '20px', marginRight: '320px' }}>
           <h2 style={headerStyle}>Direcciones Guardadas</h2>
           {loadingInternal ? (
           <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button> // Show loading button
@@ -193,7 +193,7 @@ const Cuenta = () => {
           ) : (
             <p>No asociaste ninguna dirección a tu cuenta</p>
           ))}
-          <div style={{ marginLeft: '350px' }}>
+          <div style={{ marginLeft: '180px' }}>
             <AddAddressButton onClick={handleAddAddress} />
           </div>
         </div>
