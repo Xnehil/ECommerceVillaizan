@@ -64,7 +64,7 @@ function RegisterPage() {
       <p className="text-muted-foreground mt-3 text-sm">
         Ingresa tus datos para registrarte en la plataforma
       </p>
-      <Separator orientation="horizontal" className="mt-7 w-[460px]" />
+      {/* <Separator orientation="horizontal" className="mt-7 w-[460px]" /> */}
       <div className="mt-5 flex w-[400px] flex-col gap-3">
         <InputWithLabel
           label="Nombre"

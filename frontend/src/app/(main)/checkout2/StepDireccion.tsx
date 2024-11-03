@@ -6,23 +6,25 @@ import axios from "axios"
 import { getCityCookie } from "@modules/store/actions"
 import GoogleMapModal from "@components/GoogleMapsModal"
 import { set } from "lodash"
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation"
 
-import { useSession } from 'next-auth/react';
+import { useSession } from "next-auth/react"
 
-import LoggedInAddresses from "./LoggedInAddresses";
+import LoggedInAddresses from "./LoggedInAddresses"
 import { Button } from "@components/Button"
-import AddressFormParent from "./AddressFormParent";
+import AddressFormParent from "./AddressFormParent"
 import BackButton from "@components/BackButton"
 import { Heading } from "@medusajs/ui"
 
-
 interface StepDireccionProps {
-  setStep: (step: string) => void;
-  googleMapsLoaded: boolean;
+  setStep: (step: string) => void
+  googleMapsLoaded: boolean
 }
 
-const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded }) => {
+const StepDireccion: React.FC<StepDireccionProps> = ({
+  setStep,
+  googleMapsLoaded,
+}) => {
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
   const [calle, setCalle] = useState("")
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
@@ -44,48 +46,50 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number
     lng: number
-  } | null>(null)
+  } | null>({ lat: -6.485001917368323, lng: -76.36796974234515 })
   const [dniError, setDniError] = useState<string | null>(null)
   const [telefonoError, setTelefonoError] = useState<string | null>(null)
   const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { data: session, status } = useSession()
+  const router = useRouter()
 
-  const [userNombre, setUserNombre] = useState('');
-  const [userApellido, setUserApellido] = useState('');
-  const [userCorreo, setUserCorreo] = useState('');
-  const [userTelefono, setUserTelefono] = useState('');
-  const [userId, setUserId] = useState('');
-  const [userConCuenta, setUserConCuenta] = useState(false);
-  const [userNroDoc, setUserNroDoc] = useState('');
-  const [userPersonaId, setUserPersonaId] = useState('');
-  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [userNombre, setUserNombre] = useState("")
+  const [userApellido, setUserApellido] = useState("")
+  const [userCorreo, setUserCorreo] = useState("")
+  const [userTelefono, setUserTelefono] = useState("")
+  const [userId, setUserId] = useState("")
+  const [userConCuenta, setUserConCuenta] = useState(false)
+  const [userNroDoc, setUserNroDoc] = useState("")
+  const [userPersonaId, setUserPersonaId] = useState("")
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+    null
+  )
 
   const handleToggleAddress = (addressId: string | null) => {
-    setSelectedAddressId(addressId);
-    console.log('Selected Address ID:', addressId);
-  };
+    setSelectedAddressId(addressId)
+    console.log("Selected Address ID:", addressId)
+  }
 
   const handleMapSelect = (lat: number, lng: number) => {
-    setSelectedLocation({ lat, lng });
-    setLocationError("");
+    setSelectedLocation({ lat, lng })
+    setLocationError("")
     if (googleMapsLoaded) {
-      const geocoder = new google.maps.Geocoder();
-      const latlng = new google.maps.LatLng(lat, lng);
+      const geocoder = new google.maps.Geocoder()
+      const latlng = new google.maps.LatLng(lat, lng)
       geocoder.geocode({ location: latlng }, (results, status) => {
         if (status === "OK" && results) {
           if (results[0]) {
-            const address = results[0].formatted_address;
-            setCalle(address);
+            const address = results[0].formatted_address
+            setCalle(address)
           } else {
-            console.error("No se encontraron resultados.");
+            console.error("No se encontraron resultados.")
           }
         } else {
-          console.error("Geocoder falló debido a:", status);
+          console.error("Geocoder falló debido a:", status)
         }
-      });
+      })
     }
-  };
+  }
   const fetchCart = async () => {
     try {
       const respuesta = await getOrSetCart()
@@ -110,79 +114,78 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
     }
   }
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setNombre(value);
-    localStorage.setItem('nombre', value); // Save to localStorage
+    const value = e.target.value
+    setNombre(value)
+    localStorage.setItem("nombre", value) // Save to localStorage
   }
 
   const handleNroInteriorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setNumeroInterior(value);
-    localStorage.setItem('nroInterior', value);
+    const value = e.target.value
+    setNumeroInterior(value)
+    localStorage.setItem("nroInterior", value)
   }
 
   const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-  
+    const value = e.target.value
+
     // Ensure the value contains only digits before updating the state
     if (/^\d*$/.test(value)) {
-      setTelefono(value);
-      localStorage.setItem('telefono', value); // Save to localStorage
-  
+      setTelefono(value)
+      localStorage.setItem("telefono", value) // Save to localStorage
+
       // Check if the value exceeds 9 digits
       if (value.length > 9) {
-        setTelefonoError("El teléfono no puede tener más de 9 dígitos");
+        setTelefonoError("El teléfono no puede tener más de 9 dígitos")
       } else {
-        setTelefonoError(null); // Clear error if it's valid
+        setTelefonoError(null) // Clear error if it's valid
       }
     }
   }
 
   const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+    const value = e.target.value
     if (/^\d*$/.test(value)) {
-      setNumeroDni(value);
-      localStorage.setItem('dni', value); // Save to localStorage
+      setNumeroDni(value)
+      localStorage.setItem("dni", value) // Save to localStorage
       if (value.length > 8) {
-        setDniError("El DNI no puede tener más de 8 dígitos");
+        setDniError("El DNI no puede tener más de 8 dígitos")
       } else {
-        setDniError(null);
+        setDniError(null)
       }
     }
   }
 
   const handleCalleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setCalle(value);
-    localStorage.setItem('calle', value); // Save to localStorage
-  };
+    const value = e.target.value
+    setCalle(value)
+    localStorage.setItem("calle", value) // Save to localStorage
+  }
 
   const handleCiudadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setCiudadNombre(value);
-    localStorage.setItem('ciudad', value)
+    const value = e.target.value
+    setCiudadNombre(value)
+    localStorage.setItem("ciudad", value)
   }
 
   const handleReferenciaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setReferencia(value);
-    localStorage.setItem('referencia', value); // Save to localStorage
-  };
-  
+    const value = e.target.value
+    setReferencia(value)
+    localStorage.setItem("referencia", value) // Save to localStorage
+  }
+
   const isFormValid = () => {
-    if(!session?.user?.id){
+    if (!session?.user?.id && showMapModal == false) {
       return (
         nombre.trim() !== "" &&
         numeroDni.length === 8 &&
         telefono.length === 9 &&
         calle.trim() !== "" &&
-        referencia.trim() !== "" &&
-        selectedLocation !== null &&
-        selectedLocation?.lat !== null &&
-        selectedLocation?.lng !== null
+        referencia.trim() !== "" 
+        // selectedLocation !== null &&
+        // selectedLocation?.lat !== null &&
+        // selectedLocation?.lng !== null
       )
-    }
-    else{
+    } else {
       return (
         nombre.trim() !== "" &&
         numeroDni.length === 8 &&
@@ -194,11 +197,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
 
   const handleSubmitPadre = async () => {
     console.log("SUBMIT PADRE")
-    if  (!isFormValid()) {
-      setShowWarnings(true);
-      return;
+    if (!isFormValid()) {
+      setShowWarnings(true)
+      return
     }
-    setShowWarnings(false);
+    setShowWarnings(false)
     const ciudadCookie = getCityCookie()
     const direccionData = {
       calle: calle,
@@ -212,12 +215,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
         id: ciudadCookie.id,
       },
       ubicacion: {
-        latitud: "null",
-        longitud: "null"
+        latitud: selectedLocation?.lat || "null",
+        longitud: selectedLocation?.lng || "null",
+        direcciones: [{ value: "null" }, { value: "null" }],
       },
     }
     direccionData.ubicacion.latitud = selectedLocation?.lat.toString() || "null"
-    direccionData.ubicacion.longitud = selectedLocation?.lng.toString() || "null"
+    direccionData.ubicacion.longitud =
+      selectedLocation?.lng.toString() || "null"
 
     const usuarioData = {
       nombre: nombre,
@@ -230,31 +235,38 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
         numeroDocumento: numeroDni,
       },
       rol: {
-        id: "rol-f84abb43"
-      }
+        id: "rol-f84abb43",
+      },
     }
 
     console.log("Datos de dirección:", direccionData)
     console.log("Datos de usuario:", usuarioData)
     let usuarioIdAux = userId
-    let direccionIdAux = selectedAddressId;
+    let direccionIdAux = selectedAddressId
     try {
-      if(!session?.user?.id) {
-        const usuarioResponse = await axios.post(baseUrl + "/admin/usuario", usuarioData, {
-          headers: { "Content-Type": "application/json" },
-        });
+      if (!session?.user?.id) {
+        const usuarioResponse = await axios.post(
+          baseUrl + "/admin/usuario",
+          usuarioData,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        )
         const usuarioId = usuarioResponse.data.usuario.id
         usuarioIdAux = usuarioId
 
-        const direccionResponse = await axios.post(baseUrl + "/admin/direccion", direccionData, {
-          headers: { "Content-Type": "application/json" },
-        });
+        const direccionResponse = await axios.post(
+          baseUrl + "/admin/direccion",
+          direccionData,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        )
         console.log("Respuesta de dirección:", direccionResponse.data)
         const direccionId = direccionResponse.data.direccion.id // Ajusta según la estructura de la respuesta
         console.log("Pedido ID:", direccionId)
         direccionIdAux = direccionId
-      }
-      else{
+      } else {
         const usuarioGuardar = {
           id: userId,
           nombre: nombre,
@@ -263,12 +275,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
             id: userPersonaId,
             tipoDocumento: "DNI",
             numeroDocumento: numeroDni,
-          }
+          },
         }
-        const response = await axios.put(baseUrl+`/admin/usuario/${userId}`, usuarioGuardar)
+        const response = await axios.put(
+          baseUrl + `/admin/usuario/${userId}`,
+          usuarioGuardar
+        )
         console.log("Usuario actualizado:", response.data)
       }
-      
 
       // Realizar el PUT para actualizar el pedido con los IDs
       if (carritoState?.id) {
@@ -279,7 +293,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
           usuario: usuarioIdAux,
         }
         await axios.put(
-          baseUrl+`/admin/pedido/${pedidoId}?enriquecido=true`,
+          baseUrl + `/admin/pedido/${pedidoId}?enriquecido=true`,
           pedidoUpdateData,
           {
             headers: { "Content-Type": "application/json" },
@@ -302,67 +316,72 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
         if (session?.user?.id) {
           try {
             // Clear specific localStorage values if user is logged in
-            localStorage.removeItem('calle');
-            localStorage.removeItem('dni');
-            localStorage.removeItem('nombre');
-            localStorage.removeItem('nroInterior');
-            localStorage.removeItem('referencia');
-            localStorage.removeItem('telefono');
-  
-            const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`);
-            console.log("response", response);
-            const user = response.data.usuario;
-  
-            if (user) {
-              setUserNombre(user.nombre);
-              setUserApellido(user.apellido);
-              setUserCorreo(user.correo);
-              setUserTelefono(user.numeroTelefono);
-              setUserId(user.id);
-              setUserConCuenta(user.concuenta);
-              if(user.persona && user.persona.id){
-                setUserPersonaId(user.persona.id);
-              }
-              if(user.persona && user.persona.numeroDocumento !== null){
-                setNumeroDni(user.persona.numeroDocumento);
-                localStorage.setItem('dni', user.persona.numeroDocumento);
-              }
-  
-              // Set localStorage with user data
-              localStorage.setItem('nombre', user.nombre);
-              localStorage.setItem('telefono', user.numeroTelefono);
-              
+            localStorage.removeItem("calle")
+            localStorage.removeItem("dni")
+            localStorage.removeItem("nombre")
+            localStorage.removeItem("nroInterior")
+            localStorage.removeItem("referencia")
+            localStorage.removeItem("telefono")
 
-              setNombre(user.nombre);
-              setTelefono(user.numeroTelefono);              
+            const response = await axios.get(
+              `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`
+            )
+            console.log("response", response)
+            const user = response.data.usuario
+
+            if (user) {
+              setUserNombre(user.nombre)
+              setUserApellido(user.apellido)
+              setUserCorreo(user.correo)
+              setUserTelefono(user.numeroTelefono)
+              setUserId(user.id)
+              setUserConCuenta(user.concuenta)
+              if (user.persona && user.persona.id) {
+                setUserPersonaId(user.persona.id)
+              }
+              if (user.persona && user.persona.numeroDocumento !== null) {
+                setNumeroDni(user.persona.numeroDocumento)
+                localStorage.setItem("dni", user.persona.numeroDocumento)
+              }
+
+              // Set localStorage with user data
+              localStorage.setItem("nombre", user.nombre)
+              localStorage.setItem("telefono", user.numeroTelefono)
+
+              setNombre(user.nombre)
+              setTelefono(user.numeroTelefono)
             } else {
-              console.error('Failed to fetch user name');
+              console.error("Failed to fetch user name")
             }
-  
+
+            const addressResponse = await axios.get(
+              `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/usuario/${session.user.id}?guardada=true`
+            )
+            //setDirecciones(addressResponse.data.direcciones);
           } catch (error) {
-            console.error('Error fetching user name:', error);
+            console.error("Error fetching user name:", error)
           }
         }
       }
     }
-  
-    fetchUserName();
-  }, [session, status]);
+
+    fetchUserName()
+  }, [session, status])
 
   useEffect(() => {
-    const savedNombre = localStorage.getItem('nombre');
-    const savedTelefono = localStorage.getItem('telefono');
-    const savedDni = localStorage.getItem('dni');
-    const savedCalle = localStorage.getItem('calle');
-    const savedNroInterior= localStorage.getItem('nroInterior');
-    const savedReferencia= localStorage.getItem('referencia');
-  
-    if (savedNombre) setNombre(savedNombre);
-    if (savedTelefono) setTelefono(savedTelefono);
-    if (savedDni) setNumeroDni(savedDni);
-    if (savedNroInterior) setNumeroInterior(savedNroInterior);
-    if (savedCalle) setCalle(savedCalle);
-    if (savedReferencia) setReferencia(savedReferencia);
+    const savedNombre = localStorage.getItem("nombre")
+    const savedTelefono = localStorage.getItem("telefono")
+    const savedDni = localStorage.getItem("dni")
+    const savedCalle = localStorage.getItem("calle")
+    const savedNroInterior = localStorage.getItem("nroInterior")
+    const savedReferencia = localStorage.getItem("referencia")
+
+    if (savedNombre) setNombre(savedNombre)
+    if (savedTelefono) setTelefono(savedTelefono)
+    if (savedDni) setNumeroDni(savedDni)
+    if (savedNroInterior) setNumeroInterior(savedNroInterior)
+    if (savedCalle) setCalle(savedCalle)
+    if (savedReferencia) setReferencia(savedReferencia)
     fetchCart()
     if (inputRef.current && google.maps.places) {
       const city = getCityCookie()
@@ -401,12 +420,22 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
 
   return (
     <>
-      <div className="py-6" style={{ display: "flex", alignItems: "center", marginTop: "20px", paddingLeft: "60px" }}>
-            <BackButton onClick={() => window.history.back()}/>
-        </div>
+      <div
+        className="py-6"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: "20px",
+          paddingLeft: "60px",
+        }}
+      >
+        <BackButton onClick={() => window.history.back()} />
+      </div>
       <div className="content-container mx-auto py-6">
-        <Heading className="text-[2rem] leading-[2.75rem] mb-4">Coloca tus Datos</Heading>
-    
+        <Heading className="text-[2rem] leading-[2.75rem] mb-4">
+          Coloca tus Datos
+        </Heading>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AddressForm Component - Top Left */}
           <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
@@ -433,7 +462,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
               telefonoError={telefonoError}
             />
           </div>
-    
+
           {/* Summary2 Component - Top Right */}
           <div className="bg-white py-6 lg:col-span-1 lg:h-full">
             {carritoState ? (
@@ -447,7 +476,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
               <p>Cargando carrito...</p>
             )}
           </div>
-    
+
           {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
           {session?.user?.id && (
             <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
@@ -457,29 +486,23 @@ const StepDireccion: React.FC<StepDireccionProps> = ({ setStep, googleMapsLoaded
                 ciudadNombre={ciudadNombre}
                 toggleAllowed={true}
                 onToggleAddress={handleToggleAddress}
-                googleMapsLoaded={googleMapsLoaded}
               />
             </div>
           )}
         </div>
-    
+
         {/* Map modal */}
-        {showMapModal && (
+        {/* {showMapModal && (
           <GoogleMapModal
             onSelectLocation={handleMapSelect}
             city={ciudadNombre}
             closeModal={() => setShowMapModal(false)}
             {...(selectedLocation && { location: selectedLocation })}
           />
-        )}
+        )} */}
       </div>
     </>
-  );
-  
-  
-  
-  
-  
+  )
 }
 
 export default StepDireccion

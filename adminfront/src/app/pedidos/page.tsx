@@ -45,10 +45,11 @@ const PedidosPage: React.FC = () => {
         const data = await response.data;
         console.log("Pedidos fetched:", data);
 
-        const pedidosData: Pedido[] = data.pedidos;
-
-        // reverse the array to show the most recent orders first
-        pedidosData.reverse();
+        const pedidosData: Pedido[] = data.pedidos.sort(
+          (a: Pedido, b: Pedido) => {
+            return new Date(b.solicitadoEn ?? 0).getTime() - new Date(a.solicitadoEn ?? 0).getTime();
+          }
+        );
 
         pedidosData.forEach((pedido) => {
           switch (pedido.estado) {

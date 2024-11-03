@@ -135,7 +135,6 @@ const EntregarPedido = () => {
     setImageOptionsVisible(true);
   };
 
-
   const handleImageSelection = async (id: string, tipo: "pedido" | "pago") => {
     const input = document.createElement("input");
     input.type = "file";
@@ -161,7 +160,6 @@ const EntregarPedido = () => {
 
     input.click();
     setImageOptionsVisible(false);
-    
   };
 
   const handleCameraCapture = async (id: string, tipo: "pedido" | "pago") => {
@@ -172,7 +170,7 @@ const EntregarPedido = () => {
       setVideoStream(stream);
     } catch (error) {
       console.error("Error al acceder a la cámara:", error);
-      mostrarMensaje("No se pudo acceder a la cámara.","confirmacion");
+      mostrarMensaje("No se pudo acceder a la cámara.", "confirmacion");
     }
   };
 
@@ -181,7 +179,10 @@ const EntregarPedido = () => {
 
     if (!video || !video.videoWidth || !video.videoHeight) {
       console.error("El video no está listo para capturar.");
-      mostrarMensaje("Espere a que el video esté listo para capturar la foto.", "confirmacion");
+      mostrarMensaje(
+        "Espere a que el video esté listo para capturar la foto.",
+        "confirmacion"
+      );
       return;
     }
 
@@ -234,13 +235,13 @@ const EntregarPedido = () => {
       }
       const response = await axios.post(`${BASE_URL}/imagenes`, formData);
 
-      const { fileUrl } = response.data; 
+      const { fileUrl } = response.data;
 
       mostrarMensaje(`Imagen enviada con éxito: ${fileUrl}`);
       return fileUrl;
     } catch (error) {
       console.error(`Error al enviar la imagen de ${tipo}:`, error);
-      mostrarMensaje(`Error al enviar la imagen de ${tipo}.`,"confirmacion");
+      mostrarMensaje(`Error al enviar la imagen de ${tipo}.`, "confirmacion");
     }
   };
 
@@ -261,9 +262,9 @@ const EntregarPedido = () => {
         pathname: "/home/delivery/cancelada",
         params: {},
       });
-        } catch (error) {
+    } catch (error) {
       console.error("Error al reasignar la entrega:", error);
-      mostrarMensaje("Error al reasignar la entrega","confirmacion");
+      mostrarMensaje("Error al reasignar la entrega", "confirmacion");
     } finally {
       setModalCancelVisible(false);
     }
@@ -277,19 +278,51 @@ const EntregarPedido = () => {
       if (!confirm) return;
 
       const urlPedido = enviarImagen(parsedPedido.id, "pedido");
-      const urlPago =enviarImagen(parsedPedido.id, "pago");
+      const urlPago = enviarImagen(parsedPedido.id, "pago");
 
       //Crear Venta
-      const response_detalle = await axios.get(`${BASE_URL}/pedido/${pedidoCompleto.id}/conDetalle?pedido=true`);
+      const response_detalle = await axios.get(
+        `${BASE_URL}/pedido/${pedidoCompleto.id}/conDetalle?pedido=true`
+      );
       pedidoCompleto.detalles = response_detalle.data.pedido.detalles;
       const detalles = pedidoCompleto.detalles || [];
-      const totalPaletas = detalles.filter((detalle: DetallePedido) => detalle.producto.tipoProducto.nombre === "Paleta").reduce((acc: number, detalle: DetallePedido) => acc + detalle.cantidad, 0);
-      const totalMafaletas = detalles.filter((detalle: DetallePedido) => detalle.producto.tipoProducto.nombre === "Mafaleta").reduce((acc: number, detalle: DetallePedido) => acc + detalle.cantidad, 0);
+      let totalPaletas = 0;
+      let totalMafaletas = 0;
 
-      const venta = await axios.post(`${BASE_URL}/ventas`, {
+      try {
+        totalPaletas = detalles
+          .filter(
+            (detalle: DetallePedido) =>
+              detalle.producto.tipoProducto.nombre === "Paleta"
+          )
+          .reduce(
+            (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
+            0
+          );
+      } catch (error) {
+        console.error("Error calculating totalPaletas:", error);
+        totalPaletas = 0;
+      }
+
+      try {
+        totalMafaletas = detalles
+          .filter(
+            (detalle: DetallePedido) =>
+              detalle.producto.tipoProducto.nombre === "Mafaleta"
+          )
+          .reduce(
+            (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
+            0
+          );
+      } catch (error) {
+        console.error("Error calculating totalMafaletas:", error);
+        totalMafaletas = 0;
+      }
+
+      const venta = await axios.post(`${BASE_URL}/venta`, {
         tipoComprobante: "Boleta",
         fechaVenta: new Date(),
-        numeroComprobante: "001-000001", 
+        numeroComprobante: "001-000001",
         montoTotal: parseFloat(pedidoCompleto.total),
         totalPaletas: totalPaletas,
         totalMafaletas: totalMafaletas,
@@ -310,28 +343,28 @@ const EntregarPedido = () => {
       });
 
       //Registrar venta
-      const response_venta = await axios.post(`${BASE_URL}/venta`,venta);
+      const response_venta = await axios.post(`${BASE_URL}/venta`, venta);
       const ventaData = response_venta.data.venta;
       console.log(ventaData);
 
       //Registrar pago
-      const response_pago = await axios.post(`${BASE_URL}/pago`,pago);
+      const response_pago = await axios.post(`${BASE_URL}/pago`, pago);
       const pagoData = response_pago.data.pago;
       console.log(pagoData);
-      
+
       mostrarMensaje("Entrega confirmada");
       await axios.put(`${BASE_URL}/pedido/${parsedPedido.id}`, {
         estado: "Entregado",
         urlEvidencia: urlPedido,
       });
-      
+
       router.push({
         pathname: "/home/delivery/confirmada",
         params: {},
       });
     } catch (error) {
       console.error("Error updating pedido:", error);
-      mostrarMensaje("Error al confirmar la entrega","confirmacion");
+      mostrarMensaje("Error al confirmar la entrega", "confirmacion");
     }
   };
 
@@ -372,7 +405,7 @@ const EntregarPedido = () => {
       storeCurrentDelivery(pedidoData);
       setPedidoCompleto(pedidoData);
       console.log(pedidoData);
-      router.replace("/home/delivery/detalles");
+      router.replace("/home/delivery/handDeliver");
     } catch (error) {
       console.error("Error fetching pedido completo:", error);
     }
@@ -393,159 +426,164 @@ const EntregarPedido = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.clienteContainer}>
-        <View style={styles.tituloContainer}>
-          <Text style={styles.titulo}>Datos del cliente</Text>
+      <View style={styles.container}>
+        <View style={styles.clienteContainer}>
+          <View style={styles.tituloContainer}>
+            <Text style={styles.titulo}>Datos del cliente</Text>
+          </View>
+
+          <View style={styles.clienteRow}>
+            <Text style={styles.cliente}>
+              {pedidoCompleto?.usuario?.nombre || "Nombre no disponible"}
+            </Text>
+            <View style={styles.iconosCliente}>
+              <TouchableOpacity>
+                <TabBarIcon
+                  IconComponent={AntDesign}
+                  name="phone"
+                  color="black"
+                  size={30}
+                  style={{ marginRight: 10 }}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <TabBarIcon
+                  IconComponent={FontAwesome}
+                  name="whatsapp"
+                  color="green"
+                  size={30}
+                  style={{ marginRight: 10 }}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.clienteRow}>
-          <Text style={styles.cliente}>
-            {pedidoCompleto?.usuario?.nombre || "Nombre no disponible"}
-          </Text>
-          <View style={styles.iconosCliente}>
-            <TouchableOpacity>
-              <TabBarIcon
-                IconComponent={AntDesign}
-                name="phone"
-                color="black"
-                size={30}
-                style={{ marginRight: 10 }}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity>
+        <View style={styles.pedidoContainer}>
+          <Text style={styles.titulo}>Datos del pedido</Text>
+          <View style={styles.pedidoRow}>
+            <View style={styles.pedidoInfo}>
+              {Array.isArray(pedidoCompleto?.detalles) &&
+              pedidoCompleto.detalles.length > 0 ? (
+                <Text style={styles.productosText}>
+                  {pedidoCompleto.detalles
+                    .map(
+                      (detalle: DetallePedido) =>
+                        `(${detalle?.cantidad || 0}) ${
+                          detalle?.producto?.nombre || "Nombre no disponible"
+                        }`
+                    )
+                    .join(", ")}
+                </Text>
+              ) : (
+                <Text style={styles.productosText}>
+                  No hay detalles del pedido
+                </Text>
+              )}
+              <Link
+                href={{
+                  pathname: "/home/delivery/detalles",
+                  params: { id: String(parsedPedido.id) },
+                }}
+                asChild
+                id={String(parsedPedido.id)}
+              >
+                <Pressable>
+                  {({ pressed }) => (
+                    <Text style={styles.linkVerMas}>Ver detalles</Text>
+                  )}
+                </Pressable>
+              </Link>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => showImageOptions(pedidoCompleto?.id, "pedido")}
+            >
               <TabBarIcon
                 IconComponent={FontAwesome}
-                name="whatsapp"
-                color="green"
+                name="camera"
+                color={fotoPedido ? "#3BD100" : "#C9CC00"}
                 size={30}
-                style={{ marginRight: 10 }}
               />
             </TouchableOpacity>
           </View>
         </View>
-      </View>
 
-      <View style={styles.pedidoContainer}>
-        <Text style={styles.titulo}>Datos del pedido</Text>
-        <View style={styles.pedidoRow}>
-          <View style={styles.pedidoInfo}>
-            {Array.isArray(pedidoCompleto?.detalles) &&
-            pedidoCompleto.detalles.length > 0 ? (
-              <Text style={styles.productosText}>
-                {pedidoCompleto.detalles
-                  .map(
-                    (detalle: DetallePedido) =>
-                      `(${detalle?.cantidad || 0}) ${
-                        detalle?.producto?.nombre || "Nombre no disponible"
-                      }`
-                  )
-                  .join(", ")}
-              </Text>
-            ) : (
-              <Text style={styles.productosText}>
-                No hay detalles del pedido
-              </Text>
-            )}
-            <Link
-              href={{
-                pathname: "/home/delivery/detalles",
-                params: { id: String(parsedPedido.id) },
-              }}
-              asChild
-              id={String(parsedPedido.id)}
-            >
-              <Pressable>
-                {({ pressed }) => (
-                  <Text style={styles.linkVerMas}>Ver detalles</Text>
-                )}
-              </Pressable>
-            </Link>
-          </View>
-
-          <TouchableOpacity
-            onPress={() => showImageOptions(pedidoCompleto?.id, "pedido")}
-          >
-            <TabBarIcon
-              IconComponent={FontAwesome}
-              name="camera"
-              color={fotoPedido ? "#3BD100" : "#C9CC00"}
-              size={30}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.pagoContainer}>
-        <Text style={styles.titulo}>Datos del pago</Text>
-        <View style={styles.detallesPago}>
-          <View style={styles.subtotalColumn}>
-            <View style={styles.columnTitle}>
-              <Text style={styles.subtotalTitulo}>Total:</Text>
+        <View style={styles.pagoContainer}>
+          <Text style={styles.titulo}>Datos del pago</Text>
+          <View style={styles.detallesPago}>
+            <View style={styles.subtotalColumn}>
+              <View style={styles.columnTitle}>
+                <Text style={styles.subtotalTitulo}>Total:</Text>
+              </View>
+              <View>
+                <Text style={styles.subtotalValor}>
+                  S/. {pedidoCompleto?.total || "Subtotal no disponible"}
+                </Text>
+              </View>
             </View>
-            <View>
-              <Text style={styles.subtotalValor}>
-                S/. {pedidoCompleto?.total || "Subtotal no disponible"}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.metodoPagoColumn}>
-            <View style={styles.columnTitle}>
-              <Text style={styles.metodoPagoTitulo}>Metodo(s) de pago</Text>
-            </View>
-            <View style={styles.metodosListado}>
-              <View style={styles.metodoInfo}>
-                <View style={styles.leftInfo}>
-                  {pedidoCompleto?.metodosPago?.[0]?.nombre ? (
-                    <>
-                      <View style={{ justifyContent: "center" }}>
-                        {pedidoCompleto?.metodosPago?.[0]?.nombre === "plin" ? (
-                          <Image
-                            source={require("@assets/images/plin.jpg")}
-                            style={styles.iconoPago}
-                          />
-                        ) : pedidoCompleto?.metodosPago?.[0]?.nombre === "yape" ? (
-                          <Image
-                            source={require("@assets/images/yape.png")}
-                            style={styles.iconoPago}
-                          />
-                        ) : (
-                          <FontAwesome name="money" size={30} color="black" />
-                        )}
-                      </View>
+            <View style={styles.metodoPagoColumn}>
+              <View style={styles.columnTitle}>
+                <Text style={styles.metodoPagoTitulo}>Metodo(s) de pago</Text>
+              </View>
+              <View style={styles.metodosListado}>
+                <View style={styles.metodoInfo}>
+                  <View style={styles.leftInfo}>
+                    {pedidoCompleto?.metodosPago?.[0]?.nombre ? (
+                      <>
+                        <View style={{ justifyContent: "center" }}>
+                          {pedidoCompleto?.metodosPago?.[0]?.nombre ===
+                          "plin" ? (
+                            <Image
+                              source={require("@assets/images/plin.jpg")}
+                              style={styles.iconoPago}
+                            />
+                          ) : pedidoCompleto?.metodosPago?.[0]?.nombre ===
+                            "yape" ? (
+                            <Image
+                              source={require("@assets/images/yape.png")}
+                              style={styles.iconoPago}
+                            />
+                          ) : (
+                            <FontAwesome name="money" size={30} color="black" />
+                          )}
+                        </View>
+                        <Text style={styles.metodoNombre}>
+                          {pedidoCompleto.metodosPago[0].nombre}
+                        </Text>
+                      </>
+                    ) : (
                       <Text style={styles.metodoNombre}>
-                        {pedidoCompleto.metodosPago[0].nombre}
+                        Método de pago no especificado
                       </Text>
-                    </>
-                  ) : (
-                    <Text style={styles.metodoNombre}>
-                      Método de pago no especificado
-                    </Text>
-                  )}
-                </View>
-                <View style={styles.rightInfo}>
-                  <TouchableOpacity
-                    onPress={() => showImageOptions(pedidoCompleto?.id, "pago")}
-                  >
-                    <TabBarIcon
-                      IconComponent={FontAwesome}
-                      name="camera"
-                      color={
-                        fotoPago ? "#3BD100" : "#C9CC00"
-                      } // Darker green color
-                      size={30}
-                    />
-                  </TouchableOpacity>
+                    )}
+                  </View>
+                  <View style={styles.rightInfo}>
+                    <TouchableOpacity
+                      onPress={() =>
+                        showImageOptions(pedidoCompleto?.id, "pago")
+                      }
+                    >
+                      <TabBarIcon
+                        IconComponent={FontAwesome}
+                        name="camera"
+                        color={fotoPago ? "#3BD100" : "#C9CC00"} // Darker green color
+                        size={30}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
             </View>
           </View>
-        </View>
-        <View style={styles.agregarParcialButton}>
-          <TouchableOpacity>
-            <Text style={styles.agregarParcial}>+ Agregar parcial</Text>
-          </TouchableOpacity>
+          <View style={styles.agregarParcialButton}>
+            <TouchableOpacity>
+              <Text style={styles.agregarParcial}>+ Agregar parcial</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
+
       <View style={styles.buttonContainer}>
         <TouchableOpacity
           style={styles.rejectButton}
@@ -669,21 +707,21 @@ const EntregarPedido = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 10,
     backgroundColor: "#fff",
     borderRadius: 15,
-    marginVertical: 20,
-    marginHorizontal: 20,
+    marginVertical: 10,
+    marginHorizontal: 10,
     flexWrap: "wrap",
     flexDirection: "column",
-    justifyContent: "space-between",
   },
+  infoContainer: {},
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
   },
   clienteContainer: {
-    marginBottom: 10,
+    paddingHorizontal: 10,
   },
   tituloContainer: {
     justifyContent: "center",
@@ -719,7 +757,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   pedidoContainer: {
-    marginBottom: 10,
+    paddingHorizontal: 10,
   },
   metodosListado: {
     flex: 1,
@@ -793,7 +831,8 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   pagoContainer: {
-    marginBottom: 20,
+    paddingHorizontal: 10,
+
   },
   subtotalTitulo: {
     fontSize: 20,

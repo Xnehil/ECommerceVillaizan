@@ -162,14 +162,15 @@ class UsuarioService extends TransactionBaseService {
         });
     }
 
-    async listarPedidosRepartidor(id_usuario: string): Promise<Pedido[]> {
+    async listarPedidosRepartidor(id_usuario: string, filter: { estado?: string | string[] }): Promise<Pedido[]> {
         const motorizadoRepo = this.activeManager_.withRepository(this.motorizadoRepository_);
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const motorizado = await motorizadoRepo.encontrarPorUsuarioId(id_usuario);
         if (!motorizado) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Motorizado no encontrado");
         }
-        const pedidos = await pedidoRepo.findByMotorizadoId(motorizado.id);
+        let estados = filter.estado;
+        const pedidos = await pedidoRepo.findByMotorizadoId(motorizado.id, estados);
         if (!pedidos) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedidos no encontrados");
         }

@@ -139,6 +139,7 @@ const Parametros: React.FC<ParametrosProps> = () => {
       toast({
         description: "Los parámetros se guardaron correctamente.",
       });
+      setIsEditing(false);
     } catch (error) {
       console.error("Error saving parameters", error);
       const description =
@@ -149,7 +150,6 @@ const Parametros: React.FC<ParametrosProps> = () => {
         description,
       });
     } finally {
-      setIsEditing(false);
       setIsLoading(false);
     }
   };

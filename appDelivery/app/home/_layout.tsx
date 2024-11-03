@@ -28,7 +28,8 @@ export default function TabLayout() {
     const fetchMotorizadoData = async () => {
       try {
         const data = await getMotorizadoData();
-        console.log("Datos del motorizado:", data);
+        // console.log("Datos del motorizado:", data);
+
         setMotorizado(data);
       } catch (error) {
         console.log("Error al obtener los datos del motorizado:", error);
@@ -101,10 +102,7 @@ export default function TabLayout() {
   return (
     <>
       {motorizado && (
-        <WebSocketComponent
-          idMotorizado={motorizado.id}
-          ref={wsRef}
-        />
+        <WebSocketComponent idMotorizado={motorizado.id} ref={wsRef} />
       )}
       <Tabs
         screenOptions={{
@@ -170,7 +168,6 @@ export default function TabLayout() {
             tabBarLabelPosition: "below-icon",
             headerShown: false,
           }}
-          
         />
 
         <Tabs.Screen

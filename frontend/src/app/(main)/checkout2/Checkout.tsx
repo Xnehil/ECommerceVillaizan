@@ -17,6 +17,12 @@ const Checkout: React.FC<CheckoutProps> = ({ pedido }) => {
   const searchParams = useSearchParams();
   const [step, setStep] = useState(searchParams.get("step") || "aaa");
   const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
 
   const renderStep = () => {
     switch (step) {
@@ -31,11 +37,11 @@ const Checkout: React.FC<CheckoutProps> = ({ pedido }) => {
 
   return (
     <div>
-      {window.google === undefined ? (
+      {isClient && !googleMapsLoaded ? (
         <LoadScript
           googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
           libraries={["places"]}
-          onLoad={() => setGoogleMapsLoaded(true)} // Marcar como cargado
+          onLoad={() => setGoogleMapsLoaded(true)} // Mark as loaded
         >
           {renderStep()}
         </LoadScript>
