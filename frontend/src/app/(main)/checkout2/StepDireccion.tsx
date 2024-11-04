@@ -450,7 +450,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AddressForm Component - Top Left */}
-          {googleLoaded && (
+          { (
             <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
               <AddressFormParent
                 nombre={nombre}
