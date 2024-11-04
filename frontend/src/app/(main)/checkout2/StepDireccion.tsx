@@ -27,8 +27,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 }) => {
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
   const [calle, setCalle] = useState("")
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
-  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const [numeroExterior, setNumeroExterior] = useState("")
   const [numeroInterior, setNumeroInterior] = useState("")
@@ -65,6 +63,52 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     null
   )
 
+  const [googleLoaded, setGoogleLoaded] = useState(false)
+
+  const loadGoogleMapsScript = async () => {
+    if (
+      typeof google !== "undefined" &&
+      google.maps &&
+      (await google.maps.importLibrary("places"))
+    ) {
+      setGoogleLoaded(true)
+      return
+    }
+
+    const script = document.createElement("script")
+    script.innerHTML = `
+      (g => {
+        var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+        b = b[c] || (b[c] = {});
+        var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => {
+          await (a = m.createElement("script"));
+          e.set("libraries", [...r] + "");
+          for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
+          e.set("callback", c + ".maps." + q);
+          a.src = \`https://maps.\${c}apis.com/maps/api/js?\` + e;
+          d[q] = f;
+          a.onerror = () => h = n(Error(p + " could not load."));
+          a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+          m.head.append(a);
+        }));
+        d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n));
+      })({
+        key: "${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}",
+        v: "weekly",
+      });
+    `
+    script.async = true
+    script.defer = true
+    script.onload = () => {
+      setGoogleLoaded(true)
+    }
+    script.onerror = () => {
+      console.error("Failed to load Google Maps script")
+    }
+
+    document.head.appendChild(script)
+  }
+
   const handleToggleAddress = (addressId: string | null) => {
     setSelectedAddressId(addressId)
     console.log("Selected Address ID:", addressId)
@@ -73,7 +117,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const handleMapSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng })
     setLocationError("")
-    if (googleMapsLoaded) {
+    if (googleLoaded) {
       const geocoder = new google.maps.Geocoder()
       const latlng = new google.maps.LatLng(lat, lng)
       geocoder.geocode({ location: latlng }, (results, status) => {
@@ -383,39 +427,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     if (savedCalle) setCalle(savedCalle)
     if (savedReferencia) setReferencia(savedReferencia)
     fetchCart()
-    if (inputRef.current && google.maps.places) {
-      const city = getCityCookie()
-
-      const sanMartinBounds = new google.maps.LatLngBounds(
-        new google.maps.LatLng(-7.0, -77.5), // Southwest corner of San Martin
-        new google.maps.LatLng(-5.0, -75.5) // Northeast corner of San Martin
-      )
-
-      autocompleteRef.current = new google.maps.places.Autocomplete(
-        inputRef.current,
-        {
-          types: ["address"],
-          componentRestrictions: { country: "PE" },
-          bounds: sanMartinBounds,
-          strictBounds: true,
-        }
-      )
-
-      autocompleteRef.current.addListener("place_changed", () => {
-        const place = autocompleteRef.current?.getPlace()
-        if (
-          place &&
-          place.formatted_address &&
-          place.formatted_address.includes(city.nombre)
-        ) {
-          setCalle(place.formatted_address)
-        } else {
-          // Handle case when place is outside the selected city
-          console.log("Selected place is not within the desired city")
-          setCalle("")
-        }
-      })
-    }
+    loadGoogleMapsScript()
   }, [])
 
   return (
@@ -438,30 +450,33 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AddressForm Component - Top Left */}
-          <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
-            <AddressFormParent
-              nombre={nombre}
-              numeroDni={numeroDni}
-              ciudad={ciudadNombre}
-              telefono={telefono}
-              calle={calle}
-              numeroInterior={numeroInterior}
-              referencia={referencia}
-              handleNombreChange={handleNombreChange}
-              handleDniChange={handleDniChange}
-              handleTelefonoChange={handleTelefonoChange}
-              handleCiudadChange={handleCiudadChange}
-              handleCalleChange={handleCalleChange}
-              handleNroInteriorChange={handleNroInteriorChange}
-              handleReferenciaChange={handleReferenciaChange}
-              handleClickMapa={() => setShowMapModal(true)}
-              status={status}
-              handleSubmitPadre={handleSubmitPadre}
-              dniError={dniError}
-              locationError={locationError}
-              telefonoError={telefonoError}
-            />
-          </div>
+          {googleLoaded && (
+            <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
+              <AddressFormParent
+                nombre={nombre}
+                numeroDni={numeroDni}
+                ciudad={ciudadNombre}
+                telefono={telefono}
+                calle={calle}
+                setCalle={setCalle}
+                numeroInterior={numeroInterior}
+                referencia={referencia}
+                handleNombreChange={handleNombreChange}
+                handleDniChange={handleDniChange}
+                handleTelefonoChange={handleTelefonoChange}
+                handleCiudadChange={handleCiudadChange}
+                handleCalleChange={handleCalleChange}
+                handleNroInteriorChange={handleNroInteriorChange}
+                handleReferenciaChange={handleReferenciaChange}
+                handleClickMapa={() => setShowMapModal(true)}
+                status={status}
+                handleSubmitPadre={handleSubmitPadre}
+                dniError={dniError}
+                locationError={locationError}
+                telefonoError={telefonoError}
+              />
+            </div>
+          )}
 
           {/* Summary2 Component - Top Right */}
           <div className="bg-white py-6 lg:col-span-1 lg:h-full">
