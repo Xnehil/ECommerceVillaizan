@@ -10,7 +10,7 @@ interface RolRequestBody {
     nombreRol: string;
 }
 
-export const GET = async (
+export const POST = async (
     req: MedusaRequest & { body: RolRequestBody },
     res: MedusaResponse
 ) => {
