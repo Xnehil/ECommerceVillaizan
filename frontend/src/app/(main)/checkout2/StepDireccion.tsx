@@ -507,14 +507,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         </div>
 
         {/* Map modal */}
-        {/* {showMapModal && (
+        {showMapModal && (
           <GoogleMapModal
             onSelectLocation={handleMapSelect}
             city={ciudadNombre}
             closeModal={() => setShowMapModal(false)}
             {...(selectedLocation && { location: selectedLocation })}
           />
-        )} */}
+        )}
       </div>
     </>
   )
