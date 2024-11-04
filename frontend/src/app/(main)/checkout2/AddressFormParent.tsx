@@ -116,40 +116,40 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
   }
 
   useEffect(() => {
-    // loadGoogleMapsScript()
-    // if (inputRef.current && google.maps.places) {
-    //     const city = getCityCookie()
-  
-    //     const sanMartinBounds = new google.maps.LatLngBounds(
-    //       new google.maps.LatLng(-7.0, -77.5), // Southwest corner of San Martin
-    //       new google.maps.LatLng(-5.0, -75.5) // Northeast corner of San Martin
-    //     )
-  
-    //     autocompleteRef.current = new google.maps.places.Autocomplete(
-    //       inputRef.current,
-    //       {
-    //         types: ["address"],
-    //         componentRestrictions: { country: "PE" },
-    //         bounds: sanMartinBounds,
-    //         strictBounds: true,
-    //       }
-    //     )
-  
-    //     autocompleteRef.current.addListener("place_changed", () => {
-    //       const place = autocompleteRef.current?.getPlace()
-    //       if (
-    //         place &&
-    //         place.formatted_address &&
-    //         place.formatted_address.includes(city.nombre)
-    //       ) {
-    //         setCalle(place.formatted_address)
-    //       } else {
-    //         // Handle case when place is outside the selected city
-    //         console.log("Selected place is not within the desired city")
-    //         setCalle("")
-    //       }
-    //     })
-    //   }
+    loadGoogleMapsScript()
+    if (inputRef.current && googleLoaded && google.maps.places) {
+      const city = getCityCookie()
+
+      const sanMartinBounds = new google.maps.LatLngBounds(
+        new google.maps.LatLng(-7.0, -77.5), // Southwest corner of San Martin
+        new google.maps.LatLng(-5.0, -75.5) // Northeast corner of San Martin
+      )
+
+      autocompleteRef.current = new google.maps.places.Autocomplete(
+        inputRef.current,
+        {
+          types: ["address"],
+          componentRestrictions: { country: "PE" },
+          bounds: sanMartinBounds,
+          strictBounds: true,
+        }
+      )
+
+      autocompleteRef.current.addListener("place_changed", () => {
+        const place = autocompleteRef.current?.getPlace()
+        if (
+          place &&
+          place.formatted_address &&
+          place.formatted_address.includes(city.nombre)
+        ) {
+          setCalle(place.formatted_address)
+        } else {
+          // Handle case when place is outside the selected city
+          console.log("Selected place is not within the desired city")
+          setCalle("")
+        }
+      })
+    }
   }, [])
 
   const handleDniBlur = () => {
