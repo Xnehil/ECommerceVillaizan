@@ -9,6 +9,7 @@ import {
 } from "react";
 import { Animated, Text, Dimensions, View } from "react-native";
 import useWebSocket, { ReadyState } from "react-use-websocket";
+import { Audio } from 'expo-av';
 
 interface WebSocketComponentProps {
   idMotorizado: string;
@@ -35,6 +36,15 @@ const WebSocketComponent = forwardRef<
       // Aquí se hara la notificación
       setShowNotification(true); // Mostrar la notificación
       console.log("Pedido recibido:", data.data.pedidoId);
+
+      const playNotificationSound = async () => {
+        const { sound } = await Audio.Sound.createAsync(
+          require('../assets/notification.mp3')
+        );
+        await sound.playAsync();
+      };
+
+      playNotificationSound();
     }
   };
   // Establece la conexión WebSocket con el ID del motorizado en la URL
