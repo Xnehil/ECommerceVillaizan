@@ -2,6 +2,17 @@ import axios, { Axios } from "axios";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
+function getCookieHostname() {
+  const hostname = new URL(process.env.NEXT_PUBLIC_APP_URL!).hostname;
+  const [subDomain] = hostname.split(".");
+
+  const cookieDomain = hostname.replace(`${subDomain}.`, "");
+  return cookieDomain;
+}
+
+const domain = getCookieHostname();
+
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
@@ -61,10 +72,41 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session
     },
   },
-    pages: {
-      signIn: "/login",
-      error: "/login",
+  pages: {
+    signIn: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+    //error: "/login",
+  },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        sameSite: "none",
+        secure: true,
+        httpOnly: true,
+        path: "/",
+        domain,
+      },
     },
-    trustHost: true,
-    debug: true,
+    callbackUrl: {
+      name: `__Secure-next-auth.callback-url`,
+      options: {
+        sameSite: "none",
+        secure: true,
+        httpOnly: true,
+        path: "/",
+        domain,
+      },
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        sameSite: "none",
+        secure: true,
+        httpOnly: true,
+        path: "/",
+        domain,
+      },
+    },
+  },
+  trustHost: true
 });
