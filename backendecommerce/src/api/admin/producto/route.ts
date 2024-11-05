@@ -57,7 +57,7 @@ import { Producto } from "src/models/Producto";
         {
           skip: 0,
           take: 20,
-          relations: enriquecido ? ["tipoProducto", "subcategorias", "frutas"] : [],
+          relations: enriquecido ? ["tipoProducto", "subcategorias", "frutas", "promocion"] : [],
           order: {
             nombre: "ASC"
           }
