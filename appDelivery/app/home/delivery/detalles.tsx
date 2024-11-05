@@ -6,7 +6,7 @@ import { Link, router } from "expo-router";
 import { DetallePedido, Pedido } from "@/interfaces/interfaces";
 import { getCurrentDelivery } from "@/functions/storage";
 import axios from "axios";
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 const DetallesPedido = () => {
   const route = useRoute();

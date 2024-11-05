@@ -19,7 +19,7 @@ import TabBarIcon from "@/components/StyledIcon";
 import { DetallePedido } from "@/interfaces/interfaces";
 import { Link, router } from "expo-router";
 import { getCurrentDelivery, storeCurrentDelivery } from "@/functions/storage";
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import { useRef } from "react";
 
 const EntregarPedido = () => {

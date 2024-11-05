@@ -21,7 +21,7 @@ export interface WebSocketComponentRef {
   sendPedido: (pedidoId: string) => void;
 }
 
-const ws_url = process.env.WS_URL || "ws://localhost:9001/ws";
+const ws_url = process.env.EXPO_PUBLIC_WS_URL || "ws://localhost:9001/ws";
 
 // Usamos `forwardRef` para permitir que el componente exponga funciones a su padre
 const WebSocketComponent = forwardRef<
