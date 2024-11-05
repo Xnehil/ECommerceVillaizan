@@ -11,6 +11,13 @@ import { CityCookie } from "types/global";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUp, faArrowDown, faFilter } from '@fortawesome/free-solid-svg-icons';
 
+interface Filters {
+  selectedCategory?: string;
+  selectedProductType?: string;
+  searchText?: string;
+  isSortedByPrice?: boolean | null;
+}
+
 const FILTERS_KEY = "product_filters";
 const PRODUCT_LIMIT = 12;
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
@@ -30,8 +37,13 @@ export default function PaginatedProducts({
   setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>;
   city?: CityCookie | null;
 }) {
-  const initialFilters = JSON.parse(localStorage.getItem(FILTERS_KEY) || '{}');
-  
+  let initialFilters: Filters = {};
+
+  if (typeof localStorage !== 'undefined') {
+    const storedFilters = localStorage.getItem(FILTERS_KEY);
+    initialFilters = storedFilters ? JSON.parse(storedFilters) : {};
+  }
+
   const [products, setProducts] = useState<Producto[]>([]);
   const [originalProducts, setOriginalProducts] = useState<Producto[]>([]); // Guardar el estado original
   const [totalPages, setTotalPages] = useState(1);
