@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master  # Or your production branch
+  workflow_dispatch:
+      
 
 jobs:
   deploy-backend:
@@ -50,7 +52,7 @@ jobs:
             git checkout -- frontend/yarn.lock  # Reset yarn.lock changes
             git pull origin master
             cd frontend/ 
-            yarn
+            npm install
             yarn build
             pm2 delete all
             pm2 start npm --name "ecommerce" -- start
