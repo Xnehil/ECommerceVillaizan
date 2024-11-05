@@ -114,14 +114,14 @@ const downloadXMLFile = async (pedido: Pedido) => {
   
   // Crear FormData y adjuntar el archivo XML
   const formData = new FormData();
-  formData.append("file", blob, `pedido_${pedido.id}.xml`);
+  formData.append("file", blob);
   formData.append("fileName", `pedido_${pedido.id}.xml`);
   formData.append("folderId", "xml");
 
   try {
     // Enviar el archivo XML al servicio mediante una solicitud POST
     const responseImagen = await axios.post(
-      `${process.env.NEXT_PUBLIC_BASE_URL}imagenes?esArchivo=true`,
+      `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/imagenes`,
       formData
     );
     

@@ -14,7 +14,7 @@ interface OrderDetailsProps {
     if (!pedido) {
       return null;
     }
-
+    console.log("Pedido data:", pedido);
     const getStatusText = () => {
       switch (enRuta) {
           case 'espera':
@@ -41,46 +41,55 @@ interface OrderDetailsProps {
       }
   };
 
-    return (
-      <div className="mt-5 flex justify-between bg-gray-100 rounded-lg shadow-md w-full p-6 pl-20 pr-24">
-        {/* Driver Image */}
-        <div className="flex-1 flex text-left">
-          <img
-            src={pedido.motorizado?.urlImagen ?? "https://luciatrejo.com/wp-content/uploads/2023/08/IMG-20230819-WA0204.jpg"}
-            alt="Driver"
-            className="rounded-full w-28 h-28 object-cover mb-2 mr-6"
-          />
-          <div className='flex flex-col justify-center'>
-            <p className="font-bold text-gray-800">Conductor: {pedido.motorizado?.usuario?.nombre ?? "No asignado"}</p>
-            <p className="text-gray-600">Placa: {pedido.motorizado?.placa ?? "No asignado"}</p>
-          </div>
+  return (
+    <div className="mt-5 flex justify-between bg-gray-100 rounded-lg shadow-md w-full p-6">
+        {/* Información del Conductor */}
+        <div className="flex-1 flex items-center justify-center text-center">
+            <img
+                src={pedido.motorizado?.urlImagen ?? "https://luciatrejo.com/wp-content/uploads/2023/08/IMG-20230819-WA0204.jpg"}
+                alt="Driver"
+                className="rounded-full w-28 h-28 object-cover mb-2 mr-6"
+            />
+            <div>
+                <p className="font-bold text-gray-800">Conductor: {pedido.motorizado?.usuario?.nombre ?? "No asignado"}</p>
+                <p className="text-gray-600">Placa: {pedido.motorizado?.placa ?? "No asignado"}</p>
+            </div>
         </div>
-        {/* Cart Products */}
-        <div className="flex-1 text-center">
-          <p className="font-bold text-gray-800">Pedido:</p>
-          <ul className="list-none p-0 m-0">
-            {/* <li className="text-gray-600 mb-1">Product 1</li> */}
-            {pedido.detalles.map((detalle) => (
-              <li key={detalle.id} className="text-gray-600 mb-1">
-                {detalle.producto?.nombre} x {detalle.cantidad}
-              </li>
-            ))}
-            
-          </ul>
+        {/* Información del Pedido */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <p className="font-bold text-gray-800">Detalle de pedido:</p>
+            <ul className="list-none p-0 m-0">
+                {pedido.detalles.map((detalle) => (
+                    <li key={detalle.id} className="text-gray-600 mb-1">
+                        {detalle.producto?.nombre} x {detalle.cantidad}
+                    </li>
+                ))}
+            </ul>
         </div>
-        {/* State and State Image */}
-        <div className="flex flex-col items-center text-center">
-          <p className="font-bold text-gray-800">Estado</p>
-          <img
-            src="/images/motoHeladera.png" // Sample image URL
-            alt="State"
-            className="w-12 h-12 mt-2"
-          />
-          <p className={getStatusClass()}>{getStatusText()}</p>
+        {/* Método de Pago */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <p className="font-bold text-gray-800">Método de Pago:</p>
+            <ul className="list-none p-0 m-0">
+                {pedido.metodosPago.map((metodo) => (
+                    <li key={metodo.id} className="text-gray-600 mb-1">
+                        {metodo.nombre}
+                    </li>
+                ))}
+            </ul>
         </div>
-      </div>
-    );
-  };
+        {/* Estado del Pedido */}
+        <div className="flex-1 flex flex-col items-center justify-center text-center">
+            <p className="font-bold text-gray-800">Estado</p>
+            <img
+                src="/images/motoHeladera.png" // Sample image URL
+                alt="State"
+                className="w-12 h-12 mt-2"
+            />
+            <p className={getStatusClass()}>{getStatusText()}</p>
+        </div>
+    </div>
+);
+};
 
 export default  SeguimientoHeader;
 ;
