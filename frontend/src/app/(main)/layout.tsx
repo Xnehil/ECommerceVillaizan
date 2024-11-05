@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 
 import Footer from "@modules/layout/templates/footer";
 import Nav from "@modules/layout/templates/nav";
+import Chatbot from "@components/Chatbot";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://localhost:8000";
 
@@ -17,6 +18,7 @@ export default function PageLayout(props: { children: React.ReactNode }) {
       <Nav />
       {props.children}
       <Footer />
+      <Chatbot />
     </SessionProvider>
   );
 }
