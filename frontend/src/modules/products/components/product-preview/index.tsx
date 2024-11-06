@@ -99,6 +99,7 @@ export default function ProductPreview({
           //precio: productPreview.precioEcommerce,
           precio: precioProducto,
           idPedido: carrito?.id || "",
+          idPromocion: productPreview.promocion?.id || "",
         })
         if (
           response &&
