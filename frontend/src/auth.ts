@@ -41,22 +41,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    authorized({ request: { nextUrl }, auth }) {
-      const isLoggedIn = !!auth?.user;
-      const { pathname } = nextUrl;
-
-      //! Fix this, middleware not working
-      console.log("==========================")
-      console.log("isLoggedIn: ", isLoggedIn);
-      console.log("pathname: ", pathname);
-      console.log("==========================")
-
-      if (pathname.startsWith("/login") && isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
-      }
-
-      return !!auth;
-    },
     jwt({ token, user }) {
       if (user) { // User is available during sign-in
         token.id = user.id as string;
