@@ -10,7 +10,7 @@ const Banner: React.FC<BannerProps> = ({ minOrderAmount, startTime, endTime }) =
   const hasDeliveryInfo = minOrderAmount !== undefined && startTime && endTime;
   const message = hasDeliveryInfo
     ? `El monto mínimo de tu pedido debe ser S/. ${minOrderAmount}. El horario de atención de hoy es de ${startTime} a ${endTime}.`
-    : "La información de entrega no está disponible en este momento. Por favor, intenta nuevamente más tarde.";
+    : "La información de entrega no está disponible en este momento. La información se actualizará pronto. Por favor, intenta nuevamente más tarde.";
 
   return (
     <div style={bannerStyle}>

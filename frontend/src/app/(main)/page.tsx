@@ -26,16 +26,17 @@ export default function Home() {
     const fetchData = async () => {
       try {
         setIsLoadingResponse(true);
+  
         // Fetch the minimum order amount
         const minOrderResponse = await axios.get(`${baseUrl}/admin/ajuste/monto_minimo_pedido`);
-        const ajuste = minOrderResponse.data.ajuste
-        if(ajuste && ajuste.valor){
+        const ajuste = minOrderResponse.data.ajuste;
+        if (ajuste && ajuste.valor) {
           setMinOrderAmount(ajuste.valor);
-        }        
-
+        }
+  
         // Fetch the operating hours for the current day
         const hoursResponse = await axios.get(`${baseUrl}/admin/ajuste/horario_${currentDay}`);
-        const ajusteHoras = hoursResponse.data.ajuste
+        const ajusteHoras = hoursResponse.data.ajuste;
         const [start, end] = ajusteHoras.valor.split("-");
         setStartTime(start);
         setEndTime(end);
@@ -48,9 +49,16 @@ export default function Home() {
         setIsLoadingResponse(false);
       }
     };
-
+  
     fetchData();
+  
+    // Polling
+    const intervalId = setInterval(fetchData, 1200000); // Re-fetch cada dos minutos
+  
+    // Limpiar intervalo cuando se desmonta un componente
+    return () => clearInterval(intervalId);
   }, [currentDay]);
+  
 
   const handleTrackOrder = () => {
     if (trackingCode) {
