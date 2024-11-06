@@ -62,6 +62,14 @@ export default function ProductPreview({
     setError(null)
 
     try {
+      let precioProducto = productPreview.precioEcommerce
+      if(isAuthenticated){
+        if (productPreview.promocion && productPreview.promocion.porcentajeDescuento) {
+          const porcentaje = productPreview.promocion.porcentajeDescuento
+          precioProducto = precioNormal - (precioNormal * porcentaje) / 100
+        }
+      }
+
       // Agregar al carritoState para que se actualice el carrito visualmente
       const detalleAnterior = carrito?.detalles.find(
         (detalle) => detalle.producto.id === productPreview.id
@@ -76,19 +84,20 @@ export default function ProductPreview({
         await updateLineItem({
           detallePedidoId: detalleAnterior.id,
           cantidad: cantidad,
-          subtotal: productPreview.precioEcommerce * cantidad,
+          subtotal: detalleAnterior.precio * cantidad,
         })
         nuevoDetalle = {
           ...detalleAnterior,
           cantidad: cantidad,
-          subtotal: productPreview.precioEcommerce * cantidad,
+          subtotal: detalleAnterior.precio * cantidad,
         }
       } else {
         // Agregar un nuevo producto al carrito si no existe
         const response = await addItem({
           cantidad: 1,
           idProducto: productPreview.id || "",
-          precio: productPreview.precioEcommerce,
+          //precio: productPreview.precioEcommerce,
+          precio: precioProducto,
           idPedido: carrito?.id || "",
         })
         if (

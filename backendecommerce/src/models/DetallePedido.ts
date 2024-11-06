@@ -24,6 +24,9 @@ export class DetallePedido extends EntidadBase{
     @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })
     subtotal: number;
 
+    @Column({ type: "decimal", precision: 10, scale: 2, nullable: false })
+    precio: number;
+
     // Foreign key relationships can be added later when the related entities are defined
     //@Column({ type: "varchar", length: 50, nullable: true, name: "id_producto" })
     //id_producto: string;
