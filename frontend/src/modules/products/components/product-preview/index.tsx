@@ -2,7 +2,7 @@ import { Text } from "@medusajs/ui"
 import { Region } from "@medusajs/medusa"
 import Thumbnail from "../thumbnail"
 import { Producto } from "types/PaqueteProducto"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { addItem, updateLineItem } from "@modules/cart/actions"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
 
@@ -12,21 +12,43 @@ export default function ProductPreview({
   region,
   carrito,
   setCarrito,
+  isAuthenticated,
 }: {
   productPreview: Producto
   isFeatured?: boolean
   region?: Region
   carrito: Pedido | null
   setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>
+  isAuthenticated: boolean
 }) {
   const [isAdding, setIsAdding] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [existeDescuento, setExisteDescuento] = useState(false)
+  const [estaAutenticado, setEstaAutenticado] = useState(false)
+  const [cheapestPriceMostrar, setCheapestPriceMostrar] = useState(productPreview.precioEcommerce)
 
+  const precioNormal = productPreview.precioEcommerce
   const cheapestPrice = productPreview.precioEcommerce
   const detalleAnterior = carrito?.detalles.find(
     (detalle) => detalle.producto.id === productPreview.id
   )
   const cantidadActual = detalleAnterior?.cantidad || 0
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setEstaAutenticado(true)
+      //if productPreview tiene promocion, calcular el precio más barato
+      if (productPreview.promocion && productPreview.promocion.porcentajeDescuento) {
+        const porcentaje = productPreview.promocion.porcentajeDescuento
+        const precioDescuento = precioNormal - (precioNormal * porcentaje) / 100
+        setCheapestPriceMostrar(precioDescuento)
+        setExisteDescuento(true)
+      }
+      else{
+        setExisteDescuento(false)
+      }
+    } 
+  }, [isAuthenticated, productPreview]);
 
   const handleAddToCart = async () => {
     if (!productPreview?.id) return null
@@ -253,9 +275,14 @@ export default function ProductPreview({
             {productPreview.nombre}
           </Text>
           <div className="flex items-center gap-x-2">
-            {cheapestPrice && (
+            {cheapestPriceMostrar && (
               <span className="text-lg font-bold text-yellow-600">
-                {`S/. ${cheapestPrice}`}
+                {`S/. ${cheapestPriceMostrar}`}
+              </span>
+            )}
+            {existeDescuento && precioNormal && (
+              <span className="text-lg text-gray-500 line-through">
+                {`S/. ${precioNormal}`}
               </span>
             )}
           </div>

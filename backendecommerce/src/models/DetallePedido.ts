@@ -13,6 +13,7 @@ import { generateEntityId } from "@medusajs/medusa/dist/utils";
 import { EntidadBase } from "./EntidadBase";
 import { Producto } from "./Producto";
 import { Pedido } from "./Pedido";
+import { Promocion } from "./Promocion";
 
 @Entity("vi_detallepedido")
 export class DetallePedido extends EntidadBase{
@@ -43,9 +44,9 @@ export class DetallePedido extends EntidadBase{
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_promocion" })
     // idPromocion: string;
 
-    // @ManyToOne(() => Promocion, promocion => promocion.id)
-    // @JoinColumn({ name: "id_promocion" })
-    // promocion: Promocion;
+    @ManyToOne(() => Promocion, promocion => promocion.id, {eager: true})
+    @JoinColumn({ name: "id_promocion" })
+    promocion: Promocion;
     @BeforeInsert()
     private beforeInsert() {
         this.id = generateEntityId(this.id, "detPed");
