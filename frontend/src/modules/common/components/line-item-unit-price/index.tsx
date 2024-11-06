@@ -27,11 +27,11 @@ const LineItemUnitPrice = ({
       >
         {hasReducedPrice && (
           <span className="text-gray-500 line-through mr-2">
-            {"S/. " + Number(ecommercePrice).toFixed(2)}
+            {"S/ " + Number(ecommercePrice).toFixed(2)}
           </span>
         )}
         <span>
-          {"S/. " + Number(originalPrice).toFixed(2)}
+          {"S/ " + Number(originalPrice).toFixed(2)}
         </span>
       </span>
     </div>

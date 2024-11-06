@@ -16,6 +16,8 @@ const Summary = ({ carrito }: SummaryProps) => {
     return acc + Number(item.subtotal) || 0
   }, 0)
 
+  
+
   const [costoEnvio, setCostoEnvio] = useState<number>(0) // Estado para el costo de envío
 
   const minimo = 25 // Mínimo para proceder al pago

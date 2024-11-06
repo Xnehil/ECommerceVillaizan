@@ -16,11 +16,30 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
   const subtotal = data.detalles.reduce((acc: number, item) => {
     return acc + Number(item.subtotal) || 0
   }, 0)
-  const descuento = 0 // Implementar descuento en un sprint futuro
+
+  const subtotalWithoutDiscounts = data.detalles.reduce((acc: number, item) => {
+    const itemSubtotal = item.promocion
+      ? Number(item.producto.precioEcommerce) * item.cantidad
+      : Number(item.subtotal)
+    
+    return acc + itemSubtotal || 0
+  }, 0)
+
+  const totalDiscount = data.detalles.reduce((acc: number, item) => {
+    if (item.promocion) {
+      const originalPrice = Number(item.producto.precioEcommerce)
+      const discountedPrice = Number(item.subtotal) / item.cantidad
+      const discountPerItem = originalPrice - discountedPrice
+      return acc + (discountPerItem * item.cantidad)
+    }
+    return acc
+  }, 0)
+
+  //const descuento = 0 // Implementar descuento en un sprint futuro
   const costoEnvio = 0 // 
   const impuestos = 0 // Implementar impuestos en un sprint futuro
-  const envioGratis = subtotal >= 25 // Ejemplo: envío gratis si el subtotal es mayor o igual a S/. 50.0
-  const total = subtotal - descuento + (envioGratis ? 0 : costoEnvio) + impuestos
+  const envioGratis = subtotal >= 25 // Ejemplo: envío gratis si el subtotal es mayor o igual a S/ 50.0
+  const total = subtotalWithoutDiscounts - totalDiscount + (envioGratis ? 0 : costoEnvio) + impuestos
 
   // Llamar al callback para actualizar el valor de costo de envío
   React.useEffect(() => {
@@ -47,15 +66,15 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
             {getAmount(subtotal)}
           </span>
         </div>
-        {descuento > 0 && (
+        {totalDiscount > 0 && (
           <div className="flex items-center justify-between">
             <span>Descuento</span>
             <span
               className="text-ui-fg-interactive"
               data-testid="cart-discount"
-              data-value={descuento || 0}
+              data-value={totalDiscount || 0}
             >
-              - {getAmount(descuento)}
+              - {getAmount(totalDiscount)}
             </span>
           </div>
         )}

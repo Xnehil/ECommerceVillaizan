@@ -28,7 +28,6 @@ export default function ProductPreview({
   const [cheapestPriceMostrar, setCheapestPriceMostrar] = useState(productPreview.precioEcommerce)
 
   const precioNormal = productPreview.precioEcommerce
-  const cheapestPrice = productPreview.precioEcommerce
   const detalleAnterior = carrito?.detalles.find(
     (detalle) => detalle.producto.id === productPreview.id
   )
@@ -285,16 +284,16 @@ export default function ProductPreview({
             {productPreview.nombre}
           </Text>
           <div className="flex items-center gap-x-2">
-            {cheapestPriceMostrar && (
-              <span className="text-lg font-bold text-yellow-600">
-                {`S/. ${cheapestPriceMostrar}`}
-              </span>
-            )}
-            {existeDescuento && precioNormal && (
-              <span className="text-lg text-gray-500 line-through">
-                {`S/. ${precioNormal}`}
-              </span>
-            )}
+          {cheapestPriceMostrar && (
+            <span className="text-lg font-bold text-yellow-600">
+              {`S/ ${Number(cheapestPriceMostrar).toFixed(2)}`}
+            </span>
+          )}
+          {existeDescuento && precioNormal && (
+            <span className="text-lg text-gray-500 line-through">
+              {`S/ ${Number(precioNormal).toFixed(2)}`}
+            </span>
+          )}
           </div>
         </div>
       </div>
