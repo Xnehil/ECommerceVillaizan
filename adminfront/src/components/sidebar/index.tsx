@@ -9,6 +9,7 @@ const Sidebar = () => {
     { name: "Pedidos", icon: "/icons/pedidos.png", href: "/pedidos" },
     { name: "Configuración", icon: "/icons/setting.png", href: "/configuracion" },
     { name: "Notificaciones", icon: "/icons/notificacion.png", href: "/notificaciones" },
+    // { name: "Chatbot", icon: "/icons/chatbot.png", href: "/chatbot" },
   ];
   // const pathname
 

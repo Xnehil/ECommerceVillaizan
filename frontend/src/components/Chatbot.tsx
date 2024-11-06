@@ -23,7 +23,8 @@ const Chatbot: React.FC = () => {
           event: {
             type: 'launch',
             payload: {
-              baseUrl: process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "https://localhost:9000",
+              baseUrl: process.env.NEXT_PUBLIC_CHATBOT_BACKEND_URL || "https://back.heladosvillaizan.tech",
+              frontUrl: process.env.NEXT_PUBLIC_BASE_URL || "https://localhost:8000",
             }
           }
         }
