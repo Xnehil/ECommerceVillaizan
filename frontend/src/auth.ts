@@ -10,7 +10,7 @@ function getCookieHostname() {
   return cookieDomain;
 }
 
-const domain = getCookieHostname();
+const domain = process.env.NEXT_PUBLIC_APP_URL?.includes("localhost") ? "localhost" : getCookieHostname();
 
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -77,10 +77,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
     //error: "/login",
   },
-  /*
+  
   cookies: {
     sessionToken: {
-      name: `__Secure-next-auth.session-token`,
+      name: domain === "localhost" ? 'authjs.session-token' : `__Secure-next-auth.session-token`,
       options: {
         sameSite: "none",
         secure: true,
@@ -90,7 +90,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     },
     callbackUrl: {
-      name: `__Secure-next-auth.callback-url`,
+      name: domain === "localhost" ? 'authjs.callback-url' : `__Secure-next-auth.callback-url`,
       options: {
         sameSite: "none",
         secure: true,
@@ -100,7 +100,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     },
     csrfToken: {
-      name: `next-auth.csrf-token`,
+      name: domain === "localhost" ? 'authjs.csrf-token' : `next-auth.csrf-token`,
       options: {
         sameSite: "none",
         secure: true,
@@ -109,6 +109,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         domain,
       },
     },
-  },*/
+  },
   trustHost: true
 });
