@@ -11,6 +11,13 @@ import { CityCookie } from "types/global";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowUp, faArrowDown, faFilter } from '@fortawesome/free-solid-svg-icons';
 
+interface Filters {
+  selectedCategory?: string;
+  selectedProductType?: string;
+  searchText?: string;
+  isSortedByPrice?: boolean | null;
+}
+
 const FILTERS_KEY = "product_filters";
 const PRODUCT_LIMIT = 12;
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
@@ -22,6 +29,7 @@ export default function PaginatedProducts({
   carrito,
   setCarrito,
   city,
+  isAuthenticated,
 }: {
   sortBy?: string;
   page: number;
@@ -29,9 +37,15 @@ export default function PaginatedProducts({
   carrito: Pedido | null;
   setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>;
   city?: CityCookie | null;
+  isAuthenticated: boolean;
 }) {
-  const initialFilters = JSON.parse(localStorage.getItem(FILTERS_KEY) || '{}');
-  
+  let initialFilters: Filters = {};
+
+  if (typeof localStorage !== 'undefined') {
+    const storedFilters = localStorage.getItem(FILTERS_KEY);
+    initialFilters = storedFilters ? JSON.parse(storedFilters) : {};
+  }
+
   const [products, setProducts] = useState<Producto[]>([]);
   const [originalProducts, setOriginalProducts] = useState<Producto[]>([]); // Guardar el estado original
   const [totalPages, setTotalPages] = useState(1);
@@ -45,6 +59,9 @@ export default function PaginatedProducts({
   const [searchText, setSearchText] = useState(initialFilters.searchText || "");
   const [isSortedByPrice, setIsSortedByPrice] = useState<boolean | null>(initialFilters.isSortedByPrice ?? null);
   const [sortError, setSortError] = useState<string | null>(null); // Estado para el error de ordenación
+
+  const [isAuthenticatedLocal, setIsAuthenticatedLocal] = useState(false);
+
 
   const saveFilters = () => {
     const filters = {
@@ -85,8 +102,8 @@ export default function PaginatedProducts({
 
         const products = response.data.productos;
         setProducts(products);
+        //console.log("PRODUCTOS", products); // Logs the products array
         setOriginalProducts(products); // Guardar el estado original de los productos
-
         const count = products.length;
         setTotalPages(Math.ceil(count / PRODUCT_LIMIT));
 
@@ -125,31 +142,36 @@ export default function PaginatedProducts({
   // Nueva función para ordenar por precio
   const handleSortByPrice = () => {
     try {
+      // Create a shallow copy of the products array to prevent direct mutation
       const sortedProducts = [...products].sort((a, b) =>
         isSortedByPrice
-          ? a.precioEcommerce - b.precioEcommerce // Orden ascendente si ya está en descendente
-          : b.precioEcommerce - a.precioEcommerce // Orden descendente si no está ordenado
+          ? a.precioEcommerce - b.precioEcommerce
+          : b.precioEcommerce - a.precioEcommerce
       );
-      setProducts(sortedProducts); // Aplicar la ordenación
+      setProducts(sortedProducts);
       setIsSortedByPrice(isSortedByPrice === null ? true : !isSortedByPrice);
-      setSortError(null); // Limpiar cualquier mensaje de error previo
+      setSortError(null);
     } catch (error) {
-      // En caso de error, restaurar los productos originales y mostrar un mensaje de error
+      // In case of an error, revert to original products and set an error message
       setProducts(originalProducts);
       setSortError("Lo sentimos. No se puede ordenar en este momento. Por favor, intenta de nuevo.");
     }
   };
 
   const filteredProducts = products.filter((p) => {
+    // Normalize the search text to lowercase for case-insensitive matching
     const matchesSearchText = p.nombre.toLowerCase().includes(searchText);
+  
+    // Check category match
     const categoryMatch = selectedCategory
       ? p.subcategorias?.some((sub) => sub.nombre === selectedCategory)
       : true;
-
+  
+    // Check product type match
     const productTypeMatch = selectedProductType
       ? p.tipoProducto?.nombre === selectedProductType
       : true;
-
+  
     return matchesSearchText && categoryMatch && productTypeMatch;
   });
 
@@ -244,15 +266,19 @@ export default function PaginatedProducts({
           className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8"
           data-testid="products-list"
         >
-          {filteredProducts.map((p: Producto) => (
-            <li key={p.id}>
-              <ProductPreview
-                productPreview={p}
-                carrito={carrito}
-                setCarrito={setCarrito}
-              />
-            </li>
-          ))}
+          {filteredProducts.map((p: Producto) => {
+            //console.log("PRODUCTO", p);  // Logs each product object
+            return (
+              <li key={p.id}>
+                <ProductPreview
+                  productPreview={p}
+                  carrito={carrito}
+                  setCarrito={setCarrito}
+                  isAuthenticated={isAuthenticated}
+                />
+              </li>
+            );
+          })}
         </ul>
       )}
       {totalPages > 1 && (

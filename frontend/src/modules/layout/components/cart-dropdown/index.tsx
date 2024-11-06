@@ -27,7 +27,7 @@ const CartDropdown = ({
     undefined
   )
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
-  const productoFake : Producto = {
+  const productoFake = {
     id: "1",
     nombre: "Helado de fresa",
     urlImagen: "https://picsum.photos/200/300",

@@ -12,12 +12,15 @@ const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 export async function handleSignOut() {
   document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
   document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
-  localStorage.removeItem('calle');
-  localStorage.removeItem('dni');
-  localStorage.removeItem('nombre');
-  localStorage.removeItem('nroInterior');
-  localStorage.removeItem('referencia');
-  localStorage.removeItem('telefono');
+  //if localStorage is not empty, remove all the data
+  if (localStorage.length > 0) {
+    localStorage.removeItem('calle');
+    localStorage.removeItem('dni');
+    localStorage.removeItem('nombre');
+    localStorage.removeItem('nroInterior');
+    localStorage.removeItem('referencia');
+    localStorage.removeItem('telefono');
+  }
   await signOut();
 }
 

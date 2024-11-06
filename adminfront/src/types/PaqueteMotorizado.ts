@@ -36,3 +36,7 @@ export interface Usuario extends EntidadBase {
   fechaUltimoLogin: Date | null;
 }
 
+export interface Rol extends EntidadBase {
+  id: string;
+  nombre: string;
+}

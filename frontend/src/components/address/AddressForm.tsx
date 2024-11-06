@@ -196,7 +196,6 @@ const AddressForm: React.FC<AddressFormProps> = ({
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           required
-          placeholder="Ejemplo"
           tooltip="Máximo 250 palabras"
         />
         <InputWithLabel
@@ -211,20 +210,20 @@ const AddressForm: React.FC<AddressFormProps> = ({
           label="Número Exterior"
           value={numeroExterior}
           onChange={(e) => setNumeroExterior(e.target.value)}
-          placeholder="546"
+
         />
         <InputWithLabel
           label="Número Interior"
           value={numeroInterior}
           onChange={(e) => setNumeroInterior(e.target.value)}
-          placeholder="10"
+
         />
         <InputWithLabel
           label="Referencia"
           value={referencia}
           onChange={(e) => setReferencia(e.target.value)}
           required
-          placeholder="Cerca a mi casa"
+          placeholder="Cerca de la Av. Angamos con Av. Arequipa"
           tooltip="Máximo 255 palabras"
         />
         <div>
@@ -248,7 +247,9 @@ const AddressForm: React.FC<AddressFormProps> = ({
                 setCiudadNombre(selectedCiudad ? selectedCiudad.nombre : '');
               }}
               required
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              className="block w-full mt-1 mb-4 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity("Por favor, selecciona una ciudad")}
+              onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity("")}
             >
               <option value="">Seleccione una ciudad</option>
               {ciudades.map((ciudad) => (

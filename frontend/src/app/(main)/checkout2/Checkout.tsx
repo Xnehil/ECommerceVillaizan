@@ -1,55 +1,45 @@
-"use client";
+"use client"
 
-import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { Pedido } from "types/PaquetePedido";
-import MetodoPagoClient from "./MetodoPagoClient";
-import StepDireccion from "./StepDireccion";
-import { LoadScript } from "@react-google-maps/api";
+import React, { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { Pedido } from "types/PaquetePedido"
+import MetodoPagoClient from "./MetodoPagoClient"
+import StepDireccion from "./StepDireccion"
+import { LoadScript } from "@react-google-maps/api"
 
-const StepConfirmacion = () => <div>Step Confirmación</div>;
+const StepConfirmacion = () => <div>Step Confirmación</div>
 
 interface CheckoutProps {
-  pedido: Pedido;
+  pedido: Pedido
 }
 
 const Checkout: React.FC<CheckoutProps> = ({ pedido }) => {
-  const searchParams = useSearchParams();
-  const [step, setStep] = useState(searchParams.get("step") || "aaa");
-  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const searchParams = useSearchParams()
+  const [step, setStep] = useState(searchParams.get("step") || "aaa")
+  const [googleMapsLoaded, setGoogleMapsLoaded] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
+    setIsClient(true)
+  }, [])
 
   const renderStep = () => {
     switch (step) {
       case "direccion":
-        return <StepDireccion setStep={setStep} googleMapsLoaded={googleMapsLoaded} />;
+        return (
+          <StepDireccion
+            setStep={setStep}
+            googleMapsLoaded={googleMapsLoaded}
+          />
+        )
       case "pago":
-        return <MetodoPagoClient pedidoInput={pedido} setStep={setStep} />;
+        return <MetodoPagoClient pedidoInput={pedido} setStep={setStep} />
       default:
-        return <div>Seleccione un paso válido</div>;
+        return <div>Seleccione un paso válido</div>
     }
-  };
+  }
 
-  return (
-    <div>
-      {isClient && !googleMapsLoaded ? (
-        <LoadScript
-          googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
-          libraries={["places"]}
-          onLoad={() => setGoogleMapsLoaded(true)} // Mark as loaded
-        >
-          {renderStep()}
-        </LoadScript>
-      ) : (
-        renderStep()
-      )}
-    </div>
-  );
-};
+  return <div>{renderStep()}</div>
+}
 
-export default Checkout;
+export default Checkout

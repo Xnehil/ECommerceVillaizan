@@ -512,6 +512,21 @@ const options = {
             },
           ],
         },
+        Promocion: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                nombre: {
+                  type: 'string',
+                  example: 'Promoción Ejemplo',
+                },
+              },
+            },
+          ],
+        },
         DetallePedido: {
           type: 'object',
           allOf: [
