@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef, useState } from "react"
+import React, { useRef, useState, useEffect } from "react"
 import { GoogleMap, Marker } from "@react-google-maps/api"
 import { map } from "lodash"
 
@@ -23,6 +23,63 @@ const GoogleMapModal: React.FC<GoogleMapModalProps> = ({
   } | null>(location || null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const mapRef = useRef<google.maps.Map | null>(null)
+
+  const [googleLoaded, setGoogleLoaded] = useState(false)
+
+  useEffect(() => {
+    const loadGoogleMapsScript = async () => {
+      if (
+        typeof google !== "undefined" &&
+        google.maps &&
+        (await google.maps.importLibrary("places"))
+      ) {
+        setGoogleLoaded(true)
+        return
+      }
+
+      const script = document.createElement("script")
+      script.innerHTML = `
+        (g => {
+          var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+          b = b[c] || (b[c] = {});
+          var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => {
+            await (a = m.createElement("script"));
+            e.set("libraries", [...r] + "");
+            for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
+            e.set("callback", c + ".maps." + q);
+            a.src = \`https://maps.\${c}apis.com/maps/api/js?\` + e;
+            d[q] = f;
+            a.onerror = () => h = n(Error(p + " could not load."));
+            a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+            m.head.append(a);
+          }));
+          d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n));
+        })({
+          key: "${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}",
+          v: "weekly",
+        });
+      `
+      script.async = true
+      script.defer = true
+      script.onload = () => {
+        setGoogleLoaded(true)
+      }
+      script.onerror = () => {
+        console.error("Failed to load Google Maps script")
+      }
+
+      document.head.appendChild(script)
+    }
+
+    loadGoogleMapsScript()
+  }, [])
+
+  useEffect(() => {
+    if (googleLoaded) {
+      // Your code that depends on the google object
+      console.log("Google Maps API loaded")
+    }
+  }, [googleLoaded])
 
   const handleMapClick = (event: google.maps.MapMouseEvent) => {
     try {
@@ -86,17 +143,21 @@ const GoogleMapModal: React.FC<GoogleMapModalProps> = ({
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
-        <GoogleMap
-          mapContainerStyle={{ width: "100%", height: "400px" }}
-          center={getInitialCenter()}
-          zoom={14}
-          onClick={handleMapClick}
-          onLoad={(map) => {
-            mapRef.current = map
-          }}
-        >
-          {selectedLocation && <Marker position={selectedLocation} />}
-        </GoogleMap>
+        {googleLoaded ? (
+          <GoogleMap
+            mapContainerStyle={{ width: "100%", height: "400px" }}
+            center={getInitialCenter()}
+            zoom={14}
+            onClick={handleMapClick}
+            onLoad={(map) => {
+              mapRef.current = map
+            }}
+          >
+            {selectedLocation && <Marker position={selectedLocation} />}
+          </GoogleMap>
+        ) : (
+          <div>Loading Google Maps API...</div>
+        )}
         {errorMessage && <p style={styles.errorMessage}>{errorMessage}</p>}
         <div className="flex w-full">
           <button
