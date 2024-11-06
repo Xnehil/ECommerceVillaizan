@@ -43,8 +43,6 @@ export default function ProductPreview({
         const precioDescuento = precioNormal - (precioNormal * porcentaje) / 100
         setCheapestPriceMostrar(precioDescuento)
         setExisteDescuento(true)
-        
-        console.log("Existe descuento")
       }
       else{
         setExisteDescuento(false)
