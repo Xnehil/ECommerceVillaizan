@@ -108,25 +108,31 @@ export function DataTable<TData, TValue>({
           <strong>{table.getRowModel().rows.length}</strong>
           <div>de</div>
           <strong>{table.getPrePaginationRowModel().rows.length}</strong>
-          <div>{nombre}({pl? "es" : "s"})</div>
+          <div>
+            {nombre}({pl ? "es" : "s"})
+          </div>
         </span>
         <div className="flex items-center justify-end space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Anterior
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Siguiente
-          </Button>
+          {table.getCanPreviousPage() && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Anterior
+            </Button>
+          )}
+          {table.getCanNextPage() && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Siguiente
+            </Button>
+          )}
         </div>
       </div>
     </div>
