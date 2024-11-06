@@ -25,6 +25,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   nombre?: string;
   npagination?: number;
+  pl?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -32,6 +33,7 @@ export function DataTable<TData, TValue>({
   data,
   nombre,
   npagination,
+  pl = false,
 }: DataTableProps<TData, TValue>) {
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -106,7 +108,7 @@ export function DataTable<TData, TValue>({
           <strong>{table.getRowModel().rows.length}</strong>
           <div>de</div>
           <strong>{table.getPrePaginationRowModel().rows.length}</strong>
-          <div>{nombre}(s)</div>
+          <div>{nombre}({pl? "es" : "s"})</div>
         </span>
         <div className="flex items-center justify-end space-x-2">
           <Button

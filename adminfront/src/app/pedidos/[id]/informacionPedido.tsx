@@ -13,6 +13,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 
 interface InformacionPedidoProps {
   pedido: MutableRefObject<Pedido>;
@@ -55,7 +57,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
         disabled={true}
         value={estado}
       />
-      <div className="flex flex-row space-x-2">
+      <div className="flex flex-row max-w-sm space-x-3">
         <InputWithLabel
           label="Total (S/.)"
           placeholder=" "
@@ -66,6 +68,13 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
               ? pedido.current.total.toString()
               : pedido.current.total + ".00"
           }
+        />
+        <InputWithLabel
+          label="Método de pago"
+          placeholder=" "
+          type="text"
+          disabled={true}
+          value={pedido.current.metodosPago[0]?.nombre}
         />
         <div className="h-full flex flex-col justify-end">
           <Sheet open={open} onOpenChange={setOpen}>
@@ -79,14 +88,36 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                   {pedido.current.detalles?.length} productos
                 </SheetDescription>
               </SheetHeader>
-              <div className="flex flex-col space-y-2 mt-2">
+              <div className="flex flex-col space-y-2 mt-2 mb-2">
                 {pedido.current.detalles?.map((detalle, index) => (
                   <div key={index} className="flex flex-row justify-between">
                     <p>{detalle.cantidad}</p>
                     <p>{detalle.producto.nombre}</p>
-                    <p>S/. {Number(detalle.producto.precioEcommerce).toFixed(2)}</p>
+                    <p>
+                      S/. {Number(detalle.producto.precioEcommerce).toFixed(2)}
+                    </p>
                   </div>
                 ))}
+              </div>
+              <Separator />
+              <div className="mt-2 space-y-2">
+                <Label className="block text-lg font-semibold text-foreground">
+                  Detalle de pago
+                </Label>
+                <Label className="block text-sm font-normal text-muted-foreground">
+                  {pedido.current.metodosPago?.length} métodos
+                </Label>
+                <div className="flex flex-col space-y-2 ">
+                  {pedido.current.metodosPago?.map((detalle, index) => (
+                    <div key={index} className="flex flex-row justify-between">
+                      <p>{detalle.nombre}</p>
+                      <p>
+                        S/.{" "}
+                        {/* {Number(pedido.current.).toFixed(2)} */}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </SheetContent>
           </Sheet>
@@ -116,13 +147,13 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                 : "Fecha no disponible"
             }
           />
-          <InputWithLabel
+          {/* <InputWithLabel
             label="Código de seguimiento"
             type="text"
             placeholder=" "
             disabled={true}
             value={pedido.current.codigoSeguimiento}
-          />
+          /> */}
         </>
       )}
       {pedido.current.estado === "cancelado" && (
