@@ -129,9 +129,9 @@ export default function SeleccionarProductos({ navigation }: any) {
             .reduce((acc, d) => acc + d.cantidad, 0) || 0,
         totalMafeletas:
           detalles
-            .filter((d) => d.producto.tipoProducto?.nombre === "Mafaleta")
+            .filter((d) => d.producto.tipoProducto?.nombre === "Mafeleta")
             .reduce((acc, d) => acc + d.cantidad, 0) || 0,
-        estado: "Entregado",
+        estado: "entregado",
         totalIgv: parseFloat(pedidoCompleto.total) * IGV,
         pedido: pedidoId,
         ordenSerie: null,

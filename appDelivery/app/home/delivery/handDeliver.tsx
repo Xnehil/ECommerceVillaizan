@@ -371,7 +371,7 @@ const EntregarPedido = () => {
         montoTotal: parseFloat(pedidoCompleto.total),
         totalPaletas: totalPaletas,
         totalMafeletas: totalMafaletas,
-        estado: "Entregado",
+        estado: "entregado",
         totalIgv: parseFloat(pedidoCompleto.total) * 0.18,
         pedido: parsedPedido.id,
         ordenSerie: null,
@@ -396,7 +396,7 @@ const EntregarPedido = () => {
       console.log(response_pago);
 
       await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
-        estado: "Entregado",
+        estado: "entregado",
         urlEvidencia: urlPedido,
       });
 

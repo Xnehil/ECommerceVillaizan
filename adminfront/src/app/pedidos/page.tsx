@@ -52,7 +52,7 @@ const PedidosPage: React.FC = () => {
         );
 
         pedidosData.forEach((pedido) => {
-          switch (pedido.estado) {
+          switch (pedido.estado.toLowerCase()) {
             case "solicitado":
               pedPendientes.current.push(pedido);
               break;
@@ -61,6 +61,8 @@ const PedidosPage: React.FC = () => {
               pedActivos.current.push(pedido);
               break;
             case "entregado":
+              pedHistorial.current.push(pedido);
+              break;
             case "cancelado":
               pedHistorial.current.push(pedido);
               break;

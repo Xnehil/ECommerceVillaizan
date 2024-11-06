@@ -15,15 +15,22 @@ import { Fruta } from "src/models/Fruta";
   */
 
 
- /**
+/**
  * @swagger
  * /frutas:
  *   get:
- *     summary: Lista todas las frutas con paginación
+ *     summary: Lista todas las frutas con paginación o una fruta aleatoria
  *     tags: [Frutas]
+ *     parameters:
+ *       - in: query
+ *         name: random
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Indica si se debe devolver una fruta aleatoria
  *     responses:
  *       200:
- *         description: Una lista de frutas
+ *         description: Una lista de frutas o una fruta aleatoria
  *         content:
  *           application/json:
  *             schema:
@@ -34,16 +41,25 @@ import { Fruta } from "src/models/Fruta";
  *                   items:
  *                     $ref: '#/components/schemas/Fruta'
  */
-  export const GET = async (
-    req: MedusaRequest,
-    res: MedusaResponse
-  ) => {
-    const frutaService: FrutaService = req.scope.resolve("frutaService");
+export const GET = async (
+  req: MedusaRequest,
+  res: MedusaResponse
+) => {
+  const frutaService: FrutaService = req.scope.resolve("frutaService");
+  const { random } = req.query;
 
-    res.json({
-      frutas: await frutaService.listarConPaginacion(),
-    })
+  if (random === 'true') {
+    const frutas = await frutaService.listarConPaginacion();
+    const randomFruta = frutas[Math.floor(Math.random() * frutas.length)];
+    return res.json({
+      frutas: [randomFruta],
+    });
   }
+
+  res.json({
+    frutas: await frutaService.listarConPaginacion(),
+  });
+};
 
   /**
  * @swagger
