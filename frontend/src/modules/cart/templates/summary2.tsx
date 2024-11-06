@@ -2,7 +2,8 @@ import { Heading } from "@medusajs/ui";
 import CartTotals from "@modules/common/components/cart-totals";
 import Divider from "@modules/common/components/divider";
 import { Pedido } from "types/PaquetePedido";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 type Summary2Props = {
   carrito: Pedido;
@@ -11,13 +12,38 @@ type Summary2Props = {
   showWarnings: boolean;
 };
 
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+
 const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2Props) => {
+  const [minimo, setMinimo] = useState<number>(25); // Default value, will be updated after fetch
+  const [costoEnvio, setCostoEnvio] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true); // For loading state
+
+  const [minOrderAmount, setMinOrderAmount] = useState<number>(25); // For the minimum order amount from the backend
+
   const subtotal = carrito.detalles.reduce((acc: number, item) => {
     return acc + Number(item.subtotal) || 0;
   }, 0);
 
-  const [costoEnvio, setCostoEnvio] = useState<number>(0);
-  const minimo = 25;
+  // Fetch the minimum order amount on component mount
+  useEffect(() => {
+    const fetchMinOrderAmount = async () => {
+      try {
+        const minOrderResponse = await axios.get(`${baseUrl}/admin/ajuste/monto_minimo_pedido`);
+        const ajuste = minOrderResponse.data.ajuste;
+        if (ajuste && ajuste.valor) {
+          setMinimo(ajuste.valor);
+        }
+      } catch (error) {
+        console.error("Error fetching minimum order amount", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMinOrderAmount();
+  }, []);
+
   const isDisabled = subtotal < minimo || !isFormValid;
 
   const handleClick = () => {
@@ -30,7 +56,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
 
   // Message for the tooltip when the button is disabled
   const tooltipMessage = subtotal < minimo 
-    ? `El subtotal debe ser de al menos ${minimo} soles para proceder al pago.`
+    ? `El subtotal debe ser de al menos ${minimo} soles para proceder al pago.` 
     : `Por favor, complete todos los campos obligatorios. Recuerde seleccionar su ubicación en el mapa.`;
 
   return (
@@ -42,7 +68,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
         <Divider />
         <CartTotals data={carrito} onSetCostoEnvio={setCostoEnvio} />
 
-        {subtotal < minimo && (
+        {subtotal < minimo && !loading && (
           <p className="text-red-400 text-sm font-poppins mt-2 text-center">
             El subtotal debe ser de al menos {minimo} soles para proceder al pago.
           </p>

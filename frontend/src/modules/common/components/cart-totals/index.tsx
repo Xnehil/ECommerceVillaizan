@@ -35,10 +35,9 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
     return acc
   }, 0)
 
-  //const descuento = 0 // Implementar descuento en un sprint futuro
   const costoEnvio = 0 // 
   const impuestos = 0 // Implementar impuestos en un sprint futuro
-  const envioGratis = subtotal >= 25 // Ejemplo: envío gratis si el subtotal es mayor o igual a S/ 50.0
+  const envioGratis = subtotal >= 25 // Ejemplo: envío gratis si el subtotal es mayor o igual a S/ 50.0 Implementar en un sprint futuro
   const total = subtotalWithoutDiscounts - totalDiscount + (envioGratis ? 0 : costoEnvio) + impuestos
 
   // Llamar al callback para actualizar el valor de costo de envío
