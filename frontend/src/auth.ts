@@ -77,7 +77,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
     //error: "/login",
   },
-  
+  /*
   cookies: {
     sessionToken: {
       name: `__Secure-next-auth.session-token`,
@@ -109,6 +109,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         domain,
       },
     },
-  },
+  },*/
   trustHost: true
 });
