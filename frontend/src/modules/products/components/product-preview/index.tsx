@@ -161,12 +161,12 @@ export default function ProductPreview({
         await updateLineItem({
           detallePedidoId: detalleAnterior.id,
           cantidad: cantidad,
-          subtotal: productPreview.precioEcommerce * cantidad,
+          subtotal: detalleAnterior.precio * cantidad,
         })
         const nuevoDetalle = {
           ...detalleAnterior,
           cantidad: cantidad,
-          subtotal: productPreview.precioEcommerce * cantidad,
+          subtotal: detalleAnterior.precio * cantidad,
         }
 
         const nuevosDetalles =
