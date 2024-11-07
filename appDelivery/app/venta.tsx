@@ -24,8 +24,11 @@ import {
 } from "@/interfaces/interfaces";
 import { getMotorizadoData, getUserData } from "@/functions/storage";
 import { FontAwesome } from "@expo/vector-icons";
+import HistorialVentas from "@/components/venta/SaleHistory";
 
 export default function SeleccionarProductos({ navigation }: any) {
+  const [mostrarHistorial, setMostrarHistorial] = useState(false);
+
   const [inventario, setInventario] = useState<InventarioMotorizado[]>([]);
   const [productosSeleccionados, setProductosSeleccionados] = useState<
     { producto: Producto; cantidad: number }[]
@@ -119,6 +122,7 @@ export default function SeleccionarProductos({ navigation }: any) {
 
       // Crear la Venta con el Pedido
       const venta: Venta = {
+        id: "",
         tipoComprobante: "Boleta",
         fechaVenta: new Date(),
         numeroComprobante: "001-000001",
@@ -513,6 +517,20 @@ export default function SeleccionarProductos({ navigation }: any) {
           </View>
         </Modal>
       )}
+      <TouchableOpacity
+        style={styles.botonHistorial}
+        onPress={() => setMostrarHistorial(true)}
+      >
+        <Text style={styles.botonTextoHistorial}>Ver Historial de Ventas</Text>
+      </TouchableOpacity>
+      <Modal
+        visible={mostrarHistorial}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setMostrarHistorial(false)}
+      >
+        <HistorialVentas onClose={() => setMostrarHistorial(false)} />
+      </Modal>
     </View>
   );
 }
@@ -673,6 +691,17 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   botonTexto3: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  botonHistorial: {
+    backgroundColor: "#4285F4",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  botonTextoHistorial: {
     color: "#fff",
     fontWeight: "bold",
   },

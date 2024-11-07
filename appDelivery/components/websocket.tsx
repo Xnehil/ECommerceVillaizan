@@ -10,8 +10,7 @@ import {
 import { Animated, Text, Dimensions, View } from "react-native";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Audio } from 'expo-av';
-import { WS_URL } from "@env";
-
+const WS_URL = process.env.EXPO_PUBLIC_WS_URL
 const notificationSound = require("@assets/sounds/notificacion.mp3");
 
 interface WebSocketComponentProps {
@@ -33,7 +32,7 @@ const WebSocketComponent = forwardRef<
   const handleIncomingMessage = (event: MessageEvent) => {
     const data = JSON.parse(event.data);
     console.log("Mensaje recibido:", data, "Tipo:", data.type);
-    if (data.type === "pedido") {
+    if (data.type === "nuevoPedido") {
       // Aquí se hara la notificación
       setShowNotification(true); 
       console.log("Pedido recibido:", data.data.pedidoId);

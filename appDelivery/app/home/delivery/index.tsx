@@ -83,6 +83,7 @@ export default function Entregas() {
       const response = await axios.get(
         `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos?estado=verificado&estado=enProgreso`
       );
+      console.log(usuario?.id);
       const pedidosResponse: PedidosResponse = response.data;
       const pedidosEnProceso = pedidosResponse.pedidos.filter(
         (pedido) =>
@@ -136,8 +137,8 @@ export default function Entregas() {
     // Obtener la ubicación al cargar el componente
     getLocation();
 
-    // Actualizar la ubicación cada 10 segundos
-    const locationInterval = setInterval(getLocation, 10000);
+    // Actualizar la ubicación cada 3 segundos
+    const locationInterval = setInterval(getLocation, 3000);
 
     return () => {
       clearInterval(locationInterval);

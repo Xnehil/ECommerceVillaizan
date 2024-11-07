@@ -34,27 +34,35 @@ export default function LoginScreen() {
       const response = await axios.get<UsuarioResponse>(
         `${BASE_URL}/usuario/${username}?esCorreo=true`
       );
-      console.log("Response:", response);
+      console.log("Usuario:", response);
       // Extrae el primer motorizado
-      const repartidor = response.data.usuario 
-      let userFound = false;
+      const usuario = response.data.usuario;
 
-      if (username === repartidor.correo) {
-        setUsername("");
-        setPassword("");
-        storeUserData(repartidor);
-        // console.log("Usuario encontrado:", repartidor);
-        router.push({
-          pathname: "/home",
-        });
-        userFound = true;
-      }
-      
-      if (!userFound) {
-        alert('No se encontró su usuario');
+      if (username === usuario.correo) {
+        const response = await axios.get<UsuarioResponse>(
+          `${BASE_URL}/usuario/${username}?esCorreo=true`,
+          {
+            headers: {
+              password: password,
+            },
+          }
+        );
+        if (response.status === 401) {
+          alert("Usuario o contraseña incorrecta");
+          return;
+        } else if (response.status === 200) {
+          setUsername("");
+          setPassword("");
+          storeUserData(usuario);
+          // console.log("Usuario encontrado:", repartidor);
+          router.push({
+            pathname: "/home",
+          });
+        }
       }
     } catch (error) {
-      console.error("Error al obtener motorizado:", error);
+      console.error("Error al intentar login:", error);
+      alert("Ocurrió un error al intentar iniciar sesión");
     } finally {
       setLoading(false);
     }

@@ -182,6 +182,7 @@ export interface MetodoDePagoResponse {
 
 export interface Venta {
   tipoComprobante: string;
+  id: string;
   fechaVenta: Date;
   numeroComprobante: string;
   montoTotal: number;
