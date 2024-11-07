@@ -113,7 +113,7 @@ const mapearMensaje = (tipo: string, router: any, data: any) => {
       };
   }
 
-  let buttonClassName = "text-black-600 mt-2 ml-6 p-2 rounded-md h-10" + (tipo === "nuevoPedido" ? "bg-white" : "")
+  const buttonClassName = "text-black-600 mt-2 ml-6 p-2 rounded-md h-10" + (tipo === "nuevoPedido" ? "bg-white" : "")
 
   toast({
     title: dataBonita.type,
