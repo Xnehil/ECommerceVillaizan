@@ -139,17 +139,14 @@ export default function Nav() {
       <header className="relative h-16 mx-auto border-b border-ui-border-base bg-rojoVillaizan">
         <nav className="content-container text-ui-fg-subtle flex items-center justify-between w-full h-full px-6">
           {/* Logo */}
-          <div className="flex items-center h-full">
-            <Link href="/" className="flex items-center">
+          <div className="flex items-center h-full gap-x-10">
               <img src="/images/logo.png" alt="Helados Villaizan" className="h-12" />
-            </Link>
+            <Link href="/" className="hover:text-ui-fg-base text-white">Home</Link>
+            <Link href="/comprar" className="hover:text-ui-fg-base text-white">Catalogo</Link>
           </div>
 
           {/* Main Navigation */}
           <div className="flex items-center gap-x-6">
-            <Link href="/" className="hover:text-ui-fg-base text-white">Home</Link>
-            <Link href="/comprar" className="hover:text-ui-fg-base text-white">Comprar</Link>
-            
             {status === "loading" ? (
               <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
             ) : session ? (
