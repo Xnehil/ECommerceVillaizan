@@ -154,7 +154,11 @@ const AgregarPage: React.FC = () => {
           isEditing={isEditing}
           imagen={imagen}
         />
-        <InformacionRepartidor usuario={usuario} isEditing={isEditing} />
+        <InformacionRepartidor
+          usuario={usuario}
+          isEditing={isEditing}
+          motorizado={true}
+        />
         <div className="buttons-side-container">
           <div className="lower-buttons-container">
             {isEditing ? (

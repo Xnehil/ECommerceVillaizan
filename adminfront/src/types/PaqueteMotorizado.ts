@@ -34,6 +34,7 @@ export interface Usuario extends EntidadBase {
   correo: string;
   contrasena: string;
   fechaUltimoLogin: Date | null;
+  rol: Rol;
 }
 
 export interface Rol extends EntidadBase {
