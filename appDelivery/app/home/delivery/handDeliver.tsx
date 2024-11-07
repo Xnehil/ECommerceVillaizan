@@ -16,10 +16,10 @@ import SwipeButton from "rn-swipe-button";
 import axios from "axios";
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import TabBarIcon from "@/components/StyledIcon";
-import { DetallePedido } from "@/interfaces/interfaces";
+import { DetallePedido, Pago, Venta } from "@/interfaces/interfaces";
 import { Link, router } from "expo-router";
 import { getCurrentDelivery, storeCurrentDelivery } from "@/functions/storage";
-import { BASE_URL } from "@env";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import { useRef } from "react";
 
 const EntregarPedido = () => {
@@ -40,7 +40,7 @@ const EntregarPedido = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [mensajeModal, setMensajeModal] = useState<string | null>(null);
   const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion">("auto");
-
+  const [imageView, setImageView] = useState<boolean>(false);
   const mostrarMensaje = (
     mensaje: string,
     tipo: "auto" | "confirmacion" = "auto"
@@ -66,61 +66,93 @@ const EntregarPedido = () => {
       transparent={true}
       onRequestClose={() => setImageOptionsVisible(false)}
     >
-      <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
-
-        {videoStream ? (
-          <View style={styles.videoWrapper}>
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              onLoadedMetadata={() => {
-                console.log("Video cargado y listo para capturar.");
+      {imageView ? (
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Vista previa de la imagen</Text>
+            <Image
+              source={{
+                uri: currentImageType === "pedido" ? fotoPedido ?? '' : fotoPago ?? '',
               }}
-              style={styles.video}
+              style={styles.previewImage}
             />
             <TouchableOpacity
-              style={styles.captureButtonOverlay}
-              onPress={() => capturePhoto(currentImageId!, currentImageType!)}
+              style={styles.optionButton}
+              onPress={() => {
+                setImageOptionsVisible(false);
+                setImageView(false);
+              }}
             >
-              <Text style={styles.captureButtonText}>Tomar Foto</Text>
+              <Text style={styles.optionButtonText}>Aceptar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.rejectButton}
+              onPress={() => {
+                setImageView(false);
+              }}
+            >
+              <Text style={styles.optionButtonText}>Cambiar foto</Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <>
-            <TouchableOpacity
-              style={styles.optionButton}
-              onPress={() =>
-                handleCameraCapture(currentImageId!, currentImageType!)
-              }
-            >
-              <Text style={styles.optionButtonText}>Tomar Foto</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.optionButton}
-              onPress={() =>
-                handleImageSelection(currentImageId!, currentImageType!)
-              }
-            >
-              <Text style={styles.optionButtonText}>
-                Seleccionar de la Galería
-              </Text>
-            </TouchableOpacity>
-          </>
-        )}
+        </View>
+      ) : (
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
 
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => {
-            videoStream?.getTracks().forEach((track) => track.stop());
-            setVideoStream(null);
-            setImageOptionsVisible(false);
-          }}
-        >
-          <Text style={styles.cancelButtonText}>Cancelar</Text>
-        </TouchableOpacity>
-      </View>
+          {videoStream ? (
+            <View style={styles.videoWrapper}>
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                onLoadedMetadata={() => {
+                  console.log("Video cargado y listo para capturar.");
+                }}
+                style={styles.video}
+              />
+              <TouchableOpacity
+                style={styles.captureButtonOverlay}
+                onPress={() => capturePhoto(currentImageId!, currentImageType!)}
+              >
+                <Text style={styles.captureButtonText}>Tomar Foto</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.optionButton}
+                onPress={() =>
+                  handleCameraCapture(currentImageId!, currentImageType!)
+                }
+              >
+                <Text style={styles.optionButtonText}>Tomar Foto</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.optionButton}
+                onPress={() =>
+                  handleImageSelection(currentImageId!, currentImageType!)
+                }
+              >
+                <Text style={styles.optionButtonText}>
+                  Seleccionar de la Galería
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => {
+              videoStream?.getTracks().forEach((track) => track.stop());
+              setVideoStream(null);
+              setImageOptionsVisible(false);
+            }}
+          >
+            <Text style={styles.cancelButtonText}>Cancelar</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </Modal>
   );
 
@@ -129,10 +161,24 @@ const EntregarPedido = () => {
     "pedido" | "pago" | null
   >(null);
 
-  const showImageOptions = (id: string, tipo: "pedido" | "pago") => {
+  const handleImageView = (id: string, tipo: "pedido" | "pago") => {
+    console.log(`Viewing image for ${tipo} with id ${id}`);
+    setImageView(true);
     setCurrentImageId(id);
     setCurrentImageType(tipo);
     setImageOptionsVisible(true);
+  };
+
+  const showImageOptions = (id: string, tipo: "pedido" | "pago") => {
+    if (tipo === "pedido" && fotoPedido) {
+      handleImageView(id, tipo);
+    } else if (tipo === "pago" && fotoPago) {
+      handleImageView(id, tipo);
+    } else {
+      setCurrentImageId(id);
+      setCurrentImageType(tipo);
+      setImageOptionsVisible(true);
+    }
   };
 
   const handleImageSelection = async (id: string, tipo: "pedido" | "pago") => {
@@ -237,7 +283,7 @@ const EntregarPedido = () => {
 
       const { fileUrl } = response.data;
 
-      mostrarMensaje(`Imagen enviada con éxito: ${fileUrl}`);
+      mostrarMensaje(`Imagen enviada con éxito`);
       return fileUrl;
     } catch (error) {
       console.error(`Error al enviar la imagen de ${tipo}:`, error);
@@ -254,7 +300,8 @@ const EntregarPedido = () => {
       const motivo =
         motivoCancelacion === "Otro" ? otroMotivo : motivoCancelacion;
       await axios.put(`${BASE_URL}/pedido/${parsedPedido.id}`, {
-        estado: "Cancelado",
+        estado: "solicitado",
+        motorizado: null,
         motivoCancelacion: motivo,
       });
       mostrarMensaje("Entrega reasignada");
@@ -276,9 +323,10 @@ const EntregarPedido = () => {
         "¿Está seguro de que desea confirmar la entrega?"
       );
       if (!confirm) return;
+      const pedido = parsedPedido;
 
-      const urlPedido = enviarImagen(parsedPedido.id, "pedido");
-      const urlPago = enviarImagen(parsedPedido.id, "pago");
+      const urlPedido = await enviarImagen(parsedPedido.id, "pedido");
+      const urlPago = await enviarImagen(parsedPedido.id, "pago");
 
       //Crear Venta
       const response_detalle = await axios.get(
@@ -288,12 +336,11 @@ const EntregarPedido = () => {
       const detalles = pedidoCompleto.detalles || [];
       let totalPaletas = 0;
       let totalMafaletas = 0;
-
       try {
         totalPaletas = detalles
           .filter(
             (detalle: DetallePedido) =>
-              detalle.producto.tipoProducto.nombre === "Paleta"
+              detalle.producto.tipoProducto?.nombre === "Paleta"
           )
           .reduce(
             (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
@@ -301,14 +348,13 @@ const EntregarPedido = () => {
           );
       } catch (error) {
         console.error("Error calculating totalPaletas:", error);
-        totalPaletas = 0;
       }
 
       try {
         totalMafaletas = detalles
           .filter(
             (detalle: DetallePedido) =>
-              detalle.producto.tipoProducto.nombre === "Mafaleta"
+              detalle.producto.tipoProducto?.nombre === "Mafaleta"
           )
           .reduce(
             (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
@@ -316,45 +362,41 @@ const EntregarPedido = () => {
           );
       } catch (error) {
         console.error("Error calculating totalMafaletas:", error);
-        totalMafaletas = 0;
       }
 
-      const venta = await axios.post(`${BASE_URL}/venta`, {
+      const venta: Venta = {
         tipoComprobante: "Boleta",
         fechaVenta: new Date(),
         numeroComprobante: "001-000001",
         montoTotal: parseFloat(pedidoCompleto.total),
         totalPaletas: totalPaletas,
-        totalMafaletas: totalMafaletas,
-        estado: "Entregado",
+        totalMafeletas: totalMafaletas,
+        estado: "entregado",
         totalIgv: parseFloat(pedidoCompleto.total) * 0.18,
         pedido: parsedPedido.id,
-      });
-      const pago = await axios.post(`${BASE_URL}/pago`, {
+        ordenSerie: null,
+      };
+
+      const ventaData = await axios.post(`${BASE_URL}/venta`, venta);
+      console.log(ventaData);
+
+      const pago = {
         esTransferencia: true,
         montoCobrado: parseFloat(pedidoCompleto.total),
         numeroOperacion: null,
         urlEvidencia: urlPago,
         codigoTransaccion: null,
-        venta: venta.data.id,
+        venta: ventaData.data.id,
         metodoPago: pedidoCompleto.metodosPago[0].id,
         banco: null,
         pedido: pedidoCompleto.id,
-      });
-
-      //Registrar venta
-      const response_venta = await axios.post(`${BASE_URL}/venta`, venta);
-      const ventaData = response_venta.data.venta;
-      console.log(ventaData);
-
-      //Registrar pago
+      };
+      console.log(pago);
       const response_pago = await axios.post(`${BASE_URL}/pago`, pago);
-      const pagoData = response_pago.data.pago;
-      console.log(pagoData);
+      console.log(response_pago);
 
-      mostrarMensaje("Entrega confirmada");
-      await axios.put(`${BASE_URL}/pedido/${parsedPedido.id}`, {
-        estado: "Entregado",
+      await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
+        estado: "entregado",
         urlEvidencia: urlPedido,
       });
 
@@ -589,7 +631,7 @@ const EntregarPedido = () => {
           style={styles.rejectButton}
           onPress={handleCancelEntrega}
         >
-          <Text style={styles.confirmButtonText}>Reasginar entrega</Text>
+          <Text style={styles.confirmButtonText}>Reasignar entrega</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.confirmButton}
@@ -832,7 +874,6 @@ const styles = StyleSheet.create({
   },
   pagoContainer: {
     paddingHorizontal: 10,
-
   },
   subtotalTitulo: {
     fontSize: 20,
@@ -902,6 +943,12 @@ const styles = StyleSheet.create({
   swipeButtonText: {
     fontSize: 18,
     color: "#000",
+  },
+  previewImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
   },
   swipeButtonContainer: {
     marginTop: 30,

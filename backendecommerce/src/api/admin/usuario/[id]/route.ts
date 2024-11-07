@@ -32,6 +32,12 @@ import { Usuario } from "src/models/Usuario";
  *           type: boolean
  *         required: false
  *         description: Indica si el ID es un correo
+ *       - in: header
+ *         name: password
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: La contraseña del usuario
  *     responses:
  *       200:
  *         description: Detalles del usuario
@@ -50,11 +56,23 @@ export const GET = async (
     const usuarioService: UsuarioService = req.scope.resolve("usuarioService");
     const { id } = req.params;
     const { esCorreo } = req.query;
+    const password = req.headers['password'] as string;
 
     try {
         let usuario;
         if (esCorreo === 'true') {
-            usuario = await usuarioService.recuperarPorCorreo(id);
+            if (password) {
+                let validado = await usuarioService.autenticar(id, password);
+                if (!validado) {
+                    return res.status(401).json({ error: "Contraseña incorrecta" });
+                }
+                else {
+                    return res.status(200).json({ message: "Contraseña correcta" });
+                }
+
+            } else {
+               usuario = await usuarioService.recuperarPorCorreo(id);
+            }
         } else {
             usuario = await usuarioService.recuperar(id);
         }
@@ -62,6 +80,8 @@ export const GET = async (
         if (!usuario) {
             return res.status(404).json({ error: "Usuario no encontrado" });
         }
+
+
 
         res.json({ usuario });
     } catch (error) {

@@ -60,8 +60,6 @@ export default function PaginatedProducts({
   const [isSortedByPrice, setIsSortedByPrice] = useState<boolean | null>(initialFilters.isSortedByPrice ?? null);
   const [sortError, setSortError] = useState<string | null>(null); // Estado para el error de ordenación
 
-  const [isAuthenticatedLocal, setIsAuthenticatedLocal] = useState(false);
-
 
   const saveFilters = () => {
     const filters = {

@@ -21,15 +21,19 @@ interface InformacionRepartidorProps {
   usuario: MutableRefObject<Usuario>;
   isEditing: boolean;
   nuevo?: boolean;
+  mostrar?: boolean;
+  motorizado?: boolean;
 }
 
 const InformacionRepartidor: React.FC<InformacionRepartidorProps> = ({
   usuario,
   isEditing,
   nuevo = false,
+  mostrar = false,
+  motorizado = false,
 }) => {
   const [openSelect, setOpenSelect] = useState(false);
-  const [newUsuario, setNewUsuario] = useState(nuevo);
+  const [newUsuario, setNewUsuario] = useState(motorizado ? false : isEditing);
 
   const [nombre, setNombre] = useState(usuario.current?.nombre || "");
   const [apellido, setApellido] = useState(usuario.current?.apellido || "");
@@ -44,16 +48,24 @@ const InformacionRepartidor: React.FC<InformacionRepartidorProps> = ({
 
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (!motorizado) {
+      setNewUsuario(isEditing);
+    }
+  }, [isEditing]);
+
   const fetchRepartidores = async () => {
-    if (repartidores.current.length > 0) return;
+    if (repartidores.current?.length > 0) return;
 
     setIsLoading(true);
 
     try {
       console.log("Fetching Repartidores");
       // Fetch Repartidores
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BASE_URL}motorizado?enriquecido=true`
+      const reqBody = { nombreRol: "Repartidor" };
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}usuario/rol`,
+        reqBody
       );
       if (!response) {
         throw new Error("Failed to fetch Repartidores");
@@ -62,8 +74,8 @@ const InformacionRepartidor: React.FC<InformacionRepartidorProps> = ({
       console.log("Repartidores fetched:", data);
 
       const repartidoresData: Usuario[] = data.usuarios;
-      // repartidores.current = motorizadosData;
-      console.log("Motorizados:", repartidores.current);
+      repartidores.current = repartidoresData;
+      console.log("Repartidores:", repartidores.current);
       setIsLoading(false);
     } catch (error) {
       console.error("Failed to fetch motorizados", error);
@@ -225,15 +237,15 @@ const InformacionRepartidor: React.FC<InformacionRepartidorProps> = ({
 
   return (
     <div className="info-side-container">
-      <h5>Repartidor</h5>
-      <div className="w-full flex flex-wrap gap-4">
+      {!mostrar && <h5>Repartidor</h5>}
+      <div className="w-full max-w-sm flex space-x-2 flex-wrap gap-4">
         {isLoading ? (
           <div className="grid gap-1">
             <Skeleton className="h-6 w-64" />
             <Skeleton className="h-8 w-64" />
           </div>
         ) : (
-          <div className="w-2/5 flex flex-column">
+          <div className="flex-1">
             <InputWithLabel
               label="Nombre"
               value={nombre}
@@ -252,7 +264,7 @@ const InformacionRepartidor: React.FC<InformacionRepartidorProps> = ({
             <Skeleton className="h-8 w-64" />
           </div>
         ) : (
-          <div className="w-2/5 flex flex-column">
+          <div className="flex-1">
             <InputWithLabel
               label="Apellido"
               value={apellido}
@@ -305,7 +317,7 @@ const InformacionRepartidor: React.FC<InformacionRepartidorProps> = ({
         )}
       </>
       <>
-        {newUsuario && (
+        {(nuevo || motorizado) && newUsuario && (
           <InputWithLabel
             label="Contraseña"
             type="password"
@@ -327,24 +339,47 @@ const InformacionRepartidor: React.FC<InformacionRepartidorProps> = ({
           />
         )}
       </>
-      {!nuevo && (
+      {!nuevo && !mostrar && isEditing && (
         <div className="lower-buttons-container">
           {!newUsuario ? (
             <>
-              {/* <Sheet open={openSelect} onOpenChange={setOpenSelect}>
-              <SheetTrigger asChild>
-                <Button>Seleccionar usuario</Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Repartidores</SheetTitle>
-                  <SheetDescription>Selecciona un repartidor</SheetDescription>
-                </SheetHeader>
-                {
-                  //Table with users
-                }
-              </SheetContent>
-            </Sheet> */}
+              <Sheet open={openSelect} onOpenChange={setOpenSelect}>
+                <SheetTrigger asChild>
+                  <Button onClick={fetchRepartidores}>
+                    Seleccionar usuario
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Repartidores</SheetTitle>
+                    <SheetDescription>
+                      Selecciona un repartidor
+                    </SheetDescription>
+                  </SheetHeader>
+                  {openSelect && (
+                    <div className="space-y-2 mt-2">
+                      {repartidores.current?.map((repartidor) => (
+                        <div key={repartidor.id} className="w-3/4">
+                          <Button
+                            onClick={() => {
+                              usuario.current = repartidor;
+                              setNombre(repartidor.nombre);
+                              setApellido(repartidor.apellido);
+                              setNumeroTelefono(repartidor.numeroTelefono || "");
+                              setCorreo(repartidor.correo);
+                              setOpenSelect(false);
+                            }}
+                            variant="outline"
+                            className="w-full"
+                          >
+                            {repartidor.nombre} {repartidor.apellido}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </SheetContent>
+              </Sheet>
               <Button variant="outline" onClick={handleNewUsuario}>
                 Crear usuario
               </Button>

@@ -18,7 +18,7 @@ const NotificacionesPage: React.FC = () => {
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(false);
   const [filterTipo, setFilterTipo] = useState<string | null>(null);
-  const [filterLeido, setFilterLeido] = useState<boolean | null>(false);
+  const [filterLeido, setFilterLeido] = useState<boolean | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
@@ -55,8 +55,7 @@ const NotificacionesPage: React.FC = () => {
     }
   }, []);
 
-  const filteredAndSortedData = notificaciones
-  .filter((notificacion) => {
+  const filteredAndSortedData = notificaciones.filter((notificacion) => {
     if (filterTipo && filterTipo !== "all" && notificacion.tipoNotificacion !== filterTipo) {
       return false;
     }
@@ -148,7 +147,7 @@ const NotificacionesPage: React.FC = () => {
           </Button>
         </div>
         <div className="h-full w-full">
-          <DataTable  columns={columns(handleMarkAsRead, handleMarkAsUnread)} data={filteredAndSortedData} nombre="notificación" />
+          <DataTable  columns={columns(handleMarkAsRead, handleMarkAsUnread)} data={filteredAndSortedData} nombre="notificación" checkLeido={true} />
         </div>
       </div>
     </>

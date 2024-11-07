@@ -99,6 +99,25 @@ class NotificacionService extends TransactionBaseService {
           await notificacionRepo.update(id, { desactivadoEn: new Date() , estaActivo: false})
         });
       }
+
+      async contarNoLeidas(id_usuario?: string, rol?: string): Promise<number> {
+        const notificacionRepo = this.activeManager_.withRepository(this.notificacionRepository_);
+    
+        let query = notificacionRepo.createQueryBuilder("notificacion")
+          .where("notificacion.leido = :leido", { leido: false });
+    
+        if (id_usuario) {
+          query = query.andWhere("notificacion.id_usuario = :id_usuario", { id_usuario });
+        }
+    
+        if (rol) {
+          query = query.andWhere("notificacion.sistema = :sistema", { sistema: `ecommerce${rol}` });
+        }
+    
+        const count = await query.getCount();
+        return count;
+      }
+
 }
 
 export default NotificacionService;

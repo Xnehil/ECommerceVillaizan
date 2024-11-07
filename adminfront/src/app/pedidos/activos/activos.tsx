@@ -14,7 +14,13 @@ const Activos: React.FC<ActivosProps> = ({ activos }) => {
         columns={columns}
         data={activos.current}
         nombre="pedido"
-        npagination={7}
+        npagination={6}
+        sb={true}
+        sbColumn="id"
+        sbPlaceholder="Buscar por código de seguimiento"
+        dd={true}
+        ddColumn="estado"
+        ddValues={["Verificado", "En Progreso"]}
       />
     </div>
   );

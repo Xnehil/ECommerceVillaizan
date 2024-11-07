@@ -74,7 +74,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
           variant: "destructive",
           title: "Error",
           description:
-            "Ocurrió un error al obtener las subcategorías. Por favor, intente de nuevo.",
+            "Ocurrió un error al obtener las presentaciones. Por favor, intente de nuevo.",
         });
       } finally {
         setIsLoading(false);
@@ -130,11 +130,11 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>
-                  ¿Estás seguro de que deseas eliminar esta subcategoría?
+                  ¿Estás seguro de que deseas eliminar esta presentación?
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   Esta acción no se puede deshacer. Esto eliminará
-                  permanentemente la subcategoría de nuestros servidores.
+                  permanentemente la presentación de nuestros servidores.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -204,7 +204,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "La subcategoría ya existe.",
+          description: "La presentación ya existe.",
         });
         setIsLoading(false);
         return;
@@ -226,7 +226,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
       setIsAdding(false);
 
       toast({
-        description: "La nueva subcategoría ha sido guardada exitosamente.",
+        description: "La nueva presentación ha sido guardada exitosamente.",
       });
     } catch (error) {
       console.error("Error saving new subcategory:", error);
@@ -234,7 +234,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
         variant: "destructive",
         title: "Error",
         description:
-          "Ocurrió un error al guardar la nueva subcategoría. Por favor, intente de nuevo.",
+          "Ocurrió un error al guardar la nueva presentación. Por favor, intente de nuevo.",
       });
       setIsLoading(false);
     }
@@ -293,14 +293,14 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "La subcategoría ya existe.",
+          description: "La presentación ya existe.",
         });
       } else {
         toast({
           variant: "destructive",
           title: "Error",
           description:
-            "Ocurrió un error al guardar la subcategoría editada. Por favor, intente de nuevo.",
+            "Ocurrió un error al guardar la presentación editada. Por favor, intente de nuevo.",
         });
       }
       setIsLoading(false);
@@ -328,7 +328,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
       );
 
       toast({
-        description: "La subcategoría ha sido eliminada exitosamente.",
+        description: "La presentación ha sido eliminada exitosamente.",
       });
 
       document.body.style.pointerEvents = "auto";
@@ -338,11 +338,11 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
       console.error("Error deleting subcategory:", error);
 
       let description =
-        "Ocurrió un error al eliminar la subcategoría. Por favor, intente de nuevo.";
+        "Ocurrió un error al eliminar la presentación. Por favor, intente de nuevo.";
 
       if (error.response.status === 406) {
         description =
-          "La subcategoría no puede ser eliminada porque tiene productos asociados.";
+          "La presentación no puede ser eliminada porque tiene productos asociados.";
       }
 
       document.body.style.pointerEvents = "auto";
@@ -358,7 +358,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
 
   return (
     <div className="flex p-0 flex-col items-start gap-[16px] self-stretch w-full md:w-1/3">
-      <Label>Subcategorías</Label>
+      <Label>Presentaciones</Label>
       <div className="h-full w-4/5">
         {isLoading && (
           <div className="flex flex-col space-y-3">
@@ -374,8 +374,9 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
             <DataTable
               columns={columns}
               data={subcategories.current}
-              nombre="subcategoría"
+              nombre="presentacion"
               npagination={4}
+              pl={true}
             />
             <div className="lower-buttons-container mt-8">
               <Button variant="default" onClick={handleAdd}>
@@ -391,10 +392,10 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
               <InputWithLabel
                 label={
                   isEditing
-                    ? "Nombre (editar subcategoría)"
-                    : "Nombre (agregar subcategoría)"
+                    ? "Nombre (editar presentación)"
+                    : "Nombre (agregar presentación)"
                 }
-                placeholder="Nombre de la subcategoría"
+                placeholder="Nombre de la presentación"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
               />

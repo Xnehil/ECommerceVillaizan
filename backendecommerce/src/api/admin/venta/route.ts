@@ -19,6 +19,20 @@ import { Venta } from "src/models/Venta";
  *   get:
  *     summary: Lista todas las ventas con paginación
  *     tags: [Ventas]
+ *     parameters:
+ *       - in: query
+ *         name: buscarPor
+ *         schema:
+ *           type: string
+ *           enum: [motorizado, cliente]
+ *         required: false
+ *         description: Filtrar por motorizado o cliente
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: ID del motorizado o cliente
  *     responses:
  *       200:
  *         description: Una lista de ventas
@@ -38,9 +52,20 @@ export const GET = async (
     res: MedusaResponse
 ) => {
     const ventaService: VentaService = req.scope.resolve("ventaService");
+    const { buscarPor, id } = req.query;
 
+    let filter = {};
+
+    if (buscarPor === "motorizado" && id) {
+        filter = { motorizadoId: id };
+    } else if (buscarPor === "cliente" && id) {
+        filter = { clienteId: id };
+    }
+    let config = {
+        relations: ["pedido"],
+    };
     res.json({
-        ventas: await ventaService.listarConPaginacion(),
+        ventas: await ventaService.listarConPaginacion(filter, config),
     });
 };
 

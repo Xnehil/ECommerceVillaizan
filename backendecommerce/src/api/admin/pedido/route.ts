@@ -32,6 +32,12 @@ import { Pedido } from "src/models/Pedido";
  *           type: string
  *         required: false
  *         description: El estado del pedido (carrito, solicitado, verificado, enProgreso, entregado, cancelado, noCarrito)
+ *       - in: query
+ *         name: cantidad
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Si se debe recuperar solo la cantidad de pedidos
  *     responses:
  *       200:
  *         description: Una lista de pedidos
@@ -53,7 +59,7 @@ export const GET = async (
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const enriquecido = req.query.enriquecido === 'true';
     const estado = req.query.estado as string;
-
+    const cantidad = req.query.cantidad === 'true';
     const validEstados = ['carrito', 'solicitado', 'verificado', 'enProgreso', 'entregado', 'cancelado', 'noCarrito'];
     const filter: { estado?: string | string[] } = {};
 
@@ -64,14 +70,21 @@ export const GET = async (
             filter.estado = estado;
         }
     }
+    const pedidos = await pedidoService.listarConPaginacion(
+        filter,
+        {
+            relations: enriquecido ? ["motorizado", "direccion", "direccion.ciudad", "usuario"] : []
+        }
+    );
+    if (cantidad) {
+        res.json({
+            cantidad: pedidos.length,
+        });
+        return;
+    }
     // console.log(filter);
     res.json({
-        pedidos: await pedidoService.listarConPaginacion(
-            filter,
-            {
-                relations: enriquecido ? ["motorizado", "direccion", "direccion.ciudad", "usuario"] : []
-            }
-        ),
+        pedidos: pedidos,
     });
 };
 
