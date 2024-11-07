@@ -24,12 +24,17 @@ export async function handleSignOut() {
   await signOut();
 }
 
+const urlLogin = process.env.NEXT_PUBLIC_APP_URL;
+
 export default function Nav() {
   const { data: session, status } = useSession();
   const [userName, setUserName] = useState('');
   const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+  const loginUrl = `${urlLogin}/login?redirect=${encodeURIComponent(currentUrl)}`;
+  const [finishedLoadingName, setFinishedLoadingName] = useState(false);
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -40,6 +45,7 @@ export default function Nav() {
       if (status !== "loading") {
         if (session?.user?.id) {
           try {
+            setFinishedLoadingName(false);
             const response = await axios.get(`${baseUrl}/admin/usuario/${session.user.id}`);
             const user = response.data.usuario;
             if (user) {
@@ -95,6 +101,9 @@ export default function Nav() {
               console.error('An unexpected error occurred.');
             }
           }
+          finally{
+            setFinishedLoadingName(true)
+          }
         }
       }
     }
@@ -122,7 +131,11 @@ export default function Nav() {
               <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
             ) : session ? (
               <>
-                <span className="text-lg text-white">Hola, {userName}</span>
+                {finishedLoadingName ? (
+                  <span className="text-lg text-white">Hola, {userName}</span>
+                ) : (
+                  <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
+                )}
                 <div className="relative">
                   <img src="/images/userIcon.png" alt="Icon" className="h-6 w-6 cursor-pointer" onClick={toggleDropdown} />
                   {isDropdownOpen && (
@@ -146,9 +159,12 @@ export default function Nav() {
             ) : (
               <div className="flex items-center">
                 <Button className="text-lg text-white">
-                  <Link href="/login" className="hover:text-ui-fg-base text-white" onClick={() => setIsMobileMenuOpen(false)}>
+                  {/*<Link href="/login" className="hover:text-ui-fg-base text-white" onClick={() => setIsMobileMenuOpen(false)}>
                     ¡Inicia sesión y accede a promociones!
-                  </Link>
+                  </Link>*/}
+                  <a href={loginUrl} className="hover:text-ui-fg-base text-white">
+                    ¡Inicia sesión y accede a promociones!
+                  </a>
                 </Button>
                 <img src="/images/userIcon.png" alt="Icon" className="h-6 w-6 ml-2" />
               </div>
