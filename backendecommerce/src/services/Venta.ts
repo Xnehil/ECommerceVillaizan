@@ -4,6 +4,11 @@ import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import ventaRepository from "src/repositories/Venta";
 
+type VentaSelector = Selector<Venta> & {
+    motorizadoId?: string;
+    clienteId?: string;
+}
+
 class VentaService extends TransactionBaseService {
     protected ventaRepository_: typeof ventaRepository;
 
@@ -22,7 +27,7 @@ class VentaService extends TransactionBaseService {
     }
 
     async listarYContar(
-        selector: Selector<Venta> = {},
+        selector: VentaSelector = {},
         config: FindConfig<Venta> = {
             skip: 0,
             take: 20,
@@ -30,8 +35,34 @@ class VentaService extends TransactionBaseService {
         }
     ): Promise<[Venta[], number]> {
         const ventaRepo = this.activeManager_.withRepository(this.ventaRepository_);
+
+        // Primero quitar y guardar el id de selector
+        const motorizadoId = selector.motorizadoId;
+        const clienteId = selector.clienteId;
+        delete selector.motorizadoId;
+        delete selector.clienteId;
+
         const query = buildQuery(selector, config);
-        return ventaRepo.findAndCount(query);
+        
+        if (motorizadoId) {
+            console.log("motorizadoId", motorizadoId);
+            query.where = { ...query.where, 
+                pedido: { 
+                    motorizado: { id: motorizadoId }
+                }
+            }
+        }
+
+        if (clienteId) {
+            console.log("clienteId", clienteId);
+            query.where = { ...query.where, 
+                pedido: { 
+                    usuario: { id: clienteId }
+                }
+            }
+        }
+  
+      return ventaRepo.findAndCount(query);
     }
 
     async listarConPaginacion(

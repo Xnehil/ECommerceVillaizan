@@ -139,10 +139,10 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
     <div className="content-container">
       {isLoading && <Loading />}
 
-      <h4>{idPedido}</h4>
-      <Separator />
       {!isLoading && pedido.current?.id && (
         <>
+          <h4>{pedido.current.codigoSeguimiento}</h4>
+          <Separator />
           <div className="information-container">
             <InformacionPedido pedido={pedido} />
             <InformacionCliente pedido={pedido} />

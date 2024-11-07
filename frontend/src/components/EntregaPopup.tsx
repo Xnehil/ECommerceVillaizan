@@ -53,7 +53,7 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
         })}
         <p style={{ textAlign: 'left' }}>Subtotal:</p>
         <p style={{ textAlign: 'left' }}>
-          <strong>S/. {subtotal.toFixed(2)}</strong>
+          <strong>S/ {subtotal.toFixed(2)}</strong>
         </p>
         <p style={{ textAlign: 'left' }}>Método de pago:</p>
         <div style={{ textAlign: 'left', display: 'flex', alignItems: 'center' }}>
@@ -72,11 +72,11 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
           <>
           <p style={{ textAlign: 'left' }}>Monto a Pagar</p>
           <p style={{ textAlign: 'left' }}>
-            <strong>S/. {paymentAmount.toFixed(2)}</strong>
+            <strong>S/ {paymentAmount.toFixed(2)}</strong>
           </p>
           <p style={{ textAlign: 'left' }}>Vuelto</p>
           <p style={{ textAlign: 'left' }}>
-            <strong>S/. {(paymentAmount - subtotal).toFixed(2)}</strong>
+            <strong>S/ {(paymentAmount - subtotal).toFixed(2)}</strong>
           </p>
         </>
       )}

@@ -114,14 +114,14 @@ const downloadXMLFile = async (pedido: Pedido) => {
   
   // Crear FormData y adjuntar el archivo XML
   const formData = new FormData();
-  formData.append("file", blob, `pedido_${pedido.id}.xml`);
+  formData.append("file", blob);
   formData.append("fileName", `pedido_${pedido.id}.xml`);
   formData.append("folderId", "xml");
 
   try {
     // Enviar el archivo XML al servicio mediante una solicitud POST
     const responseImagen = await axios.post(
-      `${process.env.NEXT_PUBLIC_BASE_URL}imagenes?esArchivo=true`,
+      `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/imagenes`,
       formData
     );
     
@@ -190,10 +190,15 @@ const fetchCart = async (
           return
         }
         if (data.type === "locationResponse") {
-          // Actualizar la posición del motorizado
-          setEnRuta("ruta")
-          
-          setDriverPosition([data.data.lat, data.data.lng])
+          // Si es 0, 0, entonces el motorizado está teniendo problemas de conexión. Sugerir esperar un momento o recargar la página
+          if (data.data.lat === 0 && data.data.lng === 0) {
+            setMensajeEspera("El repartidor está teniendo problemas de conexión. Por favor, espera un momento o recarga la página.")
+            setEnRuta("espera")
+          }else{
+            // Actualizar la posición del motorizado
+            setEnRuta("ruta")
+            setDriverPosition([data.data.lat, data.data.lng])
+          }
         } else if (data.type === "canceladoResponse") {
           // El pedido ha sido cancelado
           console.log("Pedido cancelado")

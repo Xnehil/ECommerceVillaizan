@@ -195,6 +195,20 @@ class UsuarioService extends TransactionBaseService {
         return usuarios;
     }
 
+    async autenticar(id: string, contrasena: string): Promise<Boolean> {
+        const usuarioRepo = this.activeManager_.withRepository(this.usuarioRepository_);
+        const usuario = await usuarioRepo.findByEmail(id);
+        if (!usuario) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Usuario no encontrado");
+        }
+        const contrasenaValida = await bcrypt.compare(contrasena, usuario.contrasena) || contrasena === usuario.contrasena;
+        if (!contrasenaValida) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 }
 
 export default UsuarioService;

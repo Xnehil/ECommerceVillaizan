@@ -512,6 +512,21 @@ const options = {
             },
           ],
         },
+        Promocion: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                nombre: {
+                  type: 'string',
+                  example: 'Promoción Ejemplo',
+                },
+              },
+            },
+          ],
+        },
         DetallePedido: {
           type: 'object',
           allOf: [
@@ -1012,6 +1027,48 @@ const options = {
               sistema: {
                 type: 'string',
                 example: 'Ecommerce',
+              },
+            },
+          ],
+        },
+        Plantilla : {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              nombre: {
+                type: 'string',
+                example: 'Plantilla base',
+              },
+              descripcion: {
+                type: 'string',
+                example: 'Descripción de la plantilla',
+              },
+              productos: {
+                type: 'array',
+                items: {
+                  $ref: '#/components/schemas/PlantillaProducto',
+                },
+              },              
+            },
+          ],
+        },
+        PlantillaProducto : {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              producto: {
+                $ref: '#/components/schemas/Producto',
+              },
+              cantidad: {
+                type: 'integer',
+                example: 5,
+              },
+              plantilla: {
+                $ref: '#/components/schemas/Plantilla',
               },
             },
           ],

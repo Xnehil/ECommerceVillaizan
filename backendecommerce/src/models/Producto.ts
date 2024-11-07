@@ -16,6 +16,8 @@ import { TipoProducto } from "./TipoProducto";
 import { Subcategoria } from "./Subcategoria";
 import { Fruta } from "./Fruta";
 import { InventarioMotorizado } from "./InventarioMotorizado";
+import { Promocion } from "./Promocion";
+import { PlantillaProducto } from "./PlantillaProducto";
 
 @Entity("vi_producto")
 export class Producto extends EntidadBase {
@@ -75,6 +77,17 @@ export class Producto extends EntidadBase {
 
     @Column({ default: false , name: "sevendeecommerce"})
     seVendeEcommerce: boolean
+
+    @ManyToOne(() => Promocion, promocion => promocion.id, { eager: true })
+    @JoinColumn({ name: "id_promocion" })
+    promocion: Promocion;
+
+    
+    @OneToMany(() => PlantillaProducto, plantillaProducto => plantillaProducto.producto)
+    productoPlantillas: PlantillaProducto[];
+    /*  @ManyToOne(() => Ciudad, ciudad => ciudad.direcciones, { eager: true })
+  @JoinColumn({ name: 'id_ciudad' })
+  ciudad: Ciudad;*/
 
     @BeforeInsert()
     private beforeInsert() {

@@ -62,10 +62,27 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
   const [pedido, setPedido] = useState<Pedido | null>(null); // State to hold the fetched pedido
-  let descuento : number = 0;
+  
   const hayDescuento = true;
   const costoEnvio = 5;
   const noCostoEnvio = true;
+
+  const calcularDescuento = () => {
+    if (!pedidoInput) {
+      return 0;
+    }
+    return pedidoInput.detalles.reduce((acc: number, item) => {
+      if (item.promocion) {
+        const originalPrice = Number(item.producto.precioEcommerce)
+        const discountedPrice = Number(item.subtotal) / item.cantidad
+        const discountPerItem = originalPrice - discountedPrice
+        return acc + (discountPerItem * item.cantidad)
+      }
+      return acc
+    }, 0)
+  };
+
+  let descuento : number = calcularDescuento();
 
   useEffect(() => {
     const getPedido = async () => {
@@ -76,14 +93,41 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
     getPedido();
   }, [pedidoInput]); // Fetch pedido whenever pedidoInput changes
 
-  const handleImageClick = (id: string | null) => {
+  const handleImageClick = async (id: string | null) => {
+    setSelectedImageId(id);
+  
+    if (pedido && pedido.id) {
+      try {
+        // Configura el cuerpo de la solicitud con la estructura específica
+        const pedidoUpdateData = {
+          metodosPago: [
+            {
+              id: id === "yape" ? "mp_01JBDQD78HBD6A0V1DVMEQAFKV" : id === "plin" ? "mp_01JBDQDH47XDE75XCGSS739E6G" : "mp_01J99CS1H128G2P7486ZB5YACH"
+            }
+          ]
+        };
+  
+        await axios.put(
+          `${baseUrl}/admin/pedido/${pedido.id}?enriquecido=true`,
+          pedidoUpdateData,
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+  
+        console.log("Pedido actualizado con método de pago:", pedidoUpdateData.metodosPago);
+      } catch (error) {
+        console.error("Error al actualizar el método de pago:", error);
+      }
+    } else {
+      console.error("No se encontró el ID del pedido.");
+    }
+  
     if (id === "pagoEfec") {
       setShowPopup(true);
-      setSelectedImageId(id);
-    } else {
-      setSelectedImageId(id);
     }
   };
+
 
   const handlePaymentConfirm = (amount: number) => {
     setPaymentAmount(amount);
@@ -100,8 +144,10 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
     setStep("direccion");
   };
 
+  
+
   const calcularTotal = () => {
-    const subtotal = calcularSubtotal();
+    const subtotal = calcularSubtotalSinDescuentos();
     const totalDescuento = hayDescuento ? descuento : 0;
     const totalEnvio = noCostoEnvio ? 0 : costoEnvio;
 
@@ -121,6 +167,20 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
     return retorno;
 };
 
+
+
+const calcularSubtotalSinDescuentos = () => {
+  if (!pedidoInput) {
+    return 0;
+  }
+  return pedidoInput.detalles.reduce((acc: number, item) => {
+    const itemSubtotal = item.promocion
+      ? Number(item.producto.precioEcommerce) * item.cantidad
+      : Number(item.subtotal)
+    
+    return acc + itemSubtotal || 0
+  }, 0);
+};
 
   const calcularSubtotal = () => {
     if (!pedidoInput) {

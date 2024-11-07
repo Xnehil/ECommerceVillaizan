@@ -136,7 +136,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         ) : (
           <div className="w-full flex flex-column">
             <SelectWithLabel
-              label="Categoría"
+              label="Sabor"
               options={categories.current}
               onChange={handleCategoryChange}
               {...(selectedCategory !== "" && { value: selectedCategory })}
@@ -154,7 +154,7 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         ) : (
           <div className="w-full flex flex-column">
             <SelectWithLabel
-              label="Subcategoría"
+              label="Presentación"
               options={subcategories.current}
               onChange={handleSubcategoryChange}
               value={selectedSubcategory}

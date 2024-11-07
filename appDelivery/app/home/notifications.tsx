@@ -5,7 +5,7 @@ import axios from "axios";
 import { Notificacion } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
 import { FontAwesome } from "@expo/vector-icons";
-import { BASE_URL } from "@env";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL; 
 
 export default function Notificaciones() {
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);

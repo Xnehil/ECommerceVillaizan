@@ -15,7 +15,7 @@ import axios from "axios";
 import { Usuario, Pedido, PedidosResponse } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
 import * as Location from "expo-location";
-import { BASE_URL } from "@env";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import Mapa from "@/components/Entregas/Mapa";
 import StyledIcon from "@/components/StyledIcon";
 import TabBarIcon from "@/components/StyledIcon";

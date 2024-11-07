@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import Loading from "@/components/Loading";
 import { DataTable } from "@/components/datatable/data-table";
-import { Motorizado, Usuario } from "@/types/PaqueteMotorizado";
+import { Usuario } from "@/types/PaqueteMotorizado";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { columns } from "./columns";
 
 const RepartidoresPage: React.FC = () => {
   const router = useRouter(); // Initialize useRouter
@@ -31,8 +32,10 @@ const RepartidoresPage: React.FC = () => {
         console.log(a.current);
         console.log("Fetching repartidores");
         // Fetch motorizados
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}motorizado?enriquecido=true`
+        const reqBody = { nombreRol: "Repartidor" };
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_BASE_URL}usuario/rol`,
+          reqBody
         );
         if (!response) {
           throw new Error("Failed to fetch motorizados");
@@ -57,6 +60,7 @@ const RepartidoresPage: React.FC = () => {
     };
 
     if (a.current === 0) {
+      fetchRepartidores();
     }
   }, []);
 
@@ -79,7 +83,13 @@ const RepartidoresPage: React.FC = () => {
         <h4>Repartidores</h4>
         <p>Administra los usuarios de los repartidores.</p>
         <div className="h-full w-full">
-          
+          <DataTable
+            data={repartidores.current}
+            columns={columns}
+            nombre="repartidor"
+            pl={true}
+          />
+            
         </div>
       </div>
     </>
