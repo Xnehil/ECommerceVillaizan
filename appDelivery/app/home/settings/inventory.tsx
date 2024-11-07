@@ -15,7 +15,7 @@ import { getUserData } from "@/functions/storage";
 import { Motorizado, InventarioMotorizado } from "@/interfaces/interfaces";
 import TabBarIcon from "@/components/StyledIcon";
 import Ionicons from "@expo/vector-icons/Ionicons";
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 export default function InventarioMotorizadoScreen() {
   const [inventario, setInventario] = useState<InventarioMotorizado[]>([]);

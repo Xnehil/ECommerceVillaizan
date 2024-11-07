@@ -13,7 +13,7 @@ export const POST = async (
     const { mensaje, type } = bodyData;
   
     try {
-      const response = enviarMensajeAdmins(mensaje, type);
+      const response = enviarMensajeAdmins(type, mensaje);
       res.status(201).json({
         response
       });

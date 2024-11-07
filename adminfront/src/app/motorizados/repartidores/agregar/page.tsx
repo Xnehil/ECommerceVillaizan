@@ -31,7 +31,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Usuario } from "@/types/PaqueteMotorizado";
+import { Rol, Usuario } from "@/types/PaqueteMotorizado";
 
 const AgregarPage: React.FC = () => {
   const router = useRouter();
@@ -51,6 +51,9 @@ const AgregarPage: React.FC = () => {
     // create a codigo for the product
     usuario.current.conCuenta = true;
     //rol de repartidor
+    usuario.current.rol = {
+      nombre: "Repartidor",
+    } as Rol;
 
     if (usuario.current.nombre === "") {
       setIsLoading(false);

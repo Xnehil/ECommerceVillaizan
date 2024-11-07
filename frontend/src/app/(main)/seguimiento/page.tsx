@@ -190,10 +190,15 @@ const fetchCart = async (
           return
         }
         if (data.type === "locationResponse") {
-          // Actualizar la posición del motorizado
-          setEnRuta("ruta")
-          
-          setDriverPosition([data.data.lat, data.data.lng])
+          // Si es 0, 0, entonces el motorizado está teniendo problemas de conexión. Sugerir esperar un momento o recargar la página
+          if (data.data.lat === 0 && data.data.lng === 0) {
+            setMensajeEspera("El repartidor está teniendo problemas de conexión. Por favor, espera un momento o recarga la página.")
+            setEnRuta("espera")
+          }else{
+            // Actualizar la posición del motorizado
+            setEnRuta("ruta")
+            setDriverPosition([data.data.lat, data.data.lng])
+          }
         } else if (data.type === "canceladoResponse") {
           // El pedido ha sido cancelado
           console.log("Pedido cancelado")

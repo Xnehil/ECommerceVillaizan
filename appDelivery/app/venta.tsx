@@ -11,7 +11,7 @@ import {
   Image,
 } from "react-native";
 import axios from "axios";
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import { IGV, GENERIC_USER } from "@/constants/Constantes";
 import {
   InventarioMotorizado,
@@ -129,9 +129,9 @@ export default function SeleccionarProductos({ navigation }: any) {
             .reduce((acc, d) => acc + d.cantidad, 0) || 0,
         totalMafeletas:
           detalles
-            .filter((d) => d.producto.tipoProducto?.nombre === "Mafaleta")
+            .filter((d) => d.producto.tipoProducto?.nombre === "Mafeleta")
             .reduce((acc, d) => acc + d.cantidad, 0) || 0,
-        estado: "Entregado",
+        estado: "entregado",
         totalIgv: parseFloat(pedidoCompleto.total) * IGV,
         pedido: pedidoId,
         ordenSerie: null,

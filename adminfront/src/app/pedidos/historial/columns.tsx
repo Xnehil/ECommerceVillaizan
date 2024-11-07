@@ -18,7 +18,7 @@ export const columns: ColumnDef<Pedido>[] = [
     accessorKey: "id",
     header: "Pedido",
     cell: ({ row }) => {
-      const identificador = row.original.id.substring(0, 12);
+      const identificador = row.original.codigoSeguimiento;
       return (
         <Link href={`/pedidos/${row.original.id}`} passHref>
           <div className="font-medium hover:underline">{identificador}</div>

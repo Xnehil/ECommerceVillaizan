@@ -15,7 +15,7 @@ import axios from "axios";
 import { Usuario, Pedido, PedidosResponse } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
 import * as Location from "expo-location";
-const BASE_URL = process.env.BASE_URL;
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import Mapa from "@/components/Entregas/Mapa";
 import StyledIcon from "@/components/StyledIcon";
 import TabBarIcon from "@/components/StyledIcon";
@@ -25,6 +25,9 @@ export default function Entregas() {
   const [pedidoSeleccionado, setPedidoSeleccionado] = useState<Pedido | null>(
     null
   );
+  const [historialPedidos, setHistorialPedidos] = useState<Pedido[]>([]);
+  const [verHistorial, setVerHistorial] = useState(false);
+
   const [location, setLocation] = useState<{
     latitude: number;
     longitude: number;
@@ -81,7 +84,21 @@ export default function Entregas() {
         `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos?estado=verificado&estado=enProgreso`
       );
       const pedidosResponse: PedidosResponse = response.data;
-      const pedidosEnProceso = pedidosResponse.pedidos;
+      const pedidosEnProceso = pedidosResponse.pedidos.filter(
+        (pedido) =>
+          pedido.estado === "solicitado" ||
+          pedido.estado === "verificado" ||
+          pedido.estado === "enProgreso"
+      );
+      console.log("Pedidos en proceso:");
+      console.log(pedidosEnProceso);
+      setPedidosAceptados(pedidosEnProceso);
+      const pedidosHistorial = pedidosResponse.pedidos.filter(
+        (pedido) =>
+          pedido.estado === "entregado" 
+      );
+      setHistorialPedidos(pedidosHistorial);
+
       // Sort. First enProgreso, then verificado. Sort by solicitadoEn
       pedidosEnProceso.sort((a, b) => {
         if (a.estado === b.estado) {
@@ -89,9 +106,6 @@ export default function Entregas() {
         }
         return a.estado === "enProgreso" ? -1 : 1;
       });
-      console.log("Pedidos en proceso:");
-      console.log(pedidosEnProceso);
-      setPedidosAceptados(pedidosEnProceso);
       handlePrimerPedido(pedidosEnProceso[0]);
     } catch (error) {
       console.error("Error al obtener los pedidos:", error);
@@ -135,40 +149,25 @@ export default function Entregas() {
     }
   }, [usuario]);
 
-
-
   const PedidoNotification: React.FC<{
     pedido: Pedido;
-    onRechazar: (id: string) => void;
-  }> = ({ pedido, onRechazar }) => {
+  }> = ({ pedido }) => {
     return (
-      <View>
-        <View style={styles.pedidoContainer}>
-          <Text style={styles.address}>{pedido.direccion?.calle}</Text>
-          <Text style={styles.distance}>
-            Distancia {(parseInt(pedido.id) % 10) + 1} km.
+      <View style={styles.pedidoContainer2}>
+        <Text style={styles.fechaCreacion}>
+          Fecha de creación: {pedido.creadoEn}
+        </Text>
+        <Text style={styles.estado}>Estado: {pedido.estado}</Text>
+        <Text style={styles.total}>Total: S/ {pedido.total}</Text>
+        {pedido.motivoCancelacion && (
+          <Text style={styles.motivoCancelacion}>
+            Motivo de cancelación: {pedido.motivoCancelacion}
           </Text>
-          <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.verMasButton}>
-              <Text style={styles.verMasText}>Ver detalles</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.rechazarButton}
-              onPress={() => onRechazar(pedido.id)}
-            >
-              <Text style={styles.rechazarText}>Rechazar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <Progress.Bar
-          progress={1 - (tiemposRestantes[pedido.id] || 0) / 5000}
-          width={null}
-          color="#DB5800"
-        />
+        )}
       </View>
     );
   };
+
   const PedidoAceptado: React.FC<{ pedido: Pedido }> = ({ pedido }) => {
     return (
       <View
@@ -217,32 +216,63 @@ export default function Entregas() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.toggleContainer}>
-        <Text style={styles.toggleLabel}>
-          {modoMultiple ? "Modo Múltiple" : "Modo Único"}
-        </Text>
-        <Switch
-          value={modoMultiple}
-          onValueChange={(value) => setModoMultiple(value)}
-        />
-      </View>
-      <View style={styles.containerMitad}>
-        <Mapa
-          location={location}
-          pedidoSeleccionado={pedidoSeleccionado}
-          pedidos={pedidosAceptados}
-          mode = {modoMultiple}
-        />
-      </View>
-      <View style={{flexDirection: 'row'}}>
-        <Text style={styles.Titulo}>Tus Entregas</Text>
-        <TouchableOpacity onPress={fetchPedidos} style={styles.reloadButton}>
-          <TabBarIcon IconComponent={FontAwesome} name="refresh" color="black" />
+      {!verHistorial && (
+        <View style={styles.toggleContainer}>
+          <Text style={styles.toggleLabel}>
+            {modoMultiple ? "Modo Múltiple" : "Modo Único"}
+          </Text>
+          <Switch
+            value={modoMultiple}
+            onValueChange={(value) => setModoMultiple(value)}
+          />
+        </View>
+      )}
+
+      {!verHistorial && (
+        <View style={styles.containerMitad}>
+          <Mapa
+            location={location}
+            pedidoSeleccionado={pedidoSeleccionado}
+            pedidos={pedidosAceptados}
+            mode={modoMultiple}
+          />
+        </View>
+      )}
+
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View style={{ flexDirection: "row" }}>
+          <Text style={styles.Titulo}>{verHistorial ? "Tu historial" : "Tus entregas"}</Text>
+          <TouchableOpacity onPress={fetchPedidos} style={styles.reloadButton}>
+            <TabBarIcon
+              IconComponent={FontAwesome}
+              name="refresh"
+              color="black"
+            />
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          style={styles.toggleButton}
+          onPress={() => setVerHistorial(!verHistorial)}
+        >
+          <Text style={styles.toggleButtonText}>
+            {verHistorial ? "Ver Pedidos Actuales" : "Ver Historial de Pedidos"}
+          </Text>
         </TouchableOpacity>
       </View>
+
       <View style={styles.containerMitad}>
         <ScrollView>
-          {pedidosAceptados.length > 0 ? (
+          {verHistorial ? (
+            historialPedidos.length > 0 ? (
+              historialPedidos.map((pedido) => (
+                <PedidoNotification key={pedido.id} pedido={pedido} />
+              ))
+            ) : (
+              <Text style={styles.noEntregasText}>
+                ¡No hay pedidos en el historial!
+              </Text>
+            )
+          ) : pedidosAceptados.length > 0 ? (
             pedidosAceptados.map((pedido) => (
               <PedidoAceptado key={pedido.id} pedido={pedido} />
             ))
@@ -477,5 +507,49 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: "center",
     justifyContent: "center",
+  },
+  toggleButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  toggleButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  pedidoContainer2: {
+    padding: 15,
+    marginVertical: 10,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  pedidoID: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  fechaCreacion: {
+    fontSize: 14,
+    color: "#666",
+  },
+  estado: {
+    fontSize: 14,
+    marginTop: 5,
+  },
+  total: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginTop: 5,
+  },
+  motivoCancelacion: {
+    fontSize: 12,
+    color: "#ff4d4d",
+    marginTop: 5,
   },
 });

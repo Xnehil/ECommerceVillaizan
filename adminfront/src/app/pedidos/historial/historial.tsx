@@ -14,7 +14,13 @@ const Historial: React.FC<HistorialProps> = ({ historial }) => {
         columns={columns}
         data={historial.current}
         nombre="pedido"
-        npagination={7}
+        npagination={6}
+        sb={true}
+        sbColumn="id"
+        sbPlaceholder="Buscar por código de seguimiento"
+        dd={true}
+        ddColumn="estado"
+        ddValues={["Entregado", "Cancelado"]}
       />
     </div>
   );

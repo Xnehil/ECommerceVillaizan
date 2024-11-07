@@ -4,6 +4,7 @@ import InputWithLabel from "@/components/forms/inputWithLabel";
 import React, { MutableRefObject } from "react";
 import "@/styles/general.css";
 import { Pedido } from "@/types/PaquetePedido";
+import { Separator } from "@/components/ui/separator";
 
 interface InformacionClienteProps {
   pedido: MutableRefObject<Pedido>;
@@ -40,7 +41,7 @@ const InformacionCliente: React.FC<InformacionClienteProps> = ({ pedido }) => {
         }
       />
       {motorizado && (
-        <>
+        <div className="mt-4" >
           <h5>Motorizado</h5>
           <InputWithLabel
             label="Nombre"
@@ -64,7 +65,7 @@ const InformacionCliente: React.FC<InformacionClienteProps> = ({ pedido }) => {
               "No disponible"
             }
           />
-        </>
+        </div>
       )}
     </div>
   );

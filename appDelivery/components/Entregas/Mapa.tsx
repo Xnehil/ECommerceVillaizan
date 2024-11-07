@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { GoogleMap, LoadScript, Marker, Circle } from "@react-google-maps/api";
 import { Pedido } from "@/interfaces/interfaces";
 
-const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 interface MapProps {
   location: { latitude: number; longitude: number } | null;
   pedidoSeleccionado: Pedido | null;
