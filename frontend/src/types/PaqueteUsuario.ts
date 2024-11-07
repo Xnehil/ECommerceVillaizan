@@ -18,3 +18,11 @@ export interface Persona extends EntidadBase {
     razonEliminacion?: string; // Optional field
     estado: string;
 }
+
+export type Response<T> = {
+    data: {
+      status: "Success" | "Error";
+      message: string;
+      result: T;
+    };
+};

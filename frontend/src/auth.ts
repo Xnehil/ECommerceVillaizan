@@ -1,6 +1,20 @@
 import axios, { Axios } from "axios";
-import NextAuth from "next-auth";
+import NextAuth, { AuthError, CredentialsSignin, DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { Usuario, Response } from "types/PaqueteUsuario";
+import Google from "next-auth/providers/google";
+
+class CustomError extends CredentialsSignin {
+  code: string;
+
+  constructor(code: string) {
+    super();
+    this.code = code;
+    this.name = "CustomError";
+
+    Object.setPrototypeOf(this, CustomError.prototype);
+  }
+}
 
 function getCookieHostname() {
   const hostname = new URL(process.env.NEXT_PUBLIC_APP_URL!).hostname;
@@ -39,6 +53,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       },
     }),
+    Google({}),
   ],
   callbacks: {
     jwt({ token, user }) {
@@ -59,6 +74,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     //signIn: `/login`,
     signIn: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+    error: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+    signOut: `${process.env.NEXT_PUBLIC_APP_URL}`,
     //error: "/login",
   },
   
