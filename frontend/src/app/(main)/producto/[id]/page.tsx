@@ -1,17 +1,39 @@
 "use client";
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Producto } from "types/PaqueteProducto";
+import { Pedido } from "types/PaquetePedido";
 import axios from 'axios';
-import { addItem, updateLineItem } from "@modules/cart/actions";
+import { addItem, updateLineItem, getOrSetCart, enrichLineItems } from "@modules/cart/actions";
+import BackButton from "@components/BackButton";
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const router = useRouter();
   const [product, setProduct] = useState<Producto | null>(null);
+  const [carrito, setCarrito] = useState<Pedido | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchCarrito = async (): Promise<{ cart: Pedido; cookieValue?: string }> => {
+    const respuesta = await getOrSetCart();
+    let cart = respuesta?.cart;
+    let cookieValue = respuesta?.cookie;
+    let aux = cart.detalles;
+    return { cart, cookieValue };
+  };
+
+  useEffect(() => {
+    const getCart = async () => {
+      const { cart } = await fetchCarrito();
+      const enrichedItems = await enrichLineItems(cart.detalles);
+      cart.detalles = enrichedItems;
+      setCarrito(cart); // Aquí cambié 'carrito' por 'cart'
+    };
+    if (carrito == null) getCart();
+  }, [carrito]);
 
   useEffect(() => {
     if (id) {
@@ -61,7 +83,7 @@ export default function ProductDetail() {
 
     try {
       let precioProducto = product.precioEcommerce;
-      if (isAuthenticated && product.promocion && product.promocion.porcentajeDescuento) {
+      if (product.promocion && product.promocion.porcentajeDescuento) {
         const porcentaje = product.promocion.porcentajeDescuento;
         precioProducto -= (precioProducto * porcentaje) / 100;
       }
@@ -108,12 +130,13 @@ export default function ProductDetail() {
         if (!detalleAnterior) {
           nuevosDetalles.push(nuevoDetalle);
         }
-        setCarrito((prevCarrito) => ({
+        setCarrito(prevCarrito => ({
           ...prevCarrito,
           detalles: nuevosDetalles,
           estado: prevCarrito?.estado || "",
-        }));
+        }) as Pedido);
       }
+      router.back();
     } catch (error) {
       console.error("Error en handleAddToCart:", error);
       setError("No se pudo añadir este producto al carrito. Por favor, inténtalo de nuevo más tarde.");
@@ -121,6 +144,11 @@ export default function ProductDetail() {
       setIsAdding(false);
     }
   };
+
+  const handleBackClick = () => {
+    router.push("/comprar");
+  };
+
   if (!id) {
     return <div>Cargando...</div>;
   }
@@ -130,7 +158,11 @@ export default function ProductDetail() {
   }
 
   return (
-    <div className="flex justify-center items-center bg-gradient-to-b from-red-100 to-white ">
+    <div className="flex justify-center items-center">
+      {/* Botón de retroceso alineado con el encabezado */}
+      <div style={{ position: "absolute", top: "80px", left: "250px" }}>
+        <BackButton onClick={handleBackClick} />
+      </div>
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-6xl flex flex-col lg:flex-row items-center lg:items-start">
         {/* Imagen */}
         <div className="lg:w-1/2 w-full flex justify-center mb-4 lg:mb-0">
@@ -152,13 +184,15 @@ export default function ProductDetail() {
             {product.promocion && (
               <p className="text-green-600 text-lg"><strong>Promoción:</strong> {product.promocion.descripcion}</p>
             )}
-                        {/* Botón Agregar al Carrito */}
+            {/* Botón Agregar al Carrito */}
             <button
               onClick={handleAddToCart}
               className="mt-4 px-4 py-2 bg-red-500 text-white font-semibold rounded hover:bg-red-600 transition-colors duration-200"
+              disabled={isAdding}
             >
-              Agregar al carrito
+              {isAdding ? "Agregando..." : "Agregar al carrito"}
             </button>
+            {error && <p className="text-red-500 mt-2">{error}</p>}
           </div>
         </div>
       </div>
