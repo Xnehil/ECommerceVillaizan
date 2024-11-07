@@ -51,7 +51,7 @@ export default function RootLayout({
             ),
           });
         } else if (data.type && data.data){
-             mapearMensaje(data.type, router);
+             mapearMensaje(data.type, router, data.data);
         }else {
           console.error('Message property not found in WebSocket data:', data);
         }
@@ -93,7 +93,7 @@ export default function RootLayout({
   );
 }
 
-const mapearMensaje = (tipo: string, router: any) => {
+const mapearMensaje = (tipo: string, router: any, data: any) => {
   let dataBonita;
   switch (tipo) {
     case "nuevoPedido":
@@ -106,22 +106,25 @@ const mapearMensaje = (tipo: string, router: any) => {
       break;
     default:
       dataBonita = {
-        type: "Mensaje",
-        data: "Se ha recibido un mensaje",
+        type: "Mensaje de tipo: " + tipo,
+        data: "Se ha recibido un mensaje: " + data,
         action: "/notificaciones",
         button: "Ver notificaciones",
       };
   }
 
+  let buttonClassName = "text-black-600 mt-2 ml-6 p-2 rounded-md h-10" + (tipo === "nuevoPedido" ? "bg-white" : "")
+
   toast({
     title: dataBonita.type,
+    variant: tipo === "nuevoPedido" ? "center" : "default",
     description: (
-      <div>
+      <div className="flex justify-between items-center">
         <p>{dataBonita.data}</p>
         <ToastAction
           onClick={() => { router.push(dataBonita.action); }}
           altText="Ir a la página de notificaciones"
-          className="text-blue-600 hover:underline mt-2"
+          className={buttonClassName}
         >
           {dataBonita.button}
         </ToastAction>

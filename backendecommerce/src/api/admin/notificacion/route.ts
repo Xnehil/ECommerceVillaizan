@@ -33,9 +33,15 @@ import { Notificacion } from "src/models/Notificacion";
  *           type: string
  *         required: false
  *         description: El ID del usuario
+ *       - in: query
+ *         name: cantidad
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Indica si se debe devolver solo la cantidad de notificaciones no leídas
  *     responses:
  *       200:
- *         description: Una lista de notificacions
+ *         description: Una lista de notificacions o la cantidad de notificaciones no leídas
  *         content:
  *           application/json:
  *             schema:
@@ -45,6 +51,9 @@ import { Notificacion } from "src/models/Notificacion";
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Notificacion'
+ *                 cantidad:
+ *                   type: integer
+ *                   description: La cantidad de notificaciones no leídas
  */
 export const GET = async (
   req: MedusaRequest,
@@ -52,11 +61,18 @@ export const GET = async (
 ) => {
   const notificacionService: NotificacionService = req.scope.resolve("notificacionService");
 
-  // Extract the role from the query parameters
-  const { rol, id_usuario } = req.query as { rol: string, id_usuario: string };
+  // Extract the query parameters
+  const { rol, id_usuario, cantidad } = req.query as { rol: string, id_usuario: string, cantidad: string };
 
   let notificaciones;
-  console.log(rol, id_usuario);
+  // console.log(rol, id_usuario, cantidad);
+
+  if (cantidad === 'true') {
+    // Return the count of unread notifications
+    const count = await notificacionService.contarNoLeidas(id_usuario, rol);
+    return res.json({ cantidad: count });
+  }
+
   if (id_usuario) {
     notificaciones = await notificacionService.listarPorUsuario(id_usuario);
   } else if (rol === "Admin" || rol === "Motorizado") {
@@ -69,11 +85,8 @@ export const GET = async (
     notificaciones = await notificacionService.listarConPaginacion();
   }
 
-  res.json({
-    notificaciones,
-  });
+  res.json({ notificaciones: notificaciones });
 };
-
   /**
  * @swagger
  * /notificacion:
