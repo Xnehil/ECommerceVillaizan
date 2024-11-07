@@ -1,6 +1,31 @@
 import axios, { Axios } from "axios";
-import NextAuth from "next-auth";
+import NextAuth, { AuthError, CredentialsSignin, DefaultSession } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import { Usuario, Response } from "types/PaqueteUsuario";
+import Google from "next-auth/providers/google";
+
+class CustomError extends CredentialsSignin {
+  code: string;
+
+  constructor(code: string) {
+    super();
+    this.code = code;
+    this.name = "CustomError";
+
+    Object.setPrototypeOf(this, CustomError.prototype);
+  }
+}
+
+function getCookieHostname() {
+  const hostname = new URL(process.env.NEXT_PUBLIC_APP_URL!).hostname;
+  const [subDomain] = hostname.split(".");
+
+  const cookieDomain = hostname.replace(`${subDomain}.`, "");
+  return cookieDomain;
+}
+
+const domain = process.env.NEXT_PUBLIC_APP_URL?.includes("localhost") ? "localhost" : getCookieHostname();
+
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -28,24 +53,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       },
     }),
+    Google({}),
   ],
   callbacks: {
-    authorized({ request: { nextUrl }, auth }) {
-      const isLoggedIn = !!auth?.user;
-      const { pathname } = nextUrl;
-
-      //! Fix this, middleware not working
-      console.log("==========================")
-      console.log("isLoggedIn: ", isLoggedIn);
-      console.log("pathname: ", pathname);
-      console.log("==========================")
-
-      if (pathname.startsWith("/login") && isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
-      }
-
-      return !!auth;
-    },
     jwt({ token, user }) {
       if (user) { // User is available during sign-in
         token.id = user.id as string;
@@ -61,10 +71,45 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session
     },
   },
-    pages: {
-      signIn: "/login",
-      error: "/login",
+  pages: {
+    //signIn: `/login`,
+    signIn: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+    error: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+    signOut: `${process.env.NEXT_PUBLIC_APP_URL}`,
+    //error: "/login",
+  },
+  
+  cookies: {
+    sessionToken: {
+      name: domain === "localhost" ? 'authjs.session-token' : `__Secure-next-auth.session-token`,
+      options: {
+        sameSite: "none",
+        secure: true,
+        httpOnly: true,
+        path: "/",
+        domain,
+      },
     },
-    trustHost: true,
-    debug: true,
+    callbackUrl: {
+      name: domain === "localhost" ? 'authjs.callback-url' : `__Secure-next-auth.callback-url`,
+      options: {
+        sameSite: "none",
+        secure: true,
+        httpOnly: true,
+        path: "/",
+        domain,
+      },
+    },
+    csrfToken: {
+      name: domain === "localhost" ? 'authjs.csrf-token' : `next-auth.csrf-token`,
+      options: {
+        sameSite: "none",
+        secure: true,
+        httpOnly: true,
+        path: "/",
+        domain,
+      },
+    },
+  },
+  trustHost: true
 });

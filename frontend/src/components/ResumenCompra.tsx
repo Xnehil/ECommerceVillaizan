@@ -196,7 +196,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           <span style={{ color: 'grey' }}>
             {detalle.producto.nombre} <strong style={{ color: 'black' }}>x</strong> {detalle.cantidad}
           </span>
-          <span>S/. {(detalle.producto.precioEcommerce * detalle.cantidad).toFixed(2)}</span>
+          <span>S/ {(detalle.producto.precioEcommerce * detalle.cantidad).toFixed(2)}</span>
         </div>
       ))}
 
@@ -204,19 +204,19 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       {hayDescuento && descuento > 0 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
           <span>Descuento</span>
-          <span>- S/. {descuento.toFixed(2)}</span>
+          <span>- S. {descuento.toFixed(2)}</span>
         </div>
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
         <span>Costo de envío</span>
         <span style={{ color: noCostoEnvio ? 'grey' : 'black' }}>
-          {noCostoEnvio ? <s>S/. {costoEnvio.toFixed(2)}</s> : `S/. ${costoEnvio.toFixed(2)}`}
+          {noCostoEnvio ? <s>S/ {costoEnvio.toFixed(2)}</s> : `S/ ${costoEnvio.toFixed(2)}`}
         </span>
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '5px' }}>
         <span style={{ color: 'black' }}>Total</span>
-        <span style={{ color: '#B88E2F' }}>S/. {total.toFixed(2)}</span>
+        <span style={{ color: '#B88E2F' }}>S/ {total.toFixed(2)}</span>
       </div>
       <hr style={{ margin: '10px 0' }} />
       {/* Mostrar paymentAmount si está presente */}
@@ -224,11 +224,11 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
             <span>Monto a pagar</span>
-            <span>S/. {paymentAmount.toFixed(2)}</span>
+            <span>S/ {paymentAmount.toFixed(2)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
             <span>Vuelto</span>
-            <span>S/. {vuelto.toFixed(2)}</span>
+            <span>S/ {vuelto.toFixed(2)}</span>
           </div>
           <hr style={{ margin: '10px 0' }} />
         </>

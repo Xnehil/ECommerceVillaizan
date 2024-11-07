@@ -16,10 +16,12 @@ const StoreTemplate = ({
   sortBy,
   page,
   countryCode,
+  isAuthenticated 
 }: {
   sortBy?: string
   page?: string
   countryCode: string
+  isAuthenticated: boolean
 }) => {
   const pageNumber = page ? parseInt(page) : 1
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
@@ -102,6 +104,7 @@ const StoreTemplate = ({
               carrito={carritoState}
               setCarrito={setCarritoState}
               city={city}
+              isAuthenticated={isAuthenticated}
             />
           </Suspense>
         </div>

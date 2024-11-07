@@ -1,6 +1,7 @@
 import { EntidadBase } from "./EntidadBase";
 import { Ciudad, Direccion, Motorizado } from "./PaqueteEnvio";
 import { Producto } from "./PaqueteProducto";
+import { Promocion } from "./PaquetePromocion";
 import { Usuario } from "./PaqueteUsuario";
 
 
@@ -34,4 +35,6 @@ export interface DetallePedido extends EntidadBase { // Placeholder, replace if 
     cantidad: number;
     subtotal: number;
     producto: Producto; // Many-to-one relationship
+    precio: number;
+    promocion?: Promocion; // Optional field
 }
