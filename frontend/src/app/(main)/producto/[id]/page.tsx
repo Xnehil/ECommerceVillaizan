@@ -7,6 +7,7 @@ import { Pedido } from "types/PaquetePedido";
 import axios from 'axios';
 import { addItem, updateLineItem, getOrSetCart, enrichLineItems } from "@modules/cart/actions";
 import BackButton from "@components/BackButton";
+import { useSession } from 'next-auth/react';
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
 export default function ProductDetail() {
@@ -16,6 +17,8 @@ export default function ProductDetail() {
   const [carrito, setCarrito] = useState<Pedido | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { data: session, status } = useSession();
 
   const fetchCarrito = async (): Promise<{ cart: Pedido; cookieValue?: string }> => {
     const respuesta = await getOrSetCart();
@@ -72,6 +75,23 @@ export default function ProductDetail() {
     }
   }, [id]);
 
+  function checkIfAuthenticated(session: any, status: string) {
+    if (status !== "loading") {
+      return session?.user?.id ? true : false;
+    }
+    return false;
+  }
+
+  useEffect(() => {
+    if (checkIfAuthenticated(session, status)) {
+      setIsAuthenticated(true);
+      console.log("User is authenticated");
+    } else {
+      setIsAuthenticated(false);
+      console.log("User is not authenticated");
+    }
+  }, [session, status]);
+
   const handleAddToCart = async () => {
     if (!product || product.inventarios[0]?.stock === 0) {
       setError("Este producto está fuera de stock.");
@@ -83,7 +103,7 @@ export default function ProductDetail() {
 
     try {
       let precioProducto = product.precioEcommerce;
-      if (product.promocion && product.promocion.porcentajeDescuento) {
+      if (isAuthenticated && product.promocion && product.promocion.porcentajeDescuento) {
         const porcentaje = product.promocion.porcentajeDescuento;
         precioProducto -= (precioProducto * porcentaje) / 100;
       }
