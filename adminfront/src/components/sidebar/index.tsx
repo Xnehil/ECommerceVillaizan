@@ -1,5 +1,7 @@
 import "@/styles/sidebar.css";
 import NavButton from "./navButton";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const Sidebar = () => {
   const logoIcon = "/icons/logo.png";
@@ -11,7 +13,30 @@ const Sidebar = () => {
     { name: "Notificaciones", icon: "/icons/notificacion.png", href: "/notificaciones" },
     // { name: "Chatbot", icon: "/icons/chatbot.png", href: "/chatbot" },
   ];
-  // const pathname
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [pendingOrders, setPendingOrders] = useState(0);
+
+  const fetchCounts = async () => {
+    try {
+      // Fetch unread notifications count
+      const notificationsResponse = await axios.get(baseUrl + "notificacion?rol=Admin&cantidad=true");
+      setUnreadNotifications(notificationsResponse.data.cantidad);
+
+      // Fetch pending orders count
+      const ordersResponse = await axios.get(baseUrl + "pedido?estado=solicitado&cantidad=true");
+      setPendingOrders(ordersResponse.data.cantidad);
+    } catch (error) {
+      console.error("Error fetching counts:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="sidebar">
@@ -25,8 +50,11 @@ const Sidebar = () => {
               title={icon.name}
               path={icon.href}
               active={true}
-              // {pathname.startsWith(`/${icon.name.toLowerCase()}`)}
-            />
+              count={
+                icon.name === "Notificaciones" ? unreadNotifications :
+                icon.name === "Pedidos" ? pendingOrders : undefined
+              }
+          />
           ))}
         </div>
       </div>
