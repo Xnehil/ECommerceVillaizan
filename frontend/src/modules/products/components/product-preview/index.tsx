@@ -5,6 +5,8 @@ import { Producto } from "types/PaqueteProducto"
 import { useEffect, useState } from "react"
 import { addItem, updateLineItem } from "@modules/cart/actions"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
+import Link from 'next/link'
+
 
 export default function ProductPreview({
   productPreview,
@@ -225,7 +227,14 @@ export default function ProductPreview({
         size="full"
         isFeatured={isFeatured}
       />
-  
+        {/* Ícono de Información en la esquina superior derecha */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <Link href={`/producto/${productPreview.id}`}>
+          <button className="bg-white p-1 rounded-full shadow-md hover:bg-gray-100 transition" aria-label="Más información">
+            <img src="/images/boton-de-informacion.png" alt="Información" className="w-5 h-5" />
+          </button>
+        </Link>
+      </div>
       {/* Botón Agregar, Cantidad, y Remover */}
       {cantidadActual > 0 ? (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center">
