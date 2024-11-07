@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS vi_contenidoeducativo;
 DROP TABLE IF EXISTS vi_fruta;
 DROP TABLE IF EXISTS vi_subcategoria;
 DROP TABLE IF EXISTS vi_detallepedido;
+DROP TABLE IF EXISTS vi_plantillamotorizado;
 DROP TABLE IF EXISTS vi_producto;
 DROP TABLE IF EXISTS vi_tipoproducto;
 DROP TABLE IF EXISTS vi_libroreclamaciones;
@@ -236,6 +237,35 @@ create table vi_fruta (
     usuarioactualizacion varchar(50)
 );
 
+create table vi_plantillamotorizado (
+    id varchar(50) primary key,
+    nombre varchar(255) not null,
+    descripcion text,
+	--trazabilidad
+    estaactivo boolean default true not null,
+    desactivadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50)
+);
+
+CREATE TABLE vi_plantillamotorizado_producto (
+    id varchar(50) primary key,
+    id_plantillamotorizado varchar(50) NOT NULL,
+    id_producto varchar(50) NOT NULL,
+    cantidad INTEGER NOT NULL,
+    --trazabilidad
+    estaactivo boolean default true not null,
+    desactivadoen timestamp null,
+    creadoen timestamp default current_timestamp not null,
+    actualizadoen timestamp default current_timestamp not null,
+    usuariocreacion varchar(50) not null,
+    usuarioactualizacion varchar(50),
+
+    CONSTRAINT fk_plantillamotorizado FOREIGN KEY(id_plantillamotorizado) REFERENCES vi_plantillamotorizado(id),
+    CONSTRAINT fk_producto FOREIGN KEY(id_producto) REFERENCES vi_producto(id)
+);
 
 
 CREATE TABLE vi_contenidoeducativo (
