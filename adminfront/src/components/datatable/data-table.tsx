@@ -80,51 +80,53 @@ export function DataTable<TData, TValue>({
 
   return (
     <div>
-      <div className="flex items-center py-4">
-        {sb && sbColumn && (
-          <Input
-            placeholder={sbPlaceholder}
-            value={
-              (table.getColumn(sbColumn)?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn(sbColumn)?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-        )}
-        {dd && ddColumn && (ddValues?.length ?? 0) > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                {String(
-                  table.getColumn(ddColumn)?.getFilterValue() ||
-                    ddColumn.charAt(0).toUpperCase() + ddColumn.slice(1)
-                )}
-                <ChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {ddValues?.map((value) => (
-                <DropdownMenuCheckboxItem
-                  key={value}
-                  className="capitalize"
-                  checked={
-                    table.getColumn(ddColumn)?.getFilterValue() === value
-                  }
-                  onCheckedChange={(checked) => {
-                    table
-                      .getColumn(ddColumn)
-                      ?.setFilterValue(checked ? value : undefined);
-                  }}
-                >
-                  {value}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-      </div>
+      {(sb || dd) && (
+        <div className="flex items-center py-4">
+          {sb && sbColumn && (
+            <Input
+              placeholder={sbPlaceholder}
+              value={
+                (table.getColumn(sbColumn)?.getFilterValue() as string) ?? ""
+              }
+              onChange={(event) =>
+                table.getColumn(sbColumn)?.setFilterValue(event.target.value)
+              }
+              className="max-w-sm"
+            />
+          )}
+          {dd && ddColumn && (ddValues?.length ?? 0) > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="ml-auto">
+                  {String(
+                    table.getColumn(ddColumn)?.getFilterValue() ||
+                      ddColumn.charAt(0).toUpperCase() + ddColumn.slice(1)
+                  )}
+                  <ChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {ddValues?.map((value) => (
+                  <DropdownMenuCheckboxItem
+                    key={value}
+                    className="capitalize"
+                    checked={
+                      table.getColumn(ddColumn)?.getFilterValue() === value
+                    }
+                    onCheckedChange={(checked) => {
+                      table
+                        .getColumn(ddColumn)
+                        ?.setFilterValue(checked ? value : undefined);
+                    }}
+                  >
+                    {value}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      )}
       <div className="rounded-md border">
         <Table>
           <TableHeader>

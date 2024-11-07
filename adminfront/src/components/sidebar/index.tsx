@@ -2,8 +2,11 @@ import "@/styles/sidebar.css";
 import NavButton from "./navButton";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { usePathname  } from "next/navigation";
 
 const Sidebar = () => {
+  const currentPath = usePathname();
+
   const logoIcon = "/icons/logo.png";
   const sidebarIcons = [
     { name: "Productos", icon: "/icons/productos.png", href: "/productos" },
@@ -49,7 +52,7 @@ const Sidebar = () => {
               icon={icon.icon}
               title={icon.name}
               path={icon.href}
-              active={true}
+              active={currentPath.includes(icon.href)}
               count={
                 icon.name === "Notificaciones" ? unreadNotifications :
                 icon.name === "Pedidos" ? pendingOrders : undefined
