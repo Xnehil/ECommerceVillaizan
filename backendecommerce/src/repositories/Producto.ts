@@ -11,6 +11,7 @@ export const ProductoRepository = dataSource
         .leftJoinAndSelect("producto.tipoProducto", "tipoProducto") // Joining TipoProducto
         .leftJoinAndSelect("producto.subcategorias", "subcategoria") // Joining Subcategoria
         .leftJoinAndSelect("producto.frutas", "fruta") // Joining Fruta
+        .leftJoinAndSelect("producto.promocion", "promocion") // Joining Promocion
         .where("motorizado.id_ciudad = :ciudadId", { ciudadId })
         .andWhere("producto.seVendeEcommerce = :seVendeEcommerce", { seVendeEcommerce: true })
         .getMany();

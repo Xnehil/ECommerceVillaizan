@@ -1,24 +1,41 @@
-import { Metadata } from "next"
-import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
-import StoreTemplate from "@modules/store/templates"
+"use client";
 
-export const metadata: Metadata = {
-  title: "Catálogo Villaizan",
-  description: "Encuentra los mejores helados y paletas en Villaizan.",
-}
+import { SortOptions } from "@modules/store/components/refinement-list/sort-products";
+import StoreTemplate from "@modules/store/templates";
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 type Params = {
   searchParams: {
-    sortBy?: SortOptions
-    page?: string
-  }
+    sortBy?: SortOptions;
+    page?: string;
+  };
   params: {
-    countryCode: string
+    countryCode: string;
+  };
+};
+
+function checkIfAuthenticated(session: any, status: string) {
+  if (status !== "loading") {
+    return session?.user?.id ? true : false;
   }
+  return false;
 }
 
-export default async function StorePage({ searchParams, params }: Params) {
-  const { sortBy, page } = searchParams
+export default function StorePage({ searchParams, params }: Params) {
+  const { sortBy, page } = searchParams;
+  const { data: session, status } = useSession();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (checkIfAuthenticated(session, status)) {
+      setIsAuthenticated(true);
+      console.log("User is authenticated");
+    } else {
+      setIsAuthenticated(false);
+      console.log("User is not authenticated");
+    }
+  }, [session, status]);
 
   return (
     <>
@@ -36,7 +53,8 @@ export default async function StorePage({ searchParams, params }: Params) {
         sortBy={sortBy}
         page={page}
         countryCode={params.countryCode}
+        isAuthenticated={isAuthenticated}
       />
     </>
-  )
+  );
 }

@@ -36,7 +36,7 @@ const Item = ({ item,  type = "full", onDelete}: ItemProps) => {
     const message = await updateLineItem({
       detallePedidoId: item.id,
       cantidad: nuevaCantidad,
-      subtotal: nuevaCantidad * item.producto.precioEcommerce
+      subtotal: nuevaCantidad * item.precio
     })
       .catch((err) => {
         setError(err.message)
@@ -44,9 +44,8 @@ const Item = ({ item,  type = "full", onDelete}: ItemProps) => {
       })
       .finally(() => {
         setUpdating(false)
-        // console.log("Se actualizó la cantidad del producto, ", item.producto , " a ", nuevaCantidad, " el nuevo subtotal es ", nuevaCantidad * item.producto.precioEcommerce)
         item.cantidad = nuevaCantidad
-        item.subtotal = nuevaCantidad  * item.producto.precioEcommerce
+        item.subtotal = nuevaCantidad  * item.precio
       })
     setCantidad(nuevaCantidad)
     message && setError(message)

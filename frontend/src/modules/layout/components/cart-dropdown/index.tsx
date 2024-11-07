@@ -15,6 +15,14 @@ import Thumbnail from "@modules/products/components/thumbnail"
 import Link from "next/link"
 import { Pedido } from "types/PaquetePedido"
 import { Producto } from "types/PaqueteProducto"
+import { useSession } from "next-auth/react";
+
+function checkIfAuthenticated(session: any, status: string) {
+  if (status !== "loading") {
+    return session?.user?.id ? true : false;
+  }
+  return false;
+}
 
 const CartDropdown = ({
   cart: cartState,
@@ -27,7 +35,7 @@ const CartDropdown = ({
     undefined
   )
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false)
-  const productoFake : Producto = {
+  const productoFake = {
     id: "1",
     nombre: "Helado de fresa",
     urlImagen: "https://picsum.photos/200/300",
@@ -50,6 +58,19 @@ const CartDropdown = ({
     usuarioCreacion: "admin",
     estaActivo: true,
   }
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (checkIfAuthenticated(session, status)) {
+      setIsAuthenticated(true);
+      console.log("User is authenticated");
+    } else {
+      setIsAuthenticated(false);
+      console.log("User is not authenticated");
+    }
+  }, [session, status]);
+
 
   const open = () => setCartDropdownOpen(true)
   const close = () => setCartDropdownOpen(false)
@@ -144,6 +165,7 @@ const CartDropdown = ({
                     })
                     .map((item) => {
                       item.producto = item.producto ?? productoFake;
+                      //console.log("Item producto:", item.producto);
                       return (
                       <div
                         className="grid grid-cols-[122px_1fr] gap-x-4"
@@ -161,14 +183,39 @@ const CartDropdown = ({
                             <div className="flex items-start justify-between">
                               <div className="flex flex-col overflow-ellipsis whitespace-nowrap mr-4 w-[180px]">
                                 <h3 className="text-base-regular overflow-hidden text-ellipsis">
-                                  <Link
-                                    href={`/products/${item.producto.id || defaultUrl}`}
-                                    data-testid="product-link"
-                                  >
-                                    {item.producto.nombre} 
-                                    <br />
-                                    {"S/ " + Number(item.producto.precioEcommerce).toFixed(2) + " c/u"}
-                                  </Link>
+                                <Link
+                                  href={`/products/${item.producto.id || defaultUrl}`}
+                                  data-testid="product-link"
+                                >
+                                  {item.producto.nombre}
+                                  <br />
+                                  {isAuthenticated && item.producto.promocion && item.producto.promocion.porcentajeDescuento? (
+                                    // Calculate discounted price
+                                    <>
+                                      <span
+                                        style={{
+                                          textDecoration: "line-through",
+                                          color: "gray",
+                                          marginRight: "5px",
+                                        }}
+                                      >
+                                        {"S/ " + Number(item.producto.precioEcommerce).toFixed(2)}
+                                      </span>
+                                      <span style={{ color: "black" }}>
+                                        {"S/ " + (
+                                          item.producto.precioEcommerce -
+                                          (item.producto.precioEcommerce * item.producto.promocion.porcentajeDescuento) / 100
+                                        ).toFixed(2) + " c/u"}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    // Show regular price
+                                    <span>
+                                      {"S/ " + Number(item.producto.precioEcommerce).toFixed(2) + " c/u"}
+                                    </span>
+                                  )}
+                                </Link>
+
                                 </h3>
                                 {/* <LineItemOptions
                                   variant={item.producto}

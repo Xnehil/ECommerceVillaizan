@@ -1,5 +1,6 @@
 import { EntidadBase } from "./EntidadBase";
 import { InventarioMotorizado } from "./PaqueteEnvio";
+import { Promocion } from "./PaquetePromocion";
 
 // /frontend/models/Producto.ts
 
@@ -10,6 +11,7 @@ export interface Producto extends EntidadBase {
     subcategorias: Subcategoria[];
     frutas: Fruta[];
     inventarios: InventarioMotorizado[];
+    promocion: Promocion;
     codigo: string;
     nombre: string;
     precioA: number;

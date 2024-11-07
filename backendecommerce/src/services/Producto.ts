@@ -120,6 +120,12 @@ class ProductoService extends TransactionBaseService {
         if (!productos || productos.length === 0) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "No se encontraron productos");
         }
+        //revisar que la promocion de cada producto este activa
+        productos.forEach(producto => {
+          if (producto.promocion && producto.promocion.estaActivo === false) {
+            producto.promocion = null;
+          }
+        });
         //ordenar productos alfabeticamente y los que no tengan inventario al final
         productos.sort((a, b) => {
           const stockA = a.inventarios.reduce((acc, inv) => acc + inv.stock, 0);

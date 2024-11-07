@@ -2,7 +2,7 @@ import { Text } from "@medusajs/ui"
 import { Region } from "@medusajs/medusa"
 import Thumbnail from "../thumbnail"
 import { Producto } from "types/PaqueteProducto"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { addItem, updateLineItem } from "@modules/cart/actions"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
 
@@ -12,21 +12,42 @@ export default function ProductPreview({
   region,
   carrito,
   setCarrito,
+  isAuthenticated,
 }: {
   productPreview: Producto
   isFeatured?: boolean
   region?: Region
   carrito: Pedido | null
   setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>
+  isAuthenticated: boolean
 }) {
   const [isAdding, setIsAdding] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [existeDescuento, setExisteDescuento] = useState(false)
+  const [estaAutenticado, setEstaAutenticado] = useState(false)
+  const [cheapestPriceMostrar, setCheapestPriceMostrar] = useState(productPreview.precioEcommerce)
 
-  const cheapestPrice = productPreview.precioEcommerce
+  const precioNormal = productPreview.precioEcommerce
   const detalleAnterior = carrito?.detalles.find(
     (detalle) => detalle.producto.id === productPreview.id
   )
   const cantidadActual = detalleAnterior?.cantidad || 0
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setEstaAutenticado(true)
+      //if productPreview tiene promocion, calcular el precio más barato
+      if (productPreview.promocion && productPreview.promocion.porcentajeDescuento) {
+        const porcentaje = productPreview.promocion.porcentajeDescuento
+        const precioDescuento = precioNormal - (precioNormal * porcentaje) / 100
+        setCheapestPriceMostrar(precioDescuento)
+        setExisteDescuento(true)
+      }
+      else{
+        setExisteDescuento(false)
+      }
+    } 
+  }, [isAuthenticated, productPreview]);
 
   const handleAddToCart = async () => {
     if (!productPreview?.id) return null
@@ -40,6 +61,14 @@ export default function ProductPreview({
     setError(null)
 
     try {
+      let precioProducto = productPreview.precioEcommerce
+      if(isAuthenticated){
+        if (productPreview.promocion && productPreview.promocion.porcentajeDescuento) {
+          const porcentaje = productPreview.promocion.porcentajeDescuento
+          precioProducto = precioNormal - (precioNormal * porcentaje) / 100
+        }
+      }
+
       // Agregar al carritoState para que se actualice el carrito visualmente
       const detalleAnterior = carrito?.detalles.find(
         (detalle) => detalle.producto.id === productPreview.id
@@ -54,20 +83,22 @@ export default function ProductPreview({
         await updateLineItem({
           detallePedidoId: detalleAnterior.id,
           cantidad: cantidad,
-          subtotal: productPreview.precioEcommerce * cantidad,
+          subtotal: detalleAnterior.precio * cantidad,
         })
         nuevoDetalle = {
           ...detalleAnterior,
           cantidad: cantidad,
-          subtotal: productPreview.precioEcommerce * cantidad,
+          subtotal: detalleAnterior.precio * cantidad,
         }
       } else {
         // Agregar un nuevo producto al carrito si no existe
         const response = await addItem({
           cantidad: 1,
           idProducto: productPreview.id || "",
-          precio: productPreview.precioEcommerce,
+          //precio: productPreview.precioEcommerce,
+          precio: precioProducto,
           idPedido: carrito?.id || "",
+          idPromocion: productPreview.promocion?.id || "",
         })
         if (
           response &&
@@ -129,12 +160,12 @@ export default function ProductPreview({
         await updateLineItem({
           detallePedidoId: detalleAnterior.id,
           cantidad: cantidad,
-          subtotal: productPreview.precioEcommerce * cantidad,
+          subtotal: detalleAnterior.precio * cantidad,
         })
         const nuevoDetalle = {
           ...detalleAnterior,
           cantidad: cantidad,
-          subtotal: productPreview.precioEcommerce * cantidad,
+          subtotal: detalleAnterior.precio * cantidad,
         }
 
         const nuevosDetalles =
@@ -253,11 +284,16 @@ export default function ProductPreview({
             {productPreview.nombre}
           </Text>
           <div className="flex items-center gap-x-2">
-            {cheapestPrice && (
-              <span className="text-lg font-bold text-yellow-600">
-                {`S/. ${cheapestPrice}`}
-              </span>
-            )}
+          {cheapestPriceMostrar && (
+            <span className="text-lg font-bold text-yellow-600">
+              {`S/ ${Number(cheapestPriceMostrar).toFixed(2)}`}
+            </span>
+          )}
+          {existeDescuento && precioNormal && (
+            <span className="text-lg text-gray-500 line-through">
+              {`S/ ${Number(precioNormal).toFixed(2)}`}
+            </span>
+          )}
           </div>
         </div>
       </div>

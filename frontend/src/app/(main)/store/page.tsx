@@ -1,3 +1,4 @@
+
 import { Metadata } from "next"
 
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -23,10 +24,12 @@ export default async function StorePage({ searchParams, params }: Params) {
   const { sortBy, page } = searchParams
   console.log("Base URL:", baseUrl);
   return (
+    <></>
+    /*
     <StoreTemplate
       sortBy={sortBy}
       page={page}
       countryCode={params.countryCode}
-    />
+    />*/
   )
 }

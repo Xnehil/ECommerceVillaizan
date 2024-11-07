@@ -5,6 +5,21 @@ import axios from "axios"
 import { DetallePedido } from "types/PaquetePedido"
 import { cookies } from "next/headers"
 
+interface RequestBody {
+  producto: {
+    id: string;
+  };
+  cantidad: number;
+  pedido: {
+    id: string;
+  };
+  subtotal: number;
+  precio: number;
+  promocion?: {
+    id: string;
+  };
+}
+
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 /**
  * Retrieves the cart based on the cartId cookie
@@ -190,7 +205,7 @@ export async function addToCart({
   }
 
   try {
-    const response=await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio}) //Esto ya está modificado
+    const response=await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio, idPromocion:""}) //Esto ya está modificado
     // revalidateTag("cart")
     console.log("Item ", idProducto, " added to cart")
     return response
@@ -294,26 +309,37 @@ export async function addItem({
   idPedido,
   idProducto,
   cantidad,
-  precio
+  precio,
+  idPromocion
 }: {
   idPedido: string
   idProducto: string
   cantidad: number
   precio: number
+  idPromocion: string
 }) {
 
   try{
     console.log("Adding item to cart")
-    const response = await axios.post(`${baseUrl}/admin/detallePedido`, {
-      producto:{
+
+    const requestBody: RequestBody = {
+      producto: {
         id: idProducto
       },
       cantidad: cantidad,
       pedido: {
         id: idPedido
       },
-      subtotal: precio*cantidad
-    })
+      subtotal: precio * cantidad,
+      precio: precio
+    };
+
+    // Only add idPromocion if it's not an empty string
+    if (idPromocion !== "") {
+      requestBody.promocion = { id: idPromocion };
+    }
+
+    const response = await axios.post(`${baseUrl}/admin/detallePedido`, requestBody);
     // console.log(response)
     console.log("Item added to cart")
     return response.data
