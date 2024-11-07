@@ -95,8 +95,10 @@ export default function Entregas() {
       setPedidosAceptados(pedidosEnProceso);
       const pedidosHistorial = pedidosResponse.pedidos.filter(
         (pedido) =>
-          pedido.estado === "entregado" 
+          pedido.estado === "enProgreso" || pedido.estado === "cancelado"
       );
+      console.log("Historial de pedidos:");
+      console.log(pedidosHistorial);
       setHistorialPedidos(pedidosHistorial);
 
       // Sort. First enProgreso, then verificado. Sort by solicitadoEn

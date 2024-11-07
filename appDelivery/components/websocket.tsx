@@ -10,6 +10,9 @@ import {
 import { Animated, Text, Dimensions, View } from "react-native";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Audio } from 'expo-av';
+import { WS_URL } from "@env";
+
+const notificationSound = require("@assets/sounds/notificacion.mp3");
 
 interface WebSocketComponentProps {
   idMotorizado: string;
@@ -22,8 +25,6 @@ export interface WebSocketComponentRef {
   sendPedido: (pedidoId: string) => void;
 }
 
-const ws_url = process.env.WS_URL || "ws://localhost:9001/ws";
-
 // Usamos `forwardRef` para permitir que el componente exponga funciones a su padre
 const WebSocketComponent = forwardRef<
   WebSocketComponentRef,
@@ -34,12 +35,12 @@ const WebSocketComponent = forwardRef<
     console.log("Mensaje recibido:", data, "Tipo:", data.type);
     if (data.type === "pedido") {
       // Aquí se hara la notificación
-      setShowNotification(true); // Mostrar la notificación
+      setShowNotification(true); 
       console.log("Pedido recibido:", data.data.pedidoId);
 
       const playNotificationSound = async () => {
         const { sound } = await Audio.Sound.createAsync(
-          require('../assets/notification.mp3')
+          notificationSound
         );
         await sound.playAsync();
       };
@@ -49,7 +50,7 @@ const WebSocketComponent = forwardRef<
   };
   // Establece la conexión WebSocket con el ID del motorizado en la URL
   const { sendMessage, lastMessage, readyState } = useWebSocket(
-    `${ws_url}?rol=delivery&id=${idMotorizado}`,
+    `${WS_URL}?rol=delivery&id=${idMotorizado}`,
     {
       onOpen: () => console.log("Conexión WebSocket establecida"),
       onError: (event) =>
