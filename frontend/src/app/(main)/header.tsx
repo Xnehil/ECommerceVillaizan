@@ -25,7 +25,7 @@ const Header = () => {
           <ul className="flex space-x-6">
             <li>
               <Link href="/">
-                <a className="hover:underline">Home</a>
+                <a className="hover:underline">Hoe</a>
               </Link>
             </li>
             <li>
@@ -53,7 +53,7 @@ const Header = () => {
             </a>
           </Link>*/}
           <Link href="/login"> <a className="bg-white text-red-600 px-4 py-2 rounded-lg font-bold">
-              ¡Inicia Sesión y accede a promociones!
+              ¡Inicia Sesión y accede a proociones!
             </a>
           </Link>*
         </div>
