@@ -72,11 +72,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   pages: {
-    //signIn: `/login`,
-    signIn: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
-    error: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
-    signOut: `${process.env.NEXT_PUBLIC_APP_URL}`,
-    //error: "/login",
+    signIn: `/login`,
+    //signIn: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+    //error: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+    //signOut: `${process.env.NEXT_PUBLIC_APP_URL}`,
+    error: "/login",
   },
   
   cookies: {
