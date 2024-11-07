@@ -49,6 +49,11 @@ export default function ProductPreview({
     } 
   }, [isAuthenticated, productPreview]);
 
+    // Verificar si el producto tiene stock
+    if (productPreview.inventarios[0].stock === 0) {
+      return null
+    }
+
   const handleAddToCart = async () => {
     if (!productPreview?.id) return null
 
