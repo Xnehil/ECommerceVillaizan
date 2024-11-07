@@ -33,7 +33,7 @@ export default function Nav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-  const loginUrl = `${urlLogin}/login?redirect=${encodeURIComponent(currentUrl)}`;
+  const loginUrl = `${urlLogin}/login?callbackUrl=${currentUrl}`;
   const [finishedLoadingName, setFinishedLoadingName] = useState(false);
 
   const toggleDropdown = () => {
