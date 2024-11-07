@@ -24,6 +24,13 @@ export async function handleSignOut() {
   await signOut();
 }
 
+function checkIfAuthenticated(session: any, status: string) {
+  if (status !== "loading") {
+    return session?.user?.id ? true : false;
+  }
+  return false;
+}
+
 const urlLogin = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function Nav() {
@@ -35,6 +42,20 @@ export default function Nav() {
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const loginUrl = `${urlLogin}/login?callbackUrl=${currentUrl}`;
   const [finishedLoadingName, setFinishedLoadingName] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  useEffect(() => {
+    if (checkIfAuthenticated(session, status)) {
+      setIsAuthenticated(true);
+      console.log("User is authenticated");
+      console.log("user id: ", session?.user?.id);
+    } else {
+      setIsAuthenticated(false);
+      console.log("User is not authenticated");
+      console.log("user id: ", session?.user?.id);
+    }
+  }, [session, status]);
+  
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
