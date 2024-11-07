@@ -100,9 +100,11 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
       try {
         // Configura el cuerpo de la solicitud con la estructura específica
         const pedidoUpdateData = {
-          metodosPago: {
-            nombre: id === "yape" ? "Yape" : id === "plin" ? "Plin" : "Pago en Efectivo"
-          }
+          metodosPago: [
+            {
+              id: id === "yape" ? "mp_01JBDQD78HBD6A0V1DVMEQAFKV" : id === "plin" ? "mp_01JBDQDH47XDE75XCGSS739E6G" : "mp_01J99CS1H128G2P7486ZB5YACH"
+            }
+          ]
         };
   
         await axios.put(
@@ -113,7 +115,7 @@ export default function MetodoPagoClient({ pedidoInput, setStep }: MetodoPagoCli
           }
         );
   
-        console.log("Pedido actualizado con método de pago:", pedidoUpdateData.metodosPago.nombre);
+        console.log("Pedido actualizado con método de pago:", pedidoUpdateData.metodosPago);
       } catch (error) {
         console.error("Error al actualizar el método de pago:", error);
       }
