@@ -12,6 +12,7 @@ function getCurrentDay(): string {
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+const frontUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 export default function Home() {
   const [trackingCode, setTrackingCode] = useState("");
@@ -62,7 +63,7 @@ export default function Home() {
 
   const handleTrackOrder = () => {
     if (trackingCode) {
-      window.location.href = `http://localhost:8000/seguimiento?codigo=${trackingCode}`;
+      window.location.href = `${frontUrl}/seguimiento?codigo=${trackingCode}`;
     } else {
       alert("Por favor, ingresa un código de seguimiento.");
     }
