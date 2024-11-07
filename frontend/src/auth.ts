@@ -77,6 +77,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     //error: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
     //signOut: `${process.env.NEXT_PUBLIC_APP_URL}`,
     error: "/login",
+    signOut: "/",
   },
   
   cookies: {

@@ -45,6 +45,8 @@ export default function Nav() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   useEffect(() => {
+    console.log("session: ", session);
+    console.log("status: ", status);
     if (checkIfAuthenticated(session, status)) {
       setIsAuthenticated(true);
       console.log("User is authenticated");
