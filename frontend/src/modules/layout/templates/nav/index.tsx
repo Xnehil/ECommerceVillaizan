@@ -24,6 +24,13 @@ export async function handleSignOut() {
   await signOut();
 }
 
+function checkIfAuthenticated(session: any, status: string) {
+  if (status !== "loading") {
+    return session?.user?.id ? true : false;
+  }
+  return false;
+}
+
 const urlLogin = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function Nav() {
@@ -33,8 +40,24 @@ export default function Nav() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
-  const loginUrl = `${urlLogin}/login?redirect=${encodeURIComponent(currentUrl)}`;
+  const loginUrl = `${urlLogin}/login?callbackUrl=${currentUrl}`;
   const [finishedLoadingName, setFinishedLoadingName] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  useEffect(() => {
+    console.log("session: ", session);
+    console.log("status: ", status);
+    if (checkIfAuthenticated(session, status)) {
+      setIsAuthenticated(true);
+      console.log("User is authenticated");
+      console.log("user id: ", session?.user?.id);
+    } else {
+      setIsAuthenticated(false);
+      console.log("User is not authenticated");
+      console.log("user id: ", session?.user?.id);
+    }
+  }, [session, status]);
+  
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
@@ -159,12 +182,12 @@ export default function Nav() {
             ) : (
               <div className="flex items-center">
                 <Button className="text-lg text-white">
-                  {/*<Link href="/login" className="hover:text-ui-fg-base text-white" onClick={() => setIsMobileMenuOpen(false)}>
+                  {<Link href="/login" className="hover:text-ui-fg-base text-white" onClick={() => setIsMobileMenuOpen(false)}>
                     ¡Inicia sesión y accede a promociones!
-                  </Link>*/}
-                  <a href={loginUrl} className="hover:text-ui-fg-base text-white">
+                  </Link>}
+                  {/*<a href={loginUrl} className="hover:text-ui-fg-base text-white">
                     ¡Inicia sesión y accede a promociones!
-                  </a>
+                  </a>*/}
                 </Button>
                 <img src="/images/userIcon.png" alt="Icon" className="h-6 w-6 ml-2" />
               </div>
