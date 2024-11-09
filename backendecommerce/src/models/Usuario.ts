@@ -32,6 +32,9 @@ export class Usuario extends EntidadBase {
     //@Column({ type: 'varchar', length: 50, nullable: true })
     //id_persona: string;
 
+    @Column({ type: 'varchar', length: 255, nullable: true , name: "imagenperfil"})
+    imagenPerfil: string;
+
     @ManyToOne(() => Persona, persona => persona.id, {eager: true})
     @JoinColumn({ name: 'id_persona' })
     persona: Persona;
