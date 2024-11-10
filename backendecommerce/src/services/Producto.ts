@@ -122,7 +122,7 @@ class ProductoService extends TransactionBaseService {
         }
         //revisar que la promocion de cada producto este activa
         productos.forEach(producto => {
-          if (producto.promocion && producto.promocion.estaActivo === false) {
+          if (producto.promocion && (producto.promocion.estaActivo === false || producto.promocion.esValido === false)) {
             producto.promocion = null;
           }
         });

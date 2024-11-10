@@ -43,37 +43,47 @@ import { Promocion } from "@models/Promocion";
     async function validarPromociones() {
       try {
         console.log("Scheduled job 'validarPromociones' started.");
-          const detallePedidoRepository = container.resolve('detallepedidoRepository');
-          const promocionRepository = container.resolve('promocionRepository');
-          const promociones: Promocion[] = await promocionRepository.find({ where: { esValido: true } });
-          const now = new Date();
-  
-          const updatedDetalles = [];  // Colección de detalles de pedido que se actualizarán
-  
-          for (const promocion of promociones) {
-            const fechaExpiracion = new Date(promocion.fechaFin);
-            // Solo desactivar promociones que ya han expirado
-            if (fechaExpiracion <= now) {
-              promocion.esValido = false;
-              // Encontrar detalles de pedido asociados a la promoción y quitar la referencia
-              const detallesPedido = await detallePedidoRepository.encontrarDetallesPedidoPorPromocionYCarrito(promocion.id);
-              for (const detalle of detallesPedido) {
-                  detalle.promocion = null;
-                  updatedDetalles.push(detalle);
-              }
-  
-              // Guardar promoción actualizada
-              await promocionRepository.save(promocion);
-            }
+        
+        const detallePedidoRepository = container.resolve('detallepedidoRepository');
+        const promocionRepository = container.resolve('promocionRepository');
+        const productoRepository = container.resolve('productoRepository');
+    
+        const promociones: Promocion[] = await promocionRepository.find({ where: { esValido: true } });
+        const now = new Date();
+    
+        const updatedDetalles = [];  // Colección de detalles de pedido que se actualizarán
+    
+        for (const promocion of promociones) {
+          const fechaExpiracion = new Date(promocion.fechaFin);
+          
+          if (fechaExpiracion <= now) {
+            promocion.esValido = false;
+    
+            const detallesPedido = await detallePedidoRepository.encontrarDetallesPedidoPorPromocionYCarrito(promocion.id);
+            detallesPedido.forEach(detalle => {
+              detalle.promocion = null;
+              updatedDetalles.push(detalle);
+            });
+    
+            const productos = await productoRepository.find({ where: { promocion: promocion } });
+            await Promise.all(
+              productos.map(async producto => {
+                producto.promocion = null;
+                return productoRepository.save(producto);
+              })
+            );
+    
+            await promocionRepository.save(promocion);
           }
-  
-          // Guardar detalles actualizados
-          if (updatedDetalles.length > 0) {
-              await detallePedidoRepository.save(updatedDetalles);
-          }
-          console.log('Scheduled job "validarPromociones" finished.');
+        }
+    
+        if (updatedDetalles.length > 0) {
+          await detallePedidoRepository.save(updatedDetalles);
+        }
+        
+        console.log('Scheduled job "validarPromociones" finished.');
       } catch (error) {
-          console.error('Error validating promotions:', error);
+        console.error('Error validating promotions:', error);
       }
     }
     // Schedule the job to run every minute
