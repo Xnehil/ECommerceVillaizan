@@ -61,8 +61,8 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
               </Tooltip>
             </TooltipProvider>
           </span>
-          <span data-testid="cart-subtotal" data-value={subtotal || 0}>
-            {getAmount(subtotal)}
+          <span data-testid="cart-subtotal" data-value={subtotalWithoutDiscounts || 0}>
+            {getAmount(subtotalWithoutDiscounts)}
           </span>
         </div>
         {totalDiscount > 0 && (

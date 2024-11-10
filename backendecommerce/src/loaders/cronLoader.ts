@@ -92,7 +92,7 @@ import { Promocion } from "@models/Promocion";
     //   console.log('Scheduled job "cancelSolicitadoPedidos" executed.');
     });
     //'*/5 * * * *'
-    cron.schedule('* * * * *', async () => {
+    cron.schedule('*/5 * * * *', async () => {
       await validarPromociones();
       // console.log('Scheduled job "validarPromociones" executed.');
     });
