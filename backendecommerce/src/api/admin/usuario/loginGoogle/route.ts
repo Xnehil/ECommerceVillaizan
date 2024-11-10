@@ -74,11 +74,23 @@ export const POST = async (
     newUsuario.contrasena = 'google';
 
     try {
+        const usuarioExistente = await usuarioService.buscarPorCorreo(email);
+        if(usuarioExistente) {
+            res.status(201).json({ status: 'Success',
+                message: 'Usuario autenticado con Google',
+                result: usuarioExistente, });
+            return;
+        }
+
         const usuario = await usuarioService.crearUsuarioGoogle(newUsuario);
-        res.json({ usuario});
+        res.json({ status: 'Success',
+            message: 'Usuario creado exitosamente',
+            result: usuario,});
     } catch (error) {
         console.log(error);
-        res.status(404).json({ error: "Usuario no encontrado" });
+        res.status(404).json({ error: "Usuario no encontrado",
+            description: error.message,
+        });
     }
 };
 

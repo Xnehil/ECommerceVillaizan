@@ -217,23 +217,23 @@ class UsuarioService extends TransactionBaseService {
             persona.estado = "activo";
             persona.estaActivo = true;
             persona.usuarioCreacion = "2B";
-            const personaBD : any = await personaRepo.save(persona);
+            const personaBD = await personaRepo.save(persona);
             usuario.persona = personaBD;
-            console.log("Persona BD: ", personaBD);
+            //console.log("Persona BD: ", personaBD);
         }
-        console.log("Persona creada: ", usuario.persona);
+        //console.log("Persona creada: ", usuario.persona);
     
         let rol : Rol = usuario.rol;
         if(!rol){
             const rolRepo = this.activeManager_.withRepository(this.rolRepository_);
-            const rolBD : any = await rolRepo.findByNombre("Cliente");
+            const rolBD = await rolRepo.findByNombre("Cliente");
             usuario.rol = rolBD;
-            console.log("Rol BD: ", rolBD);
+            //console.log("Rol BD: ", rolBD);
         }
     
-        console.log("Rol asignado: ", usuario.rol);
+        //console.log("Rol asignado: ", usuario.rol);
     
-        console.log("Usuario a crear: ", usuario);
+        //console.log("Usuario a crear: ", usuario);
                 
         return this.atomicPhase_(async (manager) => {
             const usuarioRepo = manager.withRepository(this.usuarioRepository_);
