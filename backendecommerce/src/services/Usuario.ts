@@ -209,6 +209,40 @@ class UsuarioService extends TransactionBaseService {
         }
     }
 
+    async crearUsuarioGoogle(usuario: Usuario): Promise<Usuario> {
+        const personaRepo = this.activeManager_.withRepository(this.personaRepository_);
+        let persona: Persona = usuario.persona;
+        if (!persona) {
+            persona = new Persona();
+            persona.estado = "activo";
+            persona.estaActivo = true;
+            persona.usuarioCreacion = "2B";
+            const personaBD = await personaRepo.save(persona);
+            usuario.persona = personaBD;
+            //console.log("Persona BD: ", personaBD);
+        }
+        //console.log("Persona creada: ", usuario.persona);
+    
+        let rol : Rol = usuario.rol;
+        if(!rol){
+            const rolRepo = this.activeManager_.withRepository(this.rolRepository_);
+            const rolBD = await rolRepo.findByNombre("Cliente");
+            usuario.rol = rolBD;
+            //console.log("Rol BD: ", rolBD);
+        }
+    
+        //console.log("Rol asignado: ", usuario.rol);
+    
+        //console.log("Usuario a crear: ", usuario);
+                
+        return this.atomicPhase_(async (manager) => {
+            const usuarioRepo = manager.withRepository(this.usuarioRepository_);
+            const usuarioCreado = usuarioRepo.create(usuario);
+            const result = await usuarioRepo.save(usuarioCreado);
+            return result;
+        });
+    }
+
 }
 
 export default UsuarioService;
