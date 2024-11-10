@@ -86,7 +86,7 @@ export class Pedido extends EntidadBase {
     )
     metodosPago: MetodoPago[];
 
-    @OneToMany(() => DetallePedido, detallePedido => detallePedido.pedido)
+    @OneToMany(() => DetallePedido, detallePedido => detallePedido.pedido, {eager: true})
     detalles: DetallePedido[];
 
     @OneToMany(() => Pago, pago => pago.pedido)
