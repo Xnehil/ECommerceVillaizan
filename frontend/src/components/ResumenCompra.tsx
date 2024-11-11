@@ -91,7 +91,46 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   }
 
 
+  const checkValidezPromociones = async () => {
+    let promocionesInvalidas : any = [];
+    try {
+      // Fetch all promotional validations in parallel
+      const promocionChecks = detalles.map(async (detalle) => {
+        if (detalle.producto.promocion) {
+          const responsePromocion = await axios.get(`${baseUrl}/admin/promocion/${detalle.producto.promocion.id}`);
+          if (responsePromocion.data && responsePromocion.data.promocion.esValido === false) {
+            if(detalle.precio !== detalle.producto.precioEcommerce){
+              console.log("Promocion inválida", detalle.producto.nombre);
+              await axios.delete(`${baseUrl}/admin/detallePedido/${detalle.id}`);
+              promocionesInvalidas.push(detalle.producto.nombre);
+            }            
+          }
+        }
+      });
+      
+      // Await all parallel checks
+      await Promise.all(promocionChecks);
+      console.log("Se encontraron la siguiente cantidad de promociones inválidas", promocionesInvalidas.length);
+      
+      if (promocionesInvalidas.length > 0) {
+        setErrorText(`Los siguientes productos ya no tienen promociones válidas: ${promocionesInvalidas.join(", ")}`);
+        setShowPopup(false);
+        setShowBuscandoPopup(true);
+        setShowError(true);
+        return false;  // Indicates invalid promotions found
+      }
+      return true; // All promotions are valid
+    } catch (error) {
+      console.log("Error al buscar promociones", error);
+      return false;
+    }
+  }
+
   const handleConfirmar = async () => {
+    const arePromotionsValid = await checkValidezPromociones();
+    if (!arePromotionsValid) {
+      return;
+    }
     setShowPopup(false);
     setShowBuscandoPopup(true);
     try{

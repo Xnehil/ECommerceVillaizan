@@ -189,7 +189,7 @@ const CartDropdown = ({
                                 >
                                   {item.producto.nombre}
                                   <br />
-                                  {isAuthenticated && item.producto.promocion && item.producto.promocion.porcentajeDescuento? (
+                                  {isAuthenticated && item.producto.promocion && item.producto.promocion.esValido && item.producto.promocion.porcentajeDescuento? (
                                     // Calculate discounted price
                                     <>
                                       <span

@@ -39,7 +39,7 @@ export default function ProductPreview({
     if (isAuthenticated) {
       setEstaAutenticado(true)
       //if productPreview tiene promocion, calcular el precio más barato
-      if (productPreview.promocion && productPreview.promocion.porcentajeDescuento) {
+      if (productPreview.promocion && productPreview.promocion.esValido && productPreview.promocion.porcentajeDescuento) {
         const porcentaje = productPreview.promocion.porcentajeDescuento
         const precioDescuento = precioNormal - (precioNormal * porcentaje) / 100
         setCheapestPriceMostrar(precioDescuento)

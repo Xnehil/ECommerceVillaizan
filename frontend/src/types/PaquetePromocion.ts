@@ -9,4 +9,5 @@ export interface Promocion extends EntidadBase {
     fechaFin: Date;
     limiteStock: number;
     porcentajeDescuento: number;
+    esValido: boolean;
 }
