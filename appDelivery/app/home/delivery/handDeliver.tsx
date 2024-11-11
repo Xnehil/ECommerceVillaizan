@@ -49,7 +49,7 @@ const EntregarPedido = () => {
     setTipoModal(tipo);
 
     if (tipo === "auto") {
-      setTimeout(() => setMensajeModal(null), 3000); // Desvanece automáticamente después de 3 segundos
+      setTimeout(() => setMensajeModal(null), 3000);
     }
   };
 
@@ -324,10 +324,13 @@ const EntregarPedido = () => {
       );
       if (!confirm) return;
       const pedido = parsedPedido;
-
+      if (fotoPedido === null || fotoPago === null) {
+        mostrarMensaje("Falta foto de pedido o pago");
+        return;
+      }
       const urlPedido = await enviarImagen(parsedPedido.id, "pedido");
       const urlPago = await enviarImagen(parsedPedido.id, "pago");
-
+      console.log(urlPedido, urlPago);
       //Crear Venta
       const response_detalle = await axios.get(
         `${BASE_URL}/pedido/${pedidoCompleto.id}/conDetalle?pedido=true`
@@ -365,6 +368,7 @@ const EntregarPedido = () => {
       }
 
       const venta: Venta = {
+        id:"",
         tipoComprobante: "Boleta",
         fechaVenta: new Date(),
         numeroComprobante: "001-000001",
@@ -387,7 +391,7 @@ const EntregarPedido = () => {
         urlEvidencia: urlPago,
         codigoTransaccion: null,
         venta: ventaData.data.id,
-        metodoPago: pedidoCompleto.metodosPago[0].id,
+        metodoPago: pedidoCompleto.metodosPago[0]?.id,
         banco: null,
         pedido: pedidoCompleto.id,
       };

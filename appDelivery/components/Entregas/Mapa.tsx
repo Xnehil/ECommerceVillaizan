@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { GoogleMap, LoadScript, Marker, Circle } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker, Circle, useLoadScript} from "@react-google-maps/api";
 import { Pedido } from "@/interfaces/interfaces";
 
-const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+
 interface MapProps {
   location: { latitude: number; longitude: number } | null;
   pedidoSeleccionado: Pedido | null;
@@ -105,7 +106,6 @@ const MapComponent: React.FC<MapProps> = ({
   }, [location, pedidoPosition, pedidoLocations, mode]);
 
   return (
-    <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY || ""}>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         center={center}
@@ -145,7 +145,6 @@ const MapComponent: React.FC<MapProps> = ({
           <Marker position={pedidoPosition} label={pedidoSeleccionado?.usuario?.nombre} />
         )}
       </GoogleMap>
-    </LoadScript>
   );
 };
 

@@ -14,6 +14,8 @@ import WebSocketComponent, {
 } from "@/components/websocket";
 import { useRef, useState, useEffect } from "react";
 import { useColorScheme } from "@/components/useColorScheme";
+import { LoadScript } from "@react-google-maps/api";
+const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -48,34 +50,34 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  
   const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack initialRouteName="index">
-        
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="home" options={{ headerShown: false }} />
+      <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY || ""}>
+        <Stack initialRouteName="index">
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="home" options={{ headerShown: false }} />
 
-        <Stack.Screen
-          name="inventory"
-          options={{
-            presentation: "card",
-            title: "Actualizar Inventario",
-            headerBackVisible: true,
-          }}
-        />
-        
-        <Stack.Screen
-          name="venta"
-          options={{
-            presentation: "card",
-            title: "Venta externa",
-            headerShown: true,
-          }}
-        />
-      </Stack>
+          <Stack.Screen
+            name="inventory"
+            options={{
+              presentation: "card",
+              title: "Actualizar Inventario",
+              headerBackVisible: true,
+            }}
+          />
+
+          <Stack.Screen
+            name="venta"
+            options={{
+              presentation: "card",
+              title: "Venta externa",
+              headerShown: true,
+            }}
+          />
+        </Stack>
+      </LoadScript>
     </ThemeProvider>
   );
 }
