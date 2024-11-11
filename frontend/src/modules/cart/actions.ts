@@ -43,7 +43,7 @@ export async function getOrSetCart(only_get=false) {
     try {
       const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
       cart = response.data.pedido
-      // console.log("Cart sacado de la cookie: ", cart)
+      //console.log("Cart sacado de la cookie: ", cart)
     } catch (e) {
       cart = null
     }
@@ -301,6 +301,7 @@ export async function enrichLineItems(
   return productData.map((product) => {
     product.detallePedido.producto.precioEcommerce = Number(product.detallePedido.producto.precioEcommerce)
     product.detallePedido.cantidad = Number(product.detallePedido.cantidad)
+    product.detallePedido.precio = Number(product.detallePedido.precio)
     return product.detallePedido
   }) as DetallePedido[]
 }

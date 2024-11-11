@@ -50,6 +50,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const [tooltip, setTooltip] = useState<string | null>(null); // State for tooltip content
   const [showError, setShowError] = useState(false);
   const [errorText, setErrorText] = useState("");
+  const mostrarCostoEnvio = false;
     
   const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!isButtonDisabled) {
@@ -91,7 +92,52 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   }
 
 
+  const checkValidezPromociones = async () => {
+    let promocionesInvalidas : any = [];
+    try {
+      // Fetch all promotional validations in parallel
+      const promocionChecks = detalles.map(async (detalle) => {
+        if (detalle.producto.promocion) {
+          const responsePromocion = await axios.get(`${baseUrl}/admin/promocion/${detalle.producto.promocion.id}`);
+          if (responsePromocion.data && responsePromocion.data.promocion.esValido === false) {
+            if(detalle.precio !== detalle.producto.precioEcommerce){
+              console.log("Promocion inválida", detalle.producto.nombre);
+              // Update the detalle to reflect the invalid promotion
+              const body = {
+                precio: detalle.producto.precioEcommerce,
+                subtotal: detalle.producto.precioEcommerce * detalle.cantidad,
+                promocion: null
+              };
+              await axios.put(`${baseUrl}/admin/detallePedido/${detalle.id}`, body);
+              promocionesInvalidas.push(detalle.producto.nombre);
+            }            
+          }
+        }
+      });
+      
+      // Await all parallel checks
+      await Promise.all(promocionChecks);
+      console.log("Se encontraron la siguiente cantidad de promociones inválidas", promocionesInvalidas.length);
+      
+      if (promocionesInvalidas.length > 0) {
+        setErrorText(`Los siguientes productos ya no tienen promociones válidas: ${promocionesInvalidas.join(", ")}`);
+        setShowPopup(false);
+        setShowBuscandoPopup(true);
+        setShowError(true);
+        return false;  // Indicates invalid promotions found
+      }
+      return true; // All promotions are valid
+    } catch (error) {
+      console.log("Error al buscar promociones", error);
+      return false;
+    }
+  }
+
   const handleConfirmar = async () => {
+    const arePromotionsValid = await checkValidezPromociones();
+    if (!arePromotionsValid) {
+      return;
+    }
     setShowPopup(false);
     setShowBuscandoPopup(true);
     try{
@@ -207,13 +253,14 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           <span>- S. {descuento.toFixed(2)}</span>
         </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
-        <span>Costo de envío</span>
-        <span style={{ color: noCostoEnvio ? 'grey' : 'black' }}>
-          {noCostoEnvio ? <s>S/ {costoEnvio.toFixed(2)}</s> : `S/ ${costoEnvio.toFixed(2)}`}
-        </span>
-      </div>
-
+      {mostrarCostoEnvio && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+          <span>Costo de envío</span>
+          <span style={{ color: noCostoEnvio ? 'grey' : 'black' }}>
+            {noCostoEnvio ? <s>S/ {costoEnvio.toFixed(2)}</s> : `S/ ${costoEnvio.toFixed(2)}`}
+          </span>
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '5px' }}>
         <span style={{ color: 'black' }}>Total</span>
         <span style={{ color: '#B88E2F' }}>S/ {total.toFixed(2)}</span>

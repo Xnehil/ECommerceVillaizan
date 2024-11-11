@@ -39,6 +39,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
   const impuestos = 0 // Implementar impuestos en un sprint futuro
   const envioGratis = subtotal >= 25 // Ejemplo: envío gratis si el subtotal es mayor o igual a S/ 50.0 Implementar en un sprint futuro
   const total = subtotalWithoutDiscounts - totalDiscount + (envioGratis ? 0 : costoEnvio) + impuestos
+  const mostrarCostoEnvio = false;
 
   // Llamar al callback para actualizar el valor de costo de envío
   React.useEffect(() => {
@@ -61,8 +62,8 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
               </Tooltip>
             </TooltipProvider>
           </span>
-          <span data-testid="cart-subtotal" data-value={subtotal || 0}>
-            {getAmount(subtotal)}
+          <span data-testid="cart-subtotal" data-value={subtotalWithoutDiscounts || 0}>
+            {getAmount(subtotalWithoutDiscounts)}
           </span>
         </div>
         {totalDiscount > 0 && (
@@ -77,12 +78,14 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
             </span>
           </div>
         )}
-        <div className="flex items-center justify-between">
-          <span>Envío</span>
-          <span data-testid="cart-shipping" data-value={costoEnvio || 0} className={envioGratis ? "line-through" : ""}>
-            {getAmount(costoEnvio)}
-          </span>
-        </div>
+        {mostrarCostoEnvio && (
+          <div className="flex items-center justify-between">
+            <span>Envío</span>
+            <span data-testid="cart-shipping" data-value={costoEnvio || 0} className={envioGratis ? "line-through" : ""}>
+              {getAmount(costoEnvio)}
+            </span>
+          </div>
+        )}
       </div>
       <div className="h-px w-full border-b border-gray-300 my-4" />
       <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium font-poppins">

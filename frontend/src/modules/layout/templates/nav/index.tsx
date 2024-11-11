@@ -142,7 +142,7 @@ export default function Nav() {
           <div className="flex items-center h-full gap-x-10">
               <img src="/images/logo.png" alt="Helados Villaizan" className="h-12" />
             <Link href="/" className="hover:text-ui-fg-base text-white">Home</Link>
-            <Link href="/comprar" className="hover:text-ui-fg-base text-white">Catalogo</Link>
+            <Link href="/comprar" className="hover:text-ui-fg-base text-white">Catálogo</Link>
           </div>
 
           {/* Main Navigation */}
@@ -179,12 +179,12 @@ export default function Nav() {
             ) : (
               <div className="flex items-center">
                 <Button className="text-lg text-white">
-                  {<Link href="/login" className="hover:text-ui-fg-base text-white" onClick={() => setIsMobileMenuOpen(false)}>
+                  {/*<Link href="/login" className="hover:text-ui-fg-base text-white" onClick={() => setIsMobileMenuOpen(false)}>
                     ¡Inicia sesión y accede a promociones!
-                  </Link>}
-                  {/*<a href={loginUrl} className="hover:text-ui-fg-base text-white">
+                  </Link>*/}
+                  {<a href={loginUrl} className="hover:text-ui-fg-base text-white">
                     ¡Inicia sesión y accede a promociones!
-                  </a>*/}
+                  </a>}
                 </Button>
                 <img src="/images/userIcon.png" alt="Icon" className="h-6 w-6 ml-2" />
               </div>

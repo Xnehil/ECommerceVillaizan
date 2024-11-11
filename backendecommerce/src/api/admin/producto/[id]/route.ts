@@ -107,7 +107,10 @@ export const PUT = async (
         if (error.message === "producto no encontrado") {
             res.status(404).json({ error: "producto no encontrado" });
         } else {
-            res.status(400).json({ error: "Petición inválida" });
+            res.status(400).json(
+                { error: "Petición inválida" ,
+                description: error.message
+            });
         }
     }
 };

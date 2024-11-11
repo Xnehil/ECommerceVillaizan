@@ -1,0 +1,16 @@
+CREATE OR REPLACE FUNCTION update_esvalido_on_estaactivo()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.estaactivo = FALSE THEN
+        NEW.esvalido := FALSE;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER set_esvalido_false
+BEFORE UPDATE OF estaactivo ON vi_promocion
+FOR EACH ROW
+WHEN (NEW.estaactivo = FALSE)
+EXECUTE FUNCTION update_esvalido_on_estaactivo();
