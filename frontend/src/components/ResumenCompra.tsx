@@ -50,6 +50,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const [tooltip, setTooltip] = useState<string | null>(null); // State for tooltip content
   const [showError, setShowError] = useState(false);
   const [errorText, setErrorText] = useState("");
+  const mostrarCostoEnvio = false;
     
   const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!isButtonDisabled) {
@@ -246,13 +247,14 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           <span>- S. {descuento.toFixed(2)}</span>
         </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
-        <span>Costo de envío</span>
-        <span style={{ color: noCostoEnvio ? 'grey' : 'black' }}>
-          {noCostoEnvio ? <s>S/ {costoEnvio.toFixed(2)}</s> : `S/ ${costoEnvio.toFixed(2)}`}
-        </span>
-      </div>
-
+      {mostrarCostoEnvio && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+          <span>Costo de envío</span>
+          <span style={{ color: noCostoEnvio ? 'grey' : 'black' }}>
+            {noCostoEnvio ? <s>S/ {costoEnvio.toFixed(2)}</s> : `S/ ${costoEnvio.toFixed(2)}`}
+          </span>
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', marginTop: '5px' }}>
         <span style={{ color: 'black' }}>Total</span>
         <span style={{ color: '#B88E2F' }}>S/ {total.toFixed(2)}</span>
