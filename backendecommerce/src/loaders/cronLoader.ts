@@ -57,6 +57,7 @@ import { Promocion } from "@models/Promocion";
           const fechaExpiracion = new Date(promocion.fechaFin);
           
           if (fechaExpiracion <= now) {
+            console.log(`Promotion ${promocion.id} has expired.`);
             promocion.esValido = false;
     
             const detallesPedido = await detallePedidoRepository.encontrarDetallesPedidoPorPromocionYCarrito(promocion.id);

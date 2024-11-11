@@ -105,7 +105,8 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
               // Update the detalle to reflect the invalid promotion
               const body = {
                 precio: detalle.producto.precioEcommerce,
-                subtotal: detalle.producto.precioEcommerce * detalle.cantidad
+                subtotal: detalle.producto.precioEcommerce * detalle.cantidad,
+                promocion: null
               };
               await axios.put(`${baseUrl}/admin/detallePedido/${detalle.id}`, body);
               promocionesInvalidas.push(detalle.producto.nombre);

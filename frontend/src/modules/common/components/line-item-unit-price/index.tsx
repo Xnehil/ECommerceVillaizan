@@ -16,7 +16,7 @@ const LineItemUnitPrice = ({
   style = "default",
 }: LineItemUnitPriceProps) => {
   const originalPrice = item.precio
-  const hasReducedPrice = item.promocion !== null && item.promocion !== undefined && item.promocion.esValido
+  const hasReducedPrice = item.promocion !== null && item.promocion !== undefined && item.promocion.esValido === true
   const ecommercePrice = item.producto.precioEcommerce
 
   return (
