@@ -86,8 +86,18 @@ class PedidoService extends TransactionBaseService {
     async recuperarConDetalle(id: string, options: FindConfig<Pedido> = {}): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const relations = ["detalles", "detalles.producto", ...(options.relations || [])];
-        const query = buildQuery({ id }, { relations });
-        const pedido = await pedidoRepo.findOne(query);
+        const queryBuilder = pedidoRepo.createQueryBuilder("pedido")
+        .leftJoinAndSelect("pedido.detalles", "detalle", "detalle.estaActivo = :estaActivo", { estaActivo: true })
+        .leftJoinAndSelect("detalle.producto", "producto")
+        .where("pedido.id = :id", { id });
+    
+      // Add additional relations if specified in options
+      if (options.relations) {
+        for (const relation of options.relations) {
+          queryBuilder.leftJoinAndSelect(`pedido.${relation}`, relation);
+        }
+      }
+        const pedido = await queryBuilder.getOne();
     
         if (!pedido) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
