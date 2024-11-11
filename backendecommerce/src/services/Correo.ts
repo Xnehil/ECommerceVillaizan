@@ -16,18 +16,19 @@ class CorreoService extends TransactionBaseService {
   }
 
   // A method to send emails
-  async sendEmail(to: string, subject: string, text: string, html?: string): Promise<void> {
+  async sendEmail(para: string, asunto: string, texto: string, html?: string): Promise<void> {
     const mailOptions = {
       from: process.env.GMAIL_USER,
-      to,
-      subject,
-      text,
+      to: para,
+      subject: asunto,
+      text: texto,
       html,
     };
 
     try {
       const info = await this.mailTransport.sendMail(mailOptions);
       console.log('Email sent: ' + info.response);
+      return info;
     } catch (error) {
       console.error('Error sending email: ', error);
     }

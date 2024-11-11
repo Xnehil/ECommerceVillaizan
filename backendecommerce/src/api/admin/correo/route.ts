@@ -2,9 +2,9 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/medusa";
 import CorreoService from "@services/Correo";
 
 interface Correo {
-    to: string;
-    subject: string;
-    text: string;
+    para: string;
+    asunto: string;
+    texto: string;
     html?: string;
 }
 
@@ -21,13 +21,13 @@ interface Correo {
  *           schema:
  *             type: object
  *             properties:
- *               to:
+ *               para:
  *                 type: string
  *                 description: Destinatario del correo
- *               subject:
+ *               asunto:
  *                 type: string
  *                 description: Asunto del correo
- *               text:
+ *               texto:
  *                 type: string
  *                 description:  Texto del correo
  *               html:
@@ -60,7 +60,7 @@ interface Correo {
       return;
     }
     const correoData = req.body as Correo;
-    const response = await correoService.sendEmail(correoData.to, correoData.subject, correoData.text, correoData.html);
+    const response = await correoService.sendEmail(correoData.para, correoData.asunto, correoData.texto, correoData.html);
 
     res.status(201).json({
         response,
