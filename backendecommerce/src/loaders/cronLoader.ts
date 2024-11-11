@@ -62,16 +62,10 @@ import { Promocion } from "@models/Promocion";
             const detallesPedido = await detallePedidoRepository.encontrarDetallesPedidoPorPromocionYCarrito(promocion.id);
             detallesPedido.forEach(detalle => {
               detalle.promocion = null;
+              detalle.precio = detalle.producto.precioEcommerce;
+              detalle.subtotal = detalle.cantidad * detalle.producto.precioEcommerce;
               updatedDetalles.push(detalle);
             });
-    
-            const productos = await productoRepository.find({ where: { promocion: promocion } });
-            await Promise.all(
-              productos.map(async producto => {
-                producto.promocion = null;
-                return productoRepository.save(producto);
-              })
-            );
     
             await promocionRepository.save(promocion);
           }
@@ -92,7 +86,7 @@ import { Promocion } from "@models/Promocion";
     //   console.log('Scheduled job "cancelSolicitadoPedidos" executed.');
     });
     //'*/5 * * * *'
-    cron.schedule('*/5 * * * *', async () => {
+    cron.schedule('* * * * *', async () => {
       await validarPromociones();
       // console.log('Scheduled job "validarPromociones" executed.');
     });

@@ -142,7 +142,7 @@ export default function Nav() {
           <div className="flex items-center h-full gap-x-10">
               <img src="/images/logo.png" alt="Helados Villaizan" className="h-12" />
             <Link href="/" className="hover:text-ui-fg-base text-white">Home</Link>
-            <Link href="/comprar" className="hover:text-ui-fg-base text-white">Catalogo</Link>
+            <Link href="/comprar" className="hover:text-ui-fg-base text-white">Catálogo</Link>
           </div>
 
           {/* Main Navigation */}

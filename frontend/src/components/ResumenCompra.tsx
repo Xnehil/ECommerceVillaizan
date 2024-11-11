@@ -102,7 +102,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           if (responsePromocion.data && responsePromocion.data.promocion.esValido === false) {
             if(detalle.precio !== detalle.producto.precioEcommerce){
               console.log("Promocion inválida", detalle.producto.nombre);
-              await axios.delete(`${baseUrl}/admin/detallePedido/${detalle.id}`);
+              // Update the detalle to reflect the invalid promotion
+              const body = {
+                precio: detalle.producto.precioEcommerce,
+                subtotal: detalle.producto.precioEcommerce * detalle.cantidad
+              };
+              await axios.put(`${baseUrl}/admin/detallePedido/${detalle.id}`, body);
               promocionesInvalidas.push(detalle.producto.nombre);
             }            
           }
