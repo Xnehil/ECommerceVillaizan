@@ -19,6 +19,11 @@ const Chatbot: React.FC = () => {
         verify: { projectID: '672a943a3c8f1d73c0a5c6e4' },
         url: 'https://general-runtime.voiceflow.com',
         versionID: 'production',
+        assistant: {
+          title: 'Villabot',
+          stylesheet: 'asistente.css',
+          disableInput: true,
+        },
         launch: {
           event: {
             type: 'launch',
@@ -29,6 +34,13 @@ const Chatbot: React.FC = () => {
           }
         }
       });
+      // const intervalId = setInterval(() => {
+      //   const inputElement = document.querySelector('input[class^="vf-chat-input--"]');
+      //   if (inputElement) {
+      //     inputElement.setAttribute('placeholder', 'Escribe tu mensaje aquí...');
+      //     clearInterval(intervalId);
+      //   }
+      // }, 100);
   };
   document.body.appendChild(script);
 
