@@ -515,14 +515,77 @@ const options = {
         Promocion: {
           type: 'object',
           allOf: [
-            { $ref: '#/components/schemas/EntidadBase' },
+              { $ref: '#/components/schemas/EntidadBase' },
+              {
+                  type: 'object',
+                  properties: {
+                      titulo: {
+                          type: 'string',
+                          example: 'Promoción Ejemplo',
+                      },
+                      descripcion: {
+                          type: 'string',
+                          example: 'Descripción de la promoción',
+                      },
+                      fechaInicio: {
+                          type: 'string',
+                          format: 'date',
+                          example: '2023-01-01',
+                      },
+                      fechaFin: {
+                          type: 'string',
+                          format: 'date',
+                          example: '2023-12-31',
+                      },
+                      limiteStock: {
+                          type: 'integer',
+                          example: 100,
+                      },
+                      esValido: {
+                          type: 'boolean',
+                          example: true,
+                      },
+                      porcentajeDescuento: {
+                          type: 'number',
+                          format: 'decimal',
+                          example: 15.50,
+                      },
+                  },
+              },
+          ],
+        },
+        PuntosProducto: {
+          type: 'object',
+          allOf: [
+            //{ $ref: '#/components/schemas/EntidadBase' },
             {
               type: 'object',
               properties: {
-                nombre: {
-                  type: 'string',
-                  example: 'Promoción Ejemplo',
-                },
+                  idPuntosProducto: {
+                      type: 'integer',
+                      example: 1,
+                  },
+                  cantidadPuntos: {
+                      type: 'integer',
+                      example: 100,
+                  },
+                  estado: {
+                      type: 'boolean',
+                      example: true,
+                  },
+                  fechaActivo: {
+                      type: 'string',
+                      format: 'date-time',
+                      example: '2023-01-01T00:00:00Z',
+                  },
+                  fechaInactivo: {
+                      type: 'string',
+                      format: 'date-time',
+                      example: '2023-12-31T23:59:59Z',
+                  },
+                  producto: {
+                      $ref: '#/components/schemas/Producto',
+                  },
               },
             },
           ],
