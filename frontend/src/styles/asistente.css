@@ -1,4 +1,83 @@
 /* asistente.css */
 .vf-chat-input--cm3akc4i500002a6gcq37e3c8::placeholder {
     color: #999; /* Optional: Change the placeholder text color */
-  }
+}
+
+
+
+.c-bXTvXv-lckiv-type-info{
+  color: transparent;
+}
+
+.c-bXTvXv-lckiv-type-info::before{
+  content: "Empezar nuevo chat"; /* New text */
+  display: block;
+  color: white;
+  /* In the middle */
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+}
+
+.c-fYYkXN::placeholder{
+  color: transparent;
+}
+
+.vfrc-chat--status{
+  color: transparent;
+}
+
+.vfrc-chat--status::after
+{
+  content: "El chat ha finalizado"; /* New text */
+  color: gray;
+  display: block;
+  /* al centro*/
+  position: absolute;
+  top: 95%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+}
+
+.c-bbTBUn{
+  color: transparent;
+}
+
+.c-bXTvXv-XJvOL-type-warn{
+  color: transparent;
+}
+
+.c-bXTvXv-XJvOL-type-warn::before{
+  content: "Terminar chat"; /* New text */
+  display: block;
+  color: white;
+  /* In the middle */
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+}
+
+.c-bXTvXv-igaDqE-type-subtle{
+  color: transparent;
+}
+
+
+.c-bXTvXv-igaDqE-type-subtle::before{
+  content: "Cancelar"; /* New text */
+  display: block;
+  color: rgb(0, 0, 0);
+  /* In the middle */
+  position: absolute;
+  top: 65%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.c-bXTvXv-igaDqE-type-subtle:hover {
+  color: transparent;
+}
