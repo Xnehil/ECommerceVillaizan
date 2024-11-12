@@ -16,7 +16,7 @@ import { Motorizado, Notificacion } from "@/interfaces/interfaces";
 import { getMotorizadoData, getUserData } from "@/functions/storage";
 import { Badge } from "react-native-elements";
 import axios from "axios";
-import { BASE_URL } from "@env";
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import { Audio } from 'expo-av';
 
 export default function TabLayout() {
