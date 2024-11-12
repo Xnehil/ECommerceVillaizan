@@ -13,7 +13,7 @@ import { connectWebSocket } from "@lib/util/websocketUtils";
 import { enrichLineItems, retrievePedido } from "@modules/cart/actions";
 import { Pedido } from "types/PaquetePedido";
 import PedidoCancelado from "@components/PedidoCancelado";
-import fs from 'fs'; // Importa fs para Node.js
+import ConfirmModal from "./confirmModal"; 
 
 const MapaTracking = dynamic(() => import("@components/MapaTracking"), {
   ssr: false,
@@ -249,13 +249,37 @@ const TrackingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const mensajeEnviadoRef = useRef<boolean>(false); // Ref para controlar el envío
   const [mensajeEnviado, setMensajeEnviado] = useState<boolean>(false); // Control de envío único
+  const [errorCancelacion, setErrorCancelacion] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const search = useSearchParams();
   const [codigo, setCodigo] = useState<string | null>(
     search.get("codigo")
   );
   const wsRef = useRef<ExtendedWebSocket | null>(null);
+   // Función para abrir el modal de confirmación
+   const handleCancelClick = () => {
+    setShowConfirmModal(true);
+  };
+    // Función para cancelar el pedido
+  // Función para cancelar el pedido al confirmar en el modal
+  const cancelarPedido = async () => {
+    if (!pedido?.id) return;
 
+    try {
+      await axios.put(`http://localhost:9000/admin/pedido/${pedido.id}`, {
+        estado: "cancelado",
+      });
+      setEnRuta("cancelado");
+      setShowConfirmModal(false); // Cierra el modal
+      alert("Tu pedido ha sido cancelado exitosamente.");
+      //window.location.href = "/";
+    } catch (error) {
+      console.error("Error al intentar cancelar el pedido:", error);
+      setShowConfirmModal(false); // Cierra el modal
+      alert("Ocurrió un error al cancelar el pedido. Por favor, intenta nuevamente.");
+    }
+  };
   useEffect(() => {
     // const sendMessage = async (codigoSeguimiento: string) => {
     //   if (mensajeEnviadoRef.current) return; // Verifica si ya se envió el mensaje
@@ -412,6 +436,45 @@ const TrackingPage: React.FC = () => {
                     <PedidoCancelado />
                   ) : null}
                 </div>
+                {/* Botón para cancelar el pedido */}
+                {enRuta === "espera" && (
+                  <div style={{ textAlign: "center", marginTop: "20px" }}>
+                    <button
+                      onClick={handleCancelClick}
+                      style={{
+                        backgroundColor: "#ff5a5f",
+                        color: "#fff",
+                        padding: "12px 25px",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontSize: "16px",
+                        fontWeight: "bold",
+                        border: "2px solid #ff5a5f",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                        transition: "all 0.3s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#ff4a4f";
+                        e.currentTarget.style.borderColor = "#ff4a4f";
+                        e.currentTarget.style.boxShadow = "0 6px 12px rgba(0, 0, 0, 0.15)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "#ff5a5f";
+                        e.currentTarget.style.borderColor = "#ff5a5f";
+                        e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
+                      }}
+                    >
+                      Cancelar Pedido
+                    </button>
+                  </div>
+                )}
+                {/* Modal de Confirmación */}
+                <ConfirmModal
+                  isOpen={showConfirmModal}
+                  onConfirm={cancelarPedido}
+                  onClose={() => setShowConfirmModal(false)}
+                  message="¿Estás seguro de que deseas cancelar el pedido?"
+                />
               </>
             )}
           </>
