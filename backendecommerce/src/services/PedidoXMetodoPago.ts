@@ -86,7 +86,6 @@ class PedidoXMetodoPagoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
           const pedidoXMetodoPagoRepo = manager.withRepository(this.pedidoXMetodoPagoRepository_);
           const pedidoXMetodoPago = await this.recuperar(id);
-          //Cambiar sprint
           await pedidoXMetodoPagoRepo.update(id, {estaActivo: false, desactivadoEn: new Date()})
         });
     }

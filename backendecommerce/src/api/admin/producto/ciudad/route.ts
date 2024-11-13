@@ -86,7 +86,7 @@ export const POST = async (
         );
         res.json({ productos });
     } catch (error) {
-        res.status(404).json({ error: "Motorizado no encontrado" });
+        res.status(404).json({ error: "Motorizado no encontrado", message: error.message });
     }
 };
 

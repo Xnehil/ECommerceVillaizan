@@ -12,7 +12,7 @@ export const PuntosProductoRepository = dataSource
             producto:{
                 id: idProducto
             },
-            estado: true
+            estaActivo: true
 
           },
           relations: ['producto'],
