@@ -145,13 +145,22 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         const responseMetodoPago = await axios.post(`${baseUrl}/admin/metodoPago/nombre`, {
           nombre: "Pago en Efectivo"
         });
-        if(responseMetodoPago.data){
+        const responsePedidoXMetodoPago = await axios.post(`${baseUrl}/admin/pedidoXMetodoPago`, {
+          monto: paymentAmount,
+          pedido: pedido,
+          metodoPago: responseMetodoPago.data.metodoPago
+        });
+
+        if(responseMetodoPago.data && responsePedidoXMetodoPago.data){
           console.log("Metodo de pago encontrado");
           console.log(responseMetodoPago.data);
-          if (!pedido.metodosPago) {
-            pedido.metodosPago = [];
+          if (!pedido.pedidosXMetodoPago) {
+            pedido.pedidosXMetodoPago = [];
           }
-          pedido.metodosPago.push(responseMetodoPago.data.metodoPago);
+          pedido.pedidosXMetodoPago.push(responsePedidoXMetodoPago.data.pedidoXMetodoPago);
+        }
+        else{
+          throw new Error("Error al guardar el metodo de pago");
         }
       }
     }
