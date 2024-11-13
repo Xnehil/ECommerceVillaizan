@@ -27,6 +27,8 @@ export class PedidoXMetodoPago extends EntidadBase {
     @JoinColumn({ name: "id_metodopago" })
     metodoPago: MetodoPago;
 
+    
+
     @BeforeInsert()
     private beforeInsert() {
         this.id = generateEntityId(this.id, "pmp")

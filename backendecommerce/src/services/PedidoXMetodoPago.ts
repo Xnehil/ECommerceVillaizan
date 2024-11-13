@@ -91,6 +91,15 @@ class PedidoXMetodoPagoService extends TransactionBaseService {
         });
     }
 
+    async listarPorPedido(idPedido: string): Promise<PedidoXMetodoPago[]> {
+        const pedidoXMetodoPagoRepo = this.activeManager_.withRepository(this.pedidoXMetodoPagoRepository_);
+        const pedidoXMetodoPago = pedidoXMetodoPagoRepo.encontrarPorIdPedido(idPedido);
+        if (!pedidoXMetodoPago) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "PedidoXMetodoPago no encontrado");
+        }
+        return pedidoXMetodoPago;
+    }
+
 }
 
 export default PedidoXMetodoPagoService;
