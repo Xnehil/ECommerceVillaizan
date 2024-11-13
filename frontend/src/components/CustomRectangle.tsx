@@ -91,7 +91,7 @@ const CustomRectangle: React.FC<CustomRectangleProps> = ({
           onClick={handleCircleClick}
         ></div>
       )}
-      <span style={{ ...styles.text, marginLeft: "20px" }}>{text}</span>
+      <span style={{ ...styles.text, marginRight: "20px" }}>{text}</span>
       <div style={{ ...styles.imagesContainer, justifyContent: "right"}}>
         {images.map((image, index) => (
           <div

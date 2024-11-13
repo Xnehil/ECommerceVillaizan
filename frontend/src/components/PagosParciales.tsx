@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { MetodoPago } from "types/PaquetePedido"
+import { MetodoPago, PedidoXMetodoPago } from "types/PaquetePedido"
 
 interface ImageData {
   id: string
@@ -15,7 +15,7 @@ type PagosParcialesProps = {
   width: string
   height: string
   onImageClick: (id: string | null) => void // Permitir null
-  setMetodosPago: (metodos: MetodoPago[]) => void // Add setMetodosPago to props
+  setMetodosPago: (metodos: PedidoXMetodoPago[]) => void // Add setMetodosPago to props
   setPaymentAmount: (amount: number | null) => void // Add setPaymentAmount to props
   hideCircle?: boolean // Add hideCircle to props
 }
@@ -101,7 +101,7 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
           onClick={handleCircleClick}
         ></div>
       )}
-      <span style={{ ...styles.text, marginLeft: "20px" }}>{text}</span>
+      <span style={{ ...styles.text, marginRight: "20px" }}>{text}</span>
       <div
         style={{ ...styles.imagesContainer, justifyContent: "right"}}
       >

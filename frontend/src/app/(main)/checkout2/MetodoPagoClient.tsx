@@ -5,7 +5,7 @@ import CustomRectangle from "components/CustomRectangle"
 import PaymentPopup from "components/PaymentPopup"
 import ResumenCompra from "components/ResumenCompra"
 import BackButton from "components/BackButton"
-import { Pedido, MetodoPago } from "types/PaquetePedido"
+import { Pedido, MetodoPago, PedidoXMetodoPago } from "types/PaquetePedido"
 import { Usuario } from "types/PaqueteUsuario"
 import { Direccion } from "types/PaqueteEnvio"
 import axios from "axios"
@@ -69,7 +69,7 @@ export default function MetodoPagoClient({
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null)
   const [pedido, setPedido] = useState<Pedido | null>(null) // State to hold the fetched pedido
   const [dividido, setDividido] = useState(false)
-  const [metodosPago, setMetodosPago] = useState<MetodoPago[]>([])
+  const [metodosPago, setMetodosPago] = useState<PedidoXMetodoPago[]>([])
 
   const hayDescuento = true
   const costoEnvio = 5
@@ -107,15 +107,21 @@ export default function MetodoPagoClient({
     if (pedido && pedido.id) {
       try {
         // Configura el cuerpo de la solicitud con la estructura específica
+        const metodo = {
+          id:
+            id === "yape"
+              ? "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
+              : id === "plin"
+              ? "mp_01JBDQDH47XDE75XCGSS739E6G"
+              : "mp_01J99CS1H128G2P7486ZB5YACH",
+        } as MetodoPago;
+
         const pedidoUpdateData = {
-          metodosPago: [
+          pedidosXMetodoPago: [
             {
-              id:
-                id === "yape"
-                  ? "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
-                  : id === "plin"
-                  ? "mp_01JBDQDH47XDE75XCGSS739E6G"
-                  : "mp_01J99CS1H128G2P7486ZB5YACH",
+              monto: calcularTotal(),
+              pedido: pedido.id,
+              metodoPago: metodo,
             },
           ],
         }
@@ -130,7 +136,7 @@ export default function MetodoPagoClient({
 
         console.log(
           "Pedido actualizado con método de pago:",
-          pedidoUpdateData.metodosPago
+          pedidoUpdateData.pedidosXMetodoPago
         )
       } catch (error) {
         console.error("Error al actualizar el método de pago:", error)
@@ -277,7 +283,7 @@ export default function MetodoPagoClient({
                 hoverText: "Pago con Plin",
               },
             ]}
-            width="45%"
+            width="85%"
             height="100px"
             onImageClick={handleImageClick}
             selectedImageId={selectedImageId}
@@ -304,7 +310,7 @@ export default function MetodoPagoClient({
                 hoverText: "Pago con Plin",
               },
             ]}
-            width="45%"
+            width="85%"
             height="100px"
             onImageClick={handleImageClick}
             setMetodosPago={setMetodosPago}
