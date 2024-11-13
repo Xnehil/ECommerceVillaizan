@@ -48,7 +48,8 @@ export const GET = async (
         const puntosProducto = await puntosProductoService.recuperar(id);
         res.json({ puntosProducto });
     } catch (error) {
-        res.status(404).json({ error: "PuntosProducto no encontrado" });
+        res.status(404).json({ error: "PuntosProducto no encontrado",
+            message: error.message });
     }
 };
 

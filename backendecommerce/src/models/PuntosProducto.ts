@@ -15,12 +15,12 @@ import { generateEntityId } from "@medusajs/medusa/dist/utils";
 import { EntidadBase } from "./EntidadBase";
 import { Producto } from "./Producto";
 
-//Cambiar sprint
+
 @Entity("vi_puntos_producto")
 export class PuntosProducto /*extends EntidadBase*/ {
 
     @PrimaryColumn({ type: "integer", name: "id_puntosproducto" })
-    idPuntosProducto: number;
+    id_puntosproducto: number;
 
     @Column({ type: "integer", nullable: false, name: "cantidadpuntos" })
     cantidadPuntos: number;

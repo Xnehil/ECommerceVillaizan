@@ -5,6 +5,7 @@ import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
 import { ubicacionesDelivery, estadoPedidos, enviarMensajeRepartidor, enviarMensajeAdmins } from "../loaders/websocketLoader";
 import MotorizadoRepository from "@repositories/Motorizado";
+import puntosProductoRepository from "@repositories/PuntosProducto";
 import { Motorizado } from "@models/Motorizado";
 import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
 import { InventarioMotorizado } from "@models/InventarioMotorizado";
@@ -16,6 +17,7 @@ class PedidoService extends TransactionBaseService {
     protected pedidoRepository_: typeof pedidoRepository;
     protected motorizadoRepository_: typeof MotorizadoRepository;
     protected inventarioMotorizadoRepository_: typeof InventarioMotorizadoRepository;
+    protected puntoProductoRepository_: typeof puntosProductoRepository;
     protected notificacionService_: NotificacionService
 
     constructor(container) {
@@ -23,6 +25,7 @@ class PedidoService extends TransactionBaseService {
         this.pedidoRepository_ = container.pedidoRepository;
         this.motorizadoRepository_ = container.motorizadoRepository;
         this.inventarioMotorizadoRepository_ = container.inventariomotorizadoRepository;
+        this.puntoProductoRepository_ = container.puntosproductoRepository;
         this.notificacionService_ = container.notificacionService;
     }
 
@@ -74,8 +77,19 @@ class PedidoService extends TransactionBaseService {
     ): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const query = buildQuery({ id }, config);
-        const pedido = await pedidoRepo.findOne(query);
-
+        //const pedido = await pedidoRepo.findOne(query);
+        const pedido = await pedidoRepo.encontrarPorId(id);
+        //for each detalle in pedido.detalles, add puntosProducto if there is
+        if(pedido.detalles){
+            for (let detalle of pedido.detalles){
+                const puntosProducto = await this.puntoProductoRepository_.encontrarPuntosPorProductoActivo(detalle.producto.id);
+                if(puntosProducto){
+                    detalle.producto.cantidadPuntos = puntosProducto.cantidadPuntos;
+                }
+            }
+        }
+        //console.log("Pedido recuperado: ", pedido);
+        //console.log("Pedido recuperado NEW 2: ", pedido);
         if (!pedido) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
         }

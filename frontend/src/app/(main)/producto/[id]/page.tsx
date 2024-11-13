@@ -19,6 +19,8 @@ export default function ProductDetail() {
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { data: session, status } = useSession();
+  const [existenPuntos, setExistenPuntos] = useState<boolean>(false);
+  const [puntos, setPuntos] = useState<number>(0);
 
   const fetchCarrito = async (): Promise<{ cart: Pedido; cookieValue?: string }> => {
     const respuesta = await getOrSetCart();
@@ -39,41 +41,32 @@ export default function ProductDetail() {
   }, [carrito]);
 
   useEffect(() => {
-    if (id) {
-      axios.get(`${baseUrl}/admin/producto/${id}`)
-        .then((response) => {
-          const data = response.data.producto;
-          const productData: Producto = {
-            id: data.id,
-            tipoProducto: data.tipoProducto || { nombre: "Sin categoría" },
-            subcategorias: data.subcategorias || [],
-            frutas: data.frutas || [],
-            inventarios: data.inventarios || [],
-            promocion: data.promocion || null,
-            codigo: data.codigo,
-            nombre: data.nombre,
-            precioA: data.precioA || 0,
-            precioB: data.precioB || 0,
-            precioC: data.precioC || 0,
-            precioEcommerce: data.precioEcommerce || 0,
-            urlImagen: data.urlImagen,
-            cantMinPed: data.cantMinPed || 0,
-            cantMaxPed: data.cantMaxPed || 0,
-            descripcion: data.descripcion || "No disponible",
-            informacionNutricional: data.informacionNutricional || "No disponible",
-            seVendeEcommerce: data.seVendeEcommerce,
-            usuarioActualizacion: data.usuarioActualizacion || null,
-            estaActivo: data.estaActivo || true,
-            desactivadoEn: data.desactivadoEn || null,
-            usuarioCreacion: data.usuarioCreacion || null,
-          };
-          setProduct(productData);
-        })
-        .catch((error) => {
+    const fetchProduct = async () => {
+      if (id) {
+        try {
+          const response = await axios.get(`${baseUrl}/admin/producto/${id}`);
+          setProduct(response.data.producto);
+          // Handle the response as needed
+        } catch (error) {
           console.error("Error al obtener el producto:", error);
-        });
-      //const response = await axios.
-    }
+        }
+
+        try {
+          const response = await axios.post(`${baseUrl}/admin/puntosProducto/producto`, {
+            id_producto : id
+          });
+          if(response.data && response.data.puntosProducto && response.data.puntosProducto.cantidadPuntos) {
+            setExistenPuntos(true);
+            setPuntos(response.data.puntosProducto.cantidadPuntos)
+          }
+          // Handle the response as needed
+        } catch (error) {
+          console.error("Error al obtener los puntos del producto:", error);
+        }
+      }
+    };
+
+    fetchProduct();
   }, [id]);
 
   function checkIfAuthenticated(session: any, status: string) {
@@ -205,6 +198,11 @@ export default function ProductDetail() {
             {product.promocion && (
               <p className="text-green-600 text-lg"><strong>Promoción:</strong> {product.promocion.descripcion}</p>
             )}
+            {
+              isAuthenticated && existenPuntos && (
+                <p className="text-gray-700 text-lg"><strong>Puntos Canjeables por compra de producto:</strong> {puntos}</p>
+              )
+            }
             {/* Botón Agregar al Carrito */}
             <button
               onClick={handleAddToCart}

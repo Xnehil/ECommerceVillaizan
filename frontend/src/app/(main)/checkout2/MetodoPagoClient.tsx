@@ -193,6 +193,8 @@ export default function MetodoPagoClient({
     }, 0)
   }
 
+
+
   const calcularSubtotal = () => {
     if (!pedidoInput) {
       return 0
@@ -208,6 +210,10 @@ export default function MetodoPagoClient({
 
   const total = calcularTotal()
   const vuelto = calcularVuelto()
+  const totalPuntosCanje = (pedido?.detalles ?? []).reduce((totalPuntos, detalle) => {
+    const puntos = ((detalle.producto?.cantidadPuntos ?? 0) * detalle.cantidad) || 0;
+    return totalPuntos + puntos;
+  }, 0);
 
   return (
     <>
@@ -331,6 +337,7 @@ export default function MetodoPagoClient({
               direccion={pedido?.direccion ?? defaultDireccion}
               usuario={pedido?.usuario ?? defaultUsuario}
               pedido={pedidoInput}
+              canjePuntos = {totalPuntosCanje}
             />
           </div>
         )}

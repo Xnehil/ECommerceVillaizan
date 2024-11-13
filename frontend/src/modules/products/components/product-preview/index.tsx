@@ -87,16 +87,16 @@ export default function ProductPreview({
       )
       console.log("Detalle anterior:", detalleAnterior)
       let nuevoDetalle: DetallePedido | null = null
-      console.log("Linea a")
 
       if (detalleAnterior) {
         // Actualizar la cantidad si ya existe en el carrito
         const cantidad = detalleAnterior.cantidad + 1
-        await updateLineItem({
+        const responseUpdateLineItemData = await updateLineItem({
           detallePedidoId: detalleAnterior.id,
           cantidad: cantidad,
           subtotal: detalleAnterior.precio * cantidad,
         })
+        console.log("Respuesta de updateLineItem:", responseUpdateLineItemData)
         nuevoDetalle = {
           ...detalleAnterior,
           cantidad: cantidad,
@@ -247,7 +247,7 @@ export default function ProductPreview({
                 </TooltipTrigger>
                 <TooltipContent className="w-48 h-auto p-2">
                   <p className="w-full break-words">
-                    Con la compra de este producto, consigues <strong>{`${productPreview.cantidadPuntos}`}</strong> puntos de Canje
+                    Con la compra de este producto, consigues <strong>{`${productPreview.cantidadPuntos}`}</strong> Puntos Canjeables
                   </p>
                   <p className="w-full break-words font-bold">Ver Detalles</p>
                 </TooltipContent>

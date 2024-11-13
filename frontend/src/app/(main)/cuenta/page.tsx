@@ -19,6 +19,7 @@ const Cuenta = () => {
   const [userApellido, setUserApellido] = useState('');
   const [userCorreo, setUserCorreo] = useState('');
   const [userTelefono, setUserTelefono] = useState('');
+  const [userPuntosAcumulados, setUserPuntosAcumulados] = useState('');
   const router = useRouter();
   const [direcciones, setDirecciones] = useState<Direccion[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,6 +56,8 @@ const Cuenta = () => {
                 setUserCorreo(user.correo);
                 setUserTelefono(user.numeroTelefono);
                 setUserId(user.id);
+                setUserPuntosAcumulados(user.puntosAcumulados.toString());
+                console.log("puntos", user.puntosAcumulados);
               } else {
                 console.error('Failed to fetch user name');
                 setErrorMessage('Error al cargar los datos de usuario. Intente de nuevo más tarde.');
@@ -171,6 +174,7 @@ const Cuenta = () => {
           {userApellido && <InputWithLabel label="Apellido" value={userApellido} disabled={true} />}
           {userCorreo && <InputWithLabel label="Correo" value={userCorreo} disabled={true} />}
           {userTelefono && <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />}
+          {userPuntosAcumulados && <InputWithLabel label="Puntos Acumulados" value={userPuntosAcumulados} disabled={true} />}
         </div>
         <div style={{ flex: 1, padding: '20px', marginRight: '320px' }}>
           <h2 style={headerStyle}>Direcciones Guardadas</h2>
