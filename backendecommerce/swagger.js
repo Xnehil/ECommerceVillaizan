@@ -590,6 +590,28 @@ const options = {
             },
           ],
         },
+        PedidoXMetodoPago: {
+          type: 'object',
+          allOf: [
+            { $ref: '#/components/schemas/EntidadBase' },
+            {
+              type: 'object',
+              properties: {
+                monto: {
+                  type: 'number',
+                  format: 'decimal',
+                  example: 100.00,
+                },
+                pedido: {
+                  $ref: '#/components/schemas/Pedido',
+                },
+                metodoPago: {
+                  $ref: '#/components/schemas/MetodoPago',
+                }
+              },
+            },
+          ],
+        },
         DetallePedido: {
           type: 'object',
           allOf: [
