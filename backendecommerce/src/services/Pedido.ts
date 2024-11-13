@@ -345,10 +345,7 @@ class PedidoService extends TransactionBaseService {
 
     async encontrarPorUsuarioId(idUsuario: string, selector: Selector<Pedido> = {}): Promise<Pedido[]> {
         const finalSelector: any = selector || {};
-    
-        if (finalSelector.estado === '!= carrito') {
-            finalSelector.estado = Not('carrito');
-        }
+
         const relations = ["motorizado", "direccion", "direccion.ciudad"];
     
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
@@ -361,7 +358,11 @@ class PedidoService extends TransactionBaseService {
         if (Array.isArray(finalSelector.estado) && finalSelector.estado.length > 0) {
             query.andWhere("pedido.estado IN (:...estados)", { estados: finalSelector.estado });
         } else if (finalSelector.estado) {
-            query.andWhere("pedido.estado = :estado", { estado: finalSelector.estado });
+            if (finalSelector.estado === '!= carrito') {
+                query.andWhere("pedido.estado != :estado", { estado: 'carrito' });
+            } else {
+                query.andWhere("pedido.estado = :estado", { estado: finalSelector.estado });
+            }
         }
         // console.log(query.getSql(), query.getParameters()); // Log the query and parameters for debugging
 
