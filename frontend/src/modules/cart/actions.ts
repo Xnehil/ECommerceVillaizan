@@ -240,10 +240,10 @@ export async function updateLineItem({
   }
 
   try {
-    const response = await axios.put(`${baseUrl}/admin/detallePedido/${detallePedidoId}`, {
+    await axios.put(`${baseUrl}/admin/detallePedido/${detallePedidoId}`, {
       cantidad: cantidad,
       subtotal: subtotal
-    })
+    })    
     revalidateTag("cart")
   } catch (e: any) {
     return e.toString()
@@ -339,11 +339,8 @@ export async function addItem({
     if (idPromocion !== "") {
       requestBody.promocion = { id: idPromocion };
     }
-
-    const response = await axios.post(`${baseUrl}/admin/detallePedido`, requestBody);
-    // console.log(response)
-    console.log("Item added to cart")
-    return response.data
+    const response = await axios.post(`${baseUrl}/admin/detallePedido`, requestBody)
+    return response.data;
   } catch (e) {
     console.log(e)
     return null
@@ -366,7 +363,7 @@ export async function updateItem({
       cantidad: quantity,
       subtotal: precio*quantity
     })
-
+    //console.log("Item updated", response)
     return response
   } catch (e) {
     console.log(e)

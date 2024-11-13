@@ -87,16 +87,16 @@ export default function ProductPreview({
       )
       console.log("Detalle anterior:", detalleAnterior)
       let nuevoDetalle: DetallePedido | null = null
-      console.log("Linea a")
 
       if (detalleAnterior) {
         // Actualizar la cantidad si ya existe en el carrito
         const cantidad = detalleAnterior.cantidad + 1
-        await updateLineItem({
+        const responseUpdateLineItemData = await updateLineItem({
           detallePedidoId: detalleAnterior.id,
           cantidad: cantidad,
           subtotal: detalleAnterior.precio * cantidad,
         })
+        console.log("Respuesta de updateLineItem:", responseUpdateLineItemData)
         nuevoDetalle = {
           ...detalleAnterior,
           cantidad: cantidad,

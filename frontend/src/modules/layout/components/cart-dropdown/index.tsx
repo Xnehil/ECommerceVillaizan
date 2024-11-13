@@ -70,6 +70,7 @@ const CartDropdown = ({
       console.log("User is not authenticated");
     }
   }, [session, status]);
+  
 
 
   const open = () => setCartDropdownOpen(true)
@@ -277,7 +278,11 @@ const CartDropdown = ({
                           {"Puntos de canje: "}
                         </span><span className="text-large-semi">
                             {cartState.detalles.reduce((totalPuntos, detalle) => {
-                              const puntos = detalle.producto?.cantidadPuntos || 0
+                              const puntos = ((detalle.producto?.cantidadPuntos ?? 0) * detalle.cantidad) || 0
+                              /*console.log("cantidadPuntos detalle:", detalle.producto?.cantidadPuntos);
+                              console.log("cantidad detalle:", detalle.cantidad);
+                              console.log("puntos:", puntos);
+                              console.log("totalPuntos:", totalPuntos);*/
                               return totalPuntos + puntos
                             }, 0)}
                           </span></>

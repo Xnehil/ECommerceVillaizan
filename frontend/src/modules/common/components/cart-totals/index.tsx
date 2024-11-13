@@ -10,9 +10,10 @@ import { Pedido } from "types/PaquetePedido"
 type CartTotalsProps = {
   data: Omit<Pedido, "refundable_amount" | "refunded_total"> | Pedido
   onSetCostoEnvio: (costoEnvio: number) => void // Prop para actualizar el valor de costo de envío
+  isAuthenticated: boolean
 }
 
-const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
+const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio, isAuthenticated }) => {
   const subtotal = data.detalles.reduce((acc: number, item) => {
     return acc + Number(item.subtotal) || 0
   }, 0)
@@ -24,6 +25,12 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
     
     return acc + itemSubtotal || 0
   }, 0)
+
+  const totalPuntosCanje = data.detalles.reduce((totalPuntos, detalle) => {
+    const puntos = ((detalle.producto?.cantidadPuntos ?? 0) * detalle.cantidad) || 0
+    return totalPuntos + puntos
+  }, 0)
+  
 
   const totalDiscount = data.detalles.reduce((acc: number, item) => {
     if (item.promocion) {
@@ -66,6 +73,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
             {getAmount(subtotalWithoutDiscounts)}
           </span>
         </div>
+
         {totalDiscount > 0 && (
           <div className="flex items-center justify-between">
             <span>Descuento</span>
@@ -94,6 +102,14 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio }) => {
           {getAmount(total)}
         </span>
       </div>
+      {isAuthenticated && (
+        <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium font-poppins">
+          <span>Puntos de canje</span>
+          <span className="txt-xlarge-plus font-poppins color-mostazaTexto" data-testid="cart-points" data-value={totalPuntosCanje || 0}>
+            {totalPuntosCanje}
+          </span>
+        </div>
+      )}
       <div className="h-px w-full border-b border-gray-300 mt-4" />
     </div>
   )
