@@ -8,6 +8,7 @@ import { Direccion } from 'types/PaqueteEnvio';
 import { Usuario } from 'types/PaqueteUsuario';
 import axios, { AxiosError } from "axios"
 import { ErrorMessage } from '@hookform/error-message';
+import { useSession } from 'next-auth/react';
 
 interface ResumenCompraProps {
   descuento: number;
@@ -21,6 +22,7 @@ interface ResumenCompraProps {
   direccion: Direccion;
   usuario: Usuario;
   pedido: Pedido;
+  canjePuntos: number
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
@@ -28,6 +30,14 @@ const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 if (!baseUrl) {
   console.error("NEXT_PUBLIC_MEDUSA_BACKEND_URL is not defined");
 }
+
+function checkIfAuthenticated(session: any, status: string) {
+  if (status !== "loading") {
+    return session?.user?.id ? true : false;
+  }
+  return false;
+}
+
 
 const ResumenCompra: React.FC<ResumenCompraProps> = ({
   descuento,
@@ -40,7 +50,8 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   vuelto,
   direccion,
   usuario,
-  pedido
+  pedido,
+  canjePuntos
 }) => {
   const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
@@ -51,6 +62,18 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const [showError, setShowError] = useState(false);
   const [errorText, setErrorText] = useState("");
   const mostrarCostoEnvio = false;
+  const { data: session, status } = useSession();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (checkIfAuthenticated(session, status)) {
+      setIsAuthenticated(true);
+      console.log("User is authenticated");
+    } else {
+      setIsAuthenticated(false);
+      console.log("User is not authenticated");
+    }
+  }, [session, status]);
     
   const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!isButtonDisabled) {
@@ -274,6 +297,14 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         <span style={{ color: 'black' }}>Total</span>
         <span style={{ color: '#B88E2F' }}>S/ {total.toFixed(2)}</span>
       </div>
+      <hr style={{ margin: '10px 0' }} />
+      {/* Mostrar CANJES DE PUNTOS*/}
+      {isAuthenticated && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+          <span>Puntos a canjear</span>
+          <span>{canjePuntos}</span>
+        </div>
+      )}
       <hr style={{ margin: '10px 0' }} />
       {/* Mostrar paymentAmount si está presente */}
       {selectedImageId === "pagoEfec" && paymentAmount !== null && (

@@ -64,6 +64,19 @@ export const PedidoRepository = dataSource
         .andWhere("pedido.estado = 'carrito'")
         .orderBy("pedido.creadoEn", "DESC")
         .getOne();
+    },
+    async encontrarPorId(id: string): Promise<Pedido> {
+      return this.createQueryBuilder("pedido")
+        .leftJoinAndSelect("pedido.direccion", "direccion")
+        .leftJoinAndSelect("direccion.ciudad", "ciudad")
+        .leftJoinAndSelect("pedido.motorizado", "motorizado")
+        .leftJoinAndSelect("pedido.usuario", "usuario")
+        .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago")
+        .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
+        .leftJoinAndSelect("pedido.detalles", "detalles")
+        .leftJoinAndSelect("detalles.producto", "producto")
+        .where("pedido.id = :id", { id })
+        .getOne();
     }
   })
 

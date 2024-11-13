@@ -182,6 +182,8 @@ const calcularSubtotalSinDescuentos = () => {
   }, 0);
 };
 
+
+
   const calcularSubtotal = () => {
     if (!pedidoInput) {
       return 0;
@@ -197,6 +199,10 @@ const calcularSubtotalSinDescuentos = () => {
 
   const total = calcularTotal();
   const vuelto = calcularVuelto();
+  const totalPuntosCanje = (pedido?.detalles ?? []).reduce((totalPuntos, detalle) => {
+    const puntos = ((detalle.producto?.cantidadPuntos ?? 0) * detalle.cantidad) || 0;
+    return totalPuntos + puntos;
+  }, 0);
 
   return (
     <>
@@ -265,6 +271,7 @@ const calcularSubtotalSinDescuentos = () => {
               direccion={pedido?.direccion ?? defaultDireccion}
               usuario={pedido?.usuario ?? defaultUsuario}
               pedido={pedidoInput}
+              canjePuntos = {totalPuntosCanje}
             />
           </div>
         )}
