@@ -47,11 +47,11 @@ class PuntosProductoService extends TransactionBaseService {
     }
 
     async recuperar(
-        id: string,
+        id_puntosproducto: string,
         config?: FindConfig<PuntosProducto>
     ): Promise<PuntosProducto> {
         const puntosProductoRepo = this.activeManager_.withRepository(this.puntosProductoRepository_);
-        const query = buildQuery({ id }, config);
+        const query = buildQuery({ id_puntosproducto }, config);
         const puntosProducto = await puntosProductoRepo.findOne(query);
 
         if (!puntosProducto) {
@@ -71,22 +71,22 @@ class PuntosProductoService extends TransactionBaseService {
     }
 
     async actualizar(
-        id: string,
-        data: Omit<Partial<PuntosProducto>, "id">
+        id_puntosproducto: string,
+        data: Omit<Partial<PuntosProducto>, "id_puntosproducto">
     ): Promise<PuntosProducto> {
         return await this.atomicPhase_(async (manager) => {
           const puntosProductoRepo = manager.withRepository(this.puntosProductoRepository_);
-          const puntosProducto = await this.recuperar(id);
+          const puntosProducto = await this.recuperar(id_puntosproducto);
           Object.assign(puntosProducto, data);
           return await puntosProductoRepo.save(puntosProducto);
         });
     }
 
-    async eliminar(id: string): Promise<void> {
+    async eliminar(id_puntosproducto: string): Promise<void> {
         return await this.atomicPhase_(async (manager) => {
           const puntosProductoRepo = manager.withRepository(this.puntosProductoRepository_);
-          const puntosProducto = await this.recuperar(id);
-          await puntosProductoRepo.update(id, {estaActivo: false, desactivadoEn: new Date()})
+          const puntosProducto = await this.recuperar(id_puntosproducto);
+          await puntosProductoRepo.update(id_puntosproducto, {estaActivo: false, desactivadoEn: new Date()})
         });
     }
 

@@ -20,7 +20,7 @@ import { Producto } from "./Producto";
 export class PuntosProducto /*extends EntidadBase*/ {
 
     @PrimaryColumn({ type: "integer", name: "id_puntosproducto" })
-    idPuntosProducto: number;
+    id_puntosproducto: number;
 
     @Column({ type: "integer", nullable: false, name: "cantidadpuntos" })
     cantidadPuntos: number;
