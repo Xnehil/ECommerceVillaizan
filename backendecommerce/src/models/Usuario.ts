@@ -46,6 +46,9 @@ export class Usuario extends EntidadBase {
     @OneToMany(() => Notificacion, notificacion => notificacion.usuario)
     notificaciones: Notificacion[];
 
+    @Column({ type: 'int', default: 0, name: "puntosacumulados" })
+    puntosAcumulados: number;
+
     @BeforeInsert()
     private beforeInsert() {
         this.id = generateEntityId(this.id, "per")

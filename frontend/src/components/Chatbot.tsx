@@ -1,27 +1,36 @@
 "use client";
 
+import { useEffect } from "react";
+
 declare global {
   interface Window {
     voiceflow: any; // Adjust the type as needed
   }
 }
 
-const Chatbot: React.FC = () => {
+interface ChatbotProps {
+  base64Css: string;
+}
+
+const Chatbot: React.FC<ChatbotProps> = ({ base64Css }) => {
   if (typeof window === "undefined") {
     return null; // Return null if running on the server
   }
 
-  const script = document.createElement("script");
-  script.type = "text/javascript";
-  script.src = "https://cdn.voiceflow.com/widget/bundle.mjs";
-  script.onload = function() {
-    window.voiceflow.chat.load({
+  // Add the script and load Voiceflow widget
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://cdn.voiceflow.com/widget/bundle.mjs";
+
+    script.onload = function() {
+      window.voiceflow.chat.load({
         verify: { projectID: '672a943a3c8f1d73c0a5c6e4' },
         url: 'https://general-runtime.voiceflow.com',
         versionID: 'production',
         assistant: {
           title: 'Villabot',
-          stylesheet: 'asistente.css',
+          stylesheet: `data:text/css;base64,${base64Css}`,
           disableInput: true,
         },
         launch: {
@@ -34,15 +43,17 @@ const Chatbot: React.FC = () => {
           }
         }
       });
-      // const intervalId = setInterval(() => {
-      //   const inputElement = document.querySelector('input[class^="vf-chat-input--"]');
-      //   if (inputElement) {
-      //     inputElement.setAttribute('placeholder', 'Escribe tu mensaje aquí...');
-      //     clearInterval(intervalId);
-      //   }
-      // }, 100);
-  };
-  document.body.appendChild(script);
+
+
+    };
+
+    document.body.appendChild(script);
+
+    // Clean up the script when the component unmounts
+    return () => {
+      script.remove();
+    };
+  }, [base64Css]); // Effect dependency on base64Css
 
   return null;
 };

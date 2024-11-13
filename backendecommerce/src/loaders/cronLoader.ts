@@ -76,7 +76,7 @@ import { Promocion } from "@models/Promocion";
           await detallePedidoRepository.save(updatedDetalles);
         }
         
-        // console.log('Scheduled job "validarPromociones" finished.');
+        console.log('Scheduled job "validarPromociones" finished.');
       } catch (error) {
         console.error('Error validating promotions:', error);
       }

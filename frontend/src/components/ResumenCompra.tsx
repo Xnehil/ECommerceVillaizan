@@ -8,6 +8,13 @@ import { Direccion } from 'types/PaqueteEnvio';
 import { Usuario } from 'types/PaqueteUsuario';
 import axios, { AxiosError } from "axios"
 import { ErrorMessage } from '@hookform/error-message';
+import { useSession } from 'next-auth/react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@components/tooltip";
 
 interface ResumenCompraProps {
   descuento: number;
@@ -21,6 +28,7 @@ interface ResumenCompraProps {
   direccion: Direccion;
   usuario: Usuario;
   pedido: Pedido;
+  canjePuntos: number
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
@@ -28,6 +36,14 @@ const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 if (!baseUrl) {
   console.error("NEXT_PUBLIC_MEDUSA_BACKEND_URL is not defined");
 }
+
+function checkIfAuthenticated(session: any, status: string) {
+  if (status !== "loading") {
+    return session?.user?.id ? true : false;
+  }
+  return false;
+}
+
 
 const ResumenCompra: React.FC<ResumenCompraProps> = ({
   descuento,
@@ -40,7 +56,8 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   vuelto,
   direccion,
   usuario,
-  pedido
+  pedido,
+  canjePuntos
 }) => {
   const [seleccionado, setSeleccionado] = useState(false); // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false); // Estado para mostrar el popup de entrega
@@ -51,6 +68,18 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const [showError, setShowError] = useState(false);
   const [errorText, setErrorText] = useState("");
   const mostrarCostoEnvio = false;
+  const { data: session, status } = useSession();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (checkIfAuthenticated(session, status)) {
+      setIsAuthenticated(true);
+      console.log("User is authenticated");
+    } else {
+      setIsAuthenticated(false);
+      console.log("User is not authenticated");
+    }
+  }, [session, status]);
     
   const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!isButtonDisabled) {
@@ -145,13 +174,22 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         const responseMetodoPago = await axios.post(`${baseUrl}/admin/metodoPago/nombre`, {
           nombre: "Pago en Efectivo"
         });
-        if(responseMetodoPago.data){
+        const responsePedidoXMetodoPago = await axios.post(`${baseUrl}/admin/pedidoXMetodoPago`, {
+          monto: paymentAmount,
+          pedido: pedido,
+          metodoPago: responseMetodoPago.data.metodoPago
+        });
+
+        if(responseMetodoPago.data && responsePedidoXMetodoPago.data){
           console.log("Metodo de pago encontrado");
           console.log(responseMetodoPago.data);
-          if (!pedido.metodosPago) {
-            pedido.metodosPago = [];
+          if (!pedido.pedidosXMetodoPago) {
+            pedido.pedidosXMetodoPago = [];
           }
-          pedido.metodosPago.push(responseMetodoPago.data.metodoPago);
+          pedido.pedidosXMetodoPago.push(responsePedidoXMetodoPago.data.pedidoXMetodoPago);
+        }
+        else{
+          throw new Error("Error al guardar el metodo de pago");
         }
       }
     }
@@ -265,6 +303,27 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         <span style={{ color: 'black' }}>Total</span>
         <span style={{ color: '#B88E2F' }}>S/ {total.toFixed(2)}</span>
       </div>
+      <hr style={{ margin: '10px 0' }} />
+      {/* Mostrar CANJES DE PUNTOS*/}
+      {isAuthenticated && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+          <div className="flex items-center gap-x-1">
+            <span>Puntos Canjeables</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
+                  i
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="w-full break-words">Obtendrás los Puntos Canjeables después de que un Administrador confirme el pago del pedido. Recuerda que los puntos vencen cada 3 meses.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <span>{canjePuntos}</span>
+        </div>
+      )}
+
       <hr style={{ margin: '10px 0' }} />
       {/* Mostrar paymentAmount si está presente */}
       {selectedImageId === "pagoEfec" && paymentAmount !== null && (

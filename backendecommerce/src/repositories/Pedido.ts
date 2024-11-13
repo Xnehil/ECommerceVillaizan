@@ -23,6 +23,8 @@ export const PedidoRepository = dataSource
       .leftJoinAndSelect("direccion.ubicacion", "ubicacion")
       .leftJoinAndSelect("pedido.usuario", "usuario")
       .leftJoinAndSelect("pedido.motorizado", "motorizado")
+      .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago")
+      .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
       .where("motorizado.id = :id_motorizado", { id_motorizado });
   
     if (Array.isArray(estados) && estados.length > 0) {
@@ -61,6 +63,19 @@ export const PedidoRepository = dataSource
         .where("pedido.id_usuario = :id_usuario", { id_usuario })
         .andWhere("pedido.estado = 'carrito'")
         .orderBy("pedido.creadoEn", "DESC")
+        .getOne();
+    },
+    async encontrarPorId(id: string): Promise<Pedido> {
+      return this.createQueryBuilder("pedido")
+        .leftJoinAndSelect("pedido.direccion", "direccion")
+        .leftJoinAndSelect("direccion.ciudad", "ciudad")
+        .leftJoinAndSelect("pedido.motorizado", "motorizado")
+        .leftJoinAndSelect("pedido.usuario", "usuario")
+        .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago")
+        .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
+        .leftJoinAndSelect("pedido.detalles", "detalles")
+        .leftJoinAndSelect("detalles.producto", "producto")
+        .where("pedido.id = :id", { id })
         .getOne();
     }
   })

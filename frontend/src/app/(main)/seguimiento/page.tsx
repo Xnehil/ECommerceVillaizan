@@ -84,7 +84,7 @@ const downloadXMLFile = async (pedido: Pedido) => {
   </cac:AccountingCustomerParty>
   <cac:PaymentTerms>
     <cbc:ID>FormaPago</cbc:ID>
-    <cbc:PaymentMeansID>${pedido.metodosPago.map(mp => mp.nombre).join(", ")}</cbc:PaymentMeansID>
+    <cbc:PaymentMeansID>${pedido.pedidosXMetodoPago.map(mp => mp.metodoPago.nombre).join(", ")}</cbc:PaymentMeansID>
     <cbc:Amount currencyID="PEN">${pedido.total}</cbc:Amount>
   </cac:PaymentTerms>
   ${pedido.detalles.map((detalle, index) => `
