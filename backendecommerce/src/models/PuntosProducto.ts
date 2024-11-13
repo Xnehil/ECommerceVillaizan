@@ -7,7 +7,9 @@ import {
     PrimaryGeneratedColumn, 
     ManyToOne,
     JoinColumn,
-    PrimaryColumn
+    PrimaryColumn,
+    DeleteDateColumn,
+    BeforeUpdate
 } from "typeorm";
 import { generateEntityId } from "@medusajs/medusa/dist/utils";
 import { EntidadBase } from "./EntidadBase";
@@ -23,14 +25,33 @@ export class PuntosProducto /*extends EntidadBase*/ {
     @Column({ type: "integer", nullable: false, name: "cantidadpuntos" })
     cantidadPuntos: number;
 
-    @Column({ type: "boolean", nullable: false, name: "estado" })
-    estado: boolean;
+    @CreateDateColumn({ type: "timestamp", name: "creadoen"})
+    creadoEn: Date;
 
-    @Column({ type: "timestamp", nullable: false, name: "fechaactivo" })
-    fechaActivo: Date;
+    @UpdateDateColumn({ type: "timestamp" , name: "actualizadoen"})
+    actualizadoEn: Date;
 
-    @Column({ type: "timestamp", nullable: false, name: "fechainactivo" })
-    fechaInactivo: Date;
+    @DeleteDateColumn({ type: "timestamp", name: "desactivadoen", nullable: true })
+    desactivadoEn: Date | null;
+
+    @Column({ type: "varchar", name: "usuariocreacion", length: 50 })
+    usuarioCreacion: string;
+
+    @Column({ type: "varchar", name: "usuarioactualizacion", length: 50, nullable: true })
+    usuarioActualizacion: string;
+
+    @Column({ type: "boolean", name: "estaactivo", default: true })
+    estaActivo: boolean;
+
+    @BeforeInsert()
+    llenarUsuarioCreacion() {
+        this.usuarioCreacion = "admin";
+    }
+
+    @BeforeUpdate()
+    llenarUsuarioActualizacion() {
+        this.usuarioActualizacion = "admin";
+    }
 
     @ManyToOne(() => Producto, producto => producto.id, { eager: true })
     @JoinColumn({ name: "id_producto" })

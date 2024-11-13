@@ -86,8 +86,7 @@ class PuntosProductoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
           const puntosProductoRepo = manager.withRepository(this.puntosProductoRepository_);
           const puntosProducto = await this.recuperar(id);
-          //Cambiar sprint
-          await puntosProductoRepo.update(id, {estado: false, fechaInactivo: new Date()})
+          await puntosProductoRepo.update(id, {estaActivo: false, desactivadoEn: new Date()})
         });
     }
 
