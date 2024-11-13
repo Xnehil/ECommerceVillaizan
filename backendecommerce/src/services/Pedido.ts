@@ -343,6 +343,37 @@ class PedidoService extends TransactionBaseService {
         return pedido;
     }
 
+    async encontrarPorUsuarioId(idUsuario: string, selector: Selector<Pedido> = {}): Promise<Pedido[]> {
+        const finalSelector: any = selector || {};
+    
+        if (finalSelector.estado === '!= carrito') {
+            finalSelector.estado = Not('carrito');
+        }
+        const relations = ["motorizado", "direccion", "direccion.ciudad"];
+    
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const query = pedidoRepo.createQueryBuilder("pedido")
+            .leftJoinAndSelect("pedido.motorizado", "motorizado")
+            .leftJoinAndSelect("pedido.direccion", "direccion")
+            .leftJoinAndSelect("direccion.ciudad", "ciudad")
+            .where("pedido.usuario.id = :idUsuario", { idUsuario });
+    
+        if (Array.isArray(finalSelector.estado) && finalSelector.estado.length > 0) {
+            query.andWhere("pedido.estado IN (:...estados)", { estados: finalSelector.estado });
+        } else if (finalSelector.estado) {
+            query.andWhere("pedido.estado = :estado", { estado: finalSelector.estado });
+        }
+        // console.log(query.getSql(), query.getParameters()); // Log the query and parameters for debugging
+
+        const pedidos = await query.getMany();
+    
+        if (!pedidos) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedidos no encontrados");
+        }
+    
+        return pedidos;
+    }
+
 }
 
 export default PedidoService;
