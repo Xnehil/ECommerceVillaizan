@@ -284,7 +284,7 @@ const CartDropdown = ({
                           <span className="text-ui-fg-base font-semibold">{"Puntos Canjeables"}</span>
                           <TooltipProvider>
                             <Tooltip>
-                              <TooltipTrigger className="flex items-center justify-center h-full px-1 py-1 text-xs bg-gray-200 rounded-full">
+                              <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
                                 i
                               </TooltipTrigger>
                               <TooltipContent>
