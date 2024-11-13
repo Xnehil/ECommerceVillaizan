@@ -3,13 +3,16 @@ import { DetallePedido } from "../models/DetallePedido";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import detallePedidoRepository from "src/repositories/DetallePedido";
+import puntosProductoRepository from "src/repositories/PuntosProducto";
 
 class DetallePedidoService extends TransactionBaseService {
     protected detallePedidoRepository_: typeof detallePedidoRepository;
+    protected puntosProductoRepository_: typeof puntosProductoRepository;
 
     constructor(container) {
         super(container);
         this.detallePedidoRepository_ = container.detallepedidoRepository;
+        this.puntosProductoRepository_ = container.puntosproductoRepository;
     }
 
     getMessage() {
@@ -70,6 +73,12 @@ class DetallePedidoService extends TransactionBaseService {
 
         if (!detallePedido) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "DetallePedido no encontrado");
+        }
+
+        const puntosProductoRepo = this.activeManager_.withRepository(this.puntosProductoRepository_);
+        const puntosProducto = await puntosProductoRepo.encontrarPuntosPorProductoActivo(detallePedido.producto.id);
+        if(puntosProducto){
+            detallePedido.producto.cantidadPuntos = puntosProducto.cantidadPuntos;
         }
 
         return detallePedido;

@@ -263,9 +263,26 @@ const CartDropdown = ({
                         (acc, item) => acc + item.subtotal,
                         0
                       )}
+                      
                     >
                       {"S/ " + total.toFixed(2)}
                     </span>
+                    
+                  </div>
+                  <div className="flex items-center justify-between">
+                    {/*Canje */}
+                    {
+                      isAuthenticated && cartState.detalles && cartState.detalles.length > 0 && (
+                        <><span className="text-ui-fg-base font-semibold">
+                          {"Puntos de canje: "}
+                        </span><span className="text-large-semi">
+                            {cartState.detalles.reduce((totalPuntos, detalle) => {
+                              const puntos = detalle.producto?.cantidadPuntos || 0
+                              return totalPuntos + puntos
+                            }, 0)}
+                          </span></>
+                      )
+                    }
                   </div>
                   <Link href="/carrito" passHref>
                     <Button
