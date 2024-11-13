@@ -247,7 +247,7 @@ export default function ProductPreview({
                 </TooltipTrigger>
                 <TooltipContent className="w-48 h-auto p-2">
                   <p className="w-full break-words">
-                    Con la compra de este producto, consigues <strong>{`${productPreview.cantidadPuntos}`}</strong> puntos de Canje
+                    Con la compra de este producto, consigues <strong>{`${productPreview.cantidadPuntos}`}</strong> Puntos Canjeables
                   </p>
                   <p className="w-full break-words font-bold">Ver Detalles</p>
                 </TooltipContent>

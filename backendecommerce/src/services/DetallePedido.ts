@@ -107,7 +107,7 @@ class DetallePedidoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const detallePedidoRepo = manager.withRepository(this.detallePedidoRepository_);
             const detallePedido = await detallePedidoRepo.encontrarPorId(id);
-            console.log("recuperar detallePedido ", detallePedido);
+            //console.log("recuperar detallePedido ", detallePedido);
             Object.assign(detallePedido, data);
             const response = await detallePedidoRepo.save(detallePedido);
     

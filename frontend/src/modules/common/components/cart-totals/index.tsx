@@ -3,9 +3,15 @@
 
 import { formatAmount } from "@lib/util/prices"
 import { InformationCircleSolid } from "@medusajs/icons"
-import { Tooltip, TooltipProvider } from "@medusajs/ui"
+//import { Tooltip, TooltipProvider } from "@medusajs/ui"
 import React from "react"
 import { Pedido } from "types/PaquetePedido"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@components/tooltip";
 
 type CartTotalsProps = {
   data: Omit<Pedido, "refundable_amount" | "refunded_total"> | Pedido
@@ -64,10 +70,16 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio, isAuthen
           <span className="flex gap-x-1 items-center">
             Subtotal
             <TooltipProvider>
-              <Tooltip content="Total del carrito sin envío ni descuentos">
-                <InformationCircleSolid color="var(--fg-muted)" />
-              </Tooltip>
-            </TooltipProvider>
+              <Tooltip>
+                  <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
+                      i
+                   </TooltipTrigger>
+                   <TooltipContent>
+                      <p className="w-full break-words">Total del carrito sin envío ni descuentos</p>
+                    </TooltipContent>
+               </Tooltip>
+             </TooltipProvider>
+            
           </span>
           <span data-testid="cart-subtotal" data-value={subtotalWithoutDiscounts || 0}>
             {getAmount(subtotalWithoutDiscounts)}
@@ -104,7 +116,19 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio, isAuthen
       </div>
       {isAuthenticated && (
         <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium font-poppins">
-          <span>Puntos de canje</span>
+          <div className="flex items-center gap-x-1">
+            <span>Puntos Canjeables</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
+                  i
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="w-full break-words">Los Puntos Canjeables vencen cada 3 meses.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <span className="txt-xlarge-plus font-poppins color-mostazaTexto" data-testid="cart-points" data-value={totalPuntosCanje || 0}>
             {totalPuntosCanje}
           </span>

@@ -200,7 +200,7 @@ export default function ProductDetail() {
             )}
             {
               isAuthenticated && existenPuntos && (
-                <p className="text-gray-700 text-lg"><strong>Puntos de Canje por compra de producto:</strong> {puntos}</p>
+                <p className="text-gray-700 text-lg"><strong>Puntos Canjeables por compra de producto:</strong> {puntos}</p>
               )
             }
             {/* Botón Agregar al Carrito */}

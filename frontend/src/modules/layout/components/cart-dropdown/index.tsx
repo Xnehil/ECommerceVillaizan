@@ -16,6 +16,12 @@ import Link from "next/link"
 import { Pedido } from "types/PaquetePedido"
 import { Producto } from "types/PaqueteProducto"
 import { useSession } from "next-auth/react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@components/tooltip";
 
 function checkIfAuthenticated(session: any, status: string) {
   if (status !== "loading") {
@@ -272,22 +278,29 @@ const CartDropdown = ({
                   </div>
                   <div className="flex items-center justify-between">
                     {/*Canje */}
-                    {
-                      isAuthenticated && cartState.detalles && cartState.detalles.length > 0 && (
-                        <><span className="text-ui-fg-base font-semibold">
-                          {"Puntos de canje: "}
-                        </span><span className="text-large-semi">
-                            {cartState.detalles.reduce((totalPuntos, detalle) => {
-                              const puntos = ((detalle.producto?.cantidadPuntos ?? 0) * detalle.cantidad) || 0
-                              /*console.log("cantidadPuntos detalle:", detalle.producto?.cantidadPuntos);
-                              console.log("cantidad detalle:", detalle.cantidad);
-                              console.log("puntos:", puntos);
-                              console.log("totalPuntos:", totalPuntos);*/
-                              return totalPuntos + puntos
-                            }, 0)}
-                          </span></>
-                      )
-                    }
+                    {isAuthenticated && cartState.detalles && cartState.detalles.length > 0 && (
+                      <>
+                        <div className="flex items-center gap-x-1">
+                          <span className="text-ui-fg-base font-semibold">{"Puntos Canjeables"}</span>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger className="flex items-center justify-center h-full px-1 py-1 text-xs bg-gray-200 rounded-full">
+                                i
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="w-full break-words">Los Puntos Canjeables vencen cada 3 meses.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        <span className="text-large-semi">
+                          {cartState.detalles.reduce((totalPuntos, detalle) => {
+                            const puntos = (detalle.producto?.cantidadPuntos ?? 0) * detalle.cantidad || 0;
+                            return totalPuntos + puntos;
+                          }, 0)}
+                        </span>
+                      </>
+                    )}
                   </div>
                   <Link href="/carrito" passHref>
                     <Button

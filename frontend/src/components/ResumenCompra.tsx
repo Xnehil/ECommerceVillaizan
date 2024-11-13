@@ -9,6 +9,12 @@ import { Usuario } from 'types/PaqueteUsuario';
 import axios, { AxiosError } from "axios"
 import { ErrorMessage } from '@hookform/error-message';
 import { useSession } from 'next-auth/react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@components/tooltip";
 
 interface ResumenCompraProps {
   descuento: number;
@@ -301,10 +307,23 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
       {/* Mostrar CANJES DE PUNTOS*/}
       {isAuthenticated && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
-          <span>Puntos a canjear</span>
+          <div className="flex items-center gap-x-1">
+            <span>Puntos Canjeables</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
+                  i
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="w-full break-words">Obtendrás los Puntos Canjeables después de que un Administrador confirme el pago del pedido. Recuerda que los puntos vencen cada 3 meses.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <span>{canjePuntos}</span>
         </div>
       )}
+
       <hr style={{ margin: '10px 0' }} />
       {/* Mostrar paymentAmount si está presente */}
       {selectedImageId === "pagoEfec" && paymentAmount !== null && (
