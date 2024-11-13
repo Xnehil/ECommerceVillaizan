@@ -39,7 +39,7 @@ class PedidoXMetodoPagoService extends TransactionBaseService {
         config: FindConfig<PedidoXMetodoPago> = {
           skip: 0,
           take: 20,
-          relations: [],
+          relations: ["pedido", "metodoPago"],
         }
     ): Promise<PedidoXMetodoPago[]> {
         const [pedidoXMetodoPagos] = await this.listarYContar(selector, config);
@@ -51,6 +51,7 @@ class PedidoXMetodoPagoService extends TransactionBaseService {
         config?: FindConfig<PedidoXMetodoPago>
     ): Promise<PedidoXMetodoPago> {
         const pedidoXMetodoPagoRepo = this.activeManager_.withRepository(this.pedidoXMetodoPagoRepository_);
+        config = { relations: ["pedido", "metodoPago"] };
         const query = buildQuery({ id }, config);
         const pedidoXMetodoPago = await pedidoXMetodoPagoRepo.findOne(query);
 
@@ -92,6 +93,7 @@ class PedidoXMetodoPagoService extends TransactionBaseService {
 
     async listarPorPedido(idPedido: string): Promise<PedidoXMetodoPago[]> {
         const pedidoXMetodoPagoRepo = this.activeManager_.withRepository(this.pedidoXMetodoPagoRepository_);
+
         const pedidoXMetodoPago = pedidoXMetodoPagoRepo.encontrarPorIdPedido(idPedido);
         if (!pedidoXMetodoPago) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "PedidoXMetodoPago no encontrado");

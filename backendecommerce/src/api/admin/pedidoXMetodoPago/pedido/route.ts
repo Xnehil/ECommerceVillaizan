@@ -88,7 +88,9 @@ export const POST = async (
         if (error.message === "PedidoXMetodoPago no encontrado") {
             res.status(404).json({ error: "PedidoXMetodoPago no encontrado" });
         } else {
-            res.status(400).json({ error: "Petición inválida" });
+            res.status(400).json({ error: "Petición inválida" ,
+                message: error.message
+            });
         }
     }
 };

@@ -23,6 +23,8 @@ export const PedidoRepository = dataSource
       .leftJoinAndSelect("direccion.ubicacion", "ubicacion")
       .leftJoinAndSelect("pedido.usuario", "usuario")
       .leftJoinAndSelect("pedido.motorizado", "motorizado")
+      .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago")
+      .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
       .where("motorizado.id = :id_motorizado", { id_motorizado });
   
     if (Array.isArray(estados) && estados.length > 0) {
