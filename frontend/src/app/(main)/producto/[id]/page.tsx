@@ -72,6 +72,7 @@ export default function ProductDetail() {
         .catch((error) => {
           console.error("Error al obtener el producto:", error);
         });
+      //const response = await axios.
     }
   }, [id]);
 
