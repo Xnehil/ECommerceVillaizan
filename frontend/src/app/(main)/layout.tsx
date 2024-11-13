@@ -23,7 +23,7 @@ export default function PageLayout(props: { children: React.ReactNode }) {
     <SessionProvider>
       <Nav />
       {props.children}
-      <Footer />
+      {/* <Footer /> */}
       <Chatbot base64Css={base64Css} />
     </SessionProvider>
   );

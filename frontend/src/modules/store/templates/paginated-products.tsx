@@ -94,6 +94,8 @@ export default function PaginatedProducts({
           cityParam
         );
 
+        console.log("RESPONSE", response); // Logs the response object
+
         if (!response || !response.data || !response.data.productos) {
           throw new Error("Invalid response structure");
         }
