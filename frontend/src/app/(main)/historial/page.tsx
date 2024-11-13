@@ -129,7 +129,7 @@ export default function Historial() {
               <p><strong>Fecha del pedido:</strong> {formatFecha(modalData.creadoEn as unknown as string)}</p>
               <p><strong>Estado del pedido:</strong> {modalData.estado}</p>
               <p><strong>Monto total pagado:</strong> S/ {modalData.total}</p>
-              <p><strong>Método de pago:</strong> {modalData.metodoPago || "No especificado"}</p>
+              {/*<p><strong>Método de pago:</strong> {modalData.metodoPago || "No especificado"}</p>*/}
               <p><strong>Dirección de entrega:</strong> {modalData.direccion?.calle || "No disponible"} {modalData.direccion?.numeroExterior || ""}</p>
               <h3 className="font-bold mt-4 mb-2">Productos:</h3>
               <ul className="list-disc pl-5">

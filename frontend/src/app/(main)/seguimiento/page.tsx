@@ -134,7 +134,7 @@ const downloadXMLFile = async (pedido: Pedido) => {
 const sendMessageConfirmation = async () => {
   try {
     await axios.post("http://localhost:9000/admin/whatsApp", {
-      mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉`,
+      mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉 Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega: bit.ly/4fLaj5h`,
       numero: "959183082",
     });
     console.log("Mensaje de confirmación enviado a WhatsApp.");
