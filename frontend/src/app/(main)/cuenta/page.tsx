@@ -12,6 +12,9 @@ import AddressModal from '../../../components/address/AddressModal'; // Import t
 import AddressForm from '../../../components/address/AddressForm'; // Import the AddressForm component
 import EliminationPopUp from '../../../components/address/EliminationPopUp'; // Import the EliminationPopUp component
 import { Button } from '@components/Button';
+import { Skeleton } from '@components/ui/skeleton';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@components/ui/alert-dialog';
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -40,6 +43,10 @@ const Cuenta = () => {
     borderBottom: '2px solid #ccc',
     paddingBottom: '10px'
   };
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     async function fetchUserName() {
@@ -148,6 +155,23 @@ const Cuenta = () => {
     setIsModalOpen(false);
   };
 
+
+  const handleEditData = () => setIsEditing(true);
+  const handleCancelData = () => {
+    setIsEditing(false);
+    setIsDialogOpen(false);
+  };
+  const handleSaveData = () => {
+    // Implement save logic here (e.g., update user data in the backend)
+    setIsEditing(false);
+  };
+  
+  interface HandleInputChangeData {
+    (setter: React.Dispatch<React.SetStateAction<string>>): (e: React.ChangeEvent<HTMLInputElement>) => void;
+  }
+
+  const handleInputChangeData: HandleInputChangeData = (setter) => (e) => setter(e.target.value);
+
   return (
     <>
       {/* Error Popup */}
@@ -168,14 +192,124 @@ const Cuenta = () => {
         </div>
       )}
       <div style={{ display: 'flex' }}>
-      <div style={{ flex: 1, padding: '20px', marginBottom: '200px', marginLeft: '320px' }}>
+        {/* User data */}
+        <div style={{ flex: 1, padding: '20px', marginBottom: '200px', marginLeft: '320px' }}>
           <h2 style={headerStyle}>Datos generales</h2>
-          {userNombre && <InputWithLabel label="Nombre" value={userNombre} disabled={true} />}
-          {userApellido && <InputWithLabel label="Apellido" value={userApellido} disabled={true} />}
-          {userCorreo && <InputWithLabel label="Correo" value={userCorreo} disabled={true} />}
-          {userTelefono && <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />}
-          {userPuntosAcumulados && <InputWithLabel label="Puntos Acumulados" value={userPuntosAcumulados} disabled={true} />}
+          {isLoading ? (
+            <div className="flex flex-col space-y-4">
+              {/* Add Skeleton components here as placeholders */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </div>
+            </div>
+          ) : (
+            <div className="w-4/5 space-y-4">
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Nombre"
+                  value={userNombre}
+                  disabled={!isEditing}
+                  onChange={handleInputChangeData(setUserNombre)}
+                />
+              </div>
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Apellido"
+                  value={userApellido}
+                  disabled={!isEditing}
+                  onChange={handleInputChangeData(setUserApellido)}
+                />
+              </div>
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Correo"
+                  value={userCorreo}
+                  disabled={true}
+                  onChange={handleInputChangeData(setUserCorreo)}
+                />
+              </div>
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Número de Teléfono"
+                  value={userTelefono}
+                  disabled={!isEditing}
+                  onChange={handleInputChangeData(setUserTelefono)}
+                />
+              </div>
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Puntos Acumulados"
+                  value={userPuntosAcumulados}
+                  disabled={true}
+                  onChange={handleInputChangeData(setUserPuntosAcumulados)}
+                />
+              </div>
+
+              <div className="lower-buttons-container mt-8">
+                {isEditing ? (
+                  <>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="secondary">Cancelar</Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>¿Estás seguro de cancelar?</DialogTitle>
+                          <DialogDescription>Se perderán los cambios realizados.</DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button onClick={handleCancelData}>Confirmar</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="default">Guardar</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>¿Estás seguro de guardar?</AlertDialogTitle>
+                          <AlertDialogDescription>Se guardarán los cambios realizados para el usuario.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleSaveData}>Guardar</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                ) : (
+                  <Button variant="default" onClick={handleEditData}>
+                    Editar
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button className="hidden">Open Dialog</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>Esta opción controla las configuraciones del usuario.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <div className="flex space-x-2">
+                  <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                  <Button onClick={handleCancelData}>Confirmar</Button>
+                </div>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
+        {/* Addresses */}
         <div style={{ flex: 1, padding: '20px', marginRight: '320px' }}>
           <h2 style={headerStyle}>Direcciones Guardadas</h2>
           {loadingInternal ? (

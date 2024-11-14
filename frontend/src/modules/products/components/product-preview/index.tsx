@@ -2,7 +2,6 @@ import { Text } from "@medusajs/ui"
 import { Region } from "@medusajs/medusa"
 import Thumbnail from "../thumbnail"
 import { Producto } from "types/PaqueteProducto"
-import { useEffect, useState } from "react"
 import { addItem, updateLineItem } from "@modules/cart/actions"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
 import Link from 'next/link'
@@ -12,6 +11,35 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@components/tooltip";
+
+import InputWithLabel from "@components/inputWithLabel";
+import React, { useEffect, useRef, useState } from "react";
+//ACAA
+//import "@/styles/general.css";
+import { Label } from "@components/label";
+import { Button } from "@components/Button";
+import { Skeleton } from "@components/ui/skeleton";
+import axios from "axios";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@components/ui/alert-dialog";
 
 export default function ProductPreview({
   productPreview,
