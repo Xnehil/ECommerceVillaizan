@@ -84,10 +84,13 @@ export const PedidoRepository = dataSource
         .leftJoinAndSelect("direccion.ciudad", "ciudad")
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
         .leftJoinAndSelect("pedido.usuario", "usuario")
+        .leftJoinAndSelect("usuario.persona", "persona")
+        .leftJoinAndSelect("usuario.rol", "rol")
         .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago")
         .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
         .leftJoinAndSelect("pedido.detalles", "detalles")
         .leftJoinAndSelect("detalles.producto", "producto")
+        .leftJoinAndSelect("detalles.promocion", "promocion")
         .where("pedido.id = :id", { id })
         .getOne();
     }
