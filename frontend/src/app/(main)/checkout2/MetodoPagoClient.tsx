@@ -10,6 +10,7 @@ import { Usuario } from "types/PaqueteUsuario"
 import { Direccion } from "types/PaqueteEnvio"
 import axios from "axios"
 import PagosParciales from "@components/PagosParciales"
+import { set } from "lodash"
 
 type MetodoPagoClientProps = {
   pedidoInput: Pedido
@@ -70,6 +71,7 @@ export default function MetodoPagoClient({
   const [pedido, setPedido] = useState<Pedido | null>(null) // State to hold the fetched pedido
   const [dividido, setDividido] = useState(false)
   const [metodosPago, setMetodosPago] = useState<PedidoXMetodoPago[]>([])
+  const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
 
   const hayDescuento = true
   const costoEnvio = 5
@@ -106,6 +108,7 @@ export default function MetodoPagoClient({
 
     if (pedido && pedido.id) {
       try {
+        setSelectedImageIds([])
         // Configura el cuerpo de la solicitud con la estructura específica
         const metodo = {
           id:
@@ -114,7 +117,7 @@ export default function MetodoPagoClient({
               : id === "plin"
               ? "mp_01JBDQDH47XDE75XCGSS739E6G"
               : "mp_01J99CS1H128G2P7486ZB5YACH",
-        } as MetodoPago;
+        } as MetodoPago
 
         const pedidoUpdateData = {
           pedidosXMetodoPago: [
@@ -126,13 +129,17 @@ export default function MetodoPagoClient({
           ],
         }
 
-        await axios.put(
-          `${baseUrl}/admin/pedido/${pedido.id}?enriquecido=true`,
-          pedidoUpdateData,
-          {
-            headers: { "Content-Type": "application/json" },
-          }
+        setMetodosPago(
+          pedidoUpdateData.pedidosXMetodoPago as unknown as PedidoXMetodoPago[]
         )
+
+        // await axios.put(
+        //   `${baseUrl}/admin/pedido/${pedido.id}?enriquecido=true`,
+        //   pedidoUpdateData,
+        //   {
+        //     headers: { "Content-Type": "application/json" },
+        //   }
+        // )
 
         console.log(
           "Pedido actualizado con método de pago:",
@@ -148,6 +155,112 @@ export default function MetodoPagoClient({
     if (id === "pagoEfec") {
       setShowPopup(true)
     }
+  }
+
+  const handleImageMultipleClick = async (id: string | null) => {
+    if (pedido && pedido.id && id) {
+      const metodoId =
+        id === "yape"
+          ? "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
+          : id === "plin"
+          ? "mp_01JBDQDH47XDE75XCGSS739E6G"
+          : "mp_01J99CS1H128G2P7486ZB5YACH"
+
+      if (selectedImageIds.includes(id)) {
+        const newSelectedImageIds = selectedImageIds.filter((ids) => ids !== id)
+        setSelectedImageIds(newSelectedImageIds)
+
+        // delete from metodosPago
+        const newMetodosPago = metodosPago.filter(
+          (metodo) => metodo.metodoPago.id !== metodoId
+        )
+
+        console.log("New metodosPago:", newMetodosPago)
+
+        setMetodosPago(newMetodosPago)
+      } else {
+        const metodo = {
+          id:
+            id === "yape"
+              ? "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
+              : id === "plin"
+              ? "mp_01JBDQDH47XDE75XCGSS739E6G"
+              : "mp_01J99CS1H128G2P7486ZB5YACH",
+        } as MetodoPago
+        setSelectedImageId(null)
+        setPaymentAmount(null)
+        // If the image is not selected, select it
+        const newSelectedImageIds = [...selectedImageIds, id]
+        setSelectedImageIds(newSelectedImageIds)
+
+        const newMetodosPago = [
+          ...metodosPago,
+          {
+            monto: 0,
+            pedido: pedido.id,
+            metodoPago: metodo,
+          },
+        ]
+
+        setMetodosPago(newMetodosPago as unknown as PedidoXMetodoPago[])
+      }
+    }
+  }
+
+  const handleAmountChange = (id: string, amount: number) => {
+    const idMetodo =
+      id === "yape"
+        ? "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
+        : id === "plin"
+        ? "mp_01JBDQDH47XDE75XCGSS739E6G"
+        : "mp_01J99CS1H128G2P7486ZB5YACH"
+    if (!pedido) {
+      return
+    }
+
+    if (amount < 0) {
+      return
+    }
+
+    if (amount >= calcularTotal()) {
+      return
+    }
+
+    console.log("Restante:", calcularRestante(idMetodo))
+
+    if (id !== "pagoEfec" && amount > calcularRestante(idMetodo)) {
+      return
+    }
+
+    console.log("Amount changed:", amount)
+
+    const newMetodosPago = metodosPago.map((metodo) => {
+      if (metodo.metodoPago.id === idMetodo) {
+        return {
+          ...metodo,
+          monto: amount,
+        }
+      }
+      return metodo
+    })
+
+    console.log("New metodosPago:", newMetodosPago)
+    setMetodosPago(newMetodosPago)
+  }
+
+  const calcularRestante = (idMetodo: string) => {
+    if (!pedido) {
+      return 0
+    }
+
+    const totalPagado = metodosPago.reduce((acc, metodo) => {
+      if (metodo.metodoPago.id !== idMetodo) {
+        return acc + metodo.monto
+      }
+      return acc
+    }, 0)
+
+    return calcularTotal() - totalPagado
   }
 
   const handlePaymentConfirm = (amount: number) => {
@@ -199,8 +312,6 @@ export default function MetodoPagoClient({
     }, 0)
   }
 
-
-
   const calcularSubtotal = () => {
     if (!pedidoInput) {
       return 0
@@ -216,10 +327,14 @@ export default function MetodoPagoClient({
 
   const total = calcularTotal()
   const vuelto = calcularVuelto()
-  const totalPuntosCanje = (pedido?.detalles ?? []).reduce((totalPuntos, detalle) => {
-    const puntos = ((detalle.producto?.cantidadPuntos ?? 0) * detalle.cantidad) || 0;
-    return totalPuntos + puntos;
-  }, 0);
+  const totalPuntosCanje = (pedido?.detalles ?? []).reduce(
+    (totalPuntos, detalle) => {
+      const puntos =
+        (detalle.producto?.cantidadPuntos ?? 0) * detalle.cantidad || 0
+      return totalPuntos + puntos
+    },
+    0
+  )
 
   return (
     <>
@@ -263,7 +378,14 @@ export default function MetodoPagoClient({
           paddingRight: "40px",
         }}
       >
-        <div style={{ display: "flex", width: "100%", flexDirection: "column", gap: "20px" }}>
+        <div
+          style={{
+            display: "flex",
+            width: "100%",
+            flexDirection: "column",
+            gap: "20px",
+          }}
+        >
           <CustomRectangle
             text="Pago Contraentrega"
             images={[
@@ -292,7 +414,7 @@ export default function MetodoPagoClient({
           />
 
           <PagosParciales
-            text="Pago Dividido"
+            text="Pago Dividido (Contraentrega)"
             images={[
               {
                 id: "pagoEfec",
@@ -311,10 +433,13 @@ export default function MetodoPagoClient({
               },
             ]}
             width="85%"
-            height="100px"
-            onImageClick={handleImageClick}
+            // height="100px"
+            onImageClick={handleImageMultipleClick}
+            metodosPago={metodosPago}
             setMetodosPago={setMetodosPago}
             setPaymentAmount={setPaymentAmount}
+            selectedImageIds={selectedImageIds}
+            onAmountChange={handleAmountChange}
             hideCircle={true}
           />
         </div>
@@ -343,7 +468,7 @@ export default function MetodoPagoClient({
               direccion={pedido?.direccion ?? defaultDireccion}
               usuario={pedido?.usuario ?? defaultUsuario}
               pedido={pedidoInput}
-              canjePuntos = {totalPuntosCanje}
+              canjePuntos={totalPuntosCanje}
             />
           </div>
         )}

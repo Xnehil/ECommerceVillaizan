@@ -13,11 +13,14 @@ type PagosParcialesProps = {
   text: string
   images: ImageData[]
   width: string
-  height: string
+  height?: string
   onImageClick: (id: string | null) => void // Permitir null
+  metodosPago: PedidoXMetodoPago[] // Add metodosPago to props
   setMetodosPago: (metodos: PedidoXMetodoPago[]) => void // Add setMetodosPago to props
+  selectedImageIds: string[]
   setPaymentAmount: (amount: number | null) => void // Add setPaymentAmount to props
   hideCircle?: boolean // Add hideCircle to props
+  onAmountChange?: (id: string, amount: number) => void
 }
 
 const PagosParciales: React.FC<PagosParcialesProps> = ({
@@ -26,13 +29,16 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
   width = "100%",
   height = "auto",
   onImageClick,
+  metodosPago, // Destructure the metodosPago array from props
   setMetodosPago, // Destructure the setMetodosPago function from props
   setPaymentAmount, // Destructure the setPaymentAmount function from props
+  selectedImageIds,
   hideCircle = false, // Destructure hideCircle with default value false
+  onAmountChange,
 }) => {
   const [isCircleSelected, setIsCircleSelected] = useState(false) // Estado para controlar la selección del círculo
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
-  const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]) // Estado para manejar la imagen seleccionada
+  // Estado para manejar la imagen seleccionada
 
   // Sincronizamos el estado del círculo si una imagen está seleccionada
   //   useEffect(() => {
@@ -51,27 +57,9 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
   const handleCircleClick = () => {
     if (isCircleSelected) {
       setIsCircleSelected(false) // Cambiamos el estado del círculo al hacer clic
-      setSelectedImageIds([]) // Desseleccionamos la imagen
       setPaymentAmount(null) // Aseguramos que se limpie el monto de pago
-      onImageClick(null)
     } else {
       setIsCircleSelected(true) // Rellenar el círculo si no estaba seleccionado
-    }
-  }
-
-  const handleImageClick = (imageId: string) => {
-    if (selectedImageIds.includes(imageId)) {
-      // If the image is already selected, deselect it
-      const newSelectedImageIds = selectedImageIds.filter(
-        (id) => id !== imageId
-      )
-      setSelectedImageIds(newSelectedImageIds)
-      // onImageClick(newSelectedImageIds); // Notify parent component
-    } else {
-      // If the image is not selected, select it
-      const newSelectedImageIds = [...selectedImageIds, imageId]
-      setSelectedImageIds(newSelectedImageIds)
-      // onImageClick(newSelectedImageIds); // Notify parent component
     }
   }
 
@@ -81,6 +69,17 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
 
   const handleMouseLeave = () => {
     setHoverIndex(null)
+  }
+
+  const getMetodoPagoId = (imageId: string) => {
+    const idMetodo =
+      imageId === "yape"
+        ? "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
+        : imageId === "plin"
+        ? "mp_01JBDQDH47XDE75XCGSS739E6G"
+        : "mp_01J99CS1H128G2P7486ZB5YACH"
+
+    return idMetodo
   }
 
   return (
@@ -101,38 +100,60 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
           onClick={handleCircleClick}
         ></div>
       )}
-      <span style={{ ...styles.text, marginRight: "20px" }}>{text}</span>
-      <div
-        style={{ ...styles.imagesContainer, justifyContent: "right"}}
-      >
+      <span style={{ ...styles.text, marginLeft: "20px", marginRight: "20px" }}>
+        {text}
+      </span>
+      <div style={{ ...styles.imagesContainer, justifyContent: "right" }}>
         {images.map((image, index) => (
           <div
             key={index}
-            style={styles.imageWrapper}
-            onMouseEnter={() => handleMouseEnter(index)}
-            onMouseLeave={handleMouseLeave}
-            onClick={() => {
-              // add imageId to selectedImageIds
-              const newSelectedImageIds = selectedImageIds.includes(image.id)
-                ? selectedImageIds.filter((id) => id !== image.id)
-                : [...selectedImageIds, image.id]
-              setSelectedImageIds(newSelectedImageIds)
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              width: "100px",
             }}
           >
-            <img
-              src={image.src}
-              alt={`image-${index}`}
-              style={{
-                ...styles.image,
-                padding: image.src.endsWith(".png") ? "10px" : "0",
+            <div
+              style={styles.imageWrapper}
+              onMouseEnter={() => handleMouseEnter(index)}
+              onMouseLeave={handleMouseLeave}
+              onClick={() => {
+                onImageClick(image.id)
               }}
-            />
-            {/* Capa oscura que se superpone solo si la imagen está seleccionada */}
+            >
+              <img
+                src={image.src}
+                alt={`image-${index}`}
+                style={{
+                  ...styles.image,
+                  padding: image.src.endsWith(".png") ? "10px" : "0",
+                }}
+              />
+              {/* Overlay if the image is selected */}
+              {selectedImageIds.includes(image.id) && (
+                <div style={styles.overlay}></div>
+              )}
+              {hoverIndex === index && (
+                <span style={styles.hoverText}>{image.hoverText}</span>
+              )}
+            </div>
+            {/* Render the input field outside the imageWrapper */}
             {selectedImageIds.includes(image.id) && (
-              <div style={styles.overlay}></div>
-            )}
-            {hoverIndex === index && (
-              <span style={styles.hoverText}>{image.hoverText}</span>
+              <input
+                type="number"
+                style={styles.input}
+                placeholder="Monto"
+                value={
+                  metodosPago.find(
+                    (metodo) =>
+                      metodo.metodoPago.id === getMetodoPagoId(image.id)
+                  )?.monto
+                }
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value)
+                  onAmountChange && onAmountChange(image.id, value)
+                }}
+              />
             )}
           </div>
         ))}
@@ -165,12 +186,11 @@ const styles = {
     marginRight: "auto",
     fontFamily: "Poppins, sans-serif",
     fontWeight: 600,
-    fontSize: "24px",
+    fontSize: "20px",
   },
   imagesContainer: {
     display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
+    alignItems: "top",
     flex: 1,
     gap: "10px",
     paddingTop: "10px",
@@ -210,9 +230,17 @@ const styles = {
     top: 0,
     left: 0,
     width: "100%",
-    height: "100%",
+    height: "80px",
     backgroundColor: "rgba(0, 0, 0, 0.5)", // Oscurecimiento
     borderRadius: "10px",
+  },
+  input: {
+    marginTop: "5px",
+    width: "100%",
+    padding: "5px",
+    borderRadius: "5px",
+    border: "1px solid #ccc",
+    fontSize: "14px",
   },
 }
 
