@@ -14,3 +14,104 @@ BEFORE UPDATE OF estaactivo ON vi_promocion
 FOR EACH ROW
 WHEN (NEW.estaactivo = FALSE)
 EXECUTE FUNCTION update_esvalido_on_estaactivo();
+
+
+CREATE SEQUENCE vi_puntosacumulados_id_seq START 1;
+CREATE SEQUENCE vi_detallepuntosacumulados_id_seq START 1;
+
+
+-- Create or replace function
+CREATE OR REPLACE FUNCTION update_puntos_acumulados() 
+RETURNS TRIGGER AS $$
+DECLARE
+    new_puntos_id character varying;
+    producto_record RECORD;
+    puntos_producto_id integer;
+BEGIN
+    -- Check if estado changed from "entregado" to "pagoConfirmado" and estaactivo is true
+    IF OLD.estado = 'entregado' AND NEW.estado = 'pagoConfirmado' AND NEW.estaactivo = true THEN
+        
+        -- Insert a new record into vi_puntosacumulados with a generated ID
+        INSERT INTO vi_puntosacumulados (
+            id,
+            creadoen,
+            actualizadoen,
+            fechatransaccion,
+            cantidadpuntosganados,
+            estaactivo,
+            usuarioactualizacion,
+            id_pedido,
+            id_usuario,
+            usuariocreacion
+        ) VALUES (
+            nextval('vi_puntosacumulados_id_seq'),  -- Generate a unique ID
+            NOW(),
+            NOW(),
+            NOW(),
+            NEW.puntosotorgados,  -- Points granted in vi_pedido
+            true,
+            NEW.usuarioactualizacion,
+            NEW.id,
+            NEW.id_usuario,
+            NEW.usuariocreacion
+        )
+        RETURNING id INTO new_puntos_id;
+
+        -- Loop through each product in vi_detallepedido for this vi_pedido
+        FOR producto_record IN
+            SELECT id_producto, cantidad
+            FROM vi_detallepedido
+            WHERE id_pedido = NEW.id
+        LOOP
+            -- Find the active points record for the product in vi_puntos_producto
+            SELECT id_puntosproducto INTO puntos_producto_id
+            FROM vi_puntos_producto
+            WHERE id_producto = producto_record.id_producto
+              AND estaactivo = true
+            LIMIT 1;
+
+            -- Check if an active points record was found
+            IF puntos_producto_id IS NOT NULL THEN
+                -- Insert a new record into vi_detallepuntosacumulados for each product
+                INSERT INTO vi_detallepuntosacumulados (
+                    id,
+                    creadoen,
+                    actualizadoen,
+                    id_puntosproducto,
+                    cantidad,
+                    puntosporunidad,
+                    subtotalpuntos,
+                    estaactivo,
+                    usuarioactualizacion,
+                    id_puntosacumulados,
+                    id_producto,
+                    usuariocreacion
+                ) VALUES (
+                    nextval('vi_detallepuntosacumulados_id_seq'),  -- Generate a unique ID
+                    NOW(),
+                    NOW(),
+                    puntos_producto_id,
+                    producto_record.cantidad,
+                    (SELECT cantidadpuntos FROM vi_puntos_producto WHERE id_puntosproducto = puntos_producto_id),
+                    producto_record.cantidad * (SELECT cantidadpuntos FROM vi_puntos_producto WHERE id_puntosproducto = puntos_producto_id),
+                    true,
+                    NEW.usuarioactualizacion,
+                    new_puntos_id,
+                    producto_record.id_producto,
+                    NEW.usuariocreacion
+                );
+            END IF;
+        END LOOP;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Create the trigger
+CREATE TRIGGER trg_update_puntos_acumulados
+AFTER UPDATE ON vi_pedido
+FOR EACH ROW
+WHEN (OLD.estado IS DISTINCT FROM NEW.estado)  -- Trigger only when estado changes
+EXECUTE FUNCTION update_puntos_acumulados();
