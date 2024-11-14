@@ -47,6 +47,7 @@ const Cuenta = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPopupDataVisible, setIsPopupDataVisible] = useState(false);
 
   useEffect(() => {
     async function fetchUserName() {
@@ -239,7 +240,7 @@ const Cuenta = () => {
               </div>
               <div className="flex space-x-2">
                 <InputWithLabel
-                  label="Puntos Acumulados"
+                  label="Puntos Canjeables Acumulados"
                   value={userPuntosAcumulados}
                   disabled={true}
                   onChange={handleInputChangeData(setUserPuntosAcumulados)}
@@ -249,36 +250,25 @@ const Cuenta = () => {
               <div className="lower-buttons-container mt-8">
                 {isEditing ? (
                   <>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="secondary">Cancelar</Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>¿Estás seguro de cancelar?</DialogTitle>
-                          <DialogDescription>Se perderán los cambios realizados.</DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <Button onClick={handleCancelData}>Confirmar</Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    {/* Cancel Button */}
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setIsPopupDataVisible(true); // Show error popup
+                      }}
+                    >
+                      Cancelar
+                    </Button>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="default">Guardar</Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>¿Estás seguro de guardar?</AlertDialogTitle>
-                          <AlertDialogDescription>Se guardarán los cambios realizados para el usuario.</AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleSaveData}>Guardar</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    {/* Save Button */}
+                    <Button
+                      variant="default"
+                      onClick={() => {
+                        setIsPopupDataVisible(true); // Show error popup
+                      }}
+                    >
+                      Guardar
+                    </Button>
                   </>
                 ) : (
                   <Button variant="default" onClick={handleEditData}>
@@ -289,25 +279,32 @@ const Cuenta = () => {
             </div>
           )}
 
-          <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <AlertDialogTrigger asChild>
-              <Button className="hidden">Open Dialog</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                <AlertDialogDescription>Esta opción controla las configuraciones del usuario.</AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <div className="flex space-x-2">
-                  <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>
+          {/* Error Popup */}
+          {isPopupDataVisible && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-md shadow-md text-center">
+                <p className="text-black-600 mb-4">
+                  ¿Estás seguro de realizar esta acción? Esta opción controla las configuraciones del usuario.
+                </p>
+                <div className="flex space-x-2 justify-center">
+                  <button
+                    style={styles.confirmButton}
+                    onClick={() => {
+                      setIsPopupDataVisible(false); // Close the popup
+                    }}
+                  >
                     Cancelar
-                  </Button>
-                  <Button onClick={handleCancelData}>Confirmar</Button>
+                  </button>
+                  <button
+                    style={styles.confirmButton}
+                    onClick={handleCancelData} // Trigger your cancel action
+                  >
+                    Confirmar
+                  </button>
                 </div>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+              </div>
+            </div>
+          )}
         </div>
         {/* Addresses */}
         <div style={{ flex: 1, padding: '20px', marginRight: '320px' }}>
