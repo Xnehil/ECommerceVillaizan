@@ -82,6 +82,7 @@ export const PedidoRepository = dataSource
       return this.createQueryBuilder("pedido")
         .leftJoinAndSelect("pedido.direccion", "direccion")
         .leftJoinAndSelect("direccion.ciudad", "ciudad")
+        .leftJoinAndSelect("direccion.ubicacion", "ubicacion")
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
         .leftJoinAndSelect("pedido.usuario", "usuario")
         .leftJoinAndSelect("usuario.persona", "persona")

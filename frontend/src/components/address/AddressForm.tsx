@@ -48,6 +48,10 @@ const AddressForm: React.FC<AddressFormProps> = ({
   } | null>(null)
   const [locationError, setLocationError] = useState("")
 
+  const [errorValidationNombre, setErrorValidationNombre] = useState<  string | null>(null)
+  const [errorValidationCalle, setErrorValidationCalle] = useState<  string | null>(null)
+  const [errorValidationReferencia, setErrorValidationReferencia] = useState<  string | null>(null)
+
   const handleMapSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
     setLocationError("");
@@ -75,15 +79,6 @@ const AddressForm: React.FC<AddressFormProps> = ({
     }
   };
 
-  /*useEffect(() => {
-    if(direccion?.ubicacion){
-      setSelectedLocation({
-        lat: parseFloat(direccion.ubicacion.latitud),
-        lng: parseFloat(direccion.ubicacion.longitud)
-      })
-    }
-  }
-  ,[direccion])*/
 
   useEffect(() => {
     if (state === 'Editar' && direccion) {
@@ -261,6 +256,41 @@ const AddressForm: React.FC<AddressFormProps> = ({
     }
   };
   
+  const handleNombreBlur = () => {
+    if (nombre.trim() === '') {
+      setErrorValidationNombre('El nombre no puede estar vacío');
+    } else {
+      if(countWords(nombre) > 250){
+        setErrorValidationNombre('El nombre no puede superar los 250 palabras');
+      }else{
+        setErrorValidationNombre(null);
+      }
+    }
+  }
+
+  const handleCalleBlur = () => {
+    if (calle.trim() === '') {
+      setErrorValidationCalle('La calle no puede estar vacía');
+    } else {
+      if(countWords(calle) > 255){
+        setErrorValidationCalle('La calle no puede superar las 255 palabras');
+      }else{
+        setErrorValidationCalle(null);
+      }
+    }
+  }
+
+  const handleReferenciaBlur = () => {
+    if (referencia.trim() === '') {
+      setErrorValidationReferencia('La referencia no puede estar vacía');
+    } else {
+      if(countWords(referencia) > 255){
+        setErrorValidationReferencia('La referencia no puede superar las 255 palabras');
+      }else{
+        setErrorValidationReferencia(null);
+      }
+    }
+  }
 
   return (
     <>
@@ -291,7 +321,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
           onChange={(e) => setNombre(e.target.value)}
           required
           tooltip="Máximo 250 palabras"
+          onBlur={handleNombreBlur}
         />
+        {
+          errorValidationNombre && <p className="text-red-500 mt-2">{errorValidationNombre}</p>
+        }
         <InputWithLabel
           label="Calle"
           value={calle}
@@ -299,17 +333,22 @@ const AddressForm: React.FC<AddressFormProps> = ({
           required
           placeholder="Av. La Republica"
           tooltip="Máximo 255 palabras"
+          onBlur={handleCalleBlur}
         />
+        {
+          errorValidationCalle && <p className="text-red-500 mt-2">{errorValidationCalle}</p>
+        }
         <InputWithLabel
           label="Número Exterior"
           value={numeroExterior}
           onChange={(e) => setNumeroExterior(e.target.value)}
-
+          type = "number"
         />
         <InputWithLabel
           label="Número Interior"
           value={numeroInterior}
           onChange={(e) => setNumeroInterior(e.target.value)}
+          type = "number"
 
         />
         <InputWithLabel
@@ -319,7 +358,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
           required
           placeholder="Cerca de la Av. Angamos con Av. Arequipa"
           tooltip="Máximo 255 palabras"
+          onBlur={handleReferenciaBlur}
         />
+        {
+          errorValidationReferencia && <p className="text-red-500 mt-2">{errorValidationReferencia}</p>
+        }
         <div>
           <label htmlFor="ciudad">Ciudad</label>
           {mandatoryCiudad ? (

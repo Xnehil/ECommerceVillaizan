@@ -135,6 +135,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
       })
     }
   }
+  
   const fetchCart = async () => {
     try {
       const respuesta = await getOrSetCart()
