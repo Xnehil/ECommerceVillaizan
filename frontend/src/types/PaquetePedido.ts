@@ -17,17 +17,24 @@ export interface Pedido extends EntidadBase {
     motorizado?: Motorizado; // Optional field
     direccion?: Direccion; // Optional field
     usuario?: Usuario;
-    metodosPago: MetodoPago[]; // Many-to-many relationship
+    //metodosPago: MetodoPago[]; // Many-to-many relationship
+    pedidosXMetodoPago: PedidoXMetodoPago[]; // One-to-many relationship
     detalles: DetallePedido[]; // One-to-many relationship
     solicitadoEn?: Date; // Optional field
     verificadoEn?: Date; // Optional field
     entregadoEn?: Date; // Optional field
 }
 
+export interface PedidoXMetodoPago extends EntidadBase {
+    monto: number;
+    pedido: Pedido;
+    metodoPago: MetodoPago;
+}
 // Define any additional interfaces needed for your application
 export interface MetodoPago extends EntidadBase { // Placeholder, replace if necessary
     nombre: string;
-    pedidos: Pedido[]; // Many-to-many relationship
+    //pedidos: Pedido[]; // Many-to-many relationship
+    pedidosXMetodoPago: PedidoXMetodoPago[]; // One-to-many relationship
 }
 
 export interface DetallePedido extends EntidadBase { // Placeholder, replace if necessary

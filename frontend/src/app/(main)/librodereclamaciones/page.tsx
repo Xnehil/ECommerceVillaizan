@@ -2,13 +2,68 @@
 import React, { useState } from "react";
 
 export default function LibrodeReclamaciones() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const [email, setEmail] = useState("");
+  const [nombre, setNombre] = useState("");
+  const [distrito, setDistrito] = useState("");
+  const [domicilio, setDomicilio] = useState("");
+  const [dni, setDni] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const confirmation = window.confirm("¿Estás seguro de esto?");
     if (confirmation) {
-      window.location.href = "http://localhome:8000"; //cambiar esto 
+      const texto = `
+      Nombre: ${nombre}
+      Distrito: ${distrito}
+      Domicilio: ${domicilio}
+      DNI/C.E: ${dni}
+      Teléfono: ${telefono}
+      Descripción del reclamo: ${descripcion}
+    `;
+      try {
+        // Primera solicitud para el correo ingresado por el usuario
+        const response1 = await fetch("http://localhost:9000/admin/correo", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            para: `"${email}"`,
+            asunto: "Libro de Reclamaciones",
+            texto: texto
+          }),
+        });
+
+        // Segunda solicitud para el correo fijo de villaizan123@gmail.com
+        const response2 = await fetch("http://localhost:9000/admin/correo", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            para: `"villaizan123@gmail.com"`,
+            asunto: "Libro de Reclamaciones",
+            texto: texto
+          }),
+        });
+
+        // Verificamos si ambas solicitudes fueron exitosas
+        if (response1.ok && response2.ok) {
+          alert("Correos enviados correctamente.");
+          window.location.href = "http://localhost:8000"; //cambiar esto 
+        } else {
+          alert("Hubo un error al enviar los correos.");
+        }
+      } catch (error) {
+        console.error("Error al enviar los correos:", error);
+        alert("Hubo un problema al conectar con el servidor.");
+      }
     }
   };
+
+  
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -37,30 +92,35 @@ export default function LibrodeReclamaciones() {
           <h3 className="font-bold text-red-600">1. Identificación del Consumidor Reclamante</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
             <div>
-              <label>Nombre <span className="text-red-600">*</span></label>
-              <input type="text" className="border p-2 w-full" />
-            </div>
-            <div>
-              <label>Distrito <span className="text-red-600">*</span></label>
-              <input type="text" className="border p-2 w-full" />
-            </div>
+            <label>Nombre <span className="text-red-600">*</span></label>
+            <input type="text" className="border p-2 w-full" value={nombre} onChange={(e) => setNombre(e.target.value)} />
+          </div>
+          <div>
+            <label>Distrito <span className="text-red-600">*</span></label>
+            <input type="text" className="border p-2 w-full" value={distrito} onChange={(e) => setDistrito(e.target.value)} />
+          </div>
             <div>
               <label>Domicilio <span className="text-red-600">*</span></label>
-              <input type="text" className="border p-2 w-full" />
-            </div>
+            <input type="text" className="border p-2 w-full" value={domicilio} onChange={(e) => setDomicilio(e.target.value)} />
+          </div>
             <div className="flex space-x-4">
               <div className="w-1/2">
-                <label>DNI/C.E</label>
-                <input type="text" className="border p-2 w-full" />
-              </div>
+                  <label>DNI/C.E</label>
+              <input type="text" className="border p-2 w-full" value={dni} onChange={(e) => setDni(e.target.value)} />
+            </div>
               <div className="w-1/2">
-                <label>Telefono <span className="text-red-600">*</span></label>
-                <input type="text" className="border p-2 w-full" />
-              </div>
+                  <label>Teléfono <span className="text-red-600">*</span></label>
+              <input type="text" className="border p-2 w-full" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
+            </div>
             </div>
             <div>
-              <label>Email <span className="text-red-600">*</span></label>
-              <input type="email" className="border p-2 w-full" />
+            <label>Email <span className="text-red-600">*</span></label>
+              <input
+                type="email"
+                className="border p-2 w-full"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
           </div>
         </div>
@@ -84,7 +144,7 @@ export default function LibrodeReclamaciones() {
           </div>
           <div className="mt-2">
             <label>Descripción</label>
-            <textarea className="border p-2 w-full" rows={4}></textarea>
+            <textarea className="border p-2 w-full" rows={4} value={descripcion} onChange={(e) => setDescripcion(e.target.value)}></textarea>
           </div>
         </div>
 

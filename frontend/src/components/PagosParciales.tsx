@@ -1,77 +1,87 @@
-"use client";
+"use client"
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"
+import { MetodoPago, PedidoXMetodoPago } from "types/PaquetePedido"
 
 interface ImageData {
-  id: string;
-  src: string;
-  hoverText: string;
+  id: string
+  src: string
+  hoverText: string
 }
 
-type CustomRectangleProps = {
-  text: string;
-  images: ImageData[];
-  width: string;
-  height: string;
-  onImageClick: (id: string | null) => void; // Permitir null
-  selectedImageId: string | null;
-  setPaymentAmount: (amount: number | null) => void; // Add setPaymentAmount to props
-  hideCircle?: boolean; // Add hideCircle to props
-};
+type PagosParcialesProps = {
+  text: string
+  images: ImageData[]
+  width: string
+  height: string
+  onImageClick: (id: string | null) => void // Permitir null
+  setMetodosPago: (metodos: PedidoXMetodoPago[]) => void // Add setMetodosPago to props
+  setPaymentAmount: (amount: number | null) => void // Add setPaymentAmount to props
+  hideCircle?: boolean // Add hideCircle to props
+}
 
-const CustomRectangle: React.FC<CustomRectangleProps> = ({
+const PagosParciales: React.FC<PagosParcialesProps> = ({
   text,
   images,
   width = "100%",
   height = "auto",
   onImageClick,
-  selectedImageId: propSelectedImageId,
+  setMetodosPago, // Destructure the setMetodosPago function from props
   setPaymentAmount, // Destructure the setPaymentAmount function from props
   hideCircle = false, // Destructure hideCircle with default value false
 }) => {
-  const [isCircleSelected, setIsCircleSelected] = useState(false); // Estado para controlar la selección del círculo
-  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const [selectedImageId, setSelectedImageId] = useState<string | null>(propSelectedImageId); // Estado para manejar la imagen seleccionada
+  const [isCircleSelected, setIsCircleSelected] = useState(false) // Estado para controlar la selección del círculo
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null)
+  const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]) // Estado para manejar la imagen seleccionada
 
   // Sincronizamos el estado del círculo si una imagen está seleccionada
-  useEffect(() => {
-    if (propSelectedImageId) {
-      setSelectedImageId(propSelectedImageId);
-      setIsCircleSelected(true);
-    } else {
-      setIsCircleSelected(false); // Aquí se asegurará de que el círculo se deseleccione
-      setSelectedImageId(null); // Asegúrate de limpiar el ID seleccionado cuando no hay imagen seleccionada
-    }
-  }, [propSelectedImageId]);
+  //   useEffect(() => {
+  //     if (propSelectedImageId) {
+  //       setSelectedImageId(propSelectedImageId)
+  //       setIsCircleSelected(true)
+  //     } else {
+  //       setIsCircleSelected(false) // Aquí se asegurará de que el círculo se deseleccione
+  //       setSelectedImageId(null) // Asegúrate de limpiar el ID seleccionado cuando no hay imagen seleccionada
+  //     }
+  //   }, [propSelectedImageId])
 
   // El rectángulo se oscurece si hay una imagen seleccionada o el círculo está seleccionado
-  const isSelected = selectedImageId !== null || isCircleSelected;
+  const isSelected = selectedImageIds.length > 0 || isCircleSelected
 
   const handleCircleClick = () => {
     if (isCircleSelected) {
-      setIsCircleSelected(false); // Cambiamos el estado del círculo al hacer clic
-      setSelectedImageId(null); // Desseleccionamos la imagen
-      setPaymentAmount(null); // Aseguramos que se limpie el monto de pago
-      onImageClick(null);
+      setIsCircleSelected(false) // Cambiamos el estado del círculo al hacer clic
+      setSelectedImageIds([]) // Desseleccionamos la imagen
+      setPaymentAmount(null) // Aseguramos que se limpie el monto de pago
+      onImageClick(null)
     } else {
-      setIsCircleSelected(true); // Rellenar el círculo si no estaba seleccionado
+      setIsCircleSelected(true) // Rellenar el círculo si no estaba seleccionado
     }
-  };
+  }
 
-  const handleImageClick = (index: number) => {
-    setIsCircleSelected(true); // Rellenar el círculo cuando se selecciona una imagen
-    const imageId = images[index].id;
-    setSelectedImageId(imageId); // Actualizar la imagen seleccionada
-    onImageClick(imageId); // Llamar a la función prop con el id de la imagen clickeada
-  };
+  const handleImageClick = (imageId: string) => {
+    if (selectedImageIds.includes(imageId)) {
+      // If the image is already selected, deselect it
+      const newSelectedImageIds = selectedImageIds.filter(
+        (id) => id !== imageId
+      )
+      setSelectedImageIds(newSelectedImageIds)
+      // onImageClick(newSelectedImageIds); // Notify parent component
+    } else {
+      // If the image is not selected, select it
+      const newSelectedImageIds = [...selectedImageIds, imageId]
+      setSelectedImageIds(newSelectedImageIds)
+      // onImageClick(newSelectedImageIds); // Notify parent component
+    }
+  }
 
   const handleMouseEnter = (index: number) => {
-    setHoverIndex(index);
-  };
+    setHoverIndex(index)
+  }
 
   const handleMouseLeave = () => {
-    setHoverIndex(null);
-  };
+    setHoverIndex(null)
+  }
 
   return (
     <div
@@ -92,14 +102,22 @@ const CustomRectangle: React.FC<CustomRectangleProps> = ({
         ></div>
       )}
       <span style={{ ...styles.text, marginRight: "20px" }}>{text}</span>
-      <div style={{ ...styles.imagesContainer, justifyContent: "right"}}>
+      <div
+        style={{ ...styles.imagesContainer, justifyContent: "right"}}
+      >
         {images.map((image, index) => (
           <div
             key={index}
             style={styles.imageWrapper}
             onMouseEnter={() => handleMouseEnter(index)}
             onMouseLeave={handleMouseLeave}
-            onClick={() => handleImageClick(index)}
+            onClick={() => {
+              // add imageId to selectedImageIds
+              const newSelectedImageIds = selectedImageIds.includes(image.id)
+                ? selectedImageIds.filter((id) => id !== image.id)
+                : [...selectedImageIds, image.id]
+              setSelectedImageIds(newSelectedImageIds)
+            }}
           >
             <img
               src={image.src}
@@ -110,7 +128,7 @@ const CustomRectangle: React.FC<CustomRectangleProps> = ({
               }}
             />
             {/* Capa oscura que se superpone solo si la imagen está seleccionada */}
-            {selectedImageId === image.id && (
+            {selectedImageIds.includes(image.id) && (
               <div style={styles.overlay}></div>
             )}
             {hoverIndex === index && (
@@ -120,8 +138,8 @@ const CustomRectangle: React.FC<CustomRectangleProps> = ({
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
 const styles = {
   rectangle: {
@@ -196,6 +214,6 @@ const styles = {
     backgroundColor: "rgba(0, 0, 0, 0.5)", // Oscurecimiento
     borderRadius: "10px",
   },
-};
+}
 
-export default CustomRectangle;
+export default PagosParciales

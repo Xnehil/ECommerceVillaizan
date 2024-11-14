@@ -4,6 +4,7 @@ import Divider from "@modules/common/components/divider";
 import { Pedido } from "types/PaquetePedido";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 
 type Summary2Props = {
   carrito: Pedido;
@@ -14,10 +15,29 @@ type Summary2Props = {
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
+function checkIfAuthenticated(session: any, status: string) {
+  if (status !== "loading") {
+    return session?.user?.id ? true : false;
+  }
+  return false;
+}
+
 const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2Props) => {
   const [minimo, setMinimo] = useState<number>(25); // Default value, will be updated after fetch
   const [costoEnvio, setCostoEnvio] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true); // For loading state
+  const { data: session, status } = useSession();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    if (checkIfAuthenticated(session, status)) {
+      setIsAuthenticated(true);
+      console.log("User is authenticated");
+    } else {
+      setIsAuthenticated(false);
+      console.log("User is not authenticated");
+    }
+  }, [session, status]);
 
   const [minOrderAmount, setMinOrderAmount] = useState<number>(25); // For the minimum order amount from the backend
 
@@ -66,7 +86,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
           Total Carrito
         </Heading>
         <Divider />
-        <CartTotals data={carrito} onSetCostoEnvio={setCostoEnvio} />
+        <CartTotals data={carrito} onSetCostoEnvio={setCostoEnvio} isAuthenticated={isAuthenticated}/>
 
         {subtotal < minimo && !loading && (
           <p className="text-red-400 text-sm font-poppins mt-2 text-center">
