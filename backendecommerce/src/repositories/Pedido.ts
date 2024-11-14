@@ -65,16 +65,32 @@ export const PedidoRepository = dataSource
         .orderBy("pedido.creadoEn", "DESC")
         .getOne();
     },
+    async encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(id_usuario: string): Promise<Pedido> {
+      return this.createQueryBuilder("pedido")
+        .leftJoinAndSelect("pedido.direccion", "direccion")
+        .leftJoinAndSelect("direccion.ciudad", "ciudad") // Add this line to include ciudad
+        .leftJoinAndSelect("pedido.motorizado", "motorizado")
+        .leftJoinAndSelect("pedido.usuario", "usuario")
+        .leftJoinAndSelect("pedido.detalles", "detalles")
+        .where("pedido.id_usuario = :id_usuario", { id_usuario })
+        .andWhere("pedido.estado = 'carrito'")
+        .andWhere("detalles.estaActivo = TRUE")
+        .orderBy("pedido.creadoEn", "DESC")
+        .getOne();
+    },
     async encontrarPorId(id: string): Promise<Pedido> {
       return this.createQueryBuilder("pedido")
         .leftJoinAndSelect("pedido.direccion", "direccion")
         .leftJoinAndSelect("direccion.ciudad", "ciudad")
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
         .leftJoinAndSelect("pedido.usuario", "usuario")
+        .leftJoinAndSelect("usuario.persona", "persona")
+        .leftJoinAndSelect("usuario.rol", "rol")
         .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago")
         .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
         .leftJoinAndSelect("pedido.detalles", "detalles")
         .leftJoinAndSelect("detalles.producto", "producto")
+        .leftJoinAndSelect("detalles.promocion", "promocion")
         .where("pedido.id = :id", { id })
         .getOne();
     }
