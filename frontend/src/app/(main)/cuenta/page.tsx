@@ -51,6 +51,9 @@ const Cuenta = () => {
   const [originalNombre, setOriginalNombre] = useState('');
   const [originalApellido, setOriginalApellido] = useState('');
   const [originalNumeroTelefono, setOriginalNumeroTelefono] = useState('');
+  const [validationErrorNombre, setValidationErrorNombre] = useState<  string | null>(null)
+  const [validationErrorApellido, setValidationErrorApellido] = useState<  string | null>(null)
+  const [validationErrorNumeroTelefono, setValidationErrorNumeroTelefono] = useState<  string | null>(null)
 
   useEffect(() => {
     async function fetchUserName() {
@@ -174,16 +177,69 @@ const Cuenta = () => {
     setIsEditing(false);
     setIsDialogOpen(false);
   };
-  const handleSaveData = () => {
-    // Implement save logic here (e.g., update user data in the backend)
-    setIsEditing(false);
-  };
+
   
   interface HandleInputChangeData {
     (setter: React.Dispatch<React.SetStateAction<string>>): (e: React.ChangeEvent<HTMLInputElement>) => void;
   }
 
   const handleInputChangeData: HandleInputChangeData = (setter) => (e) => setter(e.target.value);
+
+  const handleNombreBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value.length > 100) {
+      setValidationErrorNombre('El nombre no puede exceder los 100 caracteres.');
+    }
+    else{
+      setValidationErrorNombre(null);
+    }
+  }
+
+  const handleApellidoBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value.length > 100) {
+      setValidationErrorApellido('El apellido no puede exceder los 100 caracteres.');
+    }
+    else{
+      setValidationErrorApellido(null);
+    }
+  }
+
+  const handleTelefonoBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value.length !== 9) {
+      setValidationErrorNumeroTelefono('El número de teléfono tiene que tener 9 dígitos.');
+    }
+    else{
+      setValidationErrorNumeroTelefono(null);
+    }
+  }
+
+  const handleSaveData = async () => {
+    if (validationErrorNombre || validationErrorApellido || validationErrorNumeroTelefono) {
+      return;
+    }
+    try {
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${userId}`, {
+        nombre: userNombre,
+        apellido: userApellido,
+        numeroTelefono: userTelefono
+      });
+      if (response.status === 200) {
+        setIsPopupDataVisible(false);
+        setIsEditing(false);
+        //refresh the page
+        window.location.reload();
+      } else {
+        console.error('Failed to save user data:', response.statusText);
+        setErrorMessage('Error al guardar los datos de usuario. Intente de nuevo más tarde.');
+        setIsErrorPopupVisible(true);
+      }
+    } catch (error) {
+      console.error('An error occurred during saving:', error);
+      setErrorMessage('Error al guardar los datos de usuario. Intente de nuevo más tarde.');
+      setIsErrorPopupVisible(true);
+    } finally {
+      setIsPopupDataVisible(false);
+    }
+  }
 
   return (
     <>
@@ -224,16 +280,26 @@ const Cuenta = () => {
                   value={userNombre}
                   disabled={!isEditing}
                   onChange={handleInputChangeData(setUserNombre)}
+                  tooltip = "Máximo 100 caracteres"
+                  onBlur = {handleNombreBlur}
                 />
               </div>
+              {validationErrorNombre && (
+                  <p className="text-red-500 mt-2">{validationErrorNombre}</p>
+                )}
               <div className="flex space-x-2">
                 <InputWithLabel
                   label="Apellido"
                   value={userApellido}
                   disabled={!isEditing}
                   onChange={handleInputChangeData(setUserApellido)}
+                  tooltip = "Máximo 100 caracteres"
+                  onBlur = {handleApellidoBlur}
                 />
               </div>
+              {validationErrorApellido && (
+                  <p className="text-red-500 mt-2">{validationErrorApellido}</p>)
+              }
               <div className="flex space-x-2">
                 <InputWithLabel
                   label="Correo"
@@ -248,8 +314,16 @@ const Cuenta = () => {
                   value={userTelefono}
                   disabled={!isEditing}
                   onChange={handleInputChangeData(setUserTelefono)}
+                  tooltip = "Máximo 9 dígitos"
+                  onBlur = {handleTelefonoBlur}
+                  type = "number"
                 />
               </div>
+              {
+                validationErrorNumeroTelefono && (
+                  <p className="text-red-500 mt-2">{validationErrorNumeroTelefono}</p>
+                )
+              }
               <div className="flex space-x-2">
                 <InputWithLabel
                   label="Puntos Canjeables Acumulados"
@@ -270,6 +344,9 @@ const Cuenta = () => {
                         setUserNombre(originalNombre);
                         setUserApellido(originalApellido);
                         setUserTelefono(originalNumeroTelefono);
+                        setValidationErrorNombre(null);
+                        setValidationErrorApellido(null);
+                        setValidationErrorNumeroTelefono(null);
                       }}
                     >
                       Cancelar
@@ -295,26 +372,25 @@ const Cuenta = () => {
             </div>
           )}
 
-          {/* Error Popup */}
+          {/* Popup */}
           {isPopupDataVisible && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white p-6 rounded-md shadow-md text-center">
                 <p className="text-black-600 mb-4">
-                  ¿Estás seguro de realizar esta acción? Esta opción controla las configuraciones del usuario.
+                  ¿Estás seguro de guardar los cambios?
                 </p>
                 <div className="flex space-x-2 justify-center">
                   <button
-                    style={styles.confirmButton}
+                    style={styles.cancelButton}
                     onClick={() => {
                       setIsPopupDataVisible(false); // Close the popup
-
                     }}
                   >
                     Cancelar
                   </button>
                   <button
                     style={styles.confirmButton}
-                    onClick={handleCancelData} // Trigger your cancel action
+                    onClick={handleSaveData} // Trigger your cancel action
                   >
                     Confirmar
                   </button>
@@ -370,7 +446,14 @@ const styles = {
     cursor: 'pointer',
     backgroundColor: 'black',
     color: 'white',
-  }
+  },
+  cancelButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    backgroundColor: 'white',
+    color: 'red',
+  },
 };
 
 

@@ -267,12 +267,13 @@ const AddressForm: React.FC<AddressFormProps> = ({
           </p>
         )}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-          <button type="submit" style={styles.confirmButton}>
-            {state === 'Crear' ? 'Crear Dirección' : 'Guardar Cambios'}
-          </button>
           <button type="button" onClick={onClose} style={styles.cancelButton}>
             Cancelar
           </button>
+          <button type="submit" style={styles.confirmButton}>
+            {state === 'Crear' ? 'Crear Dirección' : 'Guardar Cambios'}
+          </button>
+          
         </div>
       </form>
     </>
