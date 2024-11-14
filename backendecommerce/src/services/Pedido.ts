@@ -275,6 +275,9 @@ class PedidoService extends TransactionBaseService {
                     estadoPedidos.set(id, "enProgreso");
                 }
             }
+            if (data.pagado) {
+                data.pagadoEn = new Date();
+            }
             // console.log("Método de pago: ", data.metodosPago);
             Object.assign(pedido, data);
             return await pedidoRepo.save(pedido);

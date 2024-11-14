@@ -93,6 +93,8 @@ export interface Pedido {
   solicitadoEn?: Date;
   verificadoEn?: Date;
   entregadoEn?: Date;
+  pagado: boolean;
+  pagadoEn?: Date;
 }
 
 export interface Direccion {

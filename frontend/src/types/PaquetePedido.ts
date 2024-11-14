@@ -23,6 +23,8 @@ export interface Pedido extends EntidadBase {
     solicitadoEn?: Date; // Optional field
     verificadoEn?: Date; // Optional field
     entregadoEn?: Date; // Optional field
+    pagado: boolean;
+    pagadoEn?: Date; // Optional field
 }
 
 export interface PedidoXMetodoPago extends EntidadBase {

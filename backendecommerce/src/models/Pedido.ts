@@ -56,6 +56,12 @@ export class Pedido extends EntidadBase {
     @Column({ type: "varchar", length: 200, nullable: true, name: "urlevidencia" })
     urlEvidencia: string;
 
+    @Column({ type: "boolean", default: false, name: "pagado" })
+    pagado: boolean;
+
+    @Column({ type: "timestamp", nullable: true, name: "pagadoen" })
+    pagadoEn: Date;
+
     // @Column({ type: "varchar", length: 50, nullable: true, name: "id_motorizado" })
     // idMotorizado: string
 

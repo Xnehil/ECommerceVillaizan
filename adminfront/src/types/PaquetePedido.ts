@@ -18,6 +18,8 @@ export interface Pedido extends EntidadBase {
   solicitadoEn?: Date;
   verificadoEn?: Date;
   entregadoEn?: Date;
+  pagado: boolean;
+  pagadoEn?: Date;
 }
 
 export interface Direccion extends EntidadBase {
