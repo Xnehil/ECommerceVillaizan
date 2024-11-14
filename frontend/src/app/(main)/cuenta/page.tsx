@@ -48,6 +48,9 @@ const Cuenta = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPopupDataVisible, setIsPopupDataVisible] = useState(false);
+  const [originalNombre, setOriginalNombre] = useState('');
+  const [originalApellido, setOriginalApellido] = useState('');
+  const [originalNumeroTelefono, setOriginalNumeroTelefono] = useState('');
 
   useEffect(() => {
     async function fetchUserName() {
@@ -157,7 +160,16 @@ const Cuenta = () => {
   };
 
 
-  const handleEditData = () => setIsEditing(true);
+  //const handleEditData = () => setIsEditing(true);
+
+  const handleEditData = () => {
+    setOriginalNombre(userNombre);
+    setOriginalApellido(userApellido);
+    setOriginalNumeroTelefono(userTelefono);
+
+    setIsEditing(true);
+  };
+
   const handleCancelData = () => {
     setIsEditing(false);
     setIsDialogOpen(false);
@@ -254,7 +266,10 @@ const Cuenta = () => {
                     <Button
                       variant="secondary"
                       onClick={() => {
-                        setIsPopupDataVisible(true); // Show error popup
+                        handleCancelData();
+                        setUserNombre(originalNombre);
+                        setUserApellido(originalApellido);
+                        setUserTelefono(originalNumeroTelefono);
                       }}
                     >
                       Cancelar
@@ -264,8 +279,9 @@ const Cuenta = () => {
                     <Button
                       variant="default"
                       onClick={() => {
-                        setIsPopupDataVisible(true); // Show error popup
+                        setIsPopupDataVisible(true); // Show popup
                       }}
+                      style={{ marginLeft: '10px' }}
                     >
                       Guardar
                     </Button>
@@ -291,6 +307,7 @@ const Cuenta = () => {
                     style={styles.confirmButton}
                     onClick={() => {
                       setIsPopupDataVisible(false); // Close the popup
+
                     }}
                   >
                     Cancelar
