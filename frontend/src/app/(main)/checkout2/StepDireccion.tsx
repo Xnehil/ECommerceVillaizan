@@ -45,7 +45,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number
     lng: number
-  } | null>({ lat: -6.485001917368323, lng: -76.36796974234515 })
+  } | null>(null)
   const [dniError, setDniError] = useState<string | null>(null)
   const [telefonoError, setTelefonoError] = useState<string | null>(null)
   const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
