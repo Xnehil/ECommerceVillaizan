@@ -271,7 +271,7 @@ export default function InventarioMotorizadoScreen() {
 
       const { fileUrl } = response.data;
 
-      mostrarMensaje(`Imagen enviada con éxito: ${fileUrl}`);
+      mostrarMensaje(`Imagen enviada con éxito`);
       return fileUrl;
     } catch (error) {
       console.error(`Error al enviar la imagen:`, error);
@@ -505,20 +505,7 @@ export default function InventarioMotorizadoScreen() {
             ) : (
               <View style={styles.modalContainer}>
                 <Text style={styles.modalTitle}>Resumen</Text>
-                <ScrollView>
-                  {Object.entries(
-                    modificando ? inventarioModificado : mermas
-                  ).map(([id, cantidad]) => {
-                    const producto = inventario.find(
-                      (item) => item.id === id
-                    )?.producto;
-                    return (
-                      <Text key={id} style={styles.modalText}>
-                        {producto?.nombre}: {cantidad} und.
-                      </Text>
-                    );
-                  })}
-                </ScrollView>
+                
                 <ScrollView>
                   {Object.entries(
                     modificando ? inventarioModificado : mermas
@@ -726,8 +713,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   captureButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
+    color: "#000000",
+      fontSize: 16,
     fontWeight: "bold",
   },
   optionButton: {
@@ -735,6 +722,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     marginVertical: 5,
+    backgroundColor: "green",
   },
   optionButtonText: {
     color: "#FFFFFF",

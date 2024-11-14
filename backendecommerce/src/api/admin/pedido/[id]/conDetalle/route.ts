@@ -49,6 +49,7 @@ export const GET = async (
         const pedidoData = await pedidoService.recuperarConDetalle(id, { relations });
         res.json({ pedido: pedidoData });
     } catch (error) {
+        console.error(error);
         res.status(404).json({ error: "Pedido no encontrado" });
     }
 };

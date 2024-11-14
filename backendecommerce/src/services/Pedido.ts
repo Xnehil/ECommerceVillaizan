@@ -11,6 +11,7 @@ import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
 import { InventarioMotorizado } from "@models/InventarioMotorizado";
 import { Notificacion } from "../models/Notificacion";
 import NotificacionService from "./Notificacion";
+import { Delete } from "@nestjs/common";
 
 
 class PedidoService extends TransactionBaseService {
@@ -100,13 +101,38 @@ class PedidoService extends TransactionBaseService {
     async recuperarConDetalle(id: string, options: FindConfig<Pedido> = {}): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const relations = ["detalles", "detalles.producto", ...(options.relations || [])];
-        const query = buildQuery({ id }, { relations });
-        const pedido = await pedidoRepo.findOne(query);
-    
+      
+        const queryBuilder = pedidoRepo.createQueryBuilder("pedido")
+          .leftJoinAndSelect("pedido.detalles", "detalle", "detalle.estaActivo = :estaActivo", { estaActivo: true })
+          .leftJoinAndSelect("detalle.producto", "producto")
+          .where("pedido.id = :id", { id });
+      
+        // Add additional relations if specified in options
+        if (options.relations) {
+            const joinedRelations = new Set();
+            for (const relation of options.relations) {
+              if (relation.includes(".")) {
+                const [parent, child] = relation.split(".");
+                const joinAlias = `${parent}_${child}`;
+                if (!joinedRelations.has(joinAlias)) {
+                  queryBuilder.leftJoinAndSelect(`${parent}.${child}`, joinAlias);
+                  joinedRelations.add(joinAlias);
+                }
+              } else {
+                if (!joinedRelations.has(relation)) {
+                  queryBuilder.leftJoinAndSelect(`pedido.${relation}`, relation);
+                  joinedRelations.add(relation);
+                }
+              }
+            }
+          }
+      
+        const pedido = await queryBuilder.getOne();
+      
         if (!pedido) {
-            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+          throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
         }
-    
+      
         return pedido;
     }
     
@@ -252,6 +278,7 @@ class PedidoService extends TransactionBaseService {
             }
             // console.log("Método de pago: ", data.metodosPago);
             Object.assign(pedido, data);
+            delete pedido.pedidosXMetodoPago;
             return await pedidoRepo.save(pedido);
         });
     }

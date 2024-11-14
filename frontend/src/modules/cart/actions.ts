@@ -41,8 +41,9 @@ export async function getOrSetCart(only_get=false) {
 
   if (cartId) {
     try {
-      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
       cart = response.data.pedido
+      revalidateTag("cart")
       //console.log("Cart sacado de la cookie: ", cart)
     } catch (e) {
       cart = null
@@ -242,8 +243,9 @@ export async function updateLineItem({
   try {
     await axios.put(`${baseUrl}/admin/detallePedido/${detallePedidoId}`, {
       cantidad: cantidad,
-      subtotal: subtotal
-    })    
+      subtotal: subtotal,
+      estaActivo: cantidad > 0
+    })
     revalidateTag("cart")
   } catch (e: any) {
     return e.toString()
