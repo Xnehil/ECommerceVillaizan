@@ -41,7 +41,7 @@ export async function getOrSetCart(only_get=false) {
 
   if (cartId) {
     try {
-      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
       cart = response.data.pedido
       revalidateTag("cart")
       //console.log("Cart sacado de la cookie: ", cart)

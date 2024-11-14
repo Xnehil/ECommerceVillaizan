@@ -69,7 +69,9 @@ export default function MetodoPagoClient({
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null)
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null)
   const [pedido, setPedido] = useState<Pedido | null>(null) // State to hold the fetched pedido
-  const [metodosPago, setMetodosPago] = useState<PedidoXMetodoPago[]>([])
+  const [metodosPago, setMetodosPago] = useState<PedidoXMetodoPago[]>(
+    pedidoInput.pedidosXMetodoPago ?? []
+  ) // State to hold the selected payment methods
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
 
   const hayDescuento = true
