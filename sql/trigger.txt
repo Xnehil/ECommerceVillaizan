@@ -20,6 +20,9 @@ CREATE SEQUENCE vi_puntosacumulados_id_seq START 1;
 CREATE SEQUENCE vi_detallepuntosacumulados_id_seq START 1;
 
 
+DROP TRIGGER IF EXISTS trg_update_puntos_acumulados ON vi_pedido;
+DROP FUNCTION IF EXISTS update_puntos_acumulados;
+
 -- Create or replace function
 CREATE OR REPLACE FUNCTION update_puntos_acumulados() 
 RETURNS TRIGGER AS $$
@@ -29,7 +32,7 @@ DECLARE
     puntos_producto_id integer;
 BEGIN
     -- Check if estado changed from "entregado" to "pagoConfirmado" and estaactivo is true
-    IF OLD.estado = 'entregado' AND NEW.estado = 'pagoConfirmado' AND NEW.estaactivo = true THEN
+    IF OLD.pagado = false AND NEW.pagado = true AND NEW.estaactivo = true THEN
         
         -- Insert a new record into vi_puntosacumulados with a generated ID
         INSERT INTO vi_puntosacumulados (
@@ -113,5 +116,5 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_update_puntos_acumulados
 AFTER UPDATE ON vi_pedido
 FOR EACH ROW
-WHEN (OLD.estado IS DISTINCT FROM NEW.estado)  -- Trigger only when estado changes
+WHEN (OLD.pagado IS DISTINCT FROM NEW.pagado)  -- Trigger only when estado changes
 EXECUTE FUNCTION update_puntos_acumulados();

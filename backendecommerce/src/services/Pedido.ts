@@ -332,6 +332,17 @@ class PedidoService extends TransactionBaseService {
         return pedido;
     }
 
+    async encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario: string): Promise<Pedido> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedido = await pedidoRepo.encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario);
+
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedido;
+    }
+
 }
 
 export default PedidoService;

@@ -141,11 +141,19 @@ export default function PaginatedProducts({
   const handleSortByPrice = () => {
     try {
       // Create a shallow copy of the products array to prevent direct mutation
-      const sortedProducts = [...products].sort((a, b) =>
-        isSortedByPrice
-          ? a.precioEcommerce - b.precioEcommerce
-          : b.precioEcommerce - a.precioEcommerce
-      );
+      const sortedProducts = [...products].sort((a, b) => {
+        // Calculate effective price considering promotion
+        const priceA = a.promocion 
+          ? a.precioEcommerce - (a.precioEcommerce * a.promocion.porcentajeDescuento) / 100
+          : a.precioEcommerce;
+      
+        const priceB = b.promocion 
+          ? b.precioEcommerce - (b.precioEcommerce * b.promocion.porcentajeDescuento) / 100
+          : b.precioEcommerce;
+      
+        // Sort based on isSortedByPrice flag
+        return isSortedByPrice ? priceA - priceB : priceB - priceA;
+      });
       setProducts(sortedProducts);
       setIsSortedByPrice(isSortedByPrice === null ? true : !isSortedByPrice);
       setSortError(null);
