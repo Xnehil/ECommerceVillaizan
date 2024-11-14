@@ -11,6 +11,7 @@ import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
 import { InventarioMotorizado } from "@models/InventarioMotorizado";
 import { Notificacion } from "../models/Notificacion";
 import NotificacionService from "./Notificacion";
+import { Delete } from "@nestjs/common";
 
 
 class PedidoService extends TransactionBaseService {
@@ -277,6 +278,7 @@ class PedidoService extends TransactionBaseService {
             }
             // console.log("Método de pago: ", data.metodosPago);
             Object.assign(pedido, data);
+            delete pedido.pedidosXMetodoPago;
             return await pedidoRepo.save(pedido);
         });
     }

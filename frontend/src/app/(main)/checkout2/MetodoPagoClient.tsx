@@ -10,7 +10,6 @@ import { Usuario } from "types/PaqueteUsuario"
 import { Direccion } from "types/PaqueteEnvio"
 import axios from "axios"
 import PagosParciales from "@components/PagosParciales"
-import { set } from "lodash"
 
 type MetodoPagoClientProps = {
   pedidoInput: Pedido
@@ -69,14 +68,14 @@ export default function MetodoPagoClient({
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null)
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null)
   const [pedido, setPedido] = useState<Pedido | null>(null) // State to hold the fetched pedido
-  const [metodosPago, setMetodosPago] = useState<PedidoXMetodoPago[]>(
-    pedidoInput.pedidosXMetodoPago ?? []
-  ) // State to hold the selected payment methods
+  const [metodosPago, setMetodosPago] = useState<PedidoXMetodoPago[]>([]) // State to hold the selected payment methods
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
 
   const hayDescuento = true
   const costoEnvio = 5
   const noCostoEnvio = true
+
+  console.log("Pedido input:", pedidoInput)
 
   const calcularDescuento = () => {
     if (!pedidoInput) {
@@ -98,8 +97,45 @@ export default function MetodoPagoClient({
   useEffect(() => {
     const getPedido = async () => {
       const fetchedPedido = await fetchPedido(pedidoInput)
+
       setPedido(fetchedPedido)
     }
+
+    const updatedPedidosXMetodoPago = (
+      pedidoInput?.pedidosXMetodoPago ?? []
+    ).map((metodo) => ({
+      ...metodo,
+      monto:
+        typeof metodo.monto === "string"
+          ? parseFloat(metodo.monto)
+          : metodo.monto,
+    }))
+    if (
+      pedidoInput.pedidosXMetodoPago &&
+      pedidoInput.pedidosXMetodoPago.length === 1
+    ) {
+      const metodoId = pedidoInput.pedidosXMetodoPago[0].metodoPago.id
+      const imageId =
+        metodoId === "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
+          ? "yape"
+          : metodoId === "mp_01JBDQDH47XDE75XCGSS739E6G"
+          ? "plin"
+          : "pagoEfec"
+      setSelectedImageId(imageId)
+    } else if (
+      pedidoInput.pedidosXMetodoPago &&
+      pedidoInput.pedidosXMetodoPago.length > 1
+    ) {
+      const imageIds = pedidoInput.pedidosXMetodoPago.map((metodo) => {
+        return metodo.metodoPago.id === "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
+          ? "yape"
+          : metodo.metodoPago.id === "mp_01JBDQDH47XDE75XCGSS739E6G"
+          ? "plin"
+          : "pagoEfec"
+      })
+      setSelectedImageIds(imageIds)
+    }
+    setMetodosPago(updatedPedidosXMetodoPago)
 
     getPedido()
   }, [pedidoInput]) // Fetch pedido whenever pedidoInput changes
@@ -168,6 +204,8 @@ export default function MetodoPagoClient({
           ? "mp_01JBDQDH47XDE75XCGSS739E6G"
           : "mp_01J99CS1H128G2P7486ZB5YACH"
 
+      console.log("selected image ids:", selectedImageIds)
+
       if (selectedImageIds.includes(id)) {
         const newSelectedImageIds = selectedImageIds.filter((ids) => ids !== id)
         setSelectedImageIds(newSelectedImageIds)
@@ -181,7 +219,7 @@ export default function MetodoPagoClient({
 
         setMetodosPago(newMetodosPago)
       } else {
-        if (calcularRestante(metodoId) <= 0) {
+        if (selectedImageIds.length > 0 && calcularRestante(metodoId) <= 0) {
           return
         }
         const metodo = {

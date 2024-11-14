@@ -204,6 +204,15 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
     setShowPopup(false)
     setShowBuscandoPopup(true)
     try {
+      if (pedido.pedidosXMetodoPago && pedido.pedidosXMetodoPago.length > 0) {
+        // Delete all previous payment methods
+        pedido.pedidosXMetodoPago.forEach(async (pago) => {
+          await axios.delete(`${baseUrl}/admin/pedidoXMetodoPago/${pago.id}`)
+        })
+
+        console.log("Métodos de pago anteriores eliminados")
+      }
+
       if (selectedImageId === "pagoEfec") {
         const responseMetodoPago = await axios.post(
           `${baseUrl}/admin/metodoPago/nombre`,
@@ -223,12 +232,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         if (responseMetodoPago.data && responsePedidoXMetodoPago.data) {
           console.log("Metodo de pago encontrado")
           console.log(responseMetodoPago.data)
-          if (!pedido.pedidosXMetodoPago) {
-            pedido.pedidosXMetodoPago = []
-          }
-          pedido.pedidosXMetodoPago.push(
-            responsePedidoXMetodoPago.data.pedidoXMetodoPago
-          )
+          // if (!pedido.pedidosXMetodoPago) {
+          //   pedido.pedidosXMetodoPago = []
+          // }
+          // pedido.pedidosXMetodoPago.push(
+          //   responsePedidoXMetodoPago.data.pedidoXMetodoPago
+          // )
         } else {
           throw new Error("Error al guardar el metodo de pago")
         }
@@ -247,12 +256,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           if (responsePedidoXMetodoPago.data) {
             console.log("Metodo de pago encontrado")
             console.log(responsePedidoXMetodoPago.data)
-            if (!pedido.pedidosXMetodoPago) {
-              pedido.pedidosXMetodoPago = []
-            }
-            pedido.pedidosXMetodoPago.push(
-              responsePedidoXMetodoPago.data.pedidoXMetodoPago
-            )
+            // if (!pedido.pedidosXMetodoPago) {
+            //   pedido.pedidosXMetodoPago = []
+            // }
+            // pedido.pedidosXMetodoPago.push(
+            //   responsePedidoXMetodoPago.data.pedidoXMetodoPago
+            // )
           } else {
             throw new Error("Error al guardar el metodo de pago")
           }
@@ -279,6 +288,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
     pedido.puntosOtorgados = 0
     pedido.direccion = direccion
     pedido.usuario = usuario
+    pedido.pedidosXMetodoPago = undefined
 
     console.log("Pedido a enviar", pedido)
     try {
@@ -290,7 +300,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         console.log("Pedido modificado correctamente")
         console.log(response.data)
       }
-      const pedidoActualizado = response.data.pedido
+      // const pedidoActualizado = response.data.pedido
       // let codigoSeguimiento = pedidoActualizado.codigoSeguimiento
       // // Copiar cookie de carrito a cookie de pedido
       // document.cookie = `_medusa_pedido_id=${pedidoActualizado.id}; path=/`
