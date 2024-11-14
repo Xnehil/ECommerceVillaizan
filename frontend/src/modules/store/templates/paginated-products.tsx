@@ -131,6 +131,11 @@ export default function PaginatedProducts({
     };
 
     fetchProducts();
+    // Polling
+    const intervalId = setInterval(fetchProducts, 1200000); // Re-fetch cada dos minutos
+
+    // Limpiar intervalo cuando se desmonta un componente
+    return () => clearInterval(intervalId);
   }, [page, sortBy, city]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

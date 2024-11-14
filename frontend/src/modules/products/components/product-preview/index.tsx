@@ -325,25 +325,26 @@ export default function ProductPreview({
       <div className="p-4">
         <div className="flex items-center justify-between">
           <Text
-            className="text-xl font-semibold text-gray-800 truncate"
+            className="text-xl font-semibold text-gray-800 whitespace-normal"
             data-testid="product-title"
           >
             {productPreview.nombre}
           </Text>
           <div className="flex items-center gap-x-2">
-          {cheapestPriceMostrar && (
-            <span className="text-lg font-bold text-yellow-600">
-              {`S/ ${Number(cheapestPriceMostrar).toFixed(2)}`}
-            </span>
-          )}
-          {existeDescuento && precioNormal && (
-            <span className="text-lg text-gray-500 line-through">
-              {`S/ ${Number(precioNormal).toFixed(2)}`}
-            </span>
-          )}
+            {cheapestPriceMostrar && (
+              <span className="text-lg font-bold text-yellow-600" style={{ whiteSpace: 'nowrap' }}>
+                {`S/ ${Number(cheapestPriceMostrar).toFixed(2)}`}
+              </span>
+            )}
+            {existeDescuento && precioNormal && (
+              <span className="text-lg text-gray-500 line-through" style={{ whiteSpace: 'nowrap' }}>
+                {`S/ ${Number(precioNormal).toFixed(2)}`}
+              </span>
+            )}
           </div>
         </div>
       </div>
+
     </div>
   )
   
