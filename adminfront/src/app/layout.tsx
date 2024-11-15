@@ -120,10 +120,6 @@ export default function RootLayout({
   const ws = useRef<WebSocket | null>(null);
   const url = process.env.NEXT_PUBLIC_WS_URL as string;
   const router = useRouter();
-  const pathname = usePathname();  // Get current path
-
-  // Check if we are on the /login page
-  const isLoginPage = pathname === "/login";
 
   useEffect(() => {
     // Initialize WebSocket connection
@@ -183,12 +179,13 @@ export default function RootLayout({
     <SessionProvider>
       <html lang="es">
         <body className="min-h-screen max-h-screen flex overflow-hidden">
-          {/* Only render the Sidebar if not on the login page */}
-          {!isLoginPage && <Sidebar />}
-          <main className="flex-1 flex flex-col p-8 overflow-hidden">
-            <Breadcrumbs />
-            {children}
-          </main>
+          <AuthWrapper>
+            <Sidebar />
+            <main className="flex-1 flex flex-col p-8 overflow-hidden">
+              <Breadcrumbs />
+              {children}
+            </main>
+          </AuthWrapper>
           <Toaster />
         </body>
       </html>
