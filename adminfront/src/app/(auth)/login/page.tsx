@@ -57,6 +57,9 @@ function LoginPage() {
         >
           Ingresar
         </Button>
+        {/* Links to create account and recover password */}
+        {
+          /*
         <section className="flex flex-row items-center justify-between">
           <Link className={buttonVariants({ variant: "link" })} href={"/crear-cuenta"}>
             Crea una cuenta
@@ -65,6 +68,8 @@ function LoginPage() {
             Recuperar contraseña
           </Link>
         </section>
+        */
+        }
       </div>
     </div>
   );
