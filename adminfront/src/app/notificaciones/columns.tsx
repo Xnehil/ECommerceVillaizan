@@ -2,7 +2,7 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Notificacion } from "@/types/PaqueteAjustes";
-import { MoreHorizontal } from "lucide-react";
+import { Icon, Mail, MailOpen, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,34 +74,24 @@ export const columns = (
       const leido = row.original.leido;
 
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="bg-white shadow-lg rounded-md p-2"
-          >
-            {leido ? (
-              <DropdownMenuItem
-                onClick={() => handleMarkAsUnread(row.original.id)}
-                className="hover:bg-gray-100 p-2 rounded-md select-none focus:outline-none"
-              >
-                Marcar como no leído
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem
-                onClick={() => handleMarkAsRead(row.original.id)}
-                className="hover:bg-gray-100 p-2 rounded-md select-none focus:outline-none"
-              >
-                Marcar como leído
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          className="h-8 w-8 p-0"
+          onClick={() => {
+            if (leido) {
+              handleMarkAsUnread(row.original.id);
+            } else {
+              handleMarkAsRead(row.original.id);
+            }
+          }}
+        >
+          <span className="sr-only">{leido ? "Mark as unread" : "Mark as read"}</span>
+          {leido ? (
+            <MailOpen className="h-4 w-4" />
+          ) : (
+            <Mail className="h-4 w-4" />
+          )}
+        </Button>
       );
     },
   },
