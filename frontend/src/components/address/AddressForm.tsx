@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import InputWithLabel from '@components/inputWithLabel';
 import { Direccion } from 'types/PaqueteEnvio';
 import axios from 'axios';
+import GoogleMapModal from '@components/GoogleMapsModal';
 
 interface AddressFormProps {
   state: 'Editar' | 'Crear';
@@ -40,6 +41,44 @@ const AddressForm: React.FC<AddressFormProps> = ({
   const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [localError, setLocalError] = useState('');
+  const [showMapModal, setShowMapModal] = useState(false)
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number
+    lng: number
+  } | null>(null)
+  const [locationError, setLocationError] = useState("")
+
+  const [errorValidationNombre, setErrorValidationNombre] = useState<  string | null>(null)
+  const [errorValidationCalle, setErrorValidationCalle] = useState<  string | null>(null)
+  const [errorValidationReferencia, setErrorValidationReferencia] = useState<  string | null>(null)
+
+  const handleMapSelect = (lat: number, lng: number) => {
+    setSelectedLocation({ lat, lng });
+    setLocationError("");
+    //ACAA PRUEBA SIN googleMapsLoaded
+    try{
+    //if (googleMapsLoaded) {
+      const geocoder = new google.maps.Geocoder();
+      const latlng = new google.maps.LatLng(lat, lng);
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === "OK" && results) {
+          if (results[0]) {
+            const address = results[0].formatted_address;
+            setCalle(address);
+          } else {
+            console.error("No se encontraron resultados.");
+          }
+        } else {
+          console.error("Geocoder falló debido a:", status);
+        }
+      });
+    //}
+    }
+    catch(e){
+      console.error("Error en geocoder",e);
+    }
+  };
+
 
   useEffect(() => {
     if (state === 'Editar' && direccion) {
@@ -51,6 +90,14 @@ const AddressForm: React.FC<AddressFormProps> = ({
       setCiudadId(direccion.ciudad?.id ?? '');
       setCiudadNombre(direccion.ciudad?.nombre ?? '');
       setUserIdInternal(userId);
+      // If ubicacion exists, set selectedLocation based on its latitud and longitud
+      if (direccion.ubicacion) {
+        setSelectedLocation({
+          lat: parseFloat(direccion.ubicacion?.latitud?.toString() || '0'),
+          lng: parseFloat(direccion.ubicacion?.longitud?.toString() || '0'),
+        });
+        console.log('Selected location:', selectedLocation);
+      }
     }
   }, [state, direccion, userId]);
 
@@ -68,6 +115,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
       try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ciudad`);
         setCiudades(response.data.ciudades);
+
       } catch (error) {
         console.error('Error fetching ciudades:', error);
         setErrorMessage('No se pudieron cargar las ciudades. Intente de nuevo más tarde.');
@@ -120,26 +168,54 @@ const AddressForm: React.FC<AddressFormProps> = ({
 
     setLocalError(''); // Clear error if validation passes
 
+    if(selectedLocation === null){
+      setLocationError("Por favor selecciona una ubicación en el mapa")
+      setLocalError("Por favor selecciona una ubicación en el mapa")
+      return;
+    }
+
     try {
       if (state === 'Editar' && direccion) {
         const responseCiudad = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ciudad/${ciudadId}`);
         const ciudad = responseCiudad.data.ciudad;
   
-        const direccionSubmit: Direccion = {
+        let direccionSubmit : any = {
           ...direccion,
           nombre,
           calle,
           numeroExterior,
           numeroInterior,
           referencia,
-          ciudad
+          ciudad,
         };
+
+        if(direccion.ubicacion){
+          //delete ciudad.ubicacion;
+          const responseDelete = await axios.delete(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ubicacion/${direccion.ubicacion.id}`);
+        }
+        if(selectedLocation){
+          const responseUbicacion = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ubicacion`,{
+            latitud: selectedLocation.lat.toString(),
+            longitud: selectedLocation.lng.toString()
+          });
+          if(responseUbicacion.data.ubicacion){
+            direccionSubmit = {
+              ...direccionSubmit,
+              ubicacion: {
+                id: responseUbicacion.data.ubicacion.id
+              }
+            }
+          }
+        }
   
+        console.log('Updating address ',direccionSubmit); 
         const response = await axios.put(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${direccion.id}`, direccionSubmit);
-        const updatedDireccion = response.data.direccion;
+        const responseGet = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion/${direccion.id}`);
+        const updatedDireccion = responseGet.data.direccion;
         onUpdateDireccion(updatedDireccion);
       } else {
-        const dataDireccion = {
+        
+        let dataDireccion : any = {
           nombre,
           calle,
           numeroExterior,
@@ -148,13 +224,26 @@ const AddressForm: React.FC<AddressFormProps> = ({
           guardada: true,
           distrito: "",
           ciudad: {
-            id: ciudadId,
-            nombre: ciudadNombre
+            id: ciudadId
           },
           usuario: {
             id: userId
           }
         };
+        if(selectedLocation){
+          const responseUbicacion = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ubicacion`,{
+            latitud: selectedLocation.lat.toString(),
+            longitud: selectedLocation.lng.toString()
+          });
+          if(responseUbicacion.data.ubicacion){
+            dataDireccion = {
+              ...dataDireccion,
+              ubicacion: {
+                id: responseUbicacion.data.ubicacion.id
+              }
+            }
+          }
+        }
         console.log('Creating new address ',dataDireccion);
         const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion`, dataDireccion);
         const createdDireccion = response.data.direccion;
@@ -167,6 +256,41 @@ const AddressForm: React.FC<AddressFormProps> = ({
     }
   };
   
+  const handleNombreBlur = () => {
+    if (nombre.trim() === '') {
+      setErrorValidationNombre('El nombre no puede estar vacío');
+    } else {
+      if(countWords(nombre) > 250){
+        setErrorValidationNombre('El nombre no puede superar los 250 palabras');
+      }else{
+        setErrorValidationNombre(null);
+      }
+    }
+  }
+
+  const handleCalleBlur = () => {
+    if (calle.trim() === '') {
+      setErrorValidationCalle('La calle no puede estar vacía');
+    } else {
+      if(countWords(calle) > 255){
+        setErrorValidationCalle('La calle no puede superar las 255 palabras');
+      }else{
+        setErrorValidationCalle(null);
+      }
+    }
+  }
+
+  const handleReferenciaBlur = () => {
+    if (referencia.trim() === '') {
+      setErrorValidationReferencia('La referencia no puede estar vacía');
+    } else {
+      if(countWords(referencia) > 255){
+        setErrorValidationReferencia('La referencia no puede superar las 255 palabras');
+      }else{
+        setErrorValidationReferencia(null);
+      }
+    }
+  }
 
   return (
     <>
@@ -197,7 +321,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
           onChange={(e) => setNombre(e.target.value)}
           required
           tooltip="Máximo 250 palabras"
+          onBlur={handleNombreBlur}
         />
+        {
+          errorValidationNombre && <p className="text-red-500 mt-2">{errorValidationNombre}</p>
+        }
         <InputWithLabel
           label="Calle"
           value={calle}
@@ -205,17 +333,22 @@ const AddressForm: React.FC<AddressFormProps> = ({
           required
           placeholder="Av. La Republica"
           tooltip="Máximo 255 palabras"
+          onBlur={handleCalleBlur}
         />
+        {
+          errorValidationCalle && <p className="text-red-500 mt-2">{errorValidationCalle}</p>
+        }
         <InputWithLabel
           label="Número Exterior"
           value={numeroExterior}
           onChange={(e) => setNumeroExterior(e.target.value)}
-
+          type = "number"
         />
         <InputWithLabel
           label="Número Interior"
           value={numeroInterior}
           onChange={(e) => setNumeroInterior(e.target.value)}
+          type = "number"
 
         />
         <InputWithLabel
@@ -225,7 +358,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
           required
           placeholder="Cerca de la Av. Angamos con Av. Arequipa"
           tooltip="Máximo 255 palabras"
+          onBlur={handleReferenciaBlur}
         />
+        {
+          errorValidationReferencia && <p className="text-red-500 mt-2">{errorValidationReferencia}</p>
+        }
         <div>
           <label htmlFor="ciudad">Ciudad</label>
           {mandatoryCiudad ? (
@@ -237,27 +374,39 @@ const AddressForm: React.FC<AddressFormProps> = ({
               className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             />
           ) : (
-            <select
-              id="ciudad"
-              value={ciudadId}
-              onChange={(e) => {
-                const selectedCiudadId = e.target.value;
-                const selectedCiudad = ciudades.find(ciudad => ciudad.id === selectedCiudadId);
-                setCiudadId(selectedCiudadId);
-                setCiudadNombre(selectedCiudad ? selectedCiudad.nombre : '');
-              }}
-              required
-              className="block w-full mt-1 mb-4 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity("Por favor, selecciona una ciudad")}
-              onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity("")}
-            >
-              <option value="">Seleccione una ciudad</option>
-              {ciudades.map((ciudad) => (
-                <option key={ciudad.id} value={ciudad.id}>
-                  {ciudad.nombre}
-                </option>
-              ))}
-            </select>
+            <><select
+                id="ciudad"
+                value={ciudadId}
+                onChange={(e) => {
+                  const selectedCiudadId = e.target.value;
+                  const selectedCiudad = ciudades.find(ciudad => ciudad.id === selectedCiudadId);
+                  setCiudadId(selectedCiudadId);
+                  setCiudadNombre(selectedCiudad ? selectedCiudad.nombre : '');
+                } }
+                required
+                className="block w-full mt-1 mb-4 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                onInvalid={(e) => (e.target as HTMLSelectElement).setCustomValidity("Por favor, selecciona una ciudad")}
+                onInput={(e) => (e.target as HTMLSelectElement).setCustomValidity("")}
+              >
+                <option value="">Seleccione una ciudad</option>
+                {ciudades.map((ciudad) => (
+                  <option key={ciudad.id} value={ciudad.id}>
+                    {ciudad.nombre}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className={`px-4 py-2 border border-gray-300 rounded-md flex items-center gap-2 ${
+                  ciudadId !== '' ? 'bg-yellow-200' : 'bg-gray-200 cursor-not-allowed'
+                }`}
+                onClick={() => setShowMapModal(true)}
+                disabled={ciudadId === ''}
+              >
+                  <img src="/images/mapa.png" alt="Mapa" className="h-8" />
+                  Selecciona en el mapa
+                </button>
+                </>
           )}
         </div>
         {/* Error Message Display */}
@@ -267,14 +416,24 @@ const AddressForm: React.FC<AddressFormProps> = ({
           </p>
         )}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-          <button type="submit" style={styles.confirmButton}>
-            {state === 'Crear' ? 'Crear Dirección' : 'Guardar Cambios'}
-          </button>
           <button type="button" onClick={onClose} style={styles.cancelButton}>
             Cancelar
           </button>
+          <button type="submit" style={styles.confirmButton}>
+            {state === 'Crear' ? 'Crear Dirección' : 'Guardar Cambios'}
+          </button>
+          
         </div>
       </form>
+      {/* Map modal */}
+      {showMapModal && (
+          <GoogleMapModal
+            onSelectLocation={handleMapSelect}
+            city={ciudadNombre}
+            closeModal={() => setShowMapModal(false)}
+            {...(selectedLocation && { location: selectedLocation })}
+          />
+        )}
     </>
   );
 };

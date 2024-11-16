@@ -92,6 +92,12 @@ export class Pedido extends EntidadBase {
     @OneToMany(() => Pago, pago => pago.pedido)
     pagos: Pago[];
 
+    @Column({ type: "boolean", nullable: false, default: false, name: "pagado" })
+    pagado : boolean;
+
+    @Column({ type: "timestamp", nullable: true, name: "pagadoen" })
+    pagadoEn: Date;
+
 
     @BeforeInsert()
     private beforeInsert() {

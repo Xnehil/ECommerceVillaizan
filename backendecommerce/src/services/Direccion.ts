@@ -86,7 +86,20 @@ class DireccionService extends TransactionBaseService {
     ): Promise<Direccion> {
         return await this.atomicPhase_(async (manager) => {
             const direccionRepo = manager.withRepository(this.direccionRepository_);
+            const ubicacionRepo = manager.withRepository(this.ubicacionRepository_);
+    
             const direccion = await this.recuperar(id);
+            //console.log("data ", data);
+    
+            if (data.ubicacion && data.ubicacion.latitud && data.ubicacion.longitud) {
+                //delete previous ubicacion
+                if (direccion.ubicacion) {
+                    await ubicacionRepo.update(direccion.ubicacion.id, { estaActivo: false , desactivadoEn: new Date() })
+                }
+                const ubicacionCreada = ubicacionRepo.create(data.ubicacion);
+                const ubicacionResult = await ubicacionRepo.save(ubicacionCreada);
+                data.ubicacion.id = ubicacionResult.id;
+            }
             Object.assign(direccion, data);
             return await direccionRepo.save(direccion);
         });

@@ -194,10 +194,36 @@ export default function ProductDetail() {
             <p className="text-gray-700 text-lg"><strong>Descripción:</strong> {product.descripcion || "No disponible"}</p>
             <p className="text-gray-700 text-lg"><strong>Categoría:</strong> {product.tipoProducto?.nombre || "Sin categoría"}</p>
             <p className="text-gray-700 text-lg"><strong>Información Nutricional:</strong> {product.informacionNutricional || "No disponible"}</p>
-            <p className="text-2xl font-semibold text-yellow-600"><strong>Precio:</strong> S/ {product.precioEcommerce}</p>
-            {product.promocion && (
-              <p className="text-green-600 text-lg"><strong>Promoción:</strong> {product.promocion.descripcion}</p>
+            {/*ACAAA*/}
+            <p className="text-gray-700 text-lg">
+            <strong>Precio: </strong> 
+            {isAuthenticated && product.promocion && product.promocion.esValido && product.promocion.porcentajeDescuento ? (
+              // Calculate discounted price
+              <>
+                <span
+                  style={{
+                    textDecoration: "line-through",
+                    color: "gray",
+                    marginRight: "5px",
+                  }}
+                >
+                  {"S/ " + Number(product.precioEcommerce).toFixed(2)}
+                </span>
+                <span style={{ color: "black" }}>
+                  {"S/ " +
+                    (
+                      product.precioEcommerce -
+                      (product.precioEcommerce * product.promocion.porcentajeDescuento) / 100
+                    ).toFixed(2) + " c/u"}
+                </span>
+              </>
+            ) : (
+              // Show regular price
+              <span>
+                {"S/ " + Number(product.precioEcommerce).toFixed(2) + " c/u"}
+              </span>
             )}
+          </p>
             {
               isAuthenticated && existenPuntos && (
                 <p className="text-gray-700 text-lg"><strong>Puntos Canjeables por compra de producto:</strong> {puntos}</p>

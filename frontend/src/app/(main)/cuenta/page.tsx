@@ -12,6 +12,9 @@ import AddressModal from '../../../components/address/AddressModal'; // Import t
 import AddressForm from '../../../components/address/AddressForm'; // Import the AddressForm component
 import EliminationPopUp from '../../../components/address/EliminationPopUp'; // Import the EliminationPopUp component
 import { Button } from '@components/Button';
+import { Skeleton } from '@components/ui/skeleton';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@components/ui/alert-dialog';
 
 const Cuenta = () => {
   const { data: session, status } = useSession();
@@ -40,6 +43,17 @@ const Cuenta = () => {
     borderBottom: '2px solid #ccc',
     paddingBottom: '10px'
   };
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPopupDataVisible, setIsPopupDataVisible] = useState(false);
+  const [originalNombre, setOriginalNombre] = useState('');
+  const [originalApellido, setOriginalApellido] = useState('');
+  const [originalNumeroTelefono, setOriginalNumeroTelefono] = useState('');
+  const [validationErrorNombre, setValidationErrorNombre] = useState<  string | null>(null)
+  const [validationErrorApellido, setValidationErrorApellido] = useState<  string | null>(null)
+  const [validationErrorNumeroTelefono, setValidationErrorNumeroTelefono] = useState<  string | null>(null)
 
   useEffect(() => {
     async function fetchUserName() {
@@ -148,6 +162,85 @@ const Cuenta = () => {
     setIsModalOpen(false);
   };
 
+
+  //const handleEditData = () => setIsEditing(true);
+
+  const handleEditData = () => {
+    setOriginalNombre(userNombre);
+    setOriginalApellido(userApellido);
+    setOriginalNumeroTelefono(userTelefono);
+
+    setIsEditing(true);
+  };
+
+  const handleCancelData = () => {
+    setIsEditing(false);
+    setIsDialogOpen(false);
+  };
+
+  
+  interface HandleInputChangeData {
+    (setter: React.Dispatch<React.SetStateAction<string>>): (e: React.ChangeEvent<HTMLInputElement>) => void;
+  }
+
+  const handleInputChangeData: HandleInputChangeData = (setter) => (e) => setter(e.target.value);
+
+  const handleNombreBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value.length > 100) {
+      setValidationErrorNombre('El nombre no puede exceder los 100 caracteres.');
+    }
+    else{
+      setValidationErrorNombre(null);
+    }
+  }
+
+  const handleApellidoBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value.length > 100) {
+      setValidationErrorApellido('El apellido no puede exceder los 100 caracteres.');
+    }
+    else{
+      setValidationErrorApellido(null);
+    }
+  }
+
+  const handleTelefonoBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (e.target.value.length !== 9) {
+      setValidationErrorNumeroTelefono('El número de teléfono tiene que tener 9 dígitos.');
+    }
+    else{
+      setValidationErrorNumeroTelefono(null);
+    }
+  }
+
+  const handleSaveData = async () => {
+    if (validationErrorNombre || validationErrorApellido || validationErrorNumeroTelefono) {
+      return;
+    }
+    try {
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${userId}`, {
+        nombre: userNombre,
+        apellido: userApellido,
+        numeroTelefono: userTelefono
+      });
+      if (response.status === 200) {
+        setIsPopupDataVisible(false);
+        setIsEditing(false);
+        //refresh the page
+        window.location.reload();
+      } else {
+        console.error('Failed to save user data:', response.statusText);
+        setErrorMessage('Error al guardar los datos de usuario. Intente de nuevo más tarde.');
+        setIsErrorPopupVisible(true);
+      }
+    } catch (error) {
+      console.error('An error occurred during saving:', error);
+      setErrorMessage('Error al guardar los datos de usuario. Intente de nuevo más tarde.');
+      setIsErrorPopupVisible(true);
+    } finally {
+      setIsPopupDataVisible(false);
+    }
+  }
+
   return (
     <>
       {/* Error Popup */}
@@ -168,14 +261,145 @@ const Cuenta = () => {
         </div>
       )}
       <div style={{ display: 'flex' }}>
-      <div style={{ flex: 1, padding: '20px', marginBottom: '200px', marginLeft: '320px' }}>
+        {/* User data */}
+        <div style={{ flex: 1, padding: '20px', marginBottom: '200px', marginLeft: '320px' }}>
           <h2 style={headerStyle}>Datos generales</h2>
-          {userNombre && <InputWithLabel label="Nombre" value={userNombre} disabled={true} />}
-          {userApellido && <InputWithLabel label="Apellido" value={userApellido} disabled={true} />}
-          {userCorreo && <InputWithLabel label="Correo" value={userCorreo} disabled={true} />}
-          {userTelefono && <InputWithLabel label="Número de Teléfono" value={userTelefono} disabled={true} />}
-          {userPuntosAcumulados && <InputWithLabel label="Puntos Acumulados" value={userPuntosAcumulados} disabled={true} />}
+          {isLoading ? (
+            <div className="flex flex-col space-y-4">
+              {/* Add Skeleton components here as placeholders */}
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[200px]" />
+              </div>
+            </div>
+          ) : (
+            <div className="w-4/5 space-y-4">
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Nombre"
+                  value={userNombre}
+                  disabled={!isEditing}
+                  onChange={handleInputChangeData(setUserNombre)}
+                  tooltip = "Máximo 100 caracteres"
+                  onBlur = {handleNombreBlur}
+                />
+              </div>
+              {validationErrorNombre && (
+                  <p className="text-red-500 mt-2">{validationErrorNombre}</p>
+                )}
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Apellido"
+                  value={userApellido}
+                  disabled={!isEditing}
+                  onChange={handleInputChangeData(setUserApellido)}
+                  tooltip = "Máximo 100 caracteres"
+                  onBlur = {handleApellidoBlur}
+                />
+              </div>
+              {validationErrorApellido && (
+                  <p className="text-red-500 mt-2">{validationErrorApellido}</p>)
+              }
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Correo"
+                  value={userCorreo}
+                  disabled={true}
+                  onChange={handleInputChangeData(setUserCorreo)}
+                />
+              </div>
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Número de Teléfono"
+                  value={userTelefono}
+                  disabled={!isEditing}
+                  onChange={handleInputChangeData(setUserTelefono)}
+                  tooltip = "Máximo 9 dígitos"
+                  onBlur = {handleTelefonoBlur}
+                  type = "number"
+                />
+              </div>
+              {
+                validationErrorNumeroTelefono && (
+                  <p className="text-red-500 mt-2">{validationErrorNumeroTelefono}</p>
+                )
+              }
+              <div className="flex space-x-2">
+                <InputWithLabel
+                  label="Puntos Canjeables Acumulados"
+                  value={userPuntosAcumulados}
+                  disabled={true}
+                  onChange={handleInputChangeData(setUserPuntosAcumulados)}
+                />
+              </div>
+
+              <div className="lower-buttons-container mt-8">
+                {isEditing ? (
+                  <>
+                    {/* Cancel Button */}
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        handleCancelData();
+                        setUserNombre(originalNombre);
+                        setUserApellido(originalApellido);
+                        setUserTelefono(originalNumeroTelefono);
+                        setValidationErrorNombre(null);
+                        setValidationErrorApellido(null);
+                        setValidationErrorNumeroTelefono(null);
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+
+                    {/* Save Button */}
+                    <Button
+                      variant="default"
+                      onClick={() => {
+                        setIsPopupDataVisible(true); // Show popup
+                      }}
+                      style={{ marginLeft: '10px' }}
+                    >
+                      Guardar
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="default" onClick={handleEditData}>
+                    Editar
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Popup */}
+          {isPopupDataVisible && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white p-6 rounded-md shadow-md text-center">
+                <p className="text-black-600 mb-4">
+                  ¿Estás seguro de guardar los cambios?
+                </p>
+                <div className="flex space-x-2 justify-center">
+                  <button
+                    style={styles.cancelButton}
+                    onClick={() => {
+                      setIsPopupDataVisible(false); // Close the popup
+                    }}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    style={styles.confirmButton}
+                    onClick={handleSaveData} // Trigger your cancel action
+                  >
+                    Confirmar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
+        {/* Addresses */}
         <div style={{ flex: 1, padding: '20px', marginRight: '320px' }}>
           <h2 style={headerStyle}>Direcciones Guardadas</h2>
           {loadingInternal ? (
@@ -222,7 +446,14 @@ const styles = {
     cursor: 'pointer',
     backgroundColor: 'black',
     color: 'white',
-  }
+  },
+  cancelButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    backgroundColor: 'white',
+    color: 'red',
+  },
 };
 
 

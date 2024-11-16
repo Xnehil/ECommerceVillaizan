@@ -11,6 +11,7 @@ import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
 import { InventarioMotorizado } from "@models/InventarioMotorizado";
 import { Notificacion } from "../models/Notificacion";
 import NotificacionService from "./Notificacion";
+import { Delete } from "@nestjs/common";
 
 
 class PedidoService extends TransactionBaseService {
@@ -280,6 +281,7 @@ class PedidoService extends TransactionBaseService {
             }
             // console.log("Método de pago: ", data.metodosPago);
             Object.assign(pedido, data);
+            delete pedido.pedidosXMetodoPago;
             return await pedidoRepo.save(pedido);
         });
     }
@@ -387,8 +389,17 @@ class PedidoService extends TransactionBaseService {
         if (!pedidos) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedidos no encontrados");
         }
-    
-        return pedidos;
+       return pedidos;
+    }
+    async encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario: string): Promise<Pedido> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedido = await pedidoRepo.encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario);
+
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedido;
     }
 
 }
