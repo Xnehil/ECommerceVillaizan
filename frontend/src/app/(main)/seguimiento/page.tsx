@@ -84,7 +84,7 @@ const downloadXMLFile = async (pedido: Pedido) => {
   </cac:AccountingCustomerParty>
   <cac:PaymentTerms>
     <cbc:ID>FormaPago</cbc:ID>
-    <cbc:PaymentMeansID>${pedido.pedidosXMetodoPago.map(mp => mp.metodoPago.nombre).join(", ")}</cbc:PaymentMeansID>
+    <cbc:PaymentMeansID>${pedido.pedidosXMetodoPago?.map(mp => mp.metodoPago.nombre).join(", ")}</cbc:PaymentMeansID>
     <cbc:Amount currencyID="PEN">${pedido.total}</cbc:Amount>
   </cac:PaymentTerms>
   ${pedido.detalles.map((detalle, index) => `
@@ -267,7 +267,7 @@ const TrackingPage: React.FC = () => {
     if (!pedido?.id) return;
 
     try {
-      await axios.put(`http://localhost:9000/admin/pedido/${pedido.id}`, {
+      await axios.put(`${baseUrl}/admin/pedido/${pedido.id}`, {
         estado: "cancelado",
       });
       setEnRuta("cancelado");
@@ -325,8 +325,8 @@ const TrackingPage: React.FC = () => {
   const retrySendMessage = () => {
     const sendMessage = async (codigoSeguimiento: string) => {
       try {
-        await axios.post("http://localhost:9000/admin/whatsApp", {
-          mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
+        await axios.post(baseUrl+"/admin/whatsApp", {
+          mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: ${process.env.NEXT_PUBLIC_BASE_URL}/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
           numero: "959183082"
         });
         console.log("Mensaje enviado a WhatsApp.");
