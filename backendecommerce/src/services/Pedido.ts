@@ -176,8 +176,7 @@ class PedidoService extends TransactionBaseService {
     }
 
     async reduceStock(pedido: Pedido, motorizado: Motorizado): Promise<void> {
-        const invetarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);
-        
+        const invetarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);        
         const inventarios: InventarioMotorizado[] = await invetarioMotorizadoRepo.findByMotorizadoId(motorizado.id);
         
         // Iterate each pedido detail and reduce the stock
@@ -196,7 +195,7 @@ class PedidoService extends TransactionBaseService {
                         nuevaNoti.leido = false;
                         try {
                             await this.notificacionService_.crear(nuevaNoti);
-                            enviarMensajeAdmins("stockBajo", "El producto " + inventario.producto.nombre + " tiene un stock menor a " + inventario.producto.stockSeguridad*2 + " unidades en el motorizado " + motorizado.usuario.nombre);
+                            enviarMensajeAdmins("stockBajo", "El producto " + inventario.producto.nombre + " tiene un stock menor a " + inventario.producto.stockSeguridad*2 + " unidades en el motorizado " + inventario.motorizado.usuario.nombre);
                         }
                         catch (error) {
                             console.error("Error al crear notificación", error);
@@ -216,7 +215,7 @@ class PedidoService extends TransactionBaseService {
     ): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
-            const relations = asignarRepartidor ? ["motorizado", "direccion"] : [];
+            const relations = asignarRepartidor ? ["motorizado", "direccion"] : ["motorizado"];
             const pedido = await this.recuperarConDetalle(id, { relations });
             let tienestock : boolean = false;
 
@@ -282,6 +281,7 @@ class PedidoService extends TransactionBaseService {
                     data.verificadoEn = new Date();
                     estadoPedidos.set(id, "verificado");
                     try {
+                        // console.log("Verificando stock con motorizado: ", pedido.motorizado);
                         this.reduceStock(pedido, pedido.motorizado);
                     } catch (error) {
                         console.error("Error al reducir stock, se continúa para la demo", error);

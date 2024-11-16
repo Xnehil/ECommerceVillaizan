@@ -4,15 +4,13 @@ import { dataSource } from "@medusajs/medusa/dist/loaders/database"
 export const InventarioMotorizadoRepository = dataSource
   .getRepository(InventarioMotorizado)
   .extend({
-    async findByMotorizadoId(motorizadoId: string) : Promise<InventarioMotorizado[]> {
-      return this.find({
-        where: {
-          motorizado: {
-            id: motorizadoId,
-          },
-        },
-        relations: ['motorizado', 'producto'],
-      });
+    async findByMotorizadoId(motorizadoId: string): Promise<InventarioMotorizado[]> {
+      return this.createQueryBuilder("inventarioMotorizado")
+        .leftJoinAndSelect("inventarioMotorizado.motorizado", "motorizado")
+        .leftJoinAndSelect("inventarioMotorizado.producto", "producto")
+        .leftJoinAndSelect("motorizado.usuario", "usuario")
+        .where("motorizado.id = :motorizadoId", { motorizadoId })
+        .getMany();
     },
 
     async findByProductoId(productoId: string) {
