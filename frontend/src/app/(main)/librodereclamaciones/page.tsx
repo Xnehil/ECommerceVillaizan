@@ -9,6 +9,10 @@ export default function LibrodeReclamaciones() {
   const [dni, setDni] = useState("");
   const [telefono, setTelefono] = useState("");
   const [descripcion, setDescripcion] = useState("");
+  
+
+  const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+  const frontUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -24,26 +28,26 @@ export default function LibrodeReclamaciones() {
     `;
       try {
         // Primera solicitud para el correo ingresado por el usuario
-        const response1 = await fetch("http://localhost:9000/admin/correo", {
+        const response1 = await fetch(baseUrl+"/admin/correo", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            para: `"${email}"`,
+            para: `${email}`,
             asunto: "Libro de Reclamaciones",
             texto: texto
           }),
         });
 
         // Segunda solicitud para el correo fijo de villaizan123@gmail.com
-        const response2 = await fetch("http://localhost:9000/admin/correo", {
+        const response2 = await fetch(baseUrl+"/admin/correo", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            para: `"villaizan123@gmail.com"`,
+            para: `paletasvillaizan@gmail.com`,
             asunto: "Libro de Reclamaciones",
             texto: texto
           }),
@@ -52,7 +56,7 @@ export default function LibrodeReclamaciones() {
         // Verificamos si ambas solicitudes fueron exitosas
         if (response1.ok && response2.ok) {
           alert("Correos enviados correctamente.");
-          window.location.href = "http://localhost:8000"; //cambiar esto 
+          window.location.href = frontUrl ?? "/";
         } else {
           alert("Hubo un error al enviar los correos.");
         }
@@ -103,17 +107,17 @@ export default function LibrodeReclamaciones() {
               <label>Domicilio <span className="text-red-600">*</span></label>
             <input type="text" className="border p-2 w-full" value={domicilio} onChange={(e) => setDomicilio(e.target.value)} />
           </div>
-            <div className="flex space-x-4">
+          <div className="flex space-x-4">
               <div className="w-1/2">
                   <label>DNI/C.E</label>
               <input type="text" className="border p-2 w-full" value={dni} onChange={(e) => setDni(e.target.value)} />
-            </div>
+              </div>
               <div className="w-1/2">
                   <label>Teléfono <span className="text-red-600">*</span></label>
               <input type="text" className="border p-2 w-full" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
-            </div>
-            </div>
-            <div>
+              </div>
+          </div>
+          <div>
             <label>Email <span className="text-red-600">*</span></label>
               <input
                 type="email"

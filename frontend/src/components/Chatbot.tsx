@@ -13,10 +13,6 @@ interface ChatbotProps {
 }
 
 const Chatbot: React.FC<ChatbotProps> = ({ base64Css }) => {
-  if (typeof window === "undefined") {
-    return null; // Return null if running on the server
-  }
-
   // Add the script and load Voiceflow widget
   useEffect(() => {
     const script = document.createElement("script");

@@ -91,6 +91,12 @@ const mapearMensaje = (tipo: string, router: any, data: any) => {
         button: "Ver motorizados",
       };
       break;
+    case "libroReclamaciones":
+      dataBonita = {
+        type: "Nuevo reclamo",
+        data: data,
+      };
+      break;
     default:
       dataBonita = {
         type: "Mensaje de tipo: " + tipo,
@@ -108,13 +114,15 @@ const mapearMensaje = (tipo: string, router: any, data: any) => {
     description: (
       <div className="flex justify-between items-center">
         <p>{dataBonita.data}</p>
-        <ToastAction
+        { dataBonita.action && dataBonita.button && (
+          <ToastAction
           onClick={() => { router.push(dataBonita.action); }}
           altText="Ir a la página de notificaciones"
           className={buttonClassName}
         >
           {dataBonita.button}
-        </ToastAction>
+        </ToastAction>)
+        }
       </div>
     ),
   });
