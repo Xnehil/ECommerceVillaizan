@@ -72,7 +72,10 @@ const EntregarPedido = () => {
             <Text style={styles.modalTitle}>Vista previa de la imagen</Text>
             <Image
               source={{
-                uri: currentImageType === "pedido" ? fotoPedido ?? '' : fotoPago ?? '',
+                uri:
+                  currentImageType === "pedido"
+                    ? fotoPedido ?? ""
+                    : fotoPago ?? "",
               }}
               style={styles.previewImage}
             />
@@ -368,7 +371,7 @@ const EntregarPedido = () => {
       }
 
       const venta: Venta = {
-        id:"",
+        id: "",
         tipoComprobante: "Boleta",
         fechaVenta: new Date(),
         numeroComprobante: "001-000001",
@@ -479,7 +482,7 @@ const EntregarPedido = () => {
           </View>
 
           <View style={styles.clienteRow}>
-            <Text style={styles.cliente}>
+            <Text style={styles.cliente} numberOfLines={1} ellipsizeMode="tail">
               {pedidoCompleto?.usuario?.nombre || "Nombre no disponible"}
             </Text>
             <View style={styles.iconosCliente}>
@@ -511,7 +514,11 @@ const EntregarPedido = () => {
             <View style={styles.pedidoInfo}>
               {Array.isArray(pedidoCompleto?.detalles) &&
               pedidoCompleto.detalles.length > 0 ? (
-                <Text style={styles.productosText}>
+                <Text
+                  style={styles.productosText}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
                   {pedidoCompleto.detalles
                     .map(
                       (detalle: DetallePedido) =>
@@ -599,9 +606,7 @@ const EntregarPedido = () => {
                         </Text>
                       </>
                     ) : (
-                      <Text style={styles.metodoNombre}>
-                        Método de pago no especificado
-                      </Text>
+                      <Text style={styles.metodoNombre}>No especificado</Text>
                     )}
                   </View>
                   <View style={styles.rightInfo}>
@@ -753,7 +758,7 @@ const EntregarPedido = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    padding: 5,
     backgroundColor: "#fff",
     borderRadius: 15,
     marginVertical: 10,
@@ -783,7 +788,7 @@ const styles = StyleSheet.create({
     width: "40%",
   },
   titulo: {
-    fontSize: 25,
+    fontSize: 22,
     fontWeight: "bold",
     marginVertical: 10,
   },
@@ -792,7 +797,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   cliente: {
-    fontSize: 20,
+    fontSize: 18,
   },
   iconosCliente: {
     flexDirection: "row",
@@ -870,7 +875,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   productosText: {
-    fontSize: 20,
+    fontSize: 18,
   },
   linkVerMas: {
     color: "blue",
@@ -884,7 +889,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   subtotalValor: {
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: "900",
   },
   metodoPagoColumn: {
@@ -930,14 +935,14 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginVertical: 20,
+    marginVertical: 10,
   },
   rejectButton: {
     backgroundColor: "#F44336", // Red color for reject button
     padding: 15,
     borderRadius: 10,
     alignItems: "center",
-    marginVertical: 20,
+    marginVertical: 10,
   },
   confirmButtonText: {
     fontSize: 18,

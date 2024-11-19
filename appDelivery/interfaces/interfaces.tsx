@@ -79,20 +79,23 @@ export interface Pedido {
   estaActivo: boolean;
   estado: string;
   prioridadEntrega: string | null;
-  total: string;
+  total: number;
   puntosOtorgados: number;
   motivoCancelacion: string | null;
   codigoSeguimiento: string;
-  montoEfectivoPagar: string;
-  motorizado: Motorizado | null; 
-  direccion: Direccion | null;   
-  usuario: Usuario | null;  
-  urlEvidencia: string | null;
-  detalles: DetallePedido[] | null ;
-  metodosPago: MetodoDePago[] | null;
+  montoEfectivoPagar: number | null;
   solicitadoEn?: Date;
   verificadoEn?: Date;
   entregadoEn?: Date;
+  urlEvidencia: string | null;
+  motorizado: Motorizado | null; 
+  direccion: Direccion | null;   
+  usuario: Usuario | null;  
+  detalles: DetallePedido[] | null;
+  pedidosXMetodoPago: PedidoXMetodoPago[] | null;
+  pagos: Pago[] | null;
+  pagado: boolean;
+  pagadoEn?: Date;
 }
 
 export interface Direccion {
@@ -266,4 +269,17 @@ export interface Notificacion {
   leido: boolean;
   sistema: string;
   usuario: Usuario;
+}
+
+export interface PedidoXMetodoPago {
+  id: string;
+  creadoEn: string;
+  actualizadoEn: string;
+  desactivadoEn: string | null;
+  usuarioCreacion: string;
+  usuarioActualizacion: string | null;
+  estaActivo: boolean;
+  monto: number;
+  pedido: Pedido;
+  metodoPago: MetodoDePago;
 }
