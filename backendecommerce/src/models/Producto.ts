@@ -94,6 +94,9 @@ export class Producto extends EntidadBase {
 
     cantidadPuntos?: number;
 
+    @Column({ name: "id_crm", nullable: true })
+    idCRM: string;
+
     @BeforeInsert()
     private beforeInsert() {
         this.id = generateEntityId(this.id, "prod")

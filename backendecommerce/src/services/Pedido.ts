@@ -215,7 +215,7 @@ class PedidoService extends TransactionBaseService {
     ): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
-            const relations = asignarRepartidor ? ["motorizado", "direccion", "direccion.ubicacion"] : ["motorizado"];
+            const relations = asignarRepartidor ? ["motorizado", "direccion", "direccion.ubicacion"] : ["motorizado", "usuario"];
             const pedido = await this.recuperarConDetalle(id, { relations });
             
             
@@ -255,6 +255,11 @@ class PedidoService extends TransactionBaseService {
             }
             if (data.pagado) {
                 data.pagadoEn = new Date();
+                try {
+                  this.insertarEnCrm(pedido);
+                } catch (error) {
+                    console.error("Error al insertar en CRM", error);
+                }
             }
             // console.log("Motorizado final: ", data.motorizado);
             Object.assign(pedido, data);
@@ -473,6 +478,63 @@ class PedidoService extends TransactionBaseService {
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c; // Distance in kilometers
+    }
+
+    async insertarEnCrm(pedido: Pedido): Promise<void> {
+        console.log("Insertando en CRM");
+        // Verificar si es usuario con cuenta
+        if (pedido.usuario.conCuenta) {
+            console.log("Usuario con cuenta");
+            const username = 'dep2.crm@gmail.com';
+            const password = '97FO4nsSpV6UneKW';
+            const credentials = Buffer.from(`${username}:${password}`).toString('base64');
+            // Hacer post a https://heladeria2.od2.vtiger.com/restapi/vtap/api/addVenta con campos ValorRandom e IdConsumidorCRM
+            const bodyData={
+                "ValorRandom": Math.random(),
+                "IdConsumidorCRM": pedido.usuario.id
+            }
+            let ventaId = null;
+            try{
+                const response = await fetch('https://heladeria2.od2.vtiger.com/restapi/vtap/api/addVenta', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic ${credentials}`,
+                    },
+                    body: JSON.stringify(bodyData),
+                });
+                const data = await response.json();
+                console.log("Venta creada en CRM: ", data);
+                ventaId = data.result.id;
+            } catch (error) {
+                console.error("Error creando venta en CRM: ", error);
+            }
+            // https://heladeria2.od2.vtiger.com/restapi/vtap/api/addVentaxProduct con campos valorAleatorio, idVentaCRM, idProductoCRM
+            for (let detalle of pedido.detalles){
+                const bodyData={
+                    "ValorAleatorio": Math.random(),
+                    "IdVentaCRM": ventaId,
+                    "IdProductoCRM": detalle.producto.idCRM
+                }
+                try{
+                    const response = await fetch('https://heladeria2.od2.vtiger.com/restapi/vtap/api/addVentaxProduct', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Basic ${credentials}`,
+                        },
+                        body: JSON.stringify(bodyData),
+                    });
+                    const data = await response.json();
+                    console.log("Venta x producto creada en CRM: ", data);
+                } catch (error) {
+                    console.error("Error creando venta x producto en CRM: ", error);
+                }
+            }
+        } else{
+            console.log("Usuario sin cuenta");
+        }
+        
     }
 
 }
