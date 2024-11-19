@@ -110,7 +110,7 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
             style={{
               display: "flex",
               flexDirection: "column",
-              width: "100px",
+              width: "80px",
             }}
           >
             <div
@@ -205,7 +205,7 @@ const styles = {
   },
   image: {
     borderRadius: "10px",
-    width: "100px",
+    width: "auto",
     height: "80px",
     objectFit: "cover" as "cover",
   },

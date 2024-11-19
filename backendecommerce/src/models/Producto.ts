@@ -78,6 +78,9 @@ export class Producto extends EntidadBase {
     @Column({ default: false , name: "sevendeecommerce"})
     seVendeEcommerce: boolean
 
+    @Column({ name: "stockseguridad" , default: 0})
+    stockSeguridad: number
+
     @ManyToOne(() => Promocion, promocion => promocion.id, { eager: true })
     @JoinColumn({ name: "id_promocion" })
     promocion: Promocion;

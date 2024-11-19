@@ -70,7 +70,7 @@ interface OrderDetailsProps {
         <div className="flex-1 flex flex-col items-center justify-center text-center">
             <p className="font-bold text-gray-800">Método de Pago:</p>
             <ul className="list-none p-0 m-0">
-                {pedido.pedidosXMetodoPago.map((pedidoXmetodo) => (
+                {pedido.pedidosXMetodoPago?.map((pedidoXmetodo) => (
                     <li key={pedidoXmetodo.id} className="text-gray-600 mb-1">
                         {pedidoXmetodo.metodoPago.nombre}
                     </li>

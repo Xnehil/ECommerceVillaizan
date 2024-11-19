@@ -490,6 +490,8 @@ CREATE TABLE vi_pedido (
     validadoEn TIMESTAMP,
     entregadoEn TIMESTAMP,
     urlEvidencia VARCHAR(200),
+    pagado BOOLEAN DEFAULT FALSE,
+    pagadoEn TIMESTAMP,
 	--trazabilidad
     estaactivo BOOLEAN DEFAULT TRUE NOT NULL,
     desactivadoen TIMESTAMP,

@@ -74,7 +74,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
           placeholder=" "
           type="text"
           disabled={true}
-          value={pedido.current.metodosPago[0]?.nombre}
+          value={pedido.current.pedidosXMetodoPago.length > 0 ? pedido.current.pedidosXMetodoPago[0].metodoPago.nombre : "Varios"}
         />
         <div className="h-full flex flex-col justify-end">
           <Sheet open={open} onOpenChange={setOpen}>
@@ -105,12 +105,12 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                   Detalle de pago
                 </Label>
                 <Label className="block text-sm font-normal text-muted-foreground">
-                  {pedido.current.metodosPago?.length} métodos
+                  {pedido.current.pedidosXMetodoPago?.length} formas de pago
                 </Label>
                 <div className="flex flex-col space-y-2 ">
-                  {pedido.current.metodosPago?.map((detalle, index) => (
+                  {pedido.current.pedidosXMetodoPago?.map((detalle, index) => (
                     <div key={index} className="flex flex-row justify-between">
-                      <p>{detalle.nombre}</p>
+                      <p>{detalle.metodoPago.nombre}</p>
                       <p>
                         S/.{" "}
                         {/* {Number(pedido.current.).toFixed(2)} */}
