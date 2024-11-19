@@ -118,6 +118,16 @@ class PromocionService extends TransactionBaseService {
             const productos = await this.productoRepository_.listarPorPromocion(promocion.id);
             const productoConImagen = productos.find(producto => producto.urlImagen !== null);
             promocion.urlImagen = productoConImagen ? productoConImagen.urlImagen : null;
+    
+            if (productos.length > 0) {
+                const nombresProductos = productos.map(producto => producto.nombre);
+                const textoInfo = nombresProductos.length > 1 
+                    ? `${nombresProductos.slice(0, -1).join(', ')} y ${nombresProductos[nombresProductos.length - 1]}` 
+                    : nombresProductos[0];
+                promocion.textoInfo = `Promoción válida para los siguientes productos: ${textoInfo}.`;
+            } else {
+                promocion.textoInfo = "No hay detalles de la promoción en estos momentos, por favor, intente nuevamente más tarde.";
+            }
         }));
     
         return promociones;

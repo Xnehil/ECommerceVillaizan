@@ -32,6 +32,8 @@ export class Promocion extends EntidadBase {
 
     urlImagen?: string;
 
+    textoInfo?: string;
+
     @BeforeInsert()
     private beforeInsert() {
         this.id = generateEntityId(this.id, "promo");

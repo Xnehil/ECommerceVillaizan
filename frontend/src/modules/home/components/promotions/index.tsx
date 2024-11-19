@@ -6,6 +6,12 @@ import { Navigation, Autoplay } from 'swiper/modules';
 import 'swiper/swiper-bundle.css';
 import { Promocion } from 'types/PaquetePromocion';
 import Thumbnail from '@modules/products/components/thumbnail';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@components/tooltip";
 
 const Promotions = () => {
   const [promociones, setPromociones] = useState<Promocion[]>([]);
@@ -36,7 +42,7 @@ const Promotions = () => {
               loop={true}
               modules={[Navigation, Autoplay]} // Enable navigation and autoplay
               autoplay={{
-                delay: 5000, // Auto-slide every 5 seconds
+                delay: 10000, // Auto-slide every 5 seconds
                 disableOnInteraction: false, // Keep sliding even after user interaction
               }}
               navigation={true} // Enable Swiper's built-in navigation
@@ -44,28 +50,45 @@ const Promotions = () => {
             >
               {promociones.map((promocion, index) => (
                 <SwiperSlide key={index} className="flex flex-col items-center">
-                  <div className="flex flex-col items-center space-y-1">
-                    <div className="w-48 h-48">
-                      {promocion.urlImagen ? (
-                        <Thumbnail
-                          thumbnail={promocion.urlImagen}
-                          size="square"
-                          className="border-2 border-gray-300 rounded-lg shadow-md w-full h-full"
-                          isFeatured={true}
-                          data-testid={`promocion-${index}`}
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-100 border-2 border-gray-300 rounded-lg shadow-md flex items-center justify-center">
-                          <span className="text-gray-500 text-sm">Sin Imagen</span>
-                        </div>
-                      )}
+                  <div className="flex flex-col items-center space-y-1 group">
+                    {/* Image Thumbnail with Tooltip on Hover */}
+                    <div className="w-48 h-48 relative">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger className="w-full h-full absolute top-0 left-0 cursor-pointer">
+                            {/* Tooltip Trigger is now on the image */}
+                            <div className="w-full h-full">
+                              {promocion.urlImagen ? (
+                                <Thumbnail
+                                  thumbnail={promocion.urlImagen}
+                                  size="square"
+                                  className="border-2 border-gray-300 rounded-lg shadow-md w-full h-full"
+                                  isFeatured={true}
+                                  data-testid={`promocion-${index}`}
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-100 border-2 border-gray-300 rounded-lg shadow-md flex items-center justify-center">
+                                  <span className="text-gray-500 text-sm">Sin Imagen</span>
+                                </div>
+                              )}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="w-full break-words font-bold">
+                              {promocion.textoInfo || "No hay detalles de la promoción en estos momentos, por favor, intente nuevamente más tarde."}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
-                    <h3 className="text-lg font-semibold text-center">{promocion.titulo}</h3>
+  
+                    {/* Title, no tooltip trigger here */}
+                    <h3 className="text-lg font-semibold text-center mt-4">{promocion.titulo}</h3>
                   </div>
                 </SwiperSlide>
               ))}
             </Swiper>
-
+  
             {/* Custom style to override the default Swiper arrow styles */}
             <style global jsx>{`
               /* Override Swiper's default arrow styles to make them black and more separated */
@@ -74,28 +97,28 @@ const Promotions = () => {
                 color: black !important;  /* Set arrows to black */
                 font-size: 2rem !important;  /* Increase arrow size */
               }
-
+  
               .swiper-button-prev:hover,
               .swiper-button-next:hover {
                 color: black !important; /* Keep hover color black */
               }
-
+  
               /* Increase distance from center for better separation */
               .swiper-button-prev {
                 left: 30px !important; /* Move left arrow further from center */
               }
-
+  
               .swiper-button-next {
                 right: 30px !important; /* Move right arrow further from center */
               }
-
+  
               /* Optionally add some shadow for better visibility */
               .swiper-button-prev, .swiper-button-next {
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);  /* Adds subtle shadow */
               }
             `}</style>
           </div>
-
+  
           {/* Button for Ice Cream Catalog */}
           <div className="mt-8">
             <Link href="/comprar" passHref>
