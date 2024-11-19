@@ -15,14 +15,17 @@ export class Promocion extends EntidadBase {
     @Column("text")
     descripcion: string;
 
-    @Column({ type: "timestamp", name: "fechainicio" })
+    @Column({ type: "date", name: "fechainicio" }) 
     fechaInicio: Date;
 
-    @Column({ type: "timestamp", name: "fechafin" })
+    @Column({ type: "date", name: "fechafin" }) 
     fechaFin: Date;
 
     @Column({name: "limitestock"})
     limiteStock: number;
+
+    @Column({name: "esvalido"})
+    esValido: boolean;
 
     @Column("decimal", { precision: 5, scale: 2, name: "porcentajedescuento" })
     porcentajeDescuento: number;

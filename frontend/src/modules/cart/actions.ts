@@ -41,9 +41,10 @@ export async function getOrSetCart(only_get=false) {
 
   if (cartId) {
     try {
-      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle`)
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
       cart = response.data.pedido
-      // console.log("Cart sacado de la cookie: ", cart)
+      revalidateTag("cart")
+      //console.log("Cart sacado de la cookie: ", cart)
     } catch (e) {
       cart = null
     }
@@ -240,9 +241,10 @@ export async function updateLineItem({
   }
 
   try {
-    const response = await axios.put(`${baseUrl}/admin/detallePedido/${detallePedidoId}`, {
+    await axios.put(`${baseUrl}/admin/detallePedido/${detallePedidoId}`, {
       cantidad: cantidad,
-      subtotal: subtotal
+      subtotal: subtotal,
+      estaActivo: cantidad > 0
     })
     revalidateTag("cart")
   } catch (e: any) {
@@ -301,6 +303,7 @@ export async function enrichLineItems(
   return productData.map((product) => {
     product.detallePedido.producto.precioEcommerce = Number(product.detallePedido.producto.precioEcommerce)
     product.detallePedido.cantidad = Number(product.detallePedido.cantidad)
+    product.detallePedido.precio = Number(product.detallePedido.precio)
     return product.detallePedido
   }) as DetallePedido[]
 }
@@ -338,11 +341,8 @@ export async function addItem({
     if (idPromocion !== "") {
       requestBody.promocion = { id: idPromocion };
     }
-
-    const response = await axios.post(`${baseUrl}/admin/detallePedido`, requestBody);
-    // console.log(response)
-    console.log("Item added to cart")
-    return response.data
+    const response = await axios.post(`${baseUrl}/admin/detallePedido`, requestBody)
+    return response.data;
   } catch (e) {
     console.log(e)
     return null
@@ -365,7 +365,7 @@ export async function updateItem({
       cantidad: quantity,
       subtotal: precio*quantity
     })
-
+    //console.log("Item updated", response)
     return response
   } catch (e) {
     console.log(e)

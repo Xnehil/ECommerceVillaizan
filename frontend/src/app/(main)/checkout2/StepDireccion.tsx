@@ -27,7 +27,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 }) => {
   const [carritoState, setCarritoState] = useState<Pedido | null>(null)
   const [calle, setCalle] = useState("")
-
   const [numeroExterior, setNumeroExterior] = useState("")
   const [numeroInterior, setNumeroInterior] = useState("")
   const [ciudadNombre, setCiudadNombre] = useState("")
@@ -37,6 +36,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [nombre, setNombre] = useState("") // Nuevo estado para nombre
   const [telefono, setTelefono] = useState("") // Nuevo estado para teléfono
   const [numeroDni, setNumeroDni] = useState("") // Nuevo estado para DNI
+  const [numeroRuc, setNumeroRuc] = useState(""); // Estado para RUC
+  const [comprobante, setComprobante] = useState("");
   const [error, setError] = useState("")
   const [locationError, setLocationError] = useState("")
   const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
@@ -44,7 +45,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [selectedLocation, setSelectedLocation] = useState<{
     lat: number
     lng: number
-  } | null>({ lat: -6.485001917368323, lng: -76.36796974234515 })
+  } | null>(null)
   const [dniError, setDniError] = useState<string | null>(null)
   const [telefonoError, setTelefonoError] = useState<string | null>(null)
   const [showWarnings, setShowWarnings] = useState(false) // Estado para mostrar advertencias
@@ -134,6 +135,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
       })
     }
   }
+  
   const fetchCart = async () => {
     try {
       const respuesta = await getOrSetCart()
@@ -157,6 +159,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
       console.error("Error al obtener el carrito:", error)
     }
   }
+
+  const handleComprobanteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setComprobante(e.target.value);
+  };
+
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setNombre(value)
@@ -187,17 +194,30 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   }
 
   const handleDniChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
+    const value = e.target.value;
     if (/^\d*$/.test(value)) {
-      setNumeroDni(value)
-      localStorage.setItem("dni", value) // Save to localStorage
+      setNumeroDni(value);
+      localStorage.setItem("dni", value);
       if (value.length > 8) {
-        setDniError("El DNI no puede tener más de 8 dígitos")
+        setDniError("El DNI no puede tener más de 8 dígitos");
       } else {
-        setDniError(null)
+        setDniError(null);
       }
     }
-  }
+  };
+
+  const handleRucChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (/^\d*$/.test(value)) {
+      setNumeroRuc(value);
+      localStorage.setItem("ruc", value);
+      if (value.length !== 11) {
+        setDniError("El RUC debe tener 11 dígitos");
+      } else {
+        setDniError(null);
+      }
+    }
+  };
 
   const handleCalleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -268,20 +288,20 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     direccionData.ubicacion.longitud =
       selectedLocation?.lng.toString() || "null"
 
-    const usuarioData = {
-      nombre: nombre,
-      apellido: "",
-      contrasena: "",
-      conCuenta: false,
-      numeroTelefono: telefono,
-      persona: {
-        tipoDocumento: "DNI",
-        numeroDocumento: numeroDni,
-      },
-      rol: {
-        id: "rol-f84abb43",
-      },
-    }
+      const usuarioData = {
+        nombre: nombre,
+        apellido: "",
+        contrasena: "",
+        conCuenta: false,
+        numeroTelefono: telefono,
+        persona: {
+          tipoDocumento: numeroRuc ? "RUC" : "DNI",
+          numeroDocumento: numeroRuc || numeroDni,
+        },
+        rol: {
+          id: "rol-f84abb43",
+        },
+      };
 
     console.log("Datos de dirección:", direccionData)
     console.log("Datos de usuario:", usuarioData)
@@ -455,6 +475,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
               <AddressFormParent
                 nombre={nombre}
                 numeroDni={numeroDni}
+                numeroRuc={numeroRuc} // Pasar el estado de RUC
                 ciudad={ciudadNombre}
                 telefono={telefono}
                 calle={calle}
@@ -463,6 +484,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
                 referencia={referencia}
                 handleNombreChange={handleNombreChange}
                 handleDniChange={handleDniChange}
+                handleRucChange={handleRucChange} // Pasar el manejador de RUC
                 handleTelefonoChange={handleTelefonoChange}
                 handleCiudadChange={handleCiudadChange}
                 handleCalleChange={handleCalleChange}

@@ -1,6 +1,6 @@
 // BuscandoPopup.tsx
-import React from 'react';
-import { LoadingSpinner } from 'components/LoadingSpinner'; // Ajusta la ruta de importación según sea necesario
+import React, { useEffect, useState } from 'react';
+import { LoadingSpinner } from 'components/LoadingSpinner'; // Adjust the path as necessary
 
 interface BuscandoPopupProps {
   onClose: () => void;
@@ -9,20 +9,32 @@ interface BuscandoPopupProps {
 }
 
 const BuscandoPopup: React.FC<BuscandoPopupProps> = ({ onClose, customText, error = false }) => {
-  const buttonText = error && customText === "Error al guardar el metodo de pago. Inténtalo de nuevo en unos minutos"
-    ? "Regresar al carrito"
-    : "Cerrar";
+  const isCartButton = 
+    error && 
+    (customText === "Error al guardar el metodo de pago. Inténtalo de nuevo en unos minutos" ||
+    customText.includes("Los siguientes productos ya no tienen promociones válidas"));
+  
+  const buttonText = isCartButton ? "Regresar al carrito" : "Cerrar";
+
+
+  const handleClick = () => {
+    if (isCartButton) {
+      window.location.href = '/carrito'; // Adjust path to cart as necessary
+    } else {
+      onClose();
+    }
+  };
 
   return (
     <div style={styles.overlay}>
       <div style={styles.popup}>
         {error ? (
           <div style={styles.errorContainer}>
-            <img src={"/images/motoHeladera.png"} alt="Error" style={styles.errorImage} />
+            <img src="/images/motoHeladera.png" alt="Error" style={styles.errorImage} />
             <p style={styles.errorMessage}>
               {customText}
             </p>
-            <button style={styles.closeButton} onClick={onClose}>{buttonText}</button>
+            <button style={styles.closeButton} onClick={handleClick}>{buttonText}</button>
           </div>
         ) : (
           <>
@@ -56,13 +68,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as 'column',
     alignItems: 'center',
-  },
-  cancelButton: {
-    padding: '10px 20px',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    backgroundColor: 'white',
-    color: 'red',
   },
   errorContainer: {
     display: 'flex',

@@ -94,6 +94,8 @@ export default function PaginatedProducts({
           cityParam
         );
 
+        console.log("RESPONSE", response); // Logs the response object
+
         if (!response || !response.data || !response.data.productos) {
           throw new Error("Invalid response structure");
         }
@@ -131,6 +133,11 @@ export default function PaginatedProducts({
     };
 
     fetchProducts();
+    // Polling
+    const intervalId = setInterval(fetchProducts, 1200000); // Re-fetch cada dos minutos
+
+    // Limpiar intervalo cuando se desmonta un componente
+    return () => clearInterval(intervalId);
   }, [page, sortBy, city]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,11 +148,19 @@ export default function PaginatedProducts({
   const handleSortByPrice = () => {
     try {
       // Create a shallow copy of the products array to prevent direct mutation
-      const sortedProducts = [...products].sort((a, b) =>
-        isSortedByPrice
-          ? a.precioEcommerce - b.precioEcommerce
-          : b.precioEcommerce - a.precioEcommerce
-      );
+      const sortedProducts = [...products].sort((a, b) => {
+        // Calculate effective price considering promotion
+        const priceA = a.promocion 
+          ? a.precioEcommerce - (a.precioEcommerce * a.promocion.porcentajeDescuento) / 100
+          : a.precioEcommerce;
+      
+        const priceB = b.promocion 
+          ? b.precioEcommerce - (b.precioEcommerce * b.promocion.porcentajeDescuento) / 100
+          : b.precioEcommerce;
+      
+        // Sort based on isSortedByPrice flag
+        return isSortedByPrice ? priceA - priceB : priceB - priceA;
+      });
       setProducts(sortedProducts);
       setIsSortedByPrice(isSortedByPrice === null ? true : !isSortedByPrice);
       setSortError(null);

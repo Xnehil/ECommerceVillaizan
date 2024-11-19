@@ -43,12 +43,13 @@ export const GET = async (
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const id  = req.params.id;
     const  pedido  = req.query.pedido === 'true';
-    const relations = pedido ? ["motorizado", "motorizado.usuario", "direccion", "usuario", "metodosPago"] : [];
+    const relations = pedido ? ["motorizado", "motorizado.usuario", "direccion", "usuario", "pedidosXMetodoPago"] : [];
 
     try {
         const pedidoData = await pedidoService.recuperarConDetalle(id, { relations });
         res.json({ pedido: pedidoData });
     } catch (error) {
+        console.error(error);
         res.status(404).json({ error: "Pedido no encontrado" });
     }
 };

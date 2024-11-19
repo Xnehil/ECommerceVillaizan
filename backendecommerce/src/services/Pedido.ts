@@ -5,17 +5,20 @@ import { MedusaError } from "@medusajs/utils";
 import pedidoRepository from "src/repositories/Pedido";
 import { ubicacionesDelivery, estadoPedidos, enviarMensajeRepartidor, enviarMensajeAdmins } from "../loaders/websocketLoader";
 import MotorizadoRepository from "@repositories/Motorizado";
+import puntosProductoRepository from "@repositories/PuntosProducto";
 import { Motorizado } from "@models/Motorizado";
 import InventarioMotorizadoRepository from "@repositories/InventarioMotorizado";
 import { InventarioMotorizado } from "@models/InventarioMotorizado";
 import { Notificacion } from "../models/Notificacion";
 import NotificacionService from "./Notificacion";
+import { Delete } from "@nestjs/common";
 
 
 class PedidoService extends TransactionBaseService {
     protected pedidoRepository_: typeof pedidoRepository;
     protected motorizadoRepository_: typeof MotorizadoRepository;
     protected inventarioMotorizadoRepository_: typeof InventarioMotorizadoRepository;
+    protected puntoProductoRepository_: typeof puntosProductoRepository;
     protected notificacionService_: NotificacionService
 
     constructor(container) {
@@ -23,6 +26,7 @@ class PedidoService extends TransactionBaseService {
         this.pedidoRepository_ = container.pedidoRepository;
         this.motorizadoRepository_ = container.motorizadoRepository;
         this.inventarioMotorizadoRepository_ = container.inventariomotorizadoRepository;
+        this.puntoProductoRepository_ = container.puntosproductoRepository;
         this.notificacionService_ = container.notificacionService;
     }
 
@@ -74,8 +78,19 @@ class PedidoService extends TransactionBaseService {
     ): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const query = buildQuery({ id }, config);
-        const pedido = await pedidoRepo.findOne(query);
-
+        //const pedido = await pedidoRepo.findOne(query);
+        const pedido = await pedidoRepo.encontrarPorId(id);
+        //for each detalle in pedido.detalles, add puntosProducto if there is
+        if(pedido.detalles){
+            for (let detalle of pedido.detalles){
+                const puntosProducto = await this.puntoProductoRepository_.encontrarPuntosPorProductoActivo(detalle.producto.id);
+                if(puntosProducto){
+                    detalle.producto.cantidadPuntos = puntosProducto.cantidadPuntos;
+                }
+            }
+        }
+        //console.log("Pedido recuperado: ", pedido);
+        //console.log("Pedido recuperado NEW 2: ", pedido);
         if (!pedido) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
         }
@@ -86,13 +101,38 @@ class PedidoService extends TransactionBaseService {
     async recuperarConDetalle(id: string, options: FindConfig<Pedido> = {}): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const relations = ["detalles", "detalles.producto", ...(options.relations || [])];
-        const query = buildQuery({ id }, { relations });
-        const pedido = await pedidoRepo.findOne(query);
-    
+      
+        const queryBuilder = pedidoRepo.createQueryBuilder("pedido")
+          .leftJoinAndSelect("pedido.detalles", "detalle", "detalle.estaActivo = :estaActivo", { estaActivo: true })
+          .leftJoinAndSelect("detalle.producto", "producto")
+          .where("pedido.id = :id", { id });
+      
+        // Add additional relations if specified in options
+        if (options.relations) {
+            const joinedRelations = new Set();
+            for (const relation of options.relations) {
+              if (relation.includes(".")) {
+                const [parent, child] = relation.split(".");
+                const joinAlias = `${parent}_${child}`;
+                if (!joinedRelations.has(joinAlias)) {
+                  queryBuilder.leftJoinAndSelect(`${parent}.${child}`, joinAlias);
+                  joinedRelations.add(joinAlias);
+                }
+              } else {
+                if (!joinedRelations.has(relation)) {
+                  queryBuilder.leftJoinAndSelect(`pedido.${relation}`, relation);
+                  joinedRelations.add(relation);
+                }
+              }
+            }
+          }
+      
+        const pedido = await queryBuilder.getOne();
+      
         if (!pedido) {
-            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+          throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
         }
-    
+      
         return pedido;
     }
     
@@ -238,6 +278,7 @@ class PedidoService extends TransactionBaseService {
             }
             // console.log("Método de pago: ", data.metodosPago);
             Object.assign(pedido, data);
+            delete pedido.pedidosXMetodoPago;
             return await pedidoRepo.save(pedido);
         });
     }
@@ -310,6 +351,17 @@ class PedidoService extends TransactionBaseService {
     async encontrarUltimoCarritoPorUsuarioId(idUsuario: string): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const pedido = await pedidoRepo.encontrarUltimoCarritoPorUsuarioId(idUsuario);
+
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedido;
+    }
+
+    async encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario: string): Promise<Pedido> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedido = await pedidoRepo.encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario);
 
         if (!pedido) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");

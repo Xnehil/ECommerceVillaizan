@@ -2,9 +2,44 @@ import { Text } from "@medusajs/ui"
 import { Region } from "@medusajs/medusa"
 import Thumbnail from "../thumbnail"
 import { Producto } from "types/PaqueteProducto"
-import { useEffect, useState } from "react"
 import { addItem, updateLineItem } from "@modules/cart/actions"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
+import Link from 'next/link'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@components/tooltip";
+
+import InputWithLabel from "@components/inputWithLabel";
+import React, { useEffect, useRef, useState } from "react";
+//ACAA
+//import "@/styles/general.css";
+import { Label } from "@components/label";
+import { Button } from "@components/Button";
+import { Skeleton } from "@components/ui/skeleton";
+import axios from "axios";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@components/ui/alert-dialog";
 
 export default function ProductPreview({
   productPreview,
@@ -37,7 +72,7 @@ export default function ProductPreview({
     if (isAuthenticated) {
       setEstaAutenticado(true)
       //if productPreview tiene promocion, calcular el precio más barato
-      if (productPreview.promocion && productPreview.promocion.porcentajeDescuento) {
+      if (productPreview.promocion && productPreview.promocion.esValido && productPreview.promocion.porcentajeDescuento) {
         const porcentaje = productPreview.promocion.porcentajeDescuento
         const precioDescuento = precioNormal - (precioNormal * porcentaje) / 100
         setCheapestPriceMostrar(precioDescuento)
@@ -48,6 +83,11 @@ export default function ProductPreview({
       }
     } 
   }, [isAuthenticated, productPreview]);
+
+    // Verificar si el producto tiene stock
+    if (productPreview.inventarios[0].stock === 0) {
+      return null
+    }
 
   const handleAddToCart = async () => {
     if (!productPreview?.id) return null
@@ -75,16 +115,16 @@ export default function ProductPreview({
       )
       console.log("Detalle anterior:", detalleAnterior)
       let nuevoDetalle: DetallePedido | null = null
-      console.log("Linea a")
 
       if (detalleAnterior) {
         // Actualizar la cantidad si ya existe en el carrito
         const cantidad = detalleAnterior.cantidad + 1
-        await updateLineItem({
+        const responseUpdateLineItemData = await updateLineItem({
           detallePedidoId: detalleAnterior.id,
           cantidad: cantidad,
           subtotal: detalleAnterior.precio * cantidad,
         })
+        console.log("Respuesta de updateLineItem:", responseUpdateLineItemData)
         nuevoDetalle = {
           ...detalleAnterior,
           cantidad: cantidad,
@@ -220,7 +260,42 @@ export default function ProductPreview({
         size="full"
         isFeatured={isFeatured}
       />
-  
+        {/* Ícono de Información en la esquina superior derecha */}
+        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <Link href={`/producto/${productPreview.id}`}>
+          {/*<button className="bg-white p-1 rounded-full shadow-md hover:bg-gray-100 transition" aria-label="Más información">
+            <img src="/images/boton-de-informacion.png" alt="Información" className="w-5 h-5" />
+          </button>*/}
+          {/* Tooltip */}
+          {isAuthenticated && productPreview.cantidadPuntos ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
+                  i
+                </TooltipTrigger>
+                <TooltipContent className="w-48 h-auto p-2">
+                  <p className="w-full break-words">
+                    Con la compra de este producto, consigues <strong>{`${productPreview.cantidadPuntos}`}</strong> Puntos Canjeables
+                  </p>
+                  <p className="w-full break-words font-bold">Ver Detalles</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
+                  i
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="w-full break-words font-bold">Ver Detalles</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+
+        </Link>
+      </div>
       {/* Botón Agregar, Cantidad, y Remover */}
       {cantidadActual > 0 ? (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center">
@@ -278,25 +353,26 @@ export default function ProductPreview({
       <div className="p-4">
         <div className="flex items-center justify-between">
           <Text
-            className="text-xl font-semibold text-gray-800 truncate"
+            className="text-xl font-semibold text-gray-800 whitespace-normal"
             data-testid="product-title"
           >
             {productPreview.nombre}
           </Text>
           <div className="flex items-center gap-x-2">
-          {cheapestPriceMostrar && (
-            <span className="text-lg font-bold text-yellow-600">
-              {`S/ ${Number(cheapestPriceMostrar).toFixed(2)}`}
-            </span>
-          )}
-          {existeDescuento && precioNormal && (
-            <span className="text-lg text-gray-500 line-through">
-              {`S/ ${Number(precioNormal).toFixed(2)}`}
-            </span>
-          )}
+            {cheapestPriceMostrar && (
+              <span className="text-lg font-bold text-yellow-600" style={{ whiteSpace: 'nowrap' }}>
+                {`S/ ${Number(cheapestPriceMostrar).toFixed(2)}`}
+              </span>
+            )}
+            {existeDescuento && precioNormal && (
+              <span className="text-lg text-gray-500 line-through" style={{ whiteSpace: 'nowrap' }}>
+                {`S/ ${Number(precioNormal).toFixed(2)}`}
+              </span>
+            )}
           </div>
         </div>
       </div>
+
     </div>
   )
   

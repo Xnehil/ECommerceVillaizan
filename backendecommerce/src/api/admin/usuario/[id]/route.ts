@@ -77,6 +77,8 @@ export const GET = async (
             usuario = await usuarioService.recuperar(id);
         }
 
+        //console.log("Usuario: ", usuario);
+
         if (!usuario) {
             return res.status(404).json({ error: "Usuario no encontrado" });
         }

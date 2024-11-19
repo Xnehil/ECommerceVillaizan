@@ -43,7 +43,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const { id } = req.params;
     try {
-        const pedido = await pedidoService.encontrarUltimoCarritoPorUsuarioId(id);
+        const pedido = await pedidoService.encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(id);
         res.json({ pedido });
     } catch (error) {
         res.status(404).json({ error: "Pedido no encontrado" });

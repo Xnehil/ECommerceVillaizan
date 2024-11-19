@@ -4,32 +4,36 @@ import { Button } from "@components/Button"
 import { getCityCookie } from "@modules/store/actions"
 
 interface AddressFormParentProps {
-  nombre: string
-  numeroDni: string
-  ciudad: string
-  telefono: string
-  calle: string // Added prop
-  setCalle: (calle: string) => void // Added prop
-  numeroInterior: string // Added prop
-  referencia: string // Added prop
-  handleNombreChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  handleDniChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  handleTelefonoChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  handleCiudadChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  handleCalleChange: (e: React.ChangeEvent<HTMLInputElement>) => void // Added prop
-  handleNroInteriorChange: (e: React.ChangeEvent<HTMLInputElement>) => void // Added prop
-  handleReferenciaChange: (e: React.ChangeEvent<HTMLInputElement>) => void // Added prop
-  handleClickMapa: () => void // Added prop
-  status: string
-  handleSubmitPadre: () => void
-  dniError?: string | null
-  locationError?: string | null
-  telefonoError?: string | null
+  nombre: string;
+  numeroDni: string;
+  numeroRuc: string; // Nuevo campo para el RUC
+  ciudad: string;
+  telefono: string;
+  calle: string;
+  setCalle: (calle: string) => void;
+  numeroInterior: string;
+  referencia: string;
+  handleNombreChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleDniChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleRucChange: (e: React.ChangeEvent<HTMLInputElement>) => void; // Nueva función para el RUC
+  handleTelefonoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleCiudadChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleCalleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleNroInteriorChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleReferenciaChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleClickMapa: () => void;
+  status: string;
+  handleSubmitPadre: () => void;
+  dniError?: string | null;
+  rucError?: string | null;
+  locationError?: string | null;
+  telefonoError?: string | null;
 }
 
 const AddressFormParent: React.FC<AddressFormParentProps> = ({
   nombre,
   numeroDni,
+  numeroRuc,
   ciudad,
   telefono,
   calle,
@@ -37,6 +41,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
   referencia,
   handleNombreChange,
   handleDniChange,
+  handleRucChange,
   handleTelefonoChange,
   handleCiudadChange,
   handleCalleChange,
@@ -46,14 +51,15 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
   status,
   handleSubmitPadre,
   dniError,
+  rucError,
   locationError,
   telefonoError,
   setCalle,
 }) => {
   const { data: session } = useSession() // Get session data
-  const [dniValidationError, setDniValidationError] = useState<string | null>(
-    null
-  )
+  const [comprobante, setComprobante] = useState<string>(""); 
+  const [dniValidationError, setDniValidationError] = useState<string | null>(null)
+  const [rucValidationError, setRucValidationError] = useState<string | null>(null);
   const [telefonoValidationError, setTelefonoValidationError] = useState<
     string | null
   >(null)
@@ -152,6 +158,10 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
     }
   }, [])
 
+  const handleComprobanteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setComprobante(e.target.value);
+  };
+
   const handleDniBlur = () => {
     if (!numeroDni.trim()) {
       setDniValidationError("Por favor, complete el campo.")
@@ -159,6 +169,14 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
       setDniValidationError(null)
     }
   }
+
+  const handleRucBlur = () => {
+    if (!numeroRuc.trim()) {
+      setRucValidationError("Por favor, complete el campo.");
+    } else {
+      setRucValidationError(null);
+    }
+  };
 
   const handleTelefonoBlur = () => {
     if (!telefono.trim()) {
@@ -229,12 +247,41 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
         </div>
       </div>
 
+      {/* Selección de Comprobante */}
       <div className="flex items-center gap-3">
-        <div className="w-full">
-          <label
-            htmlFor="dni"
-            className="block text-lg font-medium text-gray-700"
-          >
+        <label className="block text-lg font-medium text-gray-700">
+          Selecciona tu comprobante:
+        </label>
+        <div className="flex gap-4">
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="comprobante"
+              value="boleta"
+              checked={comprobante === "boleta"}
+              onChange={handleComprobanteChange}
+              className="mr-2"
+            />
+            Boleta
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="comprobante"
+              value="factura"
+              checked={comprobante === "factura"}
+              onChange={handleComprobanteChange}
+              className="mr-2"
+            />
+            Factura
+          </label>
+        </div>
+      </div>
+
+      {/* Mostrar campo de DNI o RUC basado en la selección */}
+      {comprobante === "boleta" && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor="dni" className="text-lg font-medium text-gray-700">
             DNI <span className="text-red-500">*</span>
           </label>
           <input
@@ -247,12 +294,30 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
             placeholder="12345678"
           />
           {(dniError || dniValidationError) && (
-            <p className="text-red-500 mt-2">
-              {dniError || dniValidationError}
-            </p>
+            <p className="text-red-500 mt-2">{dniError || dniValidationError}</p>
           )}
         </div>
-      </div>
+      )}
+
+      {comprobante === "factura" && (
+        <div className="flex flex-col gap-1">
+          <label htmlFor="ruc" className="block text-lg font-medium text-gray-700">
+            RUC <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="ruc"
+            value={numeroRuc}
+            onChange={handleRucChange}
+            onBlur={handleRucBlur}
+            className="mt-1 block w-full p-2 border rounded-md"
+            placeholder="10XXXXXXXXX"
+          />
+          {(rucError || rucValidationError) && (
+            <p className="text-red-500 mt-2">{rucError || rucValidationError}</p>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center gap-3">
         <img src="/images/telefono.png" alt="Teléfono" className="h-14" />
