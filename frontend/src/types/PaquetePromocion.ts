@@ -7,7 +7,8 @@ export interface Promocion extends EntidadBase {
     titulo: string;
     fechaInicio: Date;
     fechaFin: Date;
-    limiteStock: number;
+    limiteStock: number | null;
     porcentajeDescuento: number;
     esValido: boolean;
+    urlImagen?: string;
 }
