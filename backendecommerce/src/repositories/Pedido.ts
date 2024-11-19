@@ -35,6 +35,27 @@ export const PedidoRepository = dataSource
   
     return queryBuilder.getMany();
     },
+
+    async countByMotorizadoId(id_motorizado: string, estados: string | string[] = []): Promise<number> {
+      const queryBuilder = this.createQueryBuilder("pedido")
+      .leftJoinAndSelect("pedido.direccion", "direccion")
+      .leftJoinAndSelect("direccion.ciudad", "ciudad")
+      .leftJoinAndSelect("direccion.ubicacion", "ubicacion")
+      .leftJoinAndSelect("pedido.usuario", "usuario")
+      .leftJoinAndSelect("pedido.motorizado", "motorizado")
+      .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago")
+      .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
+      .where("motorizado.id = :id_motorizado", { id_motorizado });
+  
+    if (Array.isArray(estados) && estados.length > 0) {
+      queryBuilder.andWhere("pedido.estado IN (:...estados)", { estados });
+    } else if (typeof estados === "string" && estados) {
+      queryBuilder.andWhere("pedido.estado = :estado", { estado: estados });
+    }
+  
+    return queryBuilder.getCount();
+    },
+
     async findByCodigoSeguimiento(codigoSeguimiento: string): Promise<Pedido> {
       return this.createQueryBuilder("pedido")
         .leftJoinAndSelect("pedido.direccion", "direccion")

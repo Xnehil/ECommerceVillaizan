@@ -223,52 +223,10 @@ class PedidoService extends TransactionBaseService {
             console.log(ubicacionesDelivery);
     
             if (asignarRepartidor) {
-                const motorizadoRepo = manager.withRepository(this.motorizadoRepository_);
-    
-                if (ubicacionesDelivery.size > 0) {
-                    let motorizadoAsignado = null;
-                    console.log("Recorriendo motorizados");
-                    for (const motorizadoId of ubicacionesDelivery.keys()) {
-                        const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
-                        console.log("Motorizado con id: ", motorizadoId);
-                        if (dataMotorizado) {
-                            console.log("Motorizado encontrado: ");
-                            console.log("Verificando stock");
-                            const hasStock = await this.checkPedido(pedido, dataMotorizado);
-                            // const mismaCiudad = dataMotorizado.ciudad.id === pedido.direccion.ciudad.id;
-                            console.log("Stock: ", hasStock);
-                            if (hasStock || true ) { //Eliminar el true para que se verifique el stock
-                                console.log("Motorizado con stock encontrado");
-                                motorizadoAsignado = dataMotorizado;
-                                tienestock = true;
-                                break;
-                            }
-                        }
-                    }
-    
-                    if (motorizadoAsignado) {
-                        data.motorizado = motorizadoAsignado;
-                        data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3)+(new Date()).getTime().toString().slice(-3);
-                        console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
-                        enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
-                        enviarMensajeAdmins("nuevoPedido", id);
-                        let nuevaNoti = new Notificacion();
-                        nuevaNoti.asunto = "Nuevo pedido";
-                        nuevaNoti.descripcion = "El pedido " + id + " está pendiente de confirmación";
-                        nuevaNoti.tipoNotificacion = "pedido";
-                        nuevaNoti.sistema = "ecommerceAdmin";
-                        nuevaNoti.leido = false;
-                        try {
-                            await this.notificacionService_.crear(nuevaNoti);
-                        }
-                        catch (error) {
-                            console.error("Error al crear notificación", error);
-                        }
-                    } else {
-                        throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
-                    }
-                } else {
-                    throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles");
+                const data = await this.asignarRepartidor(manager, pedido, id);
+                if (data) {
+                    pedido.motorizado = data.motorizado;
+                    pedido.codigoSeguimiento = data.codigoSeguimiento;
                 }
             }
 
@@ -304,6 +262,86 @@ class PedidoService extends TransactionBaseService {
             return await pedidoRepo.save(pedido);
         });
     }
+
+    async asignarRepartidor(manager, pedido, id, algoritmo=false) {
+        const motorizadoRepo = manager.withRepository(this.motorizadoRepository_);
+        let repartidoresAConsiderar = ubicacionesDelivery;
+
+        
+        if(algoritmo){
+            const latPedido = pedido.direccion.latitud;
+            const lonPedido = pedido.direccion.longitud;
+    
+            // Collect distances and counts
+            const distancesAndCounts = await Promise.all([...ubicacionesDelivery.entries()].map(async ([motorizadoId, motorizado]) => {
+                const lat = motorizado.lat;
+                const lon = motorizado.lng;
+                const distancia = this.haversineDistance(latPedido, lonPedido, lat, lon);
+                if (distancia > 15) {
+                    return { motorizadoId, distancia, pedidos: 0 };
+                }
+                const pedidos = await this.pedidoRepository_.countByMotorizadoId(motorizadoId, ["solicitado", "enProgreso"]);
+                return { motorizadoId, distancia, pedidos };
+            }));
+    
+            // Sort by distance and count
+            const ubicacionesDeliveryOrdenadas = new Map(distancesAndCounts.sort((a, b) => {
+                if (Math.abs(a.distancia - b.distancia) < 1) {
+                    return a.pedidos - b.pedidos;
+                }
+                return a.distancia - b.distancia;
+            }).map(item => [item.motorizadoId, ubicacionesDelivery.get(item.motorizadoId)]));
+
+            repartidoresAConsiderar = ubicacionesDeliveryOrdenadas;
+        }
+        
+    
+        if (repartidoresAConsiderar.size > 0) {
+            let motorizadoAsignado = null;
+            console.log("Recorriendo motorizados");
+            for (const motorizadoId of repartidoresAConsiderar.keys()) {
+                const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
+                console.log("Motorizado con id: ", motorizadoId);
+                if (dataMotorizado) {
+                    console.log("Motorizado encontrado: ");
+                    console.log("Verificando stock");
+                    const hasStock = await this.checkPedido(pedido, dataMotorizado);
+                    console.log("Stock: ", hasStock);
+                    if (hasStock || true) { //Eliminar el true para que se verifique el stock
+                        console.log("Motorizado con stock encontrado");
+                        motorizadoAsignado = dataMotorizado;
+                        break;
+                    }
+                }
+            }
+    
+            if (motorizadoAsignado) {
+                const data: { motorizado: Motorizado; codigoSeguimiento: string } = { motorizado: null, codigoSeguimiento: "" };
+                data.motorizado = motorizadoAsignado;
+                data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3) + (new Date()).getTime().toString().slice(-3);
+                console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
+                enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
+                enviarMensajeAdmins("nuevoPedido", id);
+                let nuevaNoti = new Notificacion();
+                nuevaNoti.asunto = "Nuevo pedido";
+                nuevaNoti.descripcion = "El pedido " + id + " está pendiente de confirmación";
+                nuevaNoti.tipoNotificacion = "pedido";
+                nuevaNoti.sistema = "ecommerceAdmin";
+                nuevaNoti.leido = false;
+                try {
+                    await this.notificacionService_.crear(nuevaNoti);
+                } catch (error) {
+                    console.error("Error al crear notificación", error);
+                }
+                return data;
+            } else {
+                throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
+            }
+        } else {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles");
+        }
+    }
+    
 
     async confirmar(id: string): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
@@ -419,6 +457,19 @@ class PedidoService extends TransactionBaseService {
         }
 
         return pedido;
+    }
+
+    haversineDistance(lat1, lon1, lat2, lon2) {
+        const toRad = (value) => (value * Math.PI) / 180;
+        const R = 6371; // Radius of the Earth in kilometers
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = 
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in kilometers
     }
 
 }
