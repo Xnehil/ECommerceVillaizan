@@ -12,10 +12,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@components/tooltip";
+import ButtonWhatsApp from '@components/ButtonWhatsApp';
 
 const Promotions = () => {
   const [promociones, setPromociones] = useState<Promocion[]>([]);
   const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+  const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const fetchPromotions = async () => {
@@ -24,6 +27,8 @@ const Promotions = () => {
         setPromociones(response.data.promociones);
       } catch (error) {
         console.error("Error fetching promotions:", error);
+        setErrorMessage('Error al cargar las promociones. Intente de nuevo más tarde.');
+        setIsErrorPopupVisible(true);
       }
     };
 
@@ -31,6 +36,24 @@ const Promotions = () => {
   }, [baseUrl]);
 
   return (
+    <>
+    {/* Error Popup */}
+    {isErrorPopupVisible && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-md shadow-md text-center">
+            <p className="text-black-600 mb-4">{errorMessage}</p>
+            <button
+              style={styles.confirmButton}
+              onClick={() => {
+                setIsErrorPopupVisible(false); // Hide popup
+                window.location.href = "/";
+              }}
+            >
+              Volver al Inicio
+            </button>
+          </div>
+        </div>
+      )}
     <div className="py-12 text-center bg-white">
       {promociones.length > 0 && (
         <>
@@ -148,8 +171,29 @@ const Promotions = () => {
         </>
       )}
     </div>
+    </>
   );  
   
 };
+
+const styles = {
+  confirmButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    border: 'none',
+    cursor: 'pointer',
+    backgroundColor: 'black',
+    color: 'white',
+  },
+  cancelButton: {
+    padding: '10px 20px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    backgroundColor: 'white',
+    color: 'red',
+  },
+};
+
+
 
 export default Promotions;
