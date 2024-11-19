@@ -193,6 +193,8 @@ class ProductoService extends TransactionBaseService {
           await productoRepo.update({ id }, { estaActivo: false , desactivadoEn: new Date() });
         });
       }
+
+      
 }
 
 export default ProductoService;
