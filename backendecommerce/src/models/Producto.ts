@@ -89,6 +89,8 @@ export class Producto extends EntidadBase {
   @JoinColumn({ name: 'id_ciudad' })
   ciudad: Ciudad;*/
 
+    cantidadPuntos?: number;
+
     @BeforeInsert()
     private beforeInsert() {
         this.id = generateEntityId(this.id, "prod")

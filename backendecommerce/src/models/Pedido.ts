@@ -18,6 +18,7 @@ import { Direccion } from "./Direccion";
 import { DetallePedido } from "./DetallePedido";
 import { Usuario } from "./Usuario";
 import { Pago } from "./Pago";
+import { PedidoXMetodoPago } from "./PedidoXMetodoPago";
 
 @Entity("vi_pedido")
 export class Pedido extends EntidadBase {
@@ -76,21 +77,20 @@ export class Pedido extends EntidadBase {
     @JoinColumn({ name: "id_usuario" })
     usuario: Usuario;
 
-    @ManyToMany(() => MetodoPago, metodoPago => metodoPago.pedidos)
-    @JoinTable(
-        {
-            name: "vi_pedido_metodopago",
-            joinColumn: { name: "id_pedido", referencedColumnName: "id" },
-            inverseJoinColumn: { name: "id_metodopago", referencedColumnName: "id" }
-        }
-    )
-    metodosPago: MetodoPago[];
+    @OneToMany(() => PedidoXMetodoPago, pedidoXMetodoPago => pedidoXMetodoPago.pedido, {eager: true})
+    pedidosXMetodoPago: PedidoXMetodoPago[];
 
     @OneToMany(() => DetallePedido, detallePedido => detallePedido.pedido, {eager: true})
     detalles: DetallePedido[];
 
     @OneToMany(() => Pago, pago => pago.pedido)
     pagos: Pago[];
+
+    @Column({ type: "boolean", nullable: false, default: false, name: "pagado" })
+    pagado : boolean;
+
+    @Column({ type: "timestamp", nullable: true, name: "pagadoen" })
+    pagadoEn: Date;
 
 
     @BeforeInsert()

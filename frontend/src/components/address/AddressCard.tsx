@@ -24,25 +24,46 @@ const AddressCard: React.FC<AddressCardProps> = ({ direccion, onEdit, onDelete, 
   };
 
   return (
-    <div style={{ 
-      border: showBorder ? '1px solid grey' : 'none', 
-      borderRadius: '10px', 
-      marginBottom: '10px', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'space-between', 
-      ...getSizeStyles() 
+    <div style={{
+      border: showBorder ? '1px solid grey' : 'none',
+      borderRadius: '10px',
+      marginBottom: '10px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      ...getSizeStyles()
     }}>
-      <div>
-        <p>{`${direccion.nombre ?? ''}${direccion.nombre ? ' | ' : ''}${direccion.calle ?? ''}${direccion.calle ? ' ' : ''}${direccion.numeroExterior ?? ''}${direccion.numeroExterior ? ' ' : ''}${direccion.numeroInterior ? '(' : ''}${direccion.numeroInterior ?? ''}${direccion.numeroInterior ? ') ' : ''}${direccion.ciudad?.nombre ? `, ${direccion.ciudad.nombre}` : ''}`.trim().replace(/,\s*$/, '')}</p>
+      {/* First div with 65% width */}
+      <div style={{ flexBasis: '70%', paddingRight: '10px' }}>
+        <p>
+          {`${direccion.nombre ?? ''}${direccion.nombre ? ' | ' : ''}${direccion.calle ?? ''}${direccion.calle ? ' ' : ''}${direccion.numeroExterior ?? ''}${direccion.numeroExterior ? ' ' : ''}${direccion.numeroInterior ? '(' : ''}${direccion.numeroInterior ?? ''}${direccion.numeroInterior ? ') ' : ''}${direccion.ciudad?.nombre ? `, ${direccion.ciudad.nombre}` : ''}`
+            .trim()
+            .replace(/,\s*$/, '')}
+        </p>
         {direccion.referencia && <p style={{ color: 'grey' }}>{direccion.referencia}</p>}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <button onClick={onEdit} style={{ color: 'blue', background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px' }}>Editar Informacion</button>
-        <img src="/images/ant-design_delete-filled.png" alt="Delete" onClick={onDelete} style={{ cursor: 'pointer' }} />
+  
+      {/* Second div with 35% width */}
+      <div style={{ flexBasis: '30%', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <button onClick={onEdit} style={{
+          color: 'blue',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          marginRight: '10px'
+        }}>
+          Editar Informacion
+        </button>
+        <img
+          src="/images/ant-design_delete-filled.png"
+          alt="Delete"
+          onClick={onDelete}
+          style={{ cursor: 'pointer' }}
+        />
       </div>
     </div>
   );
+  
 };
 
 export default AddressCard;

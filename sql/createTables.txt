@@ -81,6 +81,7 @@ CREATE TABLE vi_usuario (
     apellido VARCHAR(100) NOT NULL,
     concuenta BOOLEAN NOT NULL,
     numerotelefono VARCHAR(15),
+	puntosacumulados INTEGER,
     correo VARCHAR(150) NOT NULL UNIQUE,
     contrasena VARCHAR(255) NOT NULL,
     fechaultimologin TIMESTAMP,
@@ -549,9 +550,11 @@ CREATE TABLE vi_venta (
 );
 
 CREATE TABLE vi_pedido_metodopago (
+	id VARCHAR(50),
 	id_pedido VARCHAR(50),
 	id_metodopago VARCHAR(50),
-	PRIMARY KEY(id_pedido, id_metodopago),
+	monto DECIMAL(10, 2),
+	PRIMARY KEY(id),
 	CONSTRAINT fk_pedido FOREIGN KEY (id_pedido) REFERENCES vi_pedido(id),
 	CONSTRAINT fk_metodopago FOREIGN KEY (id_metodopago) REFERENCES vi_metodopago(id),
 	--trazabilidad

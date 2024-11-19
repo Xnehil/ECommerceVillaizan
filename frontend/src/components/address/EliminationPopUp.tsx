@@ -31,11 +31,11 @@ const EliminationPopUp: React.FC<EliminationPopUpProps> = ({ isOpen, onConfirm, 
       }}>
         <p style={{ marginBottom: '20px' }}>¿Estás seguro de eliminar esta dirección?</p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-          <button type="button" onClick={onConfirm} style={styles.confirmButton}>
-            Confirmar
-          </button>
           <button type="button" onClick={onClose} style={styles.cancelButton}>
             Cancelar
+          </button>
+          <button type="button" onClick={onConfirm} style={styles.confirmButton}>
+            Confirmar
           </button>
         </div>
       </div>

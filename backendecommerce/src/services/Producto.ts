@@ -3,13 +3,17 @@ import { Producto } from "../models/Producto";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils"
 import ProductoRepository from "src/repositories/Producto";
+import PuntosProductoRepository from "src/repositories/PuntosProducto";
+import { PuntosProducto } from "@models/PuntosProducto";
 
 class ProductoService extends TransactionBaseService {
     protected productoRepository_: typeof ProductoRepository;
+    protected puntosProductoRepository_: typeof PuntosProductoRepository;
 
     constructor(container){
         super(container);
         this.productoRepository_ = container.productoRepository;
+        this.puntosProductoRepository_ = container.puntosproductoRepository;
     }
 
 
@@ -117,15 +121,22 @@ class ProductoService extends TransactionBaseService {
         //use productoRepo.findProductosWithInventariosByCiudad(ciudadId)
         const productoRepo = this.activeManager_.withRepository(this.productoRepository_);
         const productos = await productoRepo.findProductosWithInventariosByCiudad(ciudadId);
+        const puntosProductoRepo = this.activeManager_.withRepository(this.puntosProductoRepository_);
         if (!productos || productos.length === 0) {
             throw new MedusaError(MedusaError.Types.NOT_FOUND, "No se encontraron productos");
         }
         //revisar que la promocion de cada producto este activa
-        productos.forEach(producto => {
+        await Promise.all(productos.map(async producto => {
           if (producto.promocion && (producto.promocion.estaActivo === false || producto.promocion.esValido === false)) {
             producto.promocion = null;
           }
-        });
+          // Revisa si el producto tiene puntos
+          const puntosProducto: PuntosProducto = await puntosProductoRepo.encontrarPuntosPorProductoActivo(producto.id);
+          if (puntosProducto) {
+            producto.cantidadPuntos = puntosProducto.cantidadPuntos;
+          }
+        }));
+
         //ordenar productos alfabeticamente y los que no tengan inventario al final
         productos.sort((a, b) => {
           const stockA = a.inventarios.reduce((acc, inv) => acc + inv.stock, 0);
@@ -182,6 +193,8 @@ class ProductoService extends TransactionBaseService {
           await productoRepo.update({ id }, { estaActivo: false , desactivadoEn: new Date() });
         });
       }
+
+      
 }
 
 export default ProductoService;

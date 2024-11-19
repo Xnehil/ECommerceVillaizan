@@ -1,4 +1,5 @@
 "use client";
+import ButtonWhatsApp from "@components/ButtonWhatsApp";
 import React, { useState } from "react";
 
 export default function LibrodeReclamaciones() {
@@ -22,6 +23,12 @@ export default function LibrodeReclamaciones() {
           este establecimiento cuenta con un Libro de Reclamaciones a tu disposición. Registra la queja o reclamo aquí.
         </p>
         <p className="text-blue-700 underline cursor-pointer">Al presentar tu reclamo autorizas el tratamiento de sus datos personales</p>
+        <p className="text-gray-600">
+          Como alternativa, puedes comunicarte con nosotros a través de nuestro número de WhatsApp.
+        </p>
+      </div>
+      <div className="flex justify-center">
+        <ButtonWhatsApp nombreConsumidor={null} codigoSeguimiento={null} />
       </div>
 
       <div className="bg-gray-100 p-4 rounded-lg mb-4">

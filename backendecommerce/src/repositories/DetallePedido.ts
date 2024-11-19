@@ -13,6 +13,14 @@ export const DetallePedidoRepository = dataSource
         .andWhere("pedido.estado = :estado", { estado: "carrito" })
         .getMany();
     },
+    async encontrarPorId(id: string): Promise<DetallePedido> {
+      return this.createQueryBuilder("detallePedido")
+        .leftJoinAndSelect("detallePedido.pedido", "pedido")
+        .leftJoinAndSelect("detallePedido.promocion", "promocion")
+        .leftJoinAndSelect("detallePedido.producto", "producto")
+        .where("detallePedido.id = :id", { id })
+        .getOne();
+    }
   })
 
 export default DetallePedidoRepository
