@@ -35,6 +35,7 @@ const Promotions = () => {
       {promociones.length > 0 && (
         <>
           <h2 className="text-3xl font-bold mb-8">Disfruta de nuestras promociones</h2>
+          <p className="text-lg mb-6 text-gray-600">Recuerda que las promociones solo son válidas para usuarios registrados</p>
           <div className="relative max-w-4xl mx-auto">
             <Swiper
               spaceBetween={1}
@@ -42,51 +43,67 @@ const Promotions = () => {
               loop={true}
               modules={[Navigation, Autoplay]} // Enable navigation and autoplay
               autoplay={{
-                delay: 10000, // Auto-slide every 5 seconds
+                delay: 8000, // Auto-slide every 8 seconds
                 disableOnInteraction: false, // Keep sliding even after user interaction
               }}
               navigation={true} // Enable Swiper's built-in navigation
               className="overflow-hidden"
             >
-              {promociones.map((promocion, index) => (
-                <SwiperSlide key={index} className="flex flex-col items-center">
-                  <div className="flex flex-col items-center space-y-1 group">
-                    {/* Image Thumbnail with Tooltip on Hover */}
-                    <div className="w-48 h-48 relative">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger className="w-full h-full absolute top-0 left-0 cursor-pointer">
-                            {/* Tooltip Trigger is now on the image */}
-                            <div className="w-full h-full">
-                              {promocion.urlImagen ? (
-                                <Thumbnail
-                                  thumbnail={promocion.urlImagen}
-                                  size="square"
-                                  className="border-2 border-gray-300 rounded-lg shadow-md w-full h-full"
-                                  isFeatured={true}
-                                  data-testid={`promocion-${index}`}
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-100 border-2 border-gray-300 rounded-lg shadow-md flex items-center justify-center">
-                                  <span className="text-gray-500 text-sm">Sin Imagen</span>
-                                </div>
-                              )}
-                            </div>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="w-full break-words font-bold">
-                              {promocion.textoInfo || "No hay detalles de la promoción en estos momentos, por favor, intente nuevamente más tarde."}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
+              {promociones.map((promocion, index) => {
+                const descuento = promocion.porcentajeDescuento;
   
-                    {/* Title, no tooltip trigger here */}
-                    <h3 className="text-lg font-semibold text-center mt-4">{promocion.titulo}</h3>
-                  </div>
-                </SwiperSlide>
-              ))}
+                // Ensure descuento is a valid number and display only the integer part
+                const formattedDescuento = descuento
+                  ? Math.floor(descuento) // Remove decimals
+                  : 0; // Default to 0 if no descuento
+  
+                return (
+                  <SwiperSlide key={index} className="flex flex-col items-center">
+                    <div className="relative flex flex-col items-center space-y-1 group">
+                      {/* Image Thumbnail with Tooltip on Hover */}
+                      <div className="w-48 h-48 relative">
+                        {/* Discount Percentage Badge */}
+                        {descuento > 0 && (
+                          <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-lg z-10">
+                          -{Math.floor(Math.abs(descuento))}%
+                        </div>
+                        )}
+  
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger className="w-full h-full absolute top-0 left-0 cursor-pointer">
+                              {/* Tooltip Trigger is now on the image */}
+                              <div className="w-full h-full">
+                                {promocion.urlImagen ? (
+                                  <Thumbnail
+                                    thumbnail={promocion.urlImagen}
+                                    size="square"
+                                    className="border-2 border-gray-300 rounded-lg shadow-md w-full h-full"
+                                    isFeatured={true}
+                                    data-testid={`promocion-${index}`}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gray-100 border-2 border-gray-300 rounded-lg shadow-md flex items-center justify-center">
+                                    <span className="text-gray-500 text-sm">Sin Imagen</span>
+                                  </div>
+                                )}
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="w-full break-words font-bold">
+                                {promocion.textoInfo || "No hay detalles de la promoción en estos momentos, por favor, intente nuevamente más tarde."}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+  
+                      {/* Title */}
+                      <h3 className="text-lg font-semibold text-center mt-4">{promocion.titulo}</h3>
+                    </div>
+                  </SwiperSlide>
+                );
+              })}
             </Swiper>
   
             {/* Custom style to override the default Swiper arrow styles */}
@@ -130,7 +147,8 @@ const Promotions = () => {
         </>
       )}
     </div>
-  );
+  );  
+  
 };
 
 export default Promotions;
