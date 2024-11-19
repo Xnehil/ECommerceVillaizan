@@ -11,4 +11,5 @@ export interface Promocion extends EntidadBase {
     porcentajeDescuento: number;
     esValido: boolean;
     urlImagen?: string;
+    textoInfo?: string;
 }
