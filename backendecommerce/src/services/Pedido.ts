@@ -176,16 +176,34 @@ class PedidoService extends TransactionBaseService {
     }
 
     async reduceStock(pedido: Pedido, motorizado: Motorizado): Promise<void> {
-        const invetarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);
-        
+        const invetarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);        
         const inventarios: InventarioMotorizado[] = await invetarioMotorizadoRepo.findByMotorizadoId(motorizado.id);
         
         // Iterate each pedido detail and reduce the stock
         for (const detalle of pedido.detalles) {
-            const inventario = inventarios.find((inv) => inv.producto.id === detalle.producto.id);
-            if (inventario) {
-                inventario.stock -= detalle.cantidad;
-                await invetarioMotorizadoRepo.save(inventario);
+            try{
+                const inventario = inventarios.find((inv) => inv.producto.id === detalle.producto.id);
+                if (inventario) {
+                    inventario.stock -= detalle.cantidad;
+                    await invetarioMotorizadoRepo.save(inventario);
+                    if(inventario.stock < inventario.producto.stockSeguridad*2){
+                        let nuevaNoti = new Notificacion();
+                        nuevaNoti.asunto = "Stock bajo";
+                        nuevaNoti.descripcion = "El producto " + inventario.producto.nombre + " tiene un stock menor a " + inventario.producto.stockSeguridad*2 + " unidades";
+                        nuevaNoti.tipoNotificacion = "stockBajo";
+                        nuevaNoti.sistema = "ecommerceAdmin";
+                        nuevaNoti.leido = false;
+                        try {
+                            await this.notificacionService_.crear(nuevaNoti);
+                            enviarMensajeAdmins("stockBajo", "El producto " + inventario.producto.nombre + " tiene un stock menor a " + inventario.producto.stockSeguridad*2 + " unidades en el motorizado " + inventario.motorizado.usuario.nombre);
+                        }
+                        catch (error) {
+                            console.error("Error al crear notificación", error);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error al reducir stock", error);
             }
         }
     }
@@ -197,66 +215,18 @@ class PedidoService extends TransactionBaseService {
     ): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
-            const relations = asignarRepartidor ? ["motorizado", "direccion"] : [];
+            const relations = asignarRepartidor ? ["motorizado", "direccion", "direccion.ubicacion"] : ["motorizado"];
             const pedido = await this.recuperarConDetalle(id, { relations });
-            let tienestock : boolean = false;
-
-            //log ubicacionesDelivery
-            console.log(ubicacionesDelivery);
-    
+            
+            
             if (asignarRepartidor) {
-                const motorizadoRepo = manager.withRepository(this.motorizadoRepository_);
-    
-                if (ubicacionesDelivery.size > 0) {
-                    let motorizadoAsignado = null;
-                    console.log("Recorriendo motorizados");
-                    for (const motorizadoId of ubicacionesDelivery.keys()) {
-                        const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
-                        console.log("Motorizado con id: ", motorizadoId);
-                        if (dataMotorizado) {
-                            console.log("Motorizado encontrado: ");
-                            console.log("Verificando stock");
-                            const hasStock = await this.checkPedido(pedido, dataMotorizado);
-                            // const mismaCiudad = dataMotorizado.ciudad.id === pedido.direccion.ciudad.id;
-                            console.log("Stock: ", hasStock);
-                            if (hasStock || true ) { //Eliminar el true para que se verifique el stock
-                                console.log("Motorizado con stock encontrado");
-                                motorizadoAsignado = dataMotorizado;
-                                tienestock = true;
-                                break;
-                            }
-                        }
-                    }
-    
-                    if (motorizadoAsignado) {
-                        data.motorizado = motorizadoAsignado;
-                        try {
-                            this.reduceStock(pedido, motorizadoAsignado);
-                        } catch (error) {
-                            console.error("Error al reducir stock, se continúa para la demo", error);
-                            // throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
-                        }
-                        data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3)+(new Date()).getTime().toString().slice(-3);
-                        console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
-                        enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
-                        enviarMensajeAdmins("nuevoPedido", id);
-                        let nuevaNoti = new Notificacion();
-                        nuevaNoti.asunto = "Nuevo pedido";
-                        nuevaNoti.descripcion = "El pedido " + id + " está pendiente de confirmación";
-                        nuevaNoti.tipoNotificacion = "pedido";
-                        nuevaNoti.sistema = "ecommerceAdmin";
-                        nuevaNoti.leido = false;
-                        try {
-                            await this.notificacionService_.crear(nuevaNoti);
-                        }
-                        catch (error) {
-                            console.error("Error al crear notificación", error);
-                        }
-                    } else {
-                        throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
-                    }
-                } else {
-                    throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles");
+                // console.log("Pedido fetcheado", pedido);
+                data.direccion = pedido.direccion;
+                const dataRepartidor = await this.asignarRepartidor(manager, data, id, true);
+                // console.log("Data de asignación de repartidor: ", dataRepartidor);
+                if (dataRepartidor) {
+                    data.motorizado = dataRepartidor.motorizado;
+                    data.codigoSeguimiento = dataRepartidor.codigoSeguimiento;
                 }
             }
 
@@ -268,6 +238,13 @@ class PedidoService extends TransactionBaseService {
                 if (data.estado === "verificado") {
                     data.verificadoEn = new Date();
                     estadoPedidos.set(id, "verificado");
+                    try {
+                        // console.log("Verificando stock con motorizado: ", pedido.motorizado);
+                        this.reduceStock(pedido, pedido.motorizado);
+                    } catch (error) {
+                        console.error("Error al reducir stock, se continúa para la demo", error);
+                        // throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
+                    }
                 }
                 if (data.estado === "solicitado") {
                     data.solicitadoEn = new Date();
@@ -276,12 +253,98 @@ class PedidoService extends TransactionBaseService {
                     estadoPedidos.set(id, "enProgreso");
                 }
             }
-            // console.log("Método de pago: ", data.metodosPago);
+            if (data.pagado) {
+                data.pagadoEn = new Date();
+            }
+            // console.log("Motorizado final: ", data.motorizado);
             Object.assign(pedido, data);
             delete pedido.pedidosXMetodoPago;
             return await pedidoRepo.save(pedido);
         });
     }
+
+    async asignarRepartidor(manager, pedido, id, algoritmo=false) {
+        const motorizadoRepo = manager.withRepository(this.motorizadoRepository_);
+        let repartidoresAConsiderar = ubicacionesDelivery;
+
+        
+        if(algoritmo){
+            // console.log("Algoritmo de asignación de repartidor");
+            const latPedido = pedido.direccion.ubicacion.latitud;
+            const lonPedido = pedido.direccion.ubicacion.longitud;
+            // console.log("Ubicación del pedido: ", latPedido, lonPedido);
+            // Collect distances and counts
+            const distancesAndCounts = await Promise.all([...ubicacionesDelivery.entries()].map(async ([motorizadoId, motorizado]) => {
+                const lat = motorizado.lat;
+                const lon = motorizado.lng;
+                const distancia = this.haversineDistance(latPedido, lonPedido, lat, lon);
+                if (distancia > 15) {
+                    return { motorizadoId, distancia, pedidos: 0 };
+                }
+                const pedidos = await this.pedidoRepository_.countByMotorizadoId(motorizadoId, ["solicitado", "enProgreso"]);
+                console.log("Distancia: ", distancia + " . Se cuentan " + pedidos + " pedidos");
+                return { motorizadoId, distancia, pedidos };
+            }));
+    
+            // Sort by distance and count
+            const ubicacionesDeliveryOrdenadas = new Map(distancesAndCounts.sort((a, b) => {
+                if (Math.abs(a.distancia - b.distancia) < 1) {
+                    return a.pedidos - b.pedidos;
+                }
+                return a.distancia - b.distancia;
+            }).map(item => [item.motorizadoId, ubicacionesDelivery.get(item.motorizadoId)]));
+
+            repartidoresAConsiderar = ubicacionesDeliveryOrdenadas;
+            console.log("Repartidores a considerar: ", repartidoresAConsiderar);
+        }
+        
+    
+        if (repartidoresAConsiderar.size > 0) {
+            let motorizadoAsignado = null;
+            // console.log("Recorriendo motorizados");
+            for (const motorizadoId of repartidoresAConsiderar.keys()) {
+                const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
+                // console.log("Motorizado con id: ", motorizadoId);
+                if (dataMotorizado) {
+                    // console.log("Motorizado encontrado: ");
+                    // console.log("Verificando stock");
+                    const hasStock = await this.checkPedido(pedido, dataMotorizado);
+                    // console.log("Stock: ", hasStock);
+                    if (hasStock || true) { //Eliminar el true para que se verifique el stock
+                        console.log("Motorizado con stock encontrado: ", dataMotorizado);
+                        motorizadoAsignado = dataMotorizado;
+                        break;
+                    }
+                }
+            }
+    
+            if (motorizadoAsignado) {
+                const data: { motorizado: Motorizado; codigoSeguimiento: string } = { motorizado: null, codigoSeguimiento: "" };
+                data.motorizado = motorizadoAsignado;
+                data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3) + (new Date()).getTime().toString().slice(-3);
+                // console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
+                enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
+                enviarMensajeAdmins("nuevoPedido", id);
+                let nuevaNoti = new Notificacion();
+                nuevaNoti.asunto = "Nuevo pedido";
+                nuevaNoti.descripcion = "El pedido " + id + " está pendiente de confirmación";
+                nuevaNoti.tipoNotificacion = "pedido";
+                nuevaNoti.sistema = "ecommerceAdmin";
+                nuevaNoti.leido = false;
+                try {
+                    await this.notificacionService_.crear(nuevaNoti);
+                } catch (error) {
+                    console.error("Error al crear notificación", error);
+                }
+                return data;
+            } else {
+                throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
+            }
+        } else {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles");
+        }
+    }
+    
 
     async confirmar(id: string): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
@@ -359,6 +422,35 @@ class PedidoService extends TransactionBaseService {
         return pedido;
     }
 
+    async encontrarPorUsuarioId(idUsuario: string, selector: Selector<Pedido> = {}): Promise<Pedido[]> {
+        const finalSelector: any = selector || {};
+        const relations = ["motorizado", "direccion", "direccion.ciudad"];
+    
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const query = pedidoRepo.createQueryBuilder("pedido")
+            .leftJoinAndSelect("pedido.motorizado", "motorizado")
+            .leftJoinAndSelect("pedido.direccion", "direccion")
+            .leftJoinAndSelect("direccion.ciudad", "ciudad")
+            .where("pedido.usuario.id = :idUsuario", { idUsuario });
+    
+        if (Array.isArray(finalSelector.estado) && finalSelector.estado.length > 0) {
+            query.andWhere("pedido.estado IN (:...estados)", { estados: finalSelector.estado });
+        } else if (finalSelector.estado) {
+            if (finalSelector.estado === '!= carrito') {
+                query.andWhere("pedido.estado != :estado", { estado: 'carrito' });
+            } else {
+                query.andWhere("pedido.estado = :estado", { estado: finalSelector.estado });
+            }
+        }
+        // console.log(query.getSql(), query.getParameters()); // Log the query and parameters for debugging
+
+        const pedidos = await query.getMany();
+    
+        if (!pedidos) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedidos no encontrados");
+        }
+       return pedidos;
+    }
     async encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario: string): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const pedido = await pedidoRepo.encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario);
@@ -368,6 +460,19 @@ class PedidoService extends TransactionBaseService {
         }
 
         return pedido;
+    }
+
+    haversineDistance(lat1, lon1, lat2, lon2) {
+        const toRad = (value) => (value * Math.PI) / 180;
+        const R = 6371; // Radius of the Earth in kilometers
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = 
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in kilometers
     }
 
 }

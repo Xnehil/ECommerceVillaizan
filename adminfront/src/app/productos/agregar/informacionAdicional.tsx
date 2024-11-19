@@ -8,6 +8,8 @@ import "@/styles/general.css";
 import { Producto, Subcategoria, TipoProducto } from "@/types/PaqueteProducto";
 import { Skeleton } from "@/components/ui/skeleton";
 import axios from "axios";
+import InputWithLabel from "@/components/forms/inputWithLabel";
+import { toast } from "@/hooks/use-toast";
 
 interface InformacionAdicionalProps {
   producto: MutableRefObject<Producto>;
@@ -24,6 +26,8 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
   const [descripcion, setDescripcion] = useState<string>(
     producto.current.informacionNutricional || ""
   );
+
+  const [stockSeguridad, setStockSeguridad] = useState<number>(producto.current.stockSeguridad || 0);
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -124,6 +128,20 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
     // console.log(producto.current);
   };
 
+  const handleStockSeguridadChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(event.target.value);
+    if (event.target.value === "" || value < 0 || value >= 250 || !Number.isInteger(value)) {
+      setStockSeguridad(0);
+      producto.current.stockSeguridad = 0;
+      toast({
+        variant: "destructive",
+        description: "El stock de seguridad debe ser un número entero entre 0 y 250",
+      });
+    }
+    setStockSeguridad(value);
+    producto.current.stockSeguridad = value;
+};
+
   return (
     <div className="info-side-container">
       <h5>Información adicional</h5>
@@ -170,6 +188,14 @@ const InformacionAdicional: React.FC<InformacionAdicionalProps> = ({
         onChange={handleNutritionalInfoChange}
         disabled={!isEditing}
         value={descripcion}
+      />
+      <InputWithLabel
+        label="Stock de seguridad"
+        type="number"
+        onChange={handleStockSeguridadChange}
+        disabled={!isEditing}
+        value={stockSeguridad.toString()}
+        tooltip="Cantidad mínima  que los motorizados deben tener en su vehículo. Se enviará una notificación cuando el stock del producto sea menor a tres veces el stock de seguridad."
       />
     </div>
   );

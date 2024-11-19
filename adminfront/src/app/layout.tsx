@@ -45,7 +45,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
           if (usuario && usuario.rol && usuario.rol.nombre === "Administrador") {
             setIsAuthenticated(true);
             setIsAdmin(true);
-            console.log("User is authenticated and has admin role");
+            // console.log("User is authenticated and has admin role");
           } else {
             // If not an admin, redirect to login
             console.log("User is not an admin");
@@ -83,6 +83,20 @@ const mapearMensaje = (tipo: string, router: any, data: any) => {
         button: "Ver pedidos",
       };
       break;
+    case "stockBajo":
+      dataBonita = {
+        type: "Stock bajo",
+        data: data,
+        action: "/motorizados",
+        button: "Ver motorizados",
+      };
+      break;
+    case "libroReclamaciones":
+      dataBonita = {
+        type: "Nuevo reclamo",
+        data: data,
+      };
+      break;
     default:
       dataBonita = {
         type: "Mensaje de tipo: " + tipo,
@@ -100,13 +114,15 @@ const mapearMensaje = (tipo: string, router: any, data: any) => {
     description: (
       <div className="flex justify-between items-center">
         <p>{dataBonita.data}</p>
-        <ToastAction
+        { dataBonita.action && dataBonita.button && (
+          <ToastAction
           onClick={() => { router.push(dataBonita.action); }}
           altText="Ir a la página de notificaciones"
           className={buttonClassName}
         >
           {dataBonita.button}
-        </ToastAction>
+        </ToastAction>)
+        }
       </div>
     ),
   });
@@ -123,7 +139,7 @@ export default function RootLayout({
 
   useEffect(() => {
     // Initialize WebSocket connection
-    ws.current = new WebSocket(url + '?rol=admin&id=' + Math.floor(Math.random() * 100000));
+    ws.current = new WebSocket(url + '?rol=admin&id=' + Math.floor(Math.random() * 10000+new Date().getTime()/1000));
 
     // Handle WebSocket open event
     ws.current.onopen = () => {

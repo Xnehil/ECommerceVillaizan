@@ -22,6 +22,7 @@ export interface Producto extends EntidadBase {
     razonEliminacion?: string; // Optional field
     seVendeEcommerce: boolean;
     cantidadPuntos?: number; // Optional field
+    stockSeguridad?: number; 
 }
 
 

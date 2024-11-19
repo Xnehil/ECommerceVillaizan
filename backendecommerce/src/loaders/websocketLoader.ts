@@ -8,7 +8,8 @@ import WebSocket from "ws";
 
 export const ubicacionesDelivery = new Map<string, { lat: number, lng: number, pedidoId: string | null }>(
   [
-    // ['mot_01J9PMQG49H0SZ0G6MFHM04XEV', { lat: 6.483, lng: -76.333, pedidoId: null }], // Para pruebas
+     ['mot_01J9PMQG49H0SZ0G6MFHM04XEV', { lat: -6.483, lng: -76.333, pedidoId: null }], // Para pruebas
+    //  ['mot_01J9PMQT9F7GN2HN770H69CXKA', { lat: -6.483, lng: -76.333, pedidoId: null }], // Para pruebas
   ]
 );
 const adminsConectados = new Set<WebSocket>();
@@ -91,7 +92,7 @@ export default async (
         console.info('WebSocket connection closed');
       }
     });
-    ws.send(JSON.stringify({ message: `Welcome ${rol} (${id}) to the WebSocket server!` }));
+    ws.send(JSON.stringify({ message: `Bienvenido ${rol} al WebSocket` }));
   });
 
 

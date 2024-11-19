@@ -134,6 +134,8 @@ const GoogleMapModal: React.FC<GoogleMapModalProps> = ({
         return { lat: -6.04413, lng: -76.96719 }
       } else if (city === "Tarapoto") {
         return { lat: -6.482, lng: -76.365 }
+      } else if (city === "Jaén"){
+        return { lat: -5.69918, lng: -78.801 };
       } else {
         return { lat: -12.046374, lng: -77.042793 } // Default to Lima
       }

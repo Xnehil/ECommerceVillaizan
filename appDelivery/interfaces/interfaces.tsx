@@ -67,6 +67,7 @@ export interface Producto {
   razonEliminacion: string | null;
   seVendeEcommerce: boolean;
   tipoProducto: TipoProducto;
+  stockSeguridad: number;
 }
 
 export interface Pedido {
@@ -93,6 +94,8 @@ export interface Pedido {
   solicitadoEn?: Date;
   verificadoEn?: Date;
   entregadoEn?: Date;
+  pagado: boolean;
+  pagadoEn?: Date;
 }
 
 export interface Direccion {
