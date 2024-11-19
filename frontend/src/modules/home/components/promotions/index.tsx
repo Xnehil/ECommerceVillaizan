@@ -58,7 +58,7 @@ const Promotions = () => {
       {promociones.length > 0 && (
         <>
           <h2 className="text-3xl font-bold mb-8">Disfruta de nuestras promociones</h2>
-          <p className="text-lg mb-6 text-gray-600">Recuerda que las promociones solo son válidas para usuarios registrados</p>
+          <p className="text-lg mb-6 text-gray-600">Recuerda que las promociones solo son válidas para usuarios que han iniciado sesión.</p>
           <div className="relative max-w-4xl mx-auto">
           <Swiper
             spaceBetween={1}
