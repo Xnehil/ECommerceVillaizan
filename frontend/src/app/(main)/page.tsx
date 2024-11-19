@@ -1,5 +1,6 @@
 "use client"; 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import Promotions from "@modules/home/components/promotions";
 import Banner from "@components/ui/Banner";
 import axios from "axios";
@@ -13,15 +14,39 @@ function getCurrentDay(): string {
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 const frontUrl = process.env.NEXT_PUBLIC_BASE_URL;
+function checkIfAuthenticated(session: any, status: string) {
+  if (status !== "loading") {
+    return session?.user?.id ? true : false;
+  }
+  return false;
+}
 
 export default function Home() {
+  const { data: session, status } = useSession();
   const [trackingCode, setTrackingCode] = useState("");
   const [minOrderAmount, setMinOrderAmount] = useState<number | undefined>(undefined);
   const [startTime, setStartTime] = useState<string | undefined>(undefined);
   const [endTime, setEndTime] = useState<string | undefined>(undefined);
   const [isLoadingResponse, setIsLoadingResponse] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [hasActiveOrder, setHasActiveOrder] = useState(false);
+  const [orderTrackingCode, setOrderTrackingCode] = useState<string | null>(null);
 
   const currentDay = getCurrentDay();
+
+  useEffect(() => {
+    console.log("session: ", session);
+    console.log("status: ", status);
+    if (checkIfAuthenticated(session, status)) {
+      setIsAuthenticated(true);
+      console.log("User is authenticated");
+      console.log("user id: ", session?.user?.id);
+    } else {
+      setIsAuthenticated(false);
+      console.log("User is not authenticated");
+      console.log("user id: ", session?.user?.id);
+    }
+  }, [session, status]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,11 +66,20 @@ export default function Home() {
         const [start, end] = ajusteHoras.valor.split("-");
         setStartTime(start);
         setEndTime(end);
+
+        const orderUrl = `http://localhost:9000/admin/pedido/usuario?id=${session?.user?.id}&estado=solicitado&estado=verificado&estado=enProgreso`;
+        console.log("Order URL:", orderUrl);
+        const orderResponse = await axios.get(orderUrl);
+        if (orderResponse.data && orderResponse.data.pedidos.length > 0) {
+          setHasActiveOrder(true);
+          setOrderTrackingCode(orderResponse.data.pedidos[0].codigoSeguimiento);
+        }
       } catch (error) {
         console.error("Error fetching monto_minimo_pedido and hoursResponse:", error);
         setMinOrderAmount(undefined);
         setStartTime(undefined);
         setEndTime(undefined);
+        setHasActiveOrder(false);
       } finally {
         setIsLoadingResponse(false);
       }
@@ -58,7 +92,7 @@ export default function Home() {
   
     // Limpiar intervalo cuando se desmonta un componente
     return () => clearInterval(intervalId);
-  }, [currentDay]);
+  }, [currentDay, session]);
   
 
   const handleTrackOrder = () => {
@@ -69,7 +103,11 @@ export default function Home() {
     }
   };
 
-
+  const handleViewActiveOrder = () => {
+    if (orderTrackingCode) {
+      window.location.href = `${frontUrl}/seguimiento?codigo=${orderTrackingCode}`;
+    }
+  };
 
   return (
     <div>
@@ -81,6 +119,20 @@ export default function Home() {
       ) : (
         <Banner minOrderAmount={minOrderAmount} startTime={startTime} endTime={endTime} />
       )}
+      {/* Banner for Active Orders */}
+      {hasActiveOrder && (
+      <div style={activeOrderBannerStyle}>
+        <p style={activeOrderTextStyle}>
+          Tienes un pedido en progreso 🛒 
+        </p>
+        <button
+          onClick={handleViewActiveOrder}
+          style={activeOrderButtonStyle}
+        >
+          Visualizar
+        </button>
+      </div>
+)}
       {/* Imagen debajo del Hero */}
       <div className="relative w-full">
         <img
@@ -90,6 +142,7 @@ export default function Home() {
         />
       </div>
       {/* Sección de Código de Seguimiento */}
+      {isAuthenticated ? null : (
       <div className="tracking-section py-12 bg-[#f3f4f6] flex flex-col items-center rounded-lg shadow-lg mx-6 my-12">
         <h2 className="text-3xl font-bold text-green-600 mb-4">Rastrea tu Pedido 🛵</h2>
         <p className="text-md text-gray-600 mb-6 max-w-md text-center">
@@ -113,6 +166,7 @@ export default function Home() {
           </button>
         </div>
       </div>
+      )}
       {/* Componente de Promociones */}
       <Promotions />
 
@@ -124,3 +178,36 @@ export default function Home() {
     </div>
   );
 }
+
+const activeOrderBannerStyle: React.CSSProperties = {
+  background: 'rgba(240, 248, 245, 0.8)', // soft green with slight transparency
+  padding: '15px 20px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center', // center the text
+  gap: '20px', // space between text and button
+  boxShadow: '0px 6px 12px rgba(0, 0, 0, 0.1)', // softer shadow for depth
+  borderRadius: '16px', // slightly rounder corners
+  margin: '10px 0 20px 0',
+  position: 'relative', // necessary for absolute positioning of the button
+};
+
+const activeOrderTextStyle: React.CSSProperties = {
+  color: '#3e4e42', // darker green for contrast
+  fontSize: '18px',
+  fontWeight: '500',
+  margin: '0',
+  lineHeight: '1.5',
+  flexGrow: 1, // allows the text to center
+  textAlign: 'center', // centers the text itself
+};
+const activeOrderButtonStyle: React.CSSProperties = {
+  padding: '8px 20px',
+  backgroundColor: '#6bbf59', // a subtle and pleasant green
+  color: '#ffffff',
+  borderRadius: '20px', // rounded for a pill shape
+  fontWeight: 'bold',
+  boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)', // adds a subtle depth effect
+  cursor: 'pointer',
+  transition: 'background-color 0.3s, transform 0.3s', // smooth hover transition
+};

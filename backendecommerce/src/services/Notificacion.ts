@@ -41,7 +41,8 @@ class NotificacionService extends TransactionBaseService {
           skip: 0,
           take: 20,
           relations: [],
-        }
+          order: { creadoEn: "DESC" } // or "DESC" for descending order
+      }
       ): Promise<Notificacion[]> {
         const [notificacions] = await this.listarYContar(selector, config);
         return notificacions;

@@ -163,6 +163,9 @@ export default function Nav() {
                       <Link href="/cuenta" className="block px-4 py-2 text-gray-800 hover:bg-gray-200" onClick={() => setIsDropdownOpen(false)}>
                         Ver cuenta
                       </Link>
+                      <Link href="/historial" className="block px-4 py-2 text-gray-800 hover:bg-gray-200" onClick={() => setIsDropdownOpen(false)}>
+                        Historial de Pedidos
+                      </Link>
                       <button
                         className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
                         onClick={() => {

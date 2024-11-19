@@ -176,16 +176,34 @@ class PedidoService extends TransactionBaseService {
     }
 
     async reduceStock(pedido: Pedido, motorizado: Motorizado): Promise<void> {
-        const invetarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);
-        
+        const invetarioMotorizadoRepo = this.activeManager_.withRepository(this.inventarioMotorizadoRepository_);        
         const inventarios: InventarioMotorizado[] = await invetarioMotorizadoRepo.findByMotorizadoId(motorizado.id);
         
         // Iterate each pedido detail and reduce the stock
         for (const detalle of pedido.detalles) {
-            const inventario = inventarios.find((inv) => inv.producto.id === detalle.producto.id);
-            if (inventario) {
-                inventario.stock -= detalle.cantidad;
-                await invetarioMotorizadoRepo.save(inventario);
+            try{
+                const inventario = inventarios.find((inv) => inv.producto.id === detalle.producto.id);
+                if (inventario) {
+                    inventario.stock -= detalle.cantidad;
+                    await invetarioMotorizadoRepo.save(inventario);
+                    if(inventario.stock < inventario.producto.stockSeguridad*2){
+                        let nuevaNoti = new Notificacion();
+                        nuevaNoti.asunto = "Stock bajo";
+                        nuevaNoti.descripcion = "El producto " + inventario.producto.nombre + " tiene un stock menor a " + inventario.producto.stockSeguridad*2 + " unidades";
+                        nuevaNoti.tipoNotificacion = "stockBajo";
+                        nuevaNoti.sistema = "ecommerceAdmin";
+                        nuevaNoti.leido = false;
+                        try {
+                            await this.notificacionService_.crear(nuevaNoti);
+                            enviarMensajeAdmins("stockBajo", "El producto " + inventario.producto.nombre + " tiene un stock menor a " + inventario.producto.stockSeguridad*2 + " unidades en el motorizado " + inventario.motorizado.usuario.nombre);
+                        }
+                        catch (error) {
+                            console.error("Error al crear notificación", error);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Error al reducir stock", error);
             }
         }
     }
@@ -197,7 +215,7 @@ class PedidoService extends TransactionBaseService {
     ): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
-            const relations = asignarRepartidor ? ["motorizado", "direccion"] : [];
+            const relations = asignarRepartidor ? ["motorizado", "direccion"] : ["motorizado"];
             const pedido = await this.recuperarConDetalle(id, { relations });
             let tienestock : boolean = false;
 
@@ -230,12 +248,6 @@ class PedidoService extends TransactionBaseService {
     
                     if (motorizadoAsignado) {
                         data.motorizado = motorizadoAsignado;
-                        try {
-                            this.reduceStock(pedido, motorizadoAsignado);
-                        } catch (error) {
-                            console.error("Error al reducir stock, se continúa para la demo", error);
-                            // throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
-                        }
                         data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3)+(new Date()).getTime().toString().slice(-3);
                         console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
                         enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
@@ -268,6 +280,13 @@ class PedidoService extends TransactionBaseService {
                 if (data.estado === "verificado") {
                     data.verificadoEn = new Date();
                     estadoPedidos.set(id, "verificado");
+                    try {
+                        // console.log("Verificando stock con motorizado: ", pedido.motorizado);
+                        this.reduceStock(pedido, pedido.motorizado);
+                    } catch (error) {
+                        console.error("Error al reducir stock, se continúa para la demo", error);
+                        // throw new MedusaError(MedusaError.Types.NOT_FOUND, "No hay motorizados disponibles con suficiente stock");
+                    }
                 }
                 if (data.estado === "solicitado") {
                     data.solicitadoEn = new Date();
@@ -275,6 +294,9 @@ class PedidoService extends TransactionBaseService {
                 if (data.estado === "enProgreso") {
                     estadoPedidos.set(id, "enProgreso");
                 }
+            }
+            if (data.pagado) {
+                data.pagadoEn = new Date();
             }
             // console.log("Método de pago: ", data.metodosPago);
             Object.assign(pedido, data);
@@ -359,6 +381,35 @@ class PedidoService extends TransactionBaseService {
         return pedido;
     }
 
+    async encontrarPorUsuarioId(idUsuario: string, selector: Selector<Pedido> = {}): Promise<Pedido[]> {
+        const finalSelector: any = selector || {};
+        const relations = ["motorizado", "direccion", "direccion.ciudad"];
+    
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const query = pedidoRepo.createQueryBuilder("pedido")
+            .leftJoinAndSelect("pedido.motorizado", "motorizado")
+            .leftJoinAndSelect("pedido.direccion", "direccion")
+            .leftJoinAndSelect("direccion.ciudad", "ciudad")
+            .where("pedido.usuario.id = :idUsuario", { idUsuario });
+    
+        if (Array.isArray(finalSelector.estado) && finalSelector.estado.length > 0) {
+            query.andWhere("pedido.estado IN (:...estados)", { estados: finalSelector.estado });
+        } else if (finalSelector.estado) {
+            if (finalSelector.estado === '!= carrito') {
+                query.andWhere("pedido.estado != :estado", { estado: 'carrito' });
+            } else {
+                query.andWhere("pedido.estado = :estado", { estado: finalSelector.estado });
+            }
+        }
+        // console.log(query.getSql(), query.getParameters()); // Log the query and parameters for debugging
+
+        const pedidos = await query.getMany();
+    
+        if (!pedidos) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedidos no encontrados");
+        }
+       return pedidos;
+    }
     async encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario: string): Promise<Pedido> {
         const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
         const pedido = await pedidoRepo.encontrarUltimoCarritoPorUsuarioIdYTengaAlgunDetalleActivo(idUsuario);

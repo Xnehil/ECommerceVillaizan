@@ -82,7 +82,7 @@ const ProductosPage: React.FC = () => {
         <h4>Productos</h4>
         <p>
           Administra los productos que aparecen en el e-commerce, sus
-          descripciones, categorías, etc.
+          descripciones, categorías e imagen.
         </p>
         <div className="h-full w-full">
           <DataTable
