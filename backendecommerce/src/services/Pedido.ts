@@ -215,18 +215,18 @@ class PedidoService extends TransactionBaseService {
     ): Promise<Pedido> {
         return await this.atomicPhase_(async (manager) => {
             const pedidoRepo = manager.withRepository(this.pedidoRepository_);
-            const relations = asignarRepartidor ? ["motorizado", "direccion"] : ["motorizado"];
+            const relations = asignarRepartidor ? ["motorizado", "direccion", "direccion.ubicacion"] : ["motorizado"];
             const pedido = await this.recuperarConDetalle(id, { relations });
-            let tienestock : boolean = false;
-
-            //log ubicacionesDelivery
-            console.log(ubicacionesDelivery);
-    
+            
+            
             if (asignarRepartidor) {
-                const data = await this.asignarRepartidor(manager, pedido, id);
-                if (data) {
-                    pedido.motorizado = data.motorizado;
-                    pedido.codigoSeguimiento = data.codigoSeguimiento;
+                // console.log("Pedido fetcheado", pedido);
+                data.direccion = pedido.direccion;
+                const dataRepartidor = await this.asignarRepartidor(manager, data, id, true);
+                // console.log("Data de asignación de repartidor: ", dataRepartidor);
+                if (dataRepartidor) {
+                    data.motorizado = dataRepartidor.motorizado;
+                    data.codigoSeguimiento = dataRepartidor.codigoSeguimiento;
                 }
             }
 
@@ -256,7 +256,7 @@ class PedidoService extends TransactionBaseService {
             if (data.pagado) {
                 data.pagadoEn = new Date();
             }
-            // console.log("Método de pago: ", data.metodosPago);
+            // console.log("Motorizado final: ", data.motorizado);
             Object.assign(pedido, data);
             delete pedido.pedidosXMetodoPago;
             return await pedidoRepo.save(pedido);
@@ -269,9 +269,10 @@ class PedidoService extends TransactionBaseService {
 
         
         if(algoritmo){
-            const latPedido = pedido.direccion.latitud;
-            const lonPedido = pedido.direccion.longitud;
-    
+            // console.log("Algoritmo de asignación de repartidor");
+            const latPedido = pedido.direccion.ubicacion.latitud;
+            const lonPedido = pedido.direccion.ubicacion.longitud;
+            // console.log("Ubicación del pedido: ", latPedido, lonPedido);
             // Collect distances and counts
             const distancesAndCounts = await Promise.all([...ubicacionesDelivery.entries()].map(async ([motorizadoId, motorizado]) => {
                 const lat = motorizado.lat;
@@ -281,6 +282,7 @@ class PedidoService extends TransactionBaseService {
                     return { motorizadoId, distancia, pedidos: 0 };
                 }
                 const pedidos = await this.pedidoRepository_.countByMotorizadoId(motorizadoId, ["solicitado", "enProgreso"]);
+                console.log("Distancia: ", distancia + " . Se cuentan " + pedidos + " pedidos");
                 return { motorizadoId, distancia, pedidos };
             }));
     
@@ -293,22 +295,23 @@ class PedidoService extends TransactionBaseService {
             }).map(item => [item.motorizadoId, ubicacionesDelivery.get(item.motorizadoId)]));
 
             repartidoresAConsiderar = ubicacionesDeliveryOrdenadas;
+            console.log("Repartidores a considerar: ", repartidoresAConsiderar);
         }
         
     
         if (repartidoresAConsiderar.size > 0) {
             let motorizadoAsignado = null;
-            console.log("Recorriendo motorizados");
+            // console.log("Recorriendo motorizados");
             for (const motorizadoId of repartidoresAConsiderar.keys()) {
                 const dataMotorizado = await motorizadoRepo.findOne(buildQuery({ id: motorizadoId }));
-                console.log("Motorizado con id: ", motorizadoId);
+                // console.log("Motorizado con id: ", motorizadoId);
                 if (dataMotorizado) {
-                    console.log("Motorizado encontrado: ");
-                    console.log("Verificando stock");
+                    // console.log("Motorizado encontrado: ");
+                    // console.log("Verificando stock");
                     const hasStock = await this.checkPedido(pedido, dataMotorizado);
-                    console.log("Stock: ", hasStock);
+                    // console.log("Stock: ", hasStock);
                     if (hasStock || true) { //Eliminar el true para que se verifique el stock
-                        console.log("Motorizado con stock encontrado");
+                        console.log("Motorizado con stock encontrado: ", dataMotorizado);
                         motorizadoAsignado = dataMotorizado;
                         break;
                     }
@@ -319,7 +322,7 @@ class PedidoService extends TransactionBaseService {
                 const data: { motorizado: Motorizado; codigoSeguimiento: string } = { motorizado: null, codigoSeguimiento: "" };
                 data.motorizado = motorizadoAsignado;
                 data.codigoSeguimiento = id.slice(-3) + motorizadoAsignado.id.slice(-3) + (new Date()).getTime().toString().slice(-3);
-                console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
+                // console.log("Codigo de seguimiento: ", data.codigoSeguimiento);
                 enviarMensajeRepartidor(motorizadoAsignado.id, "nuevoPedido", id);
                 enviarMensajeAdmins("nuevoPedido", id);
                 let nuevaNoti = new Notificacion();
