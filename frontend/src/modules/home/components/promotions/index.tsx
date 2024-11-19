@@ -37,18 +37,19 @@ const Promotions = () => {
           <h2 className="text-3xl font-bold mb-8">Disfruta de nuestras promociones</h2>
           <p className="text-lg mb-6 text-gray-600">Recuerda que las promociones solo son válidas para usuarios registrados</p>
           <div className="relative max-w-4xl mx-auto">
-            <Swiper
-              spaceBetween={1}
-              slidesPerView={3}
-              loop={true}
-              modules={[Navigation, Autoplay]} // Enable navigation and autoplay
-              autoplay={{
-                delay: 8000, // Auto-slide every 8 seconds
-                disableOnInteraction: false, // Keep sliding even after user interaction
-              }}
-              navigation={true} // Enable Swiper's built-in navigation
-              className="overflow-hidden"
-            >
+          <Swiper
+            spaceBetween={1}
+            slidesPerView={promociones.length < 3 ? promociones.length : 3}
+            loop={promociones.length >= 3}
+            centeredSlides={promociones.length < 3}
+            modules={[Navigation, Autoplay]} // Enable navigation and autoplay
+            autoplay={{
+              delay: 8000, // Auto-slide every 8 seconds
+              disableOnInteraction: false, // Keep sliding even after user interaction
+            }}
+            navigation={true} // Enable Swiper's built-in navigation
+            className="overflow-hidden"
+          >
               {promociones.map((promocion, index) => {
                 const descuento = promocion.porcentajeDescuento;
   
