@@ -81,7 +81,7 @@ export default function Entregas() {
   const fetchPedidos = async () => {
     try {
       const response = await axios.get(
-        `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos?estado=verificado&estado=enProgreso`
+        `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos`
       );
       console.log(usuario?.id);
       const pedidosResponse: PedidosResponse = response.data;
@@ -96,7 +96,7 @@ export default function Entregas() {
       setPedidosAceptados(pedidosEnProceso);
       const pedidosHistorial = pedidosResponse.pedidos.filter(
         (pedido) =>
-          pedido.estado === "enProgreso" || pedido.estado === "cancelado"
+          pedido.estado === "entregado" || pedido.estado === "zz"
       );
       console.log("Historial de pedidos:");
       console.log(pedidosHistorial);
