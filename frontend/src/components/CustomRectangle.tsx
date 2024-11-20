@@ -167,7 +167,7 @@ const styles = {
   },
   image: {
     borderRadius: "10px",
-    width: "100px",
+    width: "auto",
     height: "80px",
     objectFit: "cover" as "cover",
   },

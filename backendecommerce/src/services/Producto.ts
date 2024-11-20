@@ -168,6 +168,39 @@ class ProductoService extends TransactionBaseService {
           if (existingProducto) {
             throw new Error(`Producto com nombre "${producto.nombre}" ya existe.`);
           }
+          // Integración con CRM en https://heladeria2.od2.vtiger.com/restapi/vtap/api/addProduct
+          let idCRM = null;
+          try {
+            const username = 'dep2.crm@gmail.com';
+            const password = '97FO4nsSpV6UneKW';
+            const credentials = Buffer.from(`${username}:${password}`).toString('base64');
+
+            const bodyData ={
+              "Nomproducto": producto.nombre,
+              "Preciounit": producto.precioEcommerce,
+              "Descripcion": producto.descripcion,
+            }
+      
+            const response = await fetch('https://heladeria2.od2.vtiger.com/restapi/vtap/api/addProduct', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Basic ${credentials}`,
+              },
+              body: JSON.stringify(bodyData),
+            });
+      
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+      
+            const data = await response.json();
+            console.log("Producto creado en CRM: ", data);
+            idCRM = data.result.id;
+            producto.idCRM = idCRM;
+          } catch (error) {
+            console.error("Error creando producto en CRM: ", error);
+          }
           const productoCreado = productoRepo.create(producto);
           const result = await productoRepo.save(productoCreado);
           return result;

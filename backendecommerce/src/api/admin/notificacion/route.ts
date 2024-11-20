@@ -78,8 +78,14 @@ export const GET = async (
   } else if (rol === "Admin" || rol === "Motorizado") {
     // Filter notifications for admin role
     notificaciones = await notificacionService.listarConPaginacion({
-      sistema: `ecommerce${rol}`
-    });
+      sistema: `ecommerce${rol}`,
+    },
+    {
+      skip: 0,
+      take: 50,
+      order: { creadoEn: "DESC" },
+    }
+  );
   } else {
     // Return all notifications if no role or different role is specified
     notificaciones = await notificacionService.listarConPaginacion();
