@@ -56,7 +56,7 @@ export default function LoginScreen() {
           storeUserData(usuario);
           // console.log("Usuario encontrado:", repartidor);
           router.push({
-            pathname: "/home",
+            pathname: "/flujoInicial",
           });
         }
       }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import {
   View,
@@ -60,18 +60,13 @@ export default function Entregas() {
   const handlePrimerPedido = async (pedido: Pedido) => {
     if (pedido) {
       if (pedido.estado !== "enProgreso") {
-        const response = await axios.put(
-          `${BASE_URL}/pedido/${pedido.id}`,
-          {
-            estado: "enProgreso",
-          }
-        );
+        const response = await axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
+          estado: "enProgreso",
+        });
       }
       setPedidoSeleccionado(pedido);
-
-      
     }
-  }
+  };
 
   useEffect(() => {
     getDataMemory();
@@ -93,10 +88,17 @@ export default function Entregas() {
       );
       console.log("Pedidos en proceso:");
       console.log(pedidosEnProceso);
-      setPedidosAceptados(pedidosEnProceso);
+      if (
+        pedidosEnProceso.length !== pedidosAceptados.length ||
+        pedidosEnProceso.some(
+          (pedido, index) => pedido.id !== pedidosAceptados[index]?.id
+        )
+      ) {
+        console.log("Pedido actualizado");
+        setPedidosAceptados(pedidosEnProceso);
+      }
       const pedidosHistorial = pedidosResponse.pedidos.filter(
-        (pedido) =>
-          pedido.estado === "entregado" || pedido.estado === "zz"
+        (pedido) => pedido.estado === "entregado" || pedido.estado === "zz"
       );
       console.log("Historial de pedidos:");
       console.log(pedidosHistorial);
@@ -105,7 +107,10 @@ export default function Entregas() {
       // Sort. First enProgreso, then verificado. Sort by solicitadoEn
       pedidosEnProceso.sort((a, b) => {
         if (a.estado === b.estado) {
-          return (new Date(a.solicitadoEn?? 0).getTime()) - (new Date(b.solicitadoEn?? 0).getTime());
+          return (
+            new Date(a.solicitadoEn ?? 0).getTime() -
+            new Date(b.solicitadoEn ?? 0).getTime()
+          );
         }
         return a.estado === "enProgreso" ? -1 : 1;
       });
@@ -171,6 +176,11 @@ export default function Entregas() {
     );
   };
 
+  const stableLocation = useMemo(
+    () => ({ latitude: -6.487316, longitude: -76.359598 }),
+    []
+  );
+
   const PedidoAceptado: React.FC<{ pedido: Pedido }> = ({ pedido }) => {
     return (
       <View
@@ -234,7 +244,8 @@ export default function Entregas() {
       {!verHistorial && (
         <View style={styles.containerMitad}>
           <Mapa
-            location={location}
+            //location={location}
+            location={stableLocation}
             pedidoSeleccionado={pedidoSeleccionado}
             pedidos={pedidosAceptados}
             mode={modoMultiple}
@@ -244,7 +255,9 @@ export default function Entregas() {
 
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <View style={{ flexDirection: "row" }}>
-          <Text style={styles.Titulo}>{verHistorial ? "Tu historial" : "Tus entregas"}</Text>
+          <Text style={styles.Titulo}>
+            {verHistorial ? "Tu historial" : "Tus entregas"}
+          </Text>
           <TouchableOpacity onPress={fetchPedidos} style={styles.reloadButton}>
             <TabBarIcon
               IconComponent={FontAwesome}

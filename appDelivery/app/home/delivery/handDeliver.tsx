@@ -10,13 +10,14 @@ import {
   Modal,
   TextInput,
   Alert,
+  FlatList,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import SwipeButton from "rn-swipe-button";
 import axios from "axios";
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import TabBarIcon from "@/components/StyledIcon";
-import { DetallePedido, Pago, Venta } from "@/interfaces/interfaces";
+import { DetallePedido, Pago, Pedido, Venta } from "@/interfaces/interfaces";
 import { Link, router } from "expo-router";
 import { getCurrentDelivery, storeCurrentDelivery } from "@/functions/storage";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
@@ -28,12 +29,12 @@ const EntregarPedido = () => {
 
   const parsedPedido = pedido ? JSON.parse(decodeURIComponent(pedido)) : {};
 
-  const [pedidoCompleto, setPedidoCompleto] = useState<any>(null);
+  const [pedidoCompleto, setPedidoCompleto] = useState<Pedido | null>(null);
   const [modalCancelVisible, setModalCancelVisible] = useState(false);
   const [motivoCancelacion, setMotivoCancelacion] = useState("");
   const [otroMotivo, setOtroMotivo] = useState("");
   const [fotoPedido, setFotoPedido] = useState<string | null>(null);
-  const [fotoPago, setFotoPago] = useState<string | null>(null);
+  const [fotosPago, setFotosPago] = useState<Record<string, string | null>>({});
 
   const [imageOptionsVisible, setImageOptionsVisible] = useState(false);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
@@ -58,25 +59,29 @@ const EntregarPedido = () => {
       videoRef.current.srcObject = videoStream; // Asigna el stream al video
     }
   }, [videoStream]);
+  const renderImageOptionsModal = () => {
+    // Función auxiliar para obtener la URI de la imagen a mostrar
+    const getImageUri = (): string => {
+      if (currentImageType === "pedido") {
+        return fotoPedido ?? ""; // Devuelve la imagen de pedido
+      } else if (currentImageType === "pago" && currentImageId) {
+        return fotosPago[currentImageId] ?? ""; // Devuelve la imagen del método de pago
+      }
+      return ""; // Retorna una cadena vacía si no hay imagen
+    };
 
-  const renderImageOptionsModal = () => (
-    <Modal
-      visible={imageOptionsVisible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={() => setImageOptionsVisible(false)}
-    >
-      {imageView ? (
-        <View style={styles.modalContainer}>
+    return (
+      <Modal
+        visible={imageOptionsVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setImageOptionsVisible(false)}
+      >
+        {imageView ? (
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Vista previa de la imagen</Text>
             <Image
-              source={{
-                uri:
-                  currentImageType === "pedido"
-                    ? fotoPedido ?? ""
-                    : fotoPago ?? "",
-              }}
+              source={{ uri: getImageUri() }}
               style={styles.previewImage}
             />
             <TouchableOpacity
@@ -92,72 +97,74 @@ const EntregarPedido = () => {
             <TouchableOpacity
               style={styles.rejectButton}
               onPress={() => {
-                setImageView(false);
+                setImageView(false); // Permite cambiar la imagen
               }}
             >
               <Text style={styles.optionButtonText}>Cambiar foto</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      ) : (
-        <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
+        ) : (
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
 
-          {videoStream ? (
-            <View style={styles.videoWrapper}>
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                onLoadedMetadata={() => {
-                  console.log("Video cargado y listo para capturar.");
-                }}
-                style={styles.video}
-              />
-              <TouchableOpacity
-                style={styles.captureButtonOverlay}
-                onPress={() => capturePhoto(currentImageId!, currentImageType!)}
-              >
-                <Text style={styles.captureButtonText}>Tomar Foto</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <TouchableOpacity
-                style={styles.optionButton}
-                onPress={() =>
-                  handleCameraCapture(currentImageId!, currentImageType!)
-                }
-              >
-                <Text style={styles.optionButtonText}>Tomar Foto</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.optionButton}
-                onPress={() =>
-                  handleImageSelection(currentImageId!, currentImageType!)
-                }
-              >
-                <Text style={styles.optionButtonText}>
-                  Seleccionar de la Galería
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
+            {videoStream ? (
+              <View style={styles.videoWrapper}>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  onLoadedMetadata={() => {
+                    console.log("Video cargado y listo para capturar.");
+                  }}
+                  style={styles.video}
+                />
+                <TouchableOpacity
+                  style={styles.captureButtonOverlay}
+                  onPress={() =>
+                    capturePhoto(currentImageId!, currentImageType!)
+                  }
+                >
+                  <Text style={styles.captureButtonText}>Tomar Foto</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={() =>
+                    handleCameraCapture(currentImageId!, currentImageType!)
+                  }
+                >
+                  <Text style={styles.optionButtonText}>Tomar Foto</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={() =>
+                    handleImageSelection(currentImageId!, currentImageType!)
+                  }
+                >
+                  <Text style={styles.optionButtonText}>
+                    Seleccionar de la Galería
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
 
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={() => {
-              videoStream?.getTracks().forEach((track) => track.stop());
-              setVideoStream(null);
-              setImageOptionsVisible(false);
-            }}
-          >
-            <Text style={styles.cancelButtonText}>Cancelar</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </Modal>
-  );
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                videoStream?.getTracks().forEach((track) => track.stop());
+                setVideoStream(null);
+                setImageOptionsVisible(false);
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </Modal>
+    );
+  };
 
   const [currentImageId, setCurrentImageId] = useState<string | null>(null);
   const [currentImageType, setCurrentImageType] = useState<
@@ -173,17 +180,28 @@ const EntregarPedido = () => {
   };
 
   const showImageOptions = (id: string, tipo: "pedido" | "pago") => {
-    if (tipo === "pedido" && fotoPedido) {
-      handleImageView(id, tipo);
-    } else if (tipo === "pago" && fotoPago) {
-      handleImageView(id, tipo);
-    } else {
-      setCurrentImageId(id);
-      setCurrentImageType(tipo);
-      setImageOptionsVisible(true);
+    if (tipo === "pedido") {
+      if (fotoPedido) {
+        // Si ya hay una imagen de pedido, mostrar vista previa
+        handleImageView(id, tipo);
+      } else {
+        // Si no hay imagen de pedido, permitir selección o captura
+        setCurrentImageId(id);
+        setCurrentImageType(tipo);
+        setImageOptionsVisible(true);
+      }
+    } else if (tipo === "pago") {
+      if (fotosPago[id]) {
+        // Si ya hay una imagen asociada a este método de pago, mostrar vista previa
+        handleImageView(id, tipo);
+      } else {
+        // Si no hay imagen de pago, permitir selección o captura
+        setCurrentImageId(id);
+        setCurrentImageType(tipo);
+        setImageOptionsVisible(true);
+      }
     }
   };
-
   const handleImageSelection = async (id: string, tipo: "pedido" | "pago") => {
     const input = document.createElement("input");
     input.type = "file";
@@ -198,9 +216,12 @@ const EntregarPedido = () => {
           const imageData = reader.result as string;
 
           if (tipo === "pedido") {
-            setFotoPedido(imageData);
+            setFotoPedido(imageData); // Asigna la imagen al estado de pedido
           } else if (tipo === "pago") {
-            setFotoPago(imageData);
+            setFotosPago((prev) => ({
+              ...prev,
+              [id]: imageData, // Asigna la imagen al método de pago correspondiente
+            }));
           }
         };
         reader.readAsDataURL(file);
@@ -208,7 +229,7 @@ const EntregarPedido = () => {
     };
 
     input.click();
-    setImageOptionsVisible(false);
+    setImageOptionsVisible(false); // Cierra el modal
   };
 
   const handleCameraCapture = async (id: string, tipo: "pedido" | "pago") => {
@@ -246,9 +267,12 @@ const EntregarPedido = () => {
     const imageData = canvas.toDataURL("image/png");
 
     if (tipo === "pedido") {
-      setFotoPedido(imageData);
+      setFotoPedido(imageData); // Asigna la imagen al estado de pedido
     } else if (tipo === "pago") {
-      setFotoPago(imageData);
+      setFotosPago((prev) => ({
+        ...prev,
+        [id]: imageData, // Asigna la imagen al método de pago correspondiente
+      }));
     }
 
     videoStream?.getTracks().forEach((track) => track.stop()); // Detener la cámara
@@ -258,40 +282,66 @@ const EntregarPedido = () => {
 
   const enviarImagen = async (id: string, tipo: "pedido" | "pago") => {
     try {
-      const imagenData = tipo === "pedido" ? fotoPedido : fotoPago;
-      if (!imagenData) throw new Error("No hay imagen disponible.");
-
-      // Convertimos el Data URL (Base64) a un archivo Blob
-      const byteString = atob(imagenData.split(",")[1]);
-      const mimeString = imagenData.split(",")[0].split(":")[1].split(";")[0];
-      const arrayBuffer = new ArrayBuffer(byteString.length);
-      const intArray = new Uint8Array(arrayBuffer);
-
-      for (let i = 0; i < byteString.length; i++) {
-        intArray[i] = byteString.charCodeAt(i);
+      if (tipo === "pedido") {
+        // Manejar imagen de pedido
+        if (!fotoPedido) throw new Error("No hay imagen de pedido disponible.");
+  
+        const fileUrl = await uploadImage(fotoPedido, `${tipo}-${id}`);
+        mostrarMensaje("Imagen de pedido enviada con éxito");
+        return { [id]: fileUrl }; // Retorna un objeto con la URL de la imagen del pedido
+      } else if (tipo === "pago") {
+        // Manejar imágenes de pago
+        if (Object.keys(fotosPago).length === 0)
+          throw new Error("No hay imágenes de métodos de pago disponibles.");
+  
+        const urls: Record<string, string> = {}; // Almacena las URLs de las imágenes
+  
+        for (const [idMetodoPago, imagenData] of Object.entries(fotosPago)) {
+          if (imagenData) {
+            const fileUrl = await uploadImage(
+              imagenData,
+              `${tipo}-${idMetodoPago}`
+            );
+            urls[idMetodoPago] = fileUrl; // Asigna la URL al método de pago correspondiente
+          }
+        }
+  
+        mostrarMensaje("Imágenes de métodos de pago enviadas con éxito");
+        return urls; // Retorna un objeto con las URLs generadas para cada método de pago
       }
-
-      const blob = new Blob([intArray], { type: mimeString });
-      const file = new File([blob], `${tipo}-${id}.png`, { type: mimeString });
-
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("fileName", `${tipo}-${id}.png`);
-      if (tipo === "pago") {
-        formData.append("folderId", "1z4G9rU8EW9whmnrrVcaL76an-8vM-Ncv");
-      } else if (tipo === "pedido") {
-        formData.append("folderId", "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb");
-      }
-      const response = await axios.post(`${BASE_URL}/imagenes`, formData);
-
-      const { fileUrl } = response.data;
-
-      mostrarMensaje(`Imagen enviada con éxito`);
-      return fileUrl;
     } catch (error) {
       console.error(`Error al enviar la imagen de ${tipo}:`, error);
       mostrarMensaje(`Error al enviar la imagen de ${tipo}.`, "confirmacion");
+      return null; // Retorna null en caso de error
     }
+  };
+
+  // Función auxiliar para subir una imagen a la API
+  const uploadImage = async (imagenData: string, fileName: string) => {
+    const byteString = atob(imagenData.split(",")[1]);
+    const mimeString = imagenData.split(",")[0].split(":")[1].split(";")[0];
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const intArray = new Uint8Array(arrayBuffer);
+
+    for (let i = 0; i < byteString.length; i++) {
+      intArray[i] = byteString.charCodeAt(i);
+    }
+
+    const blob = new Blob([intArray], { type: mimeString });
+    const file = new File([blob], `${fileName}.png`, { type: mimeString });
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", `${fileName}.png`);
+
+    if (fileName.startsWith("pago")) {
+      formData.append("folderId", "1z4G9rU8EW9whmnrrVcaL76an-8vM-Ncv");
+    } else if (fileName.startsWith("pedido")) {
+      formData.append("folderId", "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb");
+    }
+
+    const response = await axios.post(`${BASE_URL}/imagenes`, formData);
+    return response.data.fileUrl; // Retorna la URL generada
   };
 
   const handleCancelEntrega = () => {
@@ -327,90 +377,117 @@ const EntregarPedido = () => {
       );
       if (!confirm) return;
       const pedido = parsedPedido;
-      if (fotoPedido === null || fotoPago === null) {
-        mostrarMensaje("Falta foto de pedido o pago");
+      const fotosPagoNecesarias = pedidoCompleto?.pedidosXMetodoPago?.length;
+      if (fotoPedido === null || fotoPedido === undefined) {
+        mostrarMensaje("Falta foto de pedido");
+        return;
+      } else if (
+        fotosPagoNecesarias === undefined ||
+        Object.keys(fotosPago).length !== fotosPagoNecesarias
+      ) {
+        mostrarMensaje("Falta foto todos los metodos de pago");
         return;
       }
       const urlPedido = await enviarImagen(parsedPedido.id, "pedido");
       const urlPago = await enviarImagen(parsedPedido.id, "pago");
+      if (urlPago === undefined || urlPago === null) {
+        return;
+      }
       console.log(urlPedido, urlPago);
       //Crear Venta
-      const response_detalle = await axios.get(
-        `${BASE_URL}/pedido/${pedidoCompleto.id}/conDetalle?pedido=true`
-      );
-      pedidoCompleto.detalles = response_detalle.data.pedido.detalles;
-      const detalles = pedidoCompleto.detalles || [];
-      let totalPaletas = 0;
-      let totalMafaletas = 0;
-      try {
-        totalPaletas = detalles
-          .filter(
-            (detalle: DetallePedido) =>
-              detalle.producto.tipoProducto?.nombre === "Paleta"
-          )
-          .reduce(
-            (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
-            0
-          );
-      } catch (error) {
-        console.error("Error calculating totalPaletas:", error);
+      if (pedidoCompleto != null && pedidoCompleto.pedidosXMetodoPago != null) {
+        const response_detalle = await axios.get(
+          `${BASE_URL}/pedido/${pedidoCompleto.id}/conDetalle?pedido=true`
+        );
+        pedidoCompleto.detalles = response_detalle.data.pedido.detalles;
+        const detalles = pedidoCompleto.detalles || [];
+        let totalPaletas = 0;
+        let totalMafaletas = 0;
+        try {
+          totalPaletas = detalles
+            .filter(
+              (detalle: DetallePedido) =>
+                detalle.producto.tipoProducto?.nombre === "Paleta"
+            )
+            .reduce(
+              (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
+              0
+            );
+        } catch (error) {
+          console.error("Error calculating totalPaletas:", error);
+        }
+
+        try {
+          totalMafaletas = detalles
+            .filter(
+              (detalle: DetallePedido) =>
+                detalle.producto.tipoProducto?.nombre === "Mafaleta"
+            )
+            .reduce(
+              (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
+              0
+            );
+        } catch (error) {
+          console.error("Error calculating totalMafaletas:", error);
+        }
+
+        const venta: Venta = {
+          id: "",
+          tipoComprobante: "Boleta",
+          fechaVenta: new Date(),
+          numeroComprobante: "",
+          montoTotal: pedidoCompleto.total,
+          totalPaletas: totalPaletas,
+          totalMafeletas: totalMafaletas,
+          estado: "entregado",
+          totalIgv: pedidoCompleto.total * 0.18,
+          pedido: parsedPedido.id,
+          ordenSerie: null,
+        };
+
+        const ventaData = await axios.post(`${BASE_URL}/venta`, venta);
+        console.log(ventaData);
+        // Crear un array para almacenar las promesas de axios
+        const promesasPagos = [];
+
+        // Iterar por cada método de pago
+        for (const metodoPago of pedidoCompleto.pedidosXMetodoPago) {
+          const pago = {
+            esTransferencia: true,
+            montoCobrado: pedidoCompleto.total,
+            numeroOperacion: null,
+            urlEvidencia: urlPago[metodoPago.id],	
+            codigoTransaccion: null,
+            venta: ventaData.data.id,
+            pedidosXMetodoPago: metodoPago,
+            banco: null,
+            pedido: pedidoCompleto.id,
+          };
+
+          console.log(pago);
+
+          // Agregar la promesa de axios al array
+          promesasPagos.push(axios.post(`${BASE_URL}/pago`, pago));
+        }
+
+        // Usar Promise.all para esperar a que todas las solicitudes se completen
+        try {
+          const resultados = await Promise.all(promesasPagos);
+          console.log("Todos los pagos se han procesado:", resultados);
+        } catch (error) {
+          console.error("Ocurrió un error al procesar los pagos:", error);
+        }
+
+        await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
+          estado: "entregado",
+          urlEvidencia: urlPedido,
+        });
+
+        router.push({
+          pathname: "/home/delivery/confirmada",
+          params: {},
+        });
       }
-
-      try {
-        totalMafaletas = detalles
-          .filter(
-            (detalle: DetallePedido) =>
-              detalle.producto.tipoProducto?.nombre === "Mafaleta"
-          )
-          .reduce(
-            (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
-            0
-          );
-      } catch (error) {
-        console.error("Error calculating totalMafaletas:", error);
-      }
-
-      const venta: Venta = {
-        id: "",
-        tipoComprobante: "Boleta",
-        fechaVenta: new Date(),
-        numeroComprobante: "001-000001",
-        montoTotal: parseFloat(pedidoCompleto.total),
-        totalPaletas: totalPaletas,
-        totalMafeletas: totalMafaletas,
-        estado: "entregado",
-        totalIgv: parseFloat(pedidoCompleto.total) * 0.18,
-        pedido: parsedPedido.id,
-        ordenSerie: null,
-      };
-
-      const ventaData = await axios.post(`${BASE_URL}/venta`, venta);
-      console.log(ventaData);
-
-      const pago = {
-        esTransferencia: true,
-        montoCobrado: parseFloat(pedidoCompleto.total),
-        numeroOperacion: null,
-        urlEvidencia: urlPago,
-        codigoTransaccion: null,
-        venta: ventaData.data.id,
-        metodoPago: pedidoCompleto.metodosPago[0]?.id,
-        banco: null,
-        pedido: pedidoCompleto.id,
-      };
-      console.log(pago);
-      const response_pago = await axios.post(`${BASE_URL}/pago`, pago);
-      console.log(response_pago);
-
-      await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
-        estado: "entregado",
-        urlEvidencia: urlPedido,
-      });
-
-      router.push({
-        pathname: "/home/delivery/confirmada",
-        params: {},
-      });
     } catch (error) {
       console.error("Error updating pedido:", error);
       mostrarMensaje("Error al confirmar la entrega", "confirmacion");
@@ -550,7 +627,10 @@ const EntregarPedido = () => {
             </View>
 
             <TouchableOpacity
-              onPress={() => showImageOptions(pedidoCompleto?.id, "pedido")}
+              onPress={() =>
+                pedidoCompleto?.id &&
+                showImageOptions(pedidoCompleto.id, "pedido")
+              }
             >
               <TabBarIcon
                 IconComponent={FontAwesome}
@@ -577,22 +657,23 @@ const EntregarPedido = () => {
             </View>
             <View style={styles.metodoPagoColumn}>
               <View style={styles.columnTitle}>
-                <Text style={styles.metodoPagoTitulo}>Metodo(s) de pago</Text>
+                <Text style={styles.metodoPagoTitulo}>Método(s) de Pago</Text>
               </View>
-              <View style={styles.metodosListado}>
-                <View style={styles.metodoInfo}>
-                  <View style={styles.leftInfo}>
-                    {pedidoCompleto?.metodosPago?.[0]?.nombre ? (
-                      <>
-                        <View style={{ justifyContent: "center" }}>
-                          {pedidoCompleto?.metodosPago?.[0]?.nombre ===
-                          "plin" ? (
+              <FlatList
+                style={{ maxHeight: 100, width: "120%" }}
+                data={pedidoCompleto?.pedidosXMetodoPago || []}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <View style={styles.metodoInfoContainer}>
+                    <View style={styles.metodoInfo}>
+                      <View style={styles.leftInfo}>
+                        <View style={styles.iconContainer}>
+                          {item.metodoPago?.nombre === "plin" ? (
                             <Image
                               source={require("@assets/images/plin.jpg")}
                               style={styles.iconoPago}
                             />
-                          ) : pedidoCompleto?.metodosPago?.[0]?.nombre ===
-                            "yape" ? (
+                          ) : item.metodoPago?.nombre === "yape" ? (
                             <Image
                               source={require("@assets/images/yape.png")}
                               style={styles.iconoPago}
@@ -601,30 +682,31 @@ const EntregarPedido = () => {
                             <FontAwesome name="money" size={30} color="black" />
                           )}
                         </View>
-                        <Text style={styles.metodoNombre}>
-                          {pedidoCompleto.metodosPago[0].nombre}
-                        </Text>
-                      </>
-                    ) : (
-                      <Text style={styles.metodoNombre}>No especificado</Text>
-                    )}
+                        <View>
+                          <Text style={styles.metodoNombre2}>
+                            {item.metodoPago?.nombre || "No especificado"}
+                          </Text>
+                          <Text style={styles.montoMetodo}>
+                            S/ {item.monto}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.rightInfo}>
+                        <TouchableOpacity
+                          onPress={() => showImageOptions(item.id, "pago")}
+                        >
+                          <TabBarIcon
+                            IconComponent={FontAwesome}
+                            name="camera"
+                            color={fotosPago[item.id] ? "#3BD100" : "#C9CC00"} // Verde si hay foto
+                            size={30}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.rightInfo}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        showImageOptions(pedidoCompleto?.id, "pago")
-                      }
-                    >
-                      <TabBarIcon
-                        IconComponent={FontAwesome}
-                        name="camera"
-                        color={fotoPago ? "#3BD100" : "#C9CC00"} // Darker green color
-                        size={30}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
+                )}
+              />
             </View>
           </View>
           <View style={styles.agregarParcialButton}>
@@ -819,14 +901,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     flex: 1,
   },
-  leftInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-start",
-  },
-  rightInfo: {
-    justifyContent: "center",
-  },
+
   videoContainer: {
     width: "100%",
     height: 300,
@@ -847,7 +922,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
-  metodoNombre: {
+  metodoNombre2: {
     paddingHorizontal: 10,
     fontSize: 16,
   },
@@ -921,10 +996,6 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 50,
     zIndex: 1,
-  },
-  iconoPago: {
-    width: 40,
-    height: 40,
   },
   agregarParcial: {
     color: "red",
@@ -1067,6 +1138,46 @@ const styles = StyleSheet.create({
   mensajeModalTexto: {
     fontSize: 18,
     textAlign: "center",
+  },
+
+  metodoInfoContainer: {
+    backgroundColor: "#f9f9f9",
+    borderRadius: 8,
+    marginBottom: 5,
+    padding: 10,
+    elevation: 2, // Sombra para destacar cada método
+  },
+
+  leftInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1, // Para que tome el espacio restante
+  },
+  iconContainer: {
+    marginRight: 15,
+    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    height: "100%",
+  },
+  iconoPago: {
+    width: 30,
+    height: 30,
+    resizeMode: "contain",
+  },
+  metodoNombre: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  montoMetodo: {
+    fontSize: 14,
+    color: "#555",
+    marginTop: 5,
+  },
+  rightInfo: {
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

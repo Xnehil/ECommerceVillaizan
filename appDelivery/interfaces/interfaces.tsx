@@ -30,7 +30,7 @@ export interface PedidosResponse {
 export interface Almacen {
 }
 
-export interface Ciudad {
+export interface Ciudad { 
 }
 
 

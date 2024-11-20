@@ -1,44 +1,169 @@
 import React, { useEffect, useRef, useState } from "react";
-import { GoogleMap, LoadScript, Marker, Circle, useLoadScript} from "@react-google-maps/api";
+import { GoogleMap, Circle, Marker, Polyline } from "@react-google-maps/api";
 import { Pedido } from "@/interfaces/interfaces";
-
-
+import { calculateOptimalRoute, Coordinate, PedidoLoc } from "@/functions/tspAlg";
 
 interface MapProps {
   location: { latitude: number; longitude: number } | null;
-  pedidoSeleccionado: Pedido | null;
   pedidos: Pedido[] | null;
-  mode: boolean; // Nuevo estado para alternar entre modo único y múltiple
+  pedidoSeleccionado: Pedido | null; // Pedido seleccionado
+  mode: boolean; // Alternar entre modo único y múltiple
 }
+
+// Coordenadas por defecto
+const defaultCoordinates = {
+  lat: -6.487316,
+  lng: -76.359598,
+};
 
 const MapComponent: React.FC<MapProps> = ({
   location,
-  pedidoSeleccionado,
   pedidos,
+  pedidoSeleccionado,
   mode,
 }) => {
   const mapRef = useRef<google.maps.Map | null>(null);
+  const [previousRoutes, setPreviousRoutes] = useState<{
+    origin: Coordinate;
+    destinations: { lat: number; lng: number }[];
+    route: google.maps.LatLng[];
+  }>();
 
   const mapContainerStyle = {
     height: "400px",
     width: "100%",
   };
 
-  const [center, setCenter] = useState<{ lat: number; lng: number }>({
-    lat: -12.0464,
-    lng: -77.0428,
-  });
+  const [center, setCenter] = useState<{ lat: number; lng: number }>(
+    defaultCoordinates
+  );
 
   const [circleRadius, setCircleRadius] = useState(250);
-
-  // Actualiza el centro del mapa basado en la ubicación del usuario
+  const [routePoints, setRoutePoints] = useState<google.maps.LatLng[]>([]);
+  const [pedidoLocations, setPedidoLocations] = useState<PedidoLoc[]>([]);
   useEffect(() => {
-    if (location) {
-      setCenter({ lat: location.latitude, lng: location.longitude });
-    } else {
-      setCenter({ lat: -12.0464, lng: -77.0428 }); // Centro predeterminado (Lima)
+    const pedidolocations = pedidos?.map((pedido) => {
+      const ubicacion = pedido.direccion?.ubicacion || {
+        latitud: defaultCoordinates.lat.toString(),
+        longitud: defaultCoordinates.lng.toString(),
+      };
+      return {
+        id: pedido.id,
+        nombre: pedido.usuario?.nombre || "Desconocido",
+        activo: pedido.estado === "enProgreso",
+        lat: parseFloat(ubicacion.latitud),
+        lng: parseFloat(ubicacion.longitud),
+      };
+    });
+
+    setPedidoLocations(pedidolocations || []);
+  }, [pedidos]);
+
+  const fetchSingleRoute = async (
+    origin: { lat: number; lng: number },
+    destination: { lat: number; lng: number }
+  ) => {
+    try {
+      const directionsService = new google.maps.DirectionsService();
+      const result = await directionsService.route({
+        origin,
+        destination,
+        travelMode: google.maps.TravelMode.DRIVING,
+      });
+
+      if (result && result.routes && result.routes.length > 0) {
+        return result.routes[0].overview_path;
+      } else {
+        return [];
+      }
+    } catch (error) {
+      console.error("Error fetching single route:", error);
+      return [];
     }
-  }, [location]);
+  };
+  // Fetch route for multiple destinations
+  const fetchMultipleRoutes = async (
+    origin: { lat: number; lng: number },
+    destinations: { lat: number; lng: number; id: string }[]
+  ) => {
+    try {
+      const directionsService = new google.maps.DirectionsService();
+      const points: google.maps.LatLng[] = [];
+      let lastPoint = origin;
+
+      for (const destination of destinations) {
+        const result = await directionsService.route({
+          origin: lastPoint,
+          destination: { lat: destination.lat, lng: destination.lng },
+          travelMode: google.maps.TravelMode.DRIVING,
+        });
+
+        if (result && result.routes && result.routes.length > 0) {
+          points.push(...result.routes[0].overview_path);
+          lastPoint = { lat: destination.lat, lng: destination.lng };
+        }
+      }
+
+      return points;
+    } catch (error) {
+      console.error("Error fetching multiple routes:", error);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    const getRoute = async () => {
+      if (location && pedidoLocations) {
+        if (mode) {
+          // Modo múltiple: calcular rutas para múltiples pedidos
+          /*if (
+            previousRoutes &&
+            JSON.stringify(previousRoutes.destinations) ===
+              JSON.stringify(pedidoLocations)
+          ) {
+            // Reutilizar las rutas calculadas previamente
+            setRoutePoints(previousRoutes.route);
+            return;
+          }*/
+
+          // Calcular rutas en modo múltiple
+          const orderedLocations = calculateOptimalRoute(
+            { lat: location.latitude, lng: location.longitude },
+            pedidoLocations
+          );
+          const route = await fetchMultipleRoutes(
+            { lat: location.latitude, lng: location.longitude },
+            orderedLocations.orderedPedidos
+          );
+
+          if (route) {
+            setRoutePoints(route);
+            setPreviousRoutes({
+              origin: { lat: location.latitude, lng: location.longitude },
+              destinations: orderedLocations.orderedPedidos,
+              route,
+            });
+          }
+        } else {
+          // Modo único: calcular la ruta para el pedido seleccionado
+          const activePedido = pedidoLocations.find((loc) => loc.activo);
+          if (activePedido) {
+            const route = await fetchSingleRoute(
+              { lat: location.latitude, lng: location.longitude },
+              { lat: activePedido.lat, lng: activePedido.lng }
+            );
+            if (route) setRoutePoints(route);
+          } else {
+            console.warn(
+              "No hay pedido activo para calcular la ruta en modo único."
+            );
+          }
+        }
+      }
+    };
+
+    getRoute();
+  }, [location, pedidoLocations, mode]);
 
   // Calcula el radio del círculo según el nivel de zoom
   const calculateCircleRadius = (zoom: number) => {
@@ -56,95 +181,69 @@ const MapComponent: React.FC<MapProps> = ({
     }
   };
 
-  const pedidoPosition = pedidoSeleccionado?.direccion?.ubicacion
-    ? {
-        lat: parseFloat(pedidoSeleccionado.direccion.ubicacion.latitud),
-        lng: parseFloat(pedidoSeleccionado.direccion.ubicacion.longitud),
-      }
-    : null;
-
-  // Obtiene las ubicaciones de todos los pedidos
-  const pedidoLocations = pedidos?.map((pedido) => {
-    const ubicacion = pedido.direccion?.ubicacion || {
-      latitud: "-12.0464",
-      longitud: "-77.0428",
-    };
-    return {
-      id: pedido.id,
-      lat: parseFloat(ubicacion.latitud),
-      lng: parseFloat(ubicacion.longitud),
-    };
-  });
-
-  // Ajusta el zoom y los límites según el modo
   useEffect(() => {
     if (mapRef.current && location) {
       const bounds = new google.maps.LatLngBounds();
-      const userLocation = new google.maps.LatLng(
-        location.latitude,
-        location.longitude
+      bounds.extend(
+        new google.maps.LatLng(location.latitude, location.longitude)
       );
 
-      bounds.extend(userLocation);
-
-      if (mode && pedidoLocations) {
-        // Modo múltiple: ajusta los límites con todas las ubicaciones de los pedidos
+      if (pedidoLocations) {
         pedidoLocations.forEach((loc) => {
           bounds.extend(new google.maps.LatLng(loc.lat, loc.lng));
         });
-      } else if (pedidoPosition) {
-        // Modo único: ajusta los límites con el pedido seleccionado
-        const pedidoLocation = new google.maps.LatLng(
-          pedidoPosition.lat,
-          pedidoPosition.lng
-        );
-        bounds.extend(pedidoLocation);
       }
 
       mapRef.current.fitBounds(bounds);
     }
-  }, [location, pedidoPosition, pedidoLocations, mode]);
+  }, [location, pedidoLocations, mode]);
 
   return (
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        center={center}
-        zoom={13}
-        onLoad={(map) => {
-          mapRef.current = map; // Asigna la referencia del mapa
-        }}
-        onZoomChanged={handleZoomChanged} // Evento que escucha el cambio de zoom
-      >
-        {location && (
-          <Circle
-            center={center}
-            radius={circleRadius}
-            options={{
-              fillColor: "#4285F4",
-              fillOpacity: 0.8,
-              strokeColor: "#4285F4",
-              strokeOpacity: 0.8,
-              strokeWeight: 2,
-            }}
-          />
-        )}
-        {mode &&
-          pedidoLocations?.map((loc) => (
-            <Marker
-              key={loc.id}
-              position={{ lat: loc.lat, lng: loc.lng }}
-              label={pedidoSeleccionado?.id === loc.id ? pedidoSeleccionado.usuario?.nombre : ""}
-              icon={
-                pedidoSeleccionado?.id === loc.id
-                  ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                  : undefined
-              }
-            />
-          ))}
-        {!mode && pedidoPosition && (
-          <Marker position={pedidoPosition} label={pedidoSeleccionado?.usuario?.nombre} />
-        )}
-      </GoogleMap>
+    <GoogleMap
+      mapContainerStyle={mapContainerStyle}
+      center={center}
+      zoom={13} // Default zoom level
+      onLoad={(map) => {
+        mapRef.current = map;
+      }}
+      onZoomChanged={handleZoomChanged}
+    >
+      {location && (
+        <Circle
+          center={center}
+          radius={circleRadius}
+          options={{
+            fillColor: "#4285F4",
+            fillOpacity: 0.8,
+            strokeColor: "#4285F4",
+            strokeOpacity: 0.8,
+            strokeWeight: 1,
+          }}
+        />
+      )}
+      {routePoints.length > 0 && (
+        <Polyline
+          path={routePoints}
+          options={{
+            strokeColor: "#FF0000",
+            strokeOpacity: 0.8,
+            strokeWeight: 3,
+          }}
+        />
+      )}
+      {pedidoLocations?.map((loc) => (
+        <Marker
+          key={loc.id}
+          position={{ lat: loc.lat, lng: loc.lng }}
+          label={loc.nombre}
+          icon={
+            pedidoSeleccionado?.id === loc.id
+              ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+              : undefined
+          }
+        />
+      ))}
+    </GoogleMap>
   );
 };
 
