@@ -117,13 +117,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ token, session }) {
       //console.log("Token db_info: ", token.db_info);
-      //@ts-ignore
+      //@ts-expect-error Mensaje para que no se queje
       session.user.id = token.db_info.id;
-      //@ts-ignore
+      //@ts-expect-error Mensaje para que no se queje
       session.user.email = token.db_info.email;
-      //@ts-ignore
+      //@ts-expect-error Mensaje para que no se queje
       session.user.name = token.db_info.nombre;
-      //@ts-ignore
+      //@ts-expect-error Mensaje para que no se queje
       session.user.db_info = token.db_info;
 
       return session;
