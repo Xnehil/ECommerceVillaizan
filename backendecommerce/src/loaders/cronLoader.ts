@@ -3,7 +3,7 @@ import {
     MedusaContainer,
   } from "@medusajs/medusa";
   import cron from 'node-cron';
-  import { LessThan } from 'typeorm';
+  import { IsNull, LessThan, LessThanOrEqual } from 'typeorm';
   import { Pedido } from '@models/Pedido';
   import AjusteService from '@services/Ajuste';
 import { enviarMensajeCliente } from "./websocketLoader";
@@ -25,10 +25,16 @@ import { Promocion } from "@models/Promocion";
     //   console.log(`Canceling pedidos solicitados before ${thresholdDate}`);
   
       const pedidosToCancel = await pedidoRepository.find({
-        where: {
-          estado: 'solicitado',
-          solicitadoEn: LessThan(thresholdDate),
-        },
+        where: [
+          {
+              estado: 'solicitado',
+              solicitadoEn: LessThanOrEqual(thresholdDate),
+          },
+          {
+              estado: 'solicitado',
+              solicitadoEn: IsNull(),
+          },
+      ],
       });
   
       for (const pedido of pedidosToCancel) {
