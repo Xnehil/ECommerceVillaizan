@@ -19,7 +19,7 @@ export class MetodoPago extends EntidadBase {
     @Column({ type: "varchar", length: 50, nullable: false })
     nombre: string;
 
-    @OneToMany(() => PedidoXMetodoPago, pedidoXMetodoPago => pedidoXMetodoPago.metodoPago, {eager: true})
+    @OneToMany(() => PedidoXMetodoPago, pedidoXMetodoPago => pedidoXMetodoPago.metodoPago, {eager: false})
     pedidosXMetodoPago: PedidoXMetodoPago[];
 
     @BeforeInsert()
