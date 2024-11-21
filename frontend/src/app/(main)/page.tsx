@@ -67,16 +67,27 @@ export default function Home() {
         setStartTime(start);
         setEndTime(end);
 
-        const orderUrl = `${baseUrl}/admin/pedido/usuario?id=${session?.user?.id}&estado=solicitado&estado=verificado&estado=enProgreso`;
-        console.log("Order URL:", orderUrl);
-        const orderResponse = await axios.get(orderUrl);
-        
-        if (orderResponse.data.error) {
-          console.error(orderResponse.data.message);
-        } else if (orderResponse.data.pedidos && orderResponse.data.pedidos.length > 0) {
-          setHasActiveOrder(true);
-          setOrderTrackingCode(orderResponse.data.pedidos[0].codigoSeguimiento);
+        try{
+          const orderUrl = `${baseUrl}/admin/pedido/usuario?id=${session?.user?.id}&estado=solicitado&estado=verificado&estado=enProgreso`;
+          console.log("Order URL:", orderUrl);
+          const orderResponse = await axios.get(orderUrl);
+
+          if (orderResponse.data.error) {
+            console.error(orderResponse.data.message);
+          } else if (orderResponse.data.pedidos && orderResponse.data.pedidos.length > 0) {
+            setHasActiveOrder(true);
+            setOrderTrackingCode(orderResponse.data.pedidos[0].codigoSeguimiento);
+          }
+        } catch (error) {
+          if (axios.isAxiosError(error) && error.response?.status === 404) {
+            console.log("No pedido found");
+            // Perform any fallback logic if needed
+          } else {
+            // Re-throw unexpected errors to be caught in the outer catch
+            throw error;
+          }
         }
+        
       } catch (error) {
         console.error("Error fetching monto_minimo_pedido and hoursResponse:", error);
         setMinOrderAmount(undefined);

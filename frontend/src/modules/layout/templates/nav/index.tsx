@@ -69,6 +69,8 @@ export default function Nav() {
         if (session?.user?.id) {
           try {
             setFinishedLoadingName(false);
+            
+            // Fetch user information
             const response = await axios.get(`${baseUrl}/admin/usuario/${session.user.id}`);
             const user = response.data.usuario;
             if (user) {
@@ -77,7 +79,8 @@ export default function Nav() {
               console.error('Failed to fetch user name');
               setIsErrorPopupVisible(true);
             }
-
+  
+            // Function to get cookies
             const getCookie = (name: string) => {
               const value = `; ${document.cookie}`;
               const parts = value.split(`; ${name}=`);
@@ -89,9 +92,9 @@ export default function Nav() {
               }
               return null;
             };
-
+  
+            // Handle cart logic
             const cartId = getCookie("_medusa_cart_id");
-
             if (cartId) {
               const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
               const pedido = response.data.pedido;
@@ -103,25 +106,27 @@ export default function Nav() {
                 }
               }
             } else {
-              const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
-              // Check if the API returned an expected error in the data
-              if (response.data.error) {
-                console.warn(response.data.error); // Log the expected "error" from the API
-                // Handle the specific case where the error is "Pedido no encontrado"
-                if (response.data.error === "Pedido no encontrado") {
-                  console.log("No pedido found, proceeding without setting cart cookie.");
-                  // Perform any fallback logic here if needed
-                }
-              } else {
+              try {
+                const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
                 const pedido = response.data.pedido;
                 if (pedido) {
                   document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
                 }
+              } catch (error) {
+                // Handle 404 specifically
+                if (axios.isAxiosError(error) && error.response?.status === 404) {
+                  console.log("No pedido found, proceeding without setting cart cookie.");
+                  // Perform any fallback logic if needed
+                } else {
+                  // Re-throw unexpected errors to be caught in the outer catch
+                  throw error;
+                }
               }
             }
           } catch (error) {
-            console.error('Error fetching user name:', error);
+            console.error('Error fetching user name or handling cart logic:', error);
             setIsErrorPopupVisible(true);
+  
             if (axios.isAxiosError(error)) {
               if (error.response) {
                 console.error(`Server error: ${error.response.status}`);
@@ -133,16 +138,16 @@ export default function Nav() {
             } else {
               console.error('An unexpected error occurred.');
             }
-          }
-          finally{
-            setFinishedLoadingName(true)
+          } finally {
+            setFinishedLoadingName(true);
           }
         }
       }
     }
-
+  
     fetchUserName();
   }, [status, session]);
+  
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 bg-rojoVillaizan">
