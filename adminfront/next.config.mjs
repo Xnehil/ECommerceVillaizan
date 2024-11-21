@@ -6,6 +6,7 @@ const nextConfig = {
     AUTH_SECRET: "9st1Wnz+sLYAuTyk9tfiggU/lYJzBHueNUtqpRkhPZs=",
     NEXT_PUBLIC_APP_URL:"http://localhost:8000",
     NEXT_PUBLIC_MEDUSA_BACKEND_URL:"http://localhost:9000",
+    NEXTAUTH_URL:"http://localhost:8000" 
   },
   images: {
     remotePatterns: [
