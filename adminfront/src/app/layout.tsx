@@ -42,14 +42,9 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
           const usuario = response.data.usuario;
 
           // Check if the user has the "Administrador" role
-          if (
-            usuario &&
-            usuario.rol &&
-            usuario.rol.nombre === "Administrador"
-          ) {
+          if (usuario && usuario.rol && usuario.rol.nombre === "Administrador") {
             setIsAuthenticated(true);
             setIsAdmin(true);
-            router.push("/pedidos");
             // console.log("User is authenticated and has admin role");
           } else {
             // If not an admin, redirect to login
@@ -73,20 +68,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
   // Prevent rendering until authentication and role are confirmed
   if ((!isAuthenticated || !isAdmin) && !isLoginPage) return null;
 
-  return (
-    <>
-      {!isLoginPage && (
-        <div className="flex min-h-screen max-h-screen w-full">
-          <Sidebar />
-          <main className="flex-1 flex flex-col p-8 overflow-hidden">
-            <Breadcrumbs />
-            {children}
-          </main>
-        </div>
-      )}
-      {isLoginPage && <main className="w-full h-full">{children}</main>}
-    </>
-  );
+  return <>{children}</>;
 }
 
 // WebSocket Message Handling Logic
@@ -124,9 +106,7 @@ const mapearMensaje = (tipo: string, router: any, data: any) => {
       };
   }
 
-  const buttonClassName =
-    "text-black-600 mt-2 ml-6 p-2 rounded-md h-10" +
-    (tipo === "nuevoPedido" ? "bg-white" : "");
+  const buttonClassName = "text-black-600 mt-2 ml-6 p-2 rounded-md h-10" + (tipo === "nuevoPedido" ? "bg-white" : "");
 
   toast({
     title: dataBonita.type,
@@ -134,17 +114,15 @@ const mapearMensaje = (tipo: string, router: any, data: any) => {
     description: (
       <div className="flex justify-between items-center">
         <p>{dataBonita.data}</p>
-        {dataBonita.action && dataBonita.button && (
+        { dataBonita.action && dataBonita.button && (
           <ToastAction
-            onClick={() => {
-              router.push(dataBonita.action);
-            }}
-            altText="Ir a la página de notificaciones"
-            className={buttonClassName}
-          >
-            {dataBonita.button}
-          </ToastAction>
-        )}
+          onClick={() => { router.push(dataBonita.action); }}
+          altText="Ir a la página de notificaciones"
+          className={buttonClassName}
+        >
+          {dataBonita.button}
+        </ToastAction>)
+        }
       </div>
     ),
   });
@@ -161,20 +139,16 @@ export default function RootLayout({
 
   useEffect(() => {
     // Initialize WebSocket connection
-    ws.current = new WebSocket(
-      url +
-        "?rol=admin&id=" +
-        Math.floor(Math.random() * 10000 + new Date().getTime() / 1000)
-    );
+    ws.current = new WebSocket(url + '?rol=admin&id=' + Math.floor(Math.random() * 10000+new Date().getTime()/1000));
 
     // Handle WebSocket open event
     ws.current.onopen = () => {
-      console.log("WebSocket connection opened");
+      console.log('WebSocket connection opened');
     };
 
     // Handle WebSocket message event
     ws.current.onmessage = (event) => {
-      console.log("WebSocket message received:", event.data);
+      console.log('WebSocket message received:', event.data);
 
       try {
         // Parse the JSON string
@@ -192,21 +166,21 @@ export default function RootLayout({
         } else if (data.type && data.data) {
           mapearMensaje(data.type, router, data.data);
         } else {
-          console.error("Message property not found in WebSocket data:", data);
+          console.error('Message property not found in WebSocket data:', data);
         }
       } catch (error) {
-        console.error("Failed to parse WebSocket message:", error);
+        console.error('Failed to parse WebSocket message:', error);
       }
     };
 
     // Handle WebSocket error event
     ws.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.error('WebSocket error:', error);
     };
 
     // Handle WebSocket close event
     ws.current.onclose = () => {
-      console.log("WebSocket connection closed");
+      console.log('WebSocket connection closed');
     };
 
     // Cleanup on unmount
@@ -221,7 +195,13 @@ export default function RootLayout({
     <SessionProvider>
       <html lang="es">
         <body className="min-h-screen max-h-screen flex overflow-hidden">
-          <AuthWrapper>{children}</AuthWrapper>
+          <AuthWrapper>
+            <Sidebar />
+            <main className="flex-1 flex flex-col p-8 overflow-hidden">
+              <Breadcrumbs />
+              {children}
+            </main>
+          </AuthWrapper>
           <Toaster />
         </body>
       </html>
