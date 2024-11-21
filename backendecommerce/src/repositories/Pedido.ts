@@ -110,6 +110,7 @@ export const PedidoRepository = dataSource
         .leftJoinAndSelect("usuario.rol", "rol")
         .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago",  "pedidosXMetodoPago.estaActivo = :estaActivo", { estaActivo: true })
         .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
+        .leftJoinAndSelect("pedidosXMetodoPago.pago", "pago")
         .leftJoinAndSelect("pedido.detalles", "detalles")
         .leftJoinAndSelect("detalles.producto", "producto")
         .leftJoinAndSelect("detalles.promocion", "promocion")

@@ -13,7 +13,7 @@ export const PedidoXMetodoPagoRepository = dataSource
                 id: idPedido
             }
           },
-          relations: ['pedido', 'metodoPago'],
+          relations: ['pedido', 'metodoPago', 'pago'],
         });
     }
   })
