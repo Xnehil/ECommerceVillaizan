@@ -74,7 +74,13 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
           placeholder=" "
           type="text"
           disabled={true}
-          value={pedido.current.pedidosXMetodoPago.length > 0 ? pedido.current.pedidosXMetodoPago[0].metodoPago.nombre : "Varios"}
+          value={
+            pedido.current.pedidosXMetodoPago.length > 0
+              ? pedido.current.pedidosXMetodoPago.length > 1
+                ? "Dividido"
+                : pedido.current.pedidosXMetodoPago[0].metodoPago.nombre.charAt(0).toUpperCase() + pedido.current.pedidosXMetodoPago[0].metodoPago.nombre.slice(1)
+              : "No disponible"
+          }
         />
         <div className="h-full flex flex-col justify-end">
           <Sheet open={open} onOpenChange={setOpen}>
@@ -110,11 +116,8 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                 <div className="flex flex-col space-y-2 ">
                   {pedido.current.pedidosXMetodoPago?.map((detalle, index) => (
                     <div key={index} className="flex flex-row justify-between">
-                      <p>{detalle.metodoPago.nombre}</p>
-                      <p>
-                        S/.{" "}
-                        {/* {Number(pedido.current.).toFixed(2)} */}
-                      </p>
+                      <p>{detalle.metodoPago.nombre.charAt(0).toUpperCase() + detalle.metodoPago.nombre.slice(1)}</p>
+                      <p>S/. {Number(detalle.monto).toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
