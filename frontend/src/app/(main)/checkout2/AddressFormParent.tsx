@@ -250,9 +250,21 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
       {/* Selección de Comprobante */}
       <div className="flex items-center gap-3">
         <label className="block text-lg font-medium text-gray-700">
-          Selecciona tu comprobante:
+          Comprobante:
         </label>
+        <span className="text-red-500">*</span>
         <div className="flex gap-4">
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="comprobante"
+              value="boletaSimple"
+              checked={comprobante === "boletaSimple"}
+              onChange={handleComprobanteChange}
+              className="mr-2"
+            />
+            Boleta Simple
+          </label>
           <label className="flex items-center">
             <input
               type="radio"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { FontAwesome } from "@expo/vector-icons";
 import {
   View,
@@ -14,11 +14,11 @@ import { Link, useRouter } from "expo-router";
 import axios from "axios";
 import { Usuario, Pedido, PedidosResponse } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
-import * as Location from "expo-location";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import Mapa from "@/components/Entregas/Mapa";
 import StyledIcon from "@/components/StyledIcon";
 import TabBarIcon from "@/components/StyledIcon";
+import { useWebSocketContext } from "@/components/sockets/WebSocketContext";
 
 export default function Entregas() {
   const [pedidosAceptados, setPedidosAceptados] = useState<Pedido[]>([]);
@@ -27,18 +27,6 @@ export default function Entregas() {
   );
   const [historialPedidos, setHistorialPedidos] = useState<Pedido[]>([]);
   const [verHistorial, setVerHistorial] = useState(false);
-
-  const [location, setLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [tiemposRestantes, setTiemposRestantes] = useState<{
-    [key: string]: number;
-  }>({});
-  const [timeoutIds, setTimeoutIds] = useState<{
-    [key: string]: NodeJS.Timeout;
-  }>({});
-
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [modoMultiple, setModoMultiple] = useState(false);
 
@@ -57,21 +45,34 @@ export default function Entregas() {
     }
   };
 
-  const handlePrimerPedido = async (pedido: Pedido) => {
-    if (pedido) {
-      if (pedido.estado !== "enProgreso") {
-        const response = await axios.put(
-          `${BASE_URL}/pedido/${pedido.id}`,
-          {
-            estado: "enProgreso",
-          }
-        );
+  const handlePrimerPedido = async (pedidos: Pedido[]) => {
+    const primerPedido = pedidos[0];
+    if (Array.isArray(pedidos) && pedidos.length > 0) {
+      const primerPedido = pedidos[0];
+      if (primerPedido) {
+        if (primerPedido.estado !== "enProgreso") {
+          const response = await axios.put(
+            `${BASE_URL}/pedido/${primerPedido.id}`,
+            {
+              estado: "enProgreso",
+            }
+          );
+          const { sendPedido } = useWebSocketContext();
+          sendPedido(primerPedido.id);
+          console.log("Pedido activo actualizado:", response.data);
+        }
+        setPedidoSeleccionado(primerPedido);
       }
-      setPedidoSeleccionado(pedido);
-
-      
+      //Si hay pedidos, asegurar que si su estado es "enProgreso", cambiarlo a "verificado"
+      pedidos.slice(1).forEach((pedido) => {
+        if (pedido.estado === "enProgreso") {
+          axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
+        estado: "verificado",
+          });
+        }
+      });
     }
-  }
+  };
 
   useEffect(() => {
     getDataMemory();
@@ -79,9 +80,13 @@ export default function Entregas() {
 
   // Función para obtener los pedidos del usuario repartidor desde el backend
   const fetchPedidos = async () => {
+    if (!usuario?.id) {
+      console.log("Usuario no encontrado");
+      return;
+    }
     try {
       const response = await axios.get(
-        `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos?estado=verificado&estado=enProgreso`
+        `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos`
       );
       console.log(usuario?.id);
       const pedidosResponse: PedidosResponse = response.data;
@@ -93,10 +98,17 @@ export default function Entregas() {
       );
       console.log("Pedidos en proceso:");
       console.log(pedidosEnProceso);
-      setPedidosAceptados(pedidosEnProceso);
+      if (
+        pedidosEnProceso.length !== pedidosAceptados.length ||
+        pedidosEnProceso.some(
+          (pedido, index) => pedido.id !== pedidosAceptados[index]?.id
+        )
+      ) {
+        console.log("Pedido actualizado");
+        setPedidosAceptados(pedidosEnProceso);
+      }
       const pedidosHistorial = pedidosResponse.pedidos.filter(
-        (pedido) =>
-          pedido.estado === "enProgreso" || pedido.estado === "cancelado"
+        (pedido) => pedido.estado === "entregado" || pedido.estado === "zz"
       );
       console.log("Historial de pedidos:");
       console.log(pedidosHistorial);
@@ -105,45 +117,18 @@ export default function Entregas() {
       // Sort. First enProgreso, then verificado. Sort by solicitadoEn
       pedidosEnProceso.sort((a, b) => {
         if (a.estado === b.estado) {
-          return (new Date(a.solicitadoEn?? 0).getTime()) - (new Date(b.solicitadoEn?? 0).getTime());
+          return (
+            new Date(a.solicitadoEn ?? 0).getTime() -
+            new Date(b.solicitadoEn ?? 0).getTime()
+          );
         }
         return a.estado === "enProgreso" ? -1 : 1;
       });
-      handlePrimerPedido(pedidosEnProceso[0]);
+      handlePrimerPedido(pedidosEnProceso);
     } catch (error) {
       console.error("Error al obtener los pedidos:", error);
     }
   };
-
-  useEffect(() => {
-    const getLocation = async () => {
-      try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          console.log("Permiso de ubicación denegado");
-          return;
-        }
-
-        let location_async = await Location.getCurrentPositionAsync({});
-        setLocation({
-          latitude: location_async.coords.latitude,
-          longitude: location_async.coords.longitude,
-        });
-      } catch (error) {
-        console.log("Error al obtener la ubicación:", error);
-      }
-    };
-
-    // Obtener la ubicación al cargar el componente
-    getLocation();
-
-    // Actualizar la ubicación cada 3 segundos
-    const locationInterval = setInterval(getLocation, 3000);
-
-    return () => {
-      clearInterval(locationInterval);
-    };
-  }, []);
 
   // UseEffect para obtener los pedidos cuando la página cargue
   useEffect(() => {
@@ -170,6 +155,11 @@ export default function Entregas() {
       </View>
     );
   };
+
+  const stableLocation = useMemo(
+    () => ({ latitude: -6.487316, longitude: -76.359598 }),
+    []
+  );
 
   const PedidoAceptado: React.FC<{ pedido: Pedido }> = ({ pedido }) => {
     return (
@@ -217,6 +207,16 @@ export default function Entregas() {
     );
   };
 
+  const { onMessage } = useWebSocketContext();
+  useEffect(() => {
+    onMessage((data) => {
+      if (data.type === "nuevoPedido") {
+        console.log("Nuevo pedido en DeliveryPage:", data);
+        fetchPedidos();
+      }
+    });
+  }, [onMessage]);
+
   return (
     <View style={styles.container}>
       {!verHistorial && (
@@ -234,7 +234,8 @@ export default function Entregas() {
       {!verHistorial && (
         <View style={styles.containerMitad}>
           <Mapa
-            location={location}
+            //location={location}
+            location={stableLocation}
             pedidoSeleccionado={pedidoSeleccionado}
             pedidos={pedidosAceptados}
             mode={modoMultiple}
@@ -244,7 +245,9 @@ export default function Entregas() {
 
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <View style={{ flexDirection: "row" }}>
-          <Text style={styles.Titulo}>{verHistorial ? "Tu historial" : "Tus entregas"}</Text>
+          <Text style={styles.Titulo}>
+            {verHistorial ? "Tu historial" : "Tus entregas"}
+          </Text>
           <TouchableOpacity onPress={fetchPedidos} style={styles.reloadButton}>
             <TabBarIcon
               IconComponent={FontAwesome}
