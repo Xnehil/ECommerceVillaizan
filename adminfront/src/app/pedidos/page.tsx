@@ -10,11 +10,13 @@ import axios from "axios";
 import Pendientes from "@/app/pedidos/pendientes/pendientes";
 import Activos from "@/app/pedidos/activos/activos";
 import Historial from "@/app/pedidos/historial/historial";
+import Revision from "@/app/pedidos/revision/revision";
 
 const PedidosPage: React.FC = () => {
   const pedPendientes = useRef<Pedido[]>([]);
   const pedActivos = useRef<Pedido[]>([]);
   const pedHistorial = useRef<Pedido[]>([]);
+  const pedRevision = useRef<Pedido[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const a = useRef(0);
@@ -61,7 +63,11 @@ const PedidosPage: React.FC = () => {
               pedActivos.current.push(pedido);
               break;
             case "entregado":
-              pedHistorial.current.push(pedido);
+              if (!pedido.pagado) {
+                pedRevision.current.push(pedido);
+              } else {
+                pedHistorial.current.push(pedido);
+              }
               break;
             case "cancelado":
               pedHistorial.current.push(pedido);
@@ -101,9 +107,10 @@ const PedidosPage: React.FC = () => {
           defaultChecked={true}
           className="w-full"
         >
-          <TabsList className="grid w-2/5 grid-cols-3">
+          <TabsList className="grid w-3/5 grid-cols-4">
             <TabsTrigger value="pendientes">Pendientes</TabsTrigger>
             <TabsTrigger value="activos">Activos</TabsTrigger>
+            <TabsTrigger value="revision">Pago por confirmar</TabsTrigger>
             <TabsTrigger value="historial">Historial</TabsTrigger>
           </TabsList>
           <TabsContent className="w-full" value="pendientes">
@@ -114,6 +121,11 @@ const PedidosPage: React.FC = () => {
           <TabsContent value="activos">
             <div className="information-container">
               {!isLoading && <Activos activos={pedActivos} />}
+            </div>
+          </TabsContent>
+          <TabsContent value="revision">
+            <div className="information-container">
+              {!isLoading && <Revision revision={pedRevision} />}
             </div>
           </TabsContent>
           <TabsContent value="historial">

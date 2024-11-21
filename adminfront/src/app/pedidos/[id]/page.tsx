@@ -135,6 +135,39 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
     }
   };
 
+  const handleConfirmPayment = async () => {
+    setIsLoading(true);
+    console.log("Confirmando pago");
+    try {
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
+        {
+          ...pedido.current,
+          pagado: true,
+        }
+      );
+      if (response.status !== 200) {
+        throw new Error("Error al actualizar el pedido");
+      }
+      console.log("Pedido saved", response.data);
+      pedido.current.pagado = true;
+
+      setIsLoading(false);
+      toast({
+        description: "Se confirmó el pago correctamente.",
+      });
+    } catch (error: any) {
+      console.error("Error saving product", error);
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ocurrió un error al confirmar el pago.",
+      });
+    }
+  }; 
+
   return (
     <div className="content-container">
       {isLoading && <Loading />}
@@ -170,6 +203,33 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction onClick={handleSave}>
                           Confirmar Pedido
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              </div>
+            )}
+            {pedido.current.estado === "entregado" && !pedido.current.pagado && (
+              <div className="lower-buttons-container">
+                <>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="default">Confirmar Pago</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          ¿Estás seguro de confirmar el pago?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          El pago de este pedido será confirmado. Asegúrate de que los datos sean correctos.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmPayment}>
+                          Confirmar Pago
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>

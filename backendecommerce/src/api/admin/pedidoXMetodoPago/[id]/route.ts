@@ -96,6 +96,7 @@ export const PUT = async (
         const pedidoXMetodoPago = await pedidoXMetodoPagoService.actualizar(id, pedidoXMetodoPagoData);
         res.json({ pedidoXMetodoPago });
     } catch (error) {
+        console.error(error)
         if (error.message === "PedidoXMetodoPago no encontrado") {
             res.status(404).json({ error: "PedidoXMetodoPago no encontrado" });
         } else {
