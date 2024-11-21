@@ -6,12 +6,14 @@ import {
     UpdateDateColumn, 
     ManyToMany,
     ManyToOne,
-    JoinColumn
+    JoinColumn,
+    OneToOne
 } from "typeorm"
 import { generateEntityId } from "@medusajs/medusa/dist/utils"
 import { EntidadBase } from "./EntidadBase"
 import { Pedido } from "./Pedido";
 import { MetodoPago } from "./MetodoPago";
+import { Pago } from "./Pago";
 
 @Entity("vi_pedido_metodopago")
 export class PedidoXMetodoPago extends EntidadBase {
@@ -27,7 +29,9 @@ export class PedidoXMetodoPago extends EntidadBase {
     @JoinColumn({ name: "id_metodopago" })
     metodoPago: MetodoPago;
 
-    
+    @OneToOne(() => Pago, pago => pago.id, /*{ eager: true }*/)
+    @JoinColumn({ name: "id_pago" })
+    pago: Pago;
 
     @BeforeInsert()
     private beforeInsert() {

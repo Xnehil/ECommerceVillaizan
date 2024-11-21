@@ -43,7 +43,10 @@ export const GET = async (
         const detallePedido = await detallepedidoService.recuperarEnriquecido(id);
         res.json({ detallePedido });
     } catch (error) {
-        res.status(404).json({ error: "detallePedido no encontrado" });
+        res.status(404).json({
+            error: "detallePedido no encontrado",
+            message: error.message
+        });
     }
 };
 
