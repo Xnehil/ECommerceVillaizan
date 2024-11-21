@@ -86,7 +86,7 @@ export default function LibrodeReclamaciones() {
           Como alternativa, puedes comunicarte con nosotros a través de nuestro número de WhatsApp.
         </p>
       </div>
-      <div className="flex justify-center">
+      <div className="flex justify-center mb-4">
         <ButtonWhatsApp nombreConsumidor={null} codigoSeguimiento={null} />
       </div>
 
