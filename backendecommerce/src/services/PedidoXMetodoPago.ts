@@ -52,7 +52,7 @@ class PedidoXMetodoPagoService extends TransactionBaseService {
     ): Promise<PedidoXMetodoPago> {
         const pedidoXMetodoPagoRepo = this.activeManager_.withRepository(this.pedidoXMetodoPagoRepository_);
         config = { relations: ["pedido", "metodoPago"] };
-        const query = buildQuery({ id }, config);
+        const query = buildQuery({ id, estaActivo:true }, config);
         const pedidoXMetodoPago = await pedidoXMetodoPagoRepo.findOne(query);
 
         if (!pedidoXMetodoPago) {
@@ -87,6 +87,9 @@ class PedidoXMetodoPagoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
           const pedidoXMetodoPagoRepo = manager.withRepository(this.pedidoXMetodoPagoRepository_);
           const pedidoXMetodoPago = await this.recuperar(id);
+          if (!pedidoXMetodoPago) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "PedidoXMetodoPago no encontrado");
+          }
           await pedidoXMetodoPagoRepo.update(id, {estaActivo: false, desactivadoEn: new Date()})
         });
     }
