@@ -107,7 +107,7 @@ const PedidosPage: React.FC = () => {
           defaultChecked={true}
           className="w-full"
         >
-          <TabsList className="grid w-2/5 grid-cols-3">
+          <TabsList className="grid w-3/5 grid-cols-4">
             <TabsTrigger value="pendientes">Pendientes</TabsTrigger>
             <TabsTrigger value="activos">Activos</TabsTrigger>
             <TabsTrigger value="revision">Pago por confirmar</TabsTrigger>
