@@ -26,8 +26,8 @@ jobs:
             cd ECommerceVillaizan/
             git pull origin master
             cd backendecommerce/ 
-            yarn 
-            yarn build
+            npm install 
+            npm run build
             pm2 delete medusa
             pm2 start "yarn start" --name medusa
             sudo systemctl restart nginx.service
