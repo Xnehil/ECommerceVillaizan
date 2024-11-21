@@ -14,11 +14,11 @@ import { Link, useRouter } from "expo-router";
 import axios from "axios";
 import { Usuario, Pedido, PedidosResponse } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
-import * as Location from "expo-location";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import Mapa from "@/components/Entregas/Mapa";
 import StyledIcon from "@/components/StyledIcon";
 import TabBarIcon from "@/components/StyledIcon";
+import { useWebSocketContext } from "@/components/sockets/WebSocketContext";
 
 export default function Entregas() {
   const [pedidosAceptados, setPedidosAceptados] = useState<Pedido[]>([]);
@@ -27,18 +27,6 @@ export default function Entregas() {
   );
   const [historialPedidos, setHistorialPedidos] = useState<Pedido[]>([]);
   const [verHistorial, setVerHistorial] = useState(false);
-
-  const [location, setLocation] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [tiemposRestantes, setTiemposRestantes] = useState<{
-    [key: string]: number;
-  }>({});
-  const [timeoutIds, setTimeoutIds] = useState<{
-    [key: string]: NodeJS.Timeout;
-  }>({});
-
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [modoMultiple, setModoMultiple] = useState(false);
 
@@ -63,6 +51,9 @@ export default function Entregas() {
         const response = await axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
           estado: "enProgreso",
         });
+        const { sendPedido } = useWebSocketContext();
+        sendPedido(pedido.id);
+        console.log("Pedido activo actualizado:", response.data);
       }
       setPedidoSeleccionado(pedido);
     }
@@ -74,6 +65,10 @@ export default function Entregas() {
 
   // Función para obtener los pedidos del usuario repartidor desde el backend
   const fetchPedidos = async () => {
+    if (!usuario?.id) {
+      console.log("Usuario no encontrado");
+      return;
+    }
     try {
       const response = await axios.get(
         `${BASE_URL}/usuario/${usuario?.id}/repartidorPedidos`
@@ -119,36 +114,6 @@ export default function Entregas() {
       console.error("Error al obtener los pedidos:", error);
     }
   };
-
-  useEffect(() => {
-    const getLocation = async () => {
-      try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          console.log("Permiso de ubicación denegado");
-          return;
-        }
-
-        let location_async = await Location.getCurrentPositionAsync({});
-        setLocation({
-          latitude: location_async.coords.latitude,
-          longitude: location_async.coords.longitude,
-        });
-      } catch (error) {
-        console.log("Error al obtener la ubicación:", error);
-      }
-    };
-
-    // Obtener la ubicación al cargar el componente
-    getLocation();
-
-    // Actualizar la ubicación cada 3 segundos
-    const locationInterval = setInterval(getLocation, 3000);
-
-    return () => {
-      clearInterval(locationInterval);
-    };
-  }, []);
 
   // UseEffect para obtener los pedidos cuando la página cargue
   useEffect(() => {
@@ -226,6 +191,16 @@ export default function Entregas() {
       </View>
     );
   };
+
+  const { onMessage } = useWebSocketContext();
+  useEffect(() => {
+    onMessage((data) => {
+      if (data.type === "nuevoPedido") {
+        console.log("Nuevo pedido en DeliveryPage:", data);
+        fetchPedidos();
+      }
+    });
+  }, [onMessage]);
 
   return (
     <View style={styles.container}>
