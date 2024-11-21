@@ -6,6 +6,7 @@ const nextConfig = {
     AUTH_SECRET: "9st1Wnz+sLYAuTyk9tfiggU/lYJzBHueNUtqpRkhPZs=",
     NEXT_PUBLIC_APP_URL:"https://heladosvillaizan.tech",
     NEXT_PUBLIC_MEDUSA_BACKEND_URL:"https://back.heladosvillaizan.tech",
+    NEXTAUTH_URL:"https://admin.heladosvillaizan.tech" 
   },
   images: {
     remotePatterns: [
