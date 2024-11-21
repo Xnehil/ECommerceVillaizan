@@ -49,6 +49,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
           ) {
             setIsAuthenticated(true);
             setIsAdmin(true);
+            router.push("/pedidos");
             // console.log("User is authenticated and has admin role");
           } else {
             // If not an admin, redirect to login
