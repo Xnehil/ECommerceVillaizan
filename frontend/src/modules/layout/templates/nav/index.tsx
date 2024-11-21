@@ -104,8 +104,14 @@ export default function Nav() {
               }
             } else {
               const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
+              // Check if the API returned an expected error in the data
               if (response.data.error) {
-                console.error(response.data.error);
+                console.warn(response.data.error); // Log the expected "error" from the API
+                // Handle the specific case where the error is "Pedido no encontrado"
+                if (response.data.error === "Pedido no encontrado") {
+                  console.log("No pedido found, proceeding without setting cart cookie.");
+                  // Perform any fallback logic here if needed
+                }
               } else {
                 const pedido = response.data.pedido;
                 if (pedido) {
