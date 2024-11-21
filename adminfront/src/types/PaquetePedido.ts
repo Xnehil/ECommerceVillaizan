@@ -13,11 +13,7 @@ export interface Pedido extends EntidadBase {
   motorizado: Motorizado;
   direccion: Direccion;
   usuario: Usuario;
-  pedidosXMetodoPago: {
-    metodoPago: MetodoPago;
-    monto: number;
-    id: string;
-  } [];
+  pedidosXMetodoPago: PedidoXMetodoPago[]; 
   detalles: DetallePedido[];
   solicitadoEn?: Date;
   verificadoEn?: Date;
@@ -40,6 +36,12 @@ export interface MetodoPago extends EntidadBase {
   nombre: string;
   pedidos: Pedido[];
   id: string;
+}
+
+export interface PedidoXMetodoPago extends EntidadBase {
+  monto: number;
+  pedido: Pedido;
+  metodoPago: MetodoPago;
 }
 
 export interface DetallePedido extends EntidadBase {
