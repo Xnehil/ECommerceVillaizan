@@ -104,9 +104,13 @@ export default function Nav() {
               }
             } else {
               const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
-              const pedido = response.data.pedido;
-              if (pedido) {
-                document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
+              if (response.data.error) {
+                console.error(response.data.error);
+              } else {
+                const pedido = response.data.pedido;
+                if (pedido) {
+                  document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
+                }
               }
             }
           } catch (error) {

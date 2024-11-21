@@ -67,10 +67,13 @@ export default function Home() {
         setStartTime(start);
         setEndTime(end);
 
-        const orderUrl = `http://localhost:9000/admin/pedido/usuario?id=${session?.user?.id}&estado=solicitado&estado=verificado&estado=enProgreso`;
+        const orderUrl = `${baseUrl}/admin/pedido/usuario?id=${session?.user?.id}&estado=solicitado&estado=verificado&estado=enProgreso`;
         console.log("Order URL:", orderUrl);
         const orderResponse = await axios.get(orderUrl);
-        if (orderResponse.data && orderResponse.data.pedidos.length > 0) {
+        
+        if (orderResponse.data.error) {
+          console.error(orderResponse.data.message);
+        } else if (orderResponse.data.pedidos && orderResponse.data.pedidos.length > 0) {
           setHasActiveOrder(true);
           setOrderTrackingCode(orderResponse.data.pedidos[0].codigoSeguimiento);
         }
