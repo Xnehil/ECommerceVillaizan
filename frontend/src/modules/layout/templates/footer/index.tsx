@@ -1,5 +1,6 @@
 "use client";
 
+import LabelWhatsApp from "@components/LabelWhatsApp";
 import { Text, clx } from "@medusajs/ui";
 import Link from "next/link";
 
@@ -73,6 +74,10 @@ export default function Footer() {
                     </Link>
                   </li>
                 ))}
+                {/* Add LabelWhatsApp under "Política de privacidad" */}
+                <li>
+                  <LabelWhatsApp nombreConsumidor={null} codigoSeguimiento={null} />
+                </li>
               </ul>
             </div>
 
