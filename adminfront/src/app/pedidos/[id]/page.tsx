@@ -228,7 +228,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleSave}>
+                        <AlertDialogAction onClick={handleConfirmPayment}>
                           Confirmar Pago
                         </AlertDialogAction>
                       </AlertDialogFooter>
