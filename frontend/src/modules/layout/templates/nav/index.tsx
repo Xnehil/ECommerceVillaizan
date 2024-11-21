@@ -6,6 +6,8 @@ import { useSession } from "next-auth/react";
 import { Button } from "@components/Button";
 import { signOut } from "next-auth/react";
 import axios from 'axios';
+import { Pedido } from 'types/PaquetePedido';
+import { getOrSetCart } from '@modules/cart/actions';
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
@@ -66,9 +68,25 @@ export default function Nav() {
   useEffect(() => {
     async function fetchUserName() {
       if (status !== "loading") {
+        // Function to get cookies
+        const getCookie = (name: string) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) {
+            const part = parts.pop();
+            if (part) {
+              return part.split(';').shift();
+            }
+          }
+          return null;
+        };
+        //En caso de que el usuario esté autenticado
         if (session?.user?.id) {
+          console.log("User is authenticated");
           try {
             setFinishedLoadingName(false);
+            
+            // Fetch user information
             const response = await axios.get(`${baseUrl}/admin/usuario/${session.user.id}`);
             const user = response.data.usuario;
             if (user) {
@@ -77,41 +95,49 @@ export default function Nav() {
               console.error('Failed to fetch user name');
               setIsErrorPopupVisible(true);
             }
-
-            const getCookie = (name: string) => {
-              const value = `; ${document.cookie}`;
-              const parts = value.split(`; ${name}=`);
-              if (parts.length === 2) {
-                const part = parts.pop();
-                if (part) {
-                  return part.split(';').shift();
-                }
-              }
-              return null;
-            };
-
+  
+            
+  
+            // Handle cart logic
             const cartId = getCookie("_medusa_cart_id");
-
             if (cartId) {
+              //No carga el carrito que haya elaborado estando no autenticado
+
+              
               const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
               const pedido = response.data.pedido;
               if (pedido) {
                 if (!pedido.usuario || (pedido.usuario.id !== session.user.id)) {
-                  await axios.put(`${baseUrl}/admin/pedido/${pedido.id}`, {
+                  /*await axios.put(`${baseUrl}/admin/pedido/${pedido.id}`, {
                     "usuario": { "id": session.user.id }
-                  });
+                  });*/
+                  document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
+                  document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
                 }
               }
+                
             } else {
-              const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
-              const pedido = response.data.pedido;
-              if (pedido) {
-                document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
+              try {
+                const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
+                const pedido = response.data.pedido;
+                if (pedido) {
+                  document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
+                }
+              } catch (error) {
+                // Handle 404 specifically
+                if (axios.isAxiosError(error) && error.response?.status === 404) {
+                  console.log("No pedido found, proceeding without setting cart cookie.");
+                  // Perform any fallback logic if needed
+                } else {
+                  // Re-throw unexpected errors to be caught in the outer catch
+                  throw error;
+                }
               }
             }
           } catch (error) {
-            console.error('Error fetching user name:', error);
+            console.error('Error fetching user name or handling cart logic:', error);
             setIsErrorPopupVisible(true);
+  
             if (axios.isAxiosError(error)) {
               if (error.response) {
                 console.error(`Server error: ${error.response.status}`);
@@ -123,16 +149,37 @@ export default function Nav() {
             } else {
               console.error('An unexpected error occurred.');
             }
+          } finally {
+            setFinishedLoadingName(true);
           }
-          finally{
-            setFinishedLoadingName(true)
+        }
+        else{
+          console.log("User is not authenticated");
+          // En caso de que el usuario no esté autenticado
+          const cartId = getCookie("_medusa_cart_id");
+          if (cartId) {
+            const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
+            const pedido : Pedido = response.data.pedido;
+            if (pedido) {
+              console.log("Pedido encontrado: ", pedido);
+              if (pedido.usuario && pedido.usuario.conCuenta) {
+                console.log("Pedido con usuario con cuenta");
+                // Si el pedido tiene un usuario con cuenta, se elimina la cookie y se recarga la página
+                document.cookie = `_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict`;
+                document.cookie = `_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict`;
+                window.location.href = "/";
+                //await axios.delete(`${baseUrl}/admin/pedido/${cartId}`);
+              }
+            }
           }
+
         }
       }
     }
-
+  
     fetchUserName();
   }, [status, session]);
+  
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 bg-rojoVillaizan">

@@ -39,7 +39,10 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
         });
         res.json({ pedido });
     } catch (error) {
-        res.status(404).json({ error: "Pedido no encontrado" });
+        res.status(404).json({
+            error: "pedido no encontrado",
+            message: error.message
+        });
     }
 };
 
