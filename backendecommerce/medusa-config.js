@@ -43,6 +43,7 @@ const plugins = [
       upload_dir: "uploads",
     },
   },
+
   
   // {
   //   resolve: "@medusajs/admin",

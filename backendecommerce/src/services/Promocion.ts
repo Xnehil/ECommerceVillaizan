@@ -3,13 +3,16 @@ import { Promocion } from "../models/Promocion";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import PromocionRepository from "src/repositories/Promocion";
+import ProductoRepository from "src/repositories/Producto";
 
 class PromocionService extends TransactionBaseService {
     protected promocionRepository_: typeof PromocionRepository;
+    protected productoRepository_: typeof ProductoRepository;
 
     constructor(container) {
         super(container);
         this.promocionRepository_ = container.promocionRepository;
+        this.productoRepository_ = container.productoRepository;
     }
 
     getMessage() {
@@ -105,6 +108,29 @@ class PromocionService extends TransactionBaseService {
             promocion.desactivadoEn = new Date();
             return await promocionRepo.save(promocion);
         });
+    }
+
+    async recuperarValidas(): Promise<Promocion[]> {
+        const promocionRepo = this.activeManager_.withRepository(this.promocionRepository_);
+        const promociones = await promocionRepo.find({ where: { esValido: true } });
+    
+        await Promise.all(promociones.map(async promocion => {
+            const productos = await this.productoRepository_.listarPorPromocion(promocion.id);
+            const productoConImagen = productos.find(producto => producto.urlImagen !== null);
+            promocion.urlImagen = productoConImagen ? productoConImagen.urlImagen : null;
+    
+            if (productos.length > 0) {
+                const nombresProductos = productos.map(producto => producto.nombre);
+                const textoInfo = nombresProductos.length > 1 
+                    ? `${nombresProductos.slice(0, -1).join(', ')} y ${nombresProductos[nombresProductos.length - 1]}` 
+                    : nombresProductos[0];
+                promocion.textoInfo = `Promoción válida para los siguientes productos: ${textoInfo}.`;
+            } else {
+                promocion.textoInfo = "No hay detalles de la promoción en estos momentos, por favor, intente nuevamente más tarde.";
+            }
+        }));
+    
+        return promociones;
     }
 }
 

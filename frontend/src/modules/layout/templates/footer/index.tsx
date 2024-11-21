@@ -3,45 +3,25 @@
 import { Text, clx } from "@medusajs/ui";
 import Link from "next/link";
 
-export default async function Footer() {
+export default function Footer() {
   const enlaces = [
     {
       id: 1,
       title: "Inicio",
-      handle: "home",
+      handle: "/",
     },
     {
       id: 2,
       title: "Catálogo",
-      handle: "store",
-    },
-    {
-      id: 3,
-      title: "Acerca",
-      handle: "contact",
-    },
-    {
-      id: 4,
-      title: "Contacto",
-      handle: "contact",
+      handle: "comprar",
     },
   ];
 
   const ayuda = [
     {
       id: 1,
-      title: "Opciones de pago",
-      handle: "pagos",
-    },
-    {
-      id: 2,
-      title: "Devoluciones",
-      handle: "devoluciones",
-    },
-    {
-      id: 3,
       title: "Política de privacidad",
-      handle: "terms-conditions",
+      handle: "terminos",
     },
   ];
 

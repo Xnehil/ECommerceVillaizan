@@ -30,6 +30,10 @@ export class Promocion extends EntidadBase {
     @Column("decimal", { precision: 5, scale: 2, name: "porcentajedescuento" })
     porcentajeDescuento: number;
 
+    urlImagen?: string;
+
+    textoInfo?: string;
+
     @BeforeInsert()
     private beforeInsert() {
         this.id = generateEntityId(this.id, "promo");

@@ -353,18 +353,21 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         const pedidoId = carritoState.id
         console.log("Pedido ID:", pedidoId)
         const pedidoUpdateData = {
-          direccion: direccionIdAux,
-          usuario: usuarioIdAux,
+          direccion: {
+            id: direccionIdAux,
+          },
+          usuario: {
+            id: usuarioIdAux,
+          }
         }
-        await axios.put(
+        const respuestaAntesDePago=await axios.put(
           baseUrl + `/admin/pedido/${pedidoId}?enriquecido=true`,
           pedidoUpdateData,
           {
             headers: { "Content-Type": "application/json" },
           }
         )
-
-        console.log("Pedido actualizado con dirección y usuario.")
+        console.log("Pedido actualizado con dirección y usuario:", respuestaAntesDePago.data)
         setStep("pago")
       } else {
         console.error("No se encontró el ID del pedido.")

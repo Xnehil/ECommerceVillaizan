@@ -11,7 +11,7 @@ class IziPayService extends TransactionBaseService {
     }
 
     async generarToken(orderNumber: string, amount: string, transactionId: string): Promise<string> {
-        const url = 'https://sandbox-api-pw.izipay.pe/gateway/api/v1/proxy-cors/https://sandbox-api-pw.izipay.pe/security/v1/Token/Generate';
+        const url = 'https://sandbox-api-pw.izipay.pe/security/v1/Token/Generate';
         const data = {
             requestSource: "ECOMMERCE",
             merchantCode:  this.merchantCode,
