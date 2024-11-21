@@ -12,13 +12,20 @@ import {
 import * as Progress from "react-native-progress";
 import { Link, useRouter } from "expo-router";
 import axios from "axios";
-import { Usuario, Pedido, PedidosResponse } from "@/interfaces/interfaces";
+import {
+  Usuario,
+  Pedido,
+  PedidosResponse,
+  Coordinate,
+} from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import Mapa from "@/components/Entregas/Mapa";
 import StyledIcon from "@/components/StyledIcon";
 import TabBarIcon from "@/components/StyledIcon";
 import { useWebSocketContext } from "@/components/sockets/WebSocketContext";
+import { PedidoLoc } from "@/interfaces/interfaces";
+import { geneticAlgorithm } from "@/functions/optimalRouteGenetic";
 
 export default function Entregas() {
   const [pedidosAceptados, setPedidosAceptados] = useState<Pedido[]>([]);
@@ -29,6 +36,11 @@ export default function Entregas() {
   const [verHistorial, setVerHistorial] = useState(false);
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [modoMultiple, setModoMultiple] = useState(false);
+
+  const stableLocation = useMemo(
+    () => ({ latitude: -6.487316, longitude: -76.359598 }),
+    []
+  );
 
   const getDataMemory = async (): Promise<Usuario | null> => {
     try {
@@ -44,33 +56,46 @@ export default function Entregas() {
       return null;
     }
   };
+  const { sendPedido } = useWebSocketContext();
 
-  const handlePrimerPedido = async (pedidos: Pedido[]) => {
-    const primerPedido = pedidos[0];
+  const handlePrimerPedido = async (idPedido: string, pedidos: Pedido[]) => {
     if (Array.isArray(pedidos) && pedidos.length > 0) {
-      const primerPedido = pedidos[0];
-      if (primerPedido) {
-        if (primerPedido.estado !== "enProgreso") {
+      // Encuentra el pedido correspondiente al id proporcionado
+      const pedidoSeleccionado = pedidos.find(
+        (pedido) => pedido.id === idPedido
+      );
+
+      if (pedidoSeleccionado) {
+        // Si el pedido no está en "enProgreso", actualiza su estado
+        if (pedidoSeleccionado.estado !== "enProgreso") {
           const response = await axios.put(
-            `${BASE_URL}/pedido/${primerPedido.id}`,
+            `${BASE_URL}/pedido/${pedidoSeleccionado.id}`,
             {
               estado: "enProgreso",
             }
           );
-          const { sendPedido } = useWebSocketContext();
-          sendPedido(primerPedido.id);
+          sendPedido(pedidoSeleccionado.id);
           console.log("Pedido activo actualizado:", response.data);
         }
-        setPedidoSeleccionado(primerPedido);
-      }
-      //Si hay pedidos, asegurar que si su estado es "enProgreso", cambiarlo a "verificado"
-      pedidos.slice(1).forEach((pedido) => {
-        if (pedido.estado === "enProgreso") {
-          axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
-        estado: "verificado",
+
+        // Actualiza el estado local del pedido seleccionado
+        setPedidoSeleccionado(pedidoSeleccionado);
+
+        // Asegura que todos los demás pedidos en "enProgreso" cambien a "verificado"
+        pedidos
+          .filter(
+            (pedido) => pedido.estado === "enProgreso" && pedido.id !== idPedido
+          )
+          .forEach((pedido) => {
+            axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
+              estado: "verificado",
+            });
           });
-        }
-      });
+      } else {
+        console.warn(`No se encontró el pedido con id: ${idPedido}`);
+      }
+    } else {
+      console.warn("No hay pedidos disponibles para procesar.");
     }
   };
 
@@ -92,21 +117,13 @@ export default function Entregas() {
       const pedidosResponse: PedidosResponse = response.data;
       const pedidosEnProceso = pedidosResponse.pedidos.filter(
         (pedido) =>
-          pedido.estado === "solicitado" ||
-          pedido.estado === "verificado" ||
-          pedido.estado === "enProgreso"
+          //pedido.estado === "solicitado" ||
+          pedido.estado === "verificado" || pedido.estado === "enProgreso"
       );
       console.log("Pedidos en proceso:");
       console.log(pedidosEnProceso);
-      if (
-        pedidosEnProceso.length !== pedidosAceptados.length ||
-        pedidosEnProceso.some(
-          (pedido, index) => pedido.id !== pedidosAceptados[index]?.id
-        )
-      ) {
-        console.log("Pedido actualizado");
-        setPedidosAceptados(pedidosEnProceso);
-      }
+      setPedidosAceptados(pedidosEnProceso);
+
       const pedidosHistorial = pedidosResponse.pedidos.filter(
         (pedido) => pedido.estado === "entregado" || pedido.estado === "zz"
       );
@@ -114,17 +131,53 @@ export default function Entregas() {
       console.log(pedidosHistorial);
       setHistorialPedidos(pedidosHistorial);
 
-      // Sort. First enProgreso, then verificado. Sort by solicitadoEn
-      pedidosEnProceso.sort((a, b) => {
-        if (a.estado === b.estado) {
-          return (
-            new Date(a.solicitadoEn ?? 0).getTime() -
-            new Date(b.solicitadoEn ?? 0).getTime()
+      // Convertir pedidosEnProceso a pedidosLoc
+      // Validar y preparar los pedidos con coordenadas válidas
+      const pedidosValidos = pedidosEnProceso.filter((pedido) => {
+        const lat = Number(pedido.direccion?.ubicacion?.latitud);
+        const lng = Number(pedido.direccion?.ubicacion?.longitud);
+
+        if (isNaN(lat) || isNaN(lng)) {
+          console.error(
+            `Pedido con id ${pedido.id} tiene coordenadas inválidas.`
           );
+          return false; // Excluir pedidos con coordenadas inválidas
         }
-        return a.estado === "enProgreso" ? -1 : 1;
+
+        return true; // Incluir solo pedidos con coordenadas válidas
       });
-      handlePrimerPedido(pedidosEnProceso);
+
+      // Validar si hay pedidos válidos
+      if (pedidosValidos.length === 0) {
+        console.error("No se encontraron pedidos válidos con coordenadas.");
+        return;
+      }
+
+      // Coordenada inicial
+      const corrdinate: Coordinate = {
+        lat: stableLocation.latitude,
+        lng: stableLocation.longitude,
+      };
+
+      console.log("Iniciando algoritmo...");
+      const directionsService = new google.maps.DirectionsService();
+
+      geneticAlgorithm(directionsService, corrdinate, pedidosValidos)
+        .then((pedidosOrdenados) => {
+          
+          console.log("Pedidos reordenados:");
+          console.log(pedidosOrdenados);
+
+          setPedidosAceptados(pedidosOrdenados);
+
+          // Llamar a handlePrimerPedido si hay pedidos reordenados
+          if (pedidosOrdenados[0]) {
+            handlePrimerPedido(pedidosOrdenados [0].id,pedidosOrdenados);
+          }
+        })
+        .catch((error) => {
+          console.error("Error al ejecutar el algoritmo genético:", error);
+        });
     } catch (error) {
       console.error("Error al obtener los pedidos:", error);
     }
@@ -155,11 +208,6 @@ export default function Entregas() {
       </View>
     );
   };
-
-  const stableLocation = useMemo(
-    () => ({ latitude: -6.487316, longitude: -76.359598 }),
-    []
-  );
 
   const PedidoAceptado: React.FC<{ pedido: Pedido }> = ({ pedido }) => {
     return (

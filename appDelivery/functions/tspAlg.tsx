@@ -1,17 +1,5 @@
-import { Pedido } from "@/interfaces/interfaces";
+import { Coordinate, PedidoLoc } from "@/interfaces/interfaces";
 
-type Coordinate = {
-  lat: number;
-  lng: number;
-};
-
-type PedidoLoc = {
-  id: string;
-  nombre: string;
-  activo: boolean;
-  lat: number;
-  lng: number;
-};
 
 // Calcula la distancia entre dos puntos usando la fórmula de Haversine
 function haversineDistance(coord1: Coordinate, coord2: Coordinate): number {
@@ -110,5 +98,4 @@ function calculateOptimalRoute(
   };
 }
 
-export type { Coordinate, PedidoLoc };
 export { haversineDistance, getPermutations, findOptimalRoute, calculateOptimalRoute };

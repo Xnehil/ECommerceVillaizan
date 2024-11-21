@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { GoogleMap, Circle, Marker, Polyline } from "@react-google-maps/api";
-import { Pedido } from "@/interfaces/interfaces";
-import { calculateOptimalRoute, Coordinate, PedidoLoc } from "@/functions/tspAlg";
+import { Coordinate, Pedido, PedidoLoc } from "@/interfaces/interfaces";
 
 interface MapProps {
   location: { latitude: number; longitude: number } | null;
@@ -119,21 +118,21 @@ const MapComponent: React.FC<MapProps> = ({
         if (mode) {
           // Calcular rutas en modo múltiple
 
-          const orderedLocations = calculateOptimalRoute(
+          /*const orderedLocations = calculateOptimalRoute(
             { lat: location.latitude, lng: location.longitude },
             pedidoLocations
-          );
+          );*/
           
           const route = await fetchMultipleRoutes(
             { lat: location.latitude, lng: location.longitude },
-            orderedLocations.orderedPedidos
+            pedidoLocations//orderedLocations.orderedPedidos
           );
 
           if (route) {
             setRoutePoints(route);
             setPreviousRoutes({
               origin: { lat: location.latitude, lng: location.longitude },
-              destinations: orderedLocations.orderedPedidos,
+              destinations: pedidoLocations,//orderedLocations.orderedPedidos,
               route,
             });
           }

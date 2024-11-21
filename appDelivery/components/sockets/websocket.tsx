@@ -19,6 +19,7 @@ interface WebSocketComponentProps {
 
 const { width, height } = Dimensions.get("window");
 
+
 export interface WebSocketComponentRef {
   sendUbicacion: (lat: number, lng: number) => void;
   sendPedido: (pedidoId: string) => void;
