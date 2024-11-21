@@ -11,7 +11,7 @@ import "react-native-reanimated";
 import * as Location from "expo-location";
 import WebSocketComponent, {
   WebSocketComponentRef,
-} from "@/components/websocket";
+} from "@/components/sockets/websocket";
 import { useRef, useState, useEffect } from "react";
 import { useColorScheme } from "@/components/useColorScheme";
 import { LoadScript } from "@react-google-maps/api";

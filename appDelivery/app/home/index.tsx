@@ -168,19 +168,7 @@ export default function TabOneScreen() {
         </Pressable>
       </Link>
 
-      <Link to={"/home/vehicule"} style={styles.card}>
-        <Pressable style={styles.card_inside}>
-          <MaterialIcons name="directions-car" size={24} color="white" />
-          <View style={styles.cardText}>
-        <Text style={[styles.cardTitle, styles.cardContent]}>
-          Definir vehículo
-        </Text>
-        <Text style={styles.cardContent}>
-          Define el vehículo de la empresa con el que repartirás los pedidos
-        </Text>
-          </View>
-        </Pressable>
-      </Link>
+
 
       <Link to={"/home/settings/inventory"} style={styles.card}>
         <Pressable style={styles.card_inside}>
@@ -212,6 +200,20 @@ export default function TabOneScreen() {
   );
 }
 
+      /*<Link to={"/home/vehicule"} style={styles.card}>
+        <Pressable style={styles.card_inside}>
+          <MaterialIcons name="directions-car" size={24} color="white" />
+          <View style={styles.cardText}>
+        <Text style={[styles.cardTitle, styles.cardContent]}>
+          Definir vehículo
+        </Text>
+        <Text style={styles.cardContent}>
+          Define el vehículo de la empresa con el que repartirás los pedidos
+        </Text>
+          </View>
+        </Pressable>
+      </Link>*/
+      
 const styles = StyleSheet.create({
   container: {
     flex: 1,
