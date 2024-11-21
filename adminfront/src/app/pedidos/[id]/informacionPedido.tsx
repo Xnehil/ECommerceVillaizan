@@ -78,7 +78,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
             pedido.current.pedidosXMetodoPago.length > 0
               ? pedido.current.pedidosXMetodoPago.length > 1
                 ? "Dividido"
-                : pedido.current.pedidosXMetodoPago[0].metodoPago.nombre
+                : pedido.current.pedidosXMetodoPago[0].metodoPago.nombre.charAt(0).toUpperCase() + pedido.current.pedidosXMetodoPago[0].metodoPago.nombre.slice(1)
               : "No disponible"
           }
         />
@@ -116,7 +116,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                 <div className="flex flex-col space-y-2 ">
                   {pedido.current.pedidosXMetodoPago?.map((detalle, index) => (
                     <div key={index} className="flex flex-row justify-between">
-                      <p>{detalle.metodoPago.nombre}</p>
+                      <p>{detalle.metodoPago.nombre.charAt(0).toUpperCase() + detalle.metodoPago.nombre.slice(1)}</p>
                       <p>S/. {Number(detalle.monto).toFixed(2)}</p>
                     </div>
                   ))}
