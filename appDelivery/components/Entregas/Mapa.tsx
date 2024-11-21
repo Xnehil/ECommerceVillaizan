@@ -37,6 +37,8 @@ const MapComponent: React.FC<MapProps> = ({
   const [center, setCenter] = useState<{ lat: number; lng: number }>(
     defaultCoordinates
   );
+  const [showRoutes, setShowRoutes] = useState(false); 
+
 
   const [circleRadius, setCircleRadius] = useState(250);
   const [routePoints, setRoutePoints] = useState<google.maps.LatLng[]>([]);
@@ -115,22 +117,13 @@ const MapComponent: React.FC<MapProps> = ({
     const getRoute = async () => {
       if (location && pedidoLocations) {
         if (mode) {
-          // Modo múltiple: calcular rutas para múltiples pedidos
-          /*if (
-            previousRoutes &&
-            JSON.stringify(previousRoutes.destinations) ===
-              JSON.stringify(pedidoLocations)
-          ) {
-            // Reutilizar las rutas calculadas previamente
-            setRoutePoints(previousRoutes.route);
-            return;
-          }*/
-
           // Calcular rutas en modo múltiple
+
           const orderedLocations = calculateOptimalRoute(
             { lat: location.latitude, lng: location.longitude },
             pedidoLocations
           );
+          
           const route = await fetchMultipleRoutes(
             { lat: location.latitude, lng: location.longitude },
             orderedLocations.orderedPedidos
@@ -208,6 +201,23 @@ const MapComponent: React.FC<MapProps> = ({
       }}
       onZoomChanged={handleZoomChanged}
     >
+            <button
+        style={{
+          position: "absolute",
+          top: "10px",
+          left: "10px",
+          zIndex: 1000,
+          padding: "8px 16px",
+          background: "#4285F4",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+        onClick={() => setShowRoutes((prev) => !prev)}
+      >
+        {showRoutes ? "Ocultar Rutas" : "Mostrar Rutas"}
+      </button>
       {location && (
         <Circle
           center={center}
@@ -221,7 +231,7 @@ const MapComponent: React.FC<MapProps> = ({
           }}
         />
       )}
-      {routePoints.length > 0 && (
+      {showRoutes && routePoints.length > 0 && (
         <Polyline
           path={routePoints}
           options={{

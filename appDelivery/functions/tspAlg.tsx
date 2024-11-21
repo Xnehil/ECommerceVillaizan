@@ -1,3 +1,5 @@
+import { Pedido } from "@/interfaces/interfaces";
+
 type Coordinate = {
   lat: number;
   lng: number;

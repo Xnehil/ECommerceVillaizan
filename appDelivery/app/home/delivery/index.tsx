@@ -45,17 +45,32 @@ export default function Entregas() {
     }
   };
 
-  const handlePrimerPedido = async (pedido: Pedido) => {
-    if (pedido) {
-      if (pedido.estado !== "enProgreso") {
-        const response = await axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
-          estado: "enProgreso",
-        });
-        const { sendPedido } = useWebSocketContext();
-        sendPedido(pedido.id);
-        console.log("Pedido activo actualizado:", response.data);
+  const handlePrimerPedido = async (pedidos: Pedido[]) => {
+    const primerPedido = pedidos[0];
+    if (Array.isArray(pedidos) && pedidos.length > 0) {
+      const primerPedido = pedidos[0];
+      if (primerPedido) {
+        if (primerPedido.estado !== "enProgreso") {
+          const response = await axios.put(
+            `${BASE_URL}/pedido/${primerPedido.id}`,
+            {
+              estado: "enProgreso",
+            }
+          );
+          const { sendPedido } = useWebSocketContext();
+          sendPedido(primerPedido.id);
+          console.log("Pedido activo actualizado:", response.data);
+        }
+        setPedidoSeleccionado(primerPedido);
       }
-      setPedidoSeleccionado(pedido);
+      //Si hay pedidos, asegurar que si su estado es "enProgreso", cambiarlo a "verificado"
+      pedidos.slice(1).forEach((pedido) => {
+        if (pedido.estado === "enProgreso") {
+          axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
+        estado: "verificado",
+          });
+        }
+      });
     }
   };
 
@@ -109,7 +124,7 @@ export default function Entregas() {
         }
         return a.estado === "enProgreso" ? -1 : 1;
       });
-      handlePrimerPedido(pedidosEnProceso[0]);
+      handlePrimerPedido(pedidosEnProceso);
     } catch (error) {
       console.error("Error al obtener los pedidos:", error);
     }

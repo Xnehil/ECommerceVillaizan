@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import useWebSocket from "react-use-websocket";
 import { Notificacion} from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
@@ -16,19 +16,40 @@ const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { sendMessage, lastMessage } = useWebSocket(WS_URL ?? "", { shouldReconnect: () => true });
-  const [callbacks, setCallbacks] = useState<((data: any) => void)[]>([]);
+  const callbacksRef = useRef<((data: any) => void)[]>([]);
+  
+  useEffect(() => {
+    const checkWSURL = async () => {
+      if (!WS_URL) {
+        const notification = await createNotification("WebSocket URL is not defined.");
+        if (notification) {
+          const response = await axios.post(`${BASE_URL}/notificacion`, notification);
+          console.log("Notification created", response);
+        }
+      }
+    };
+    checkWSURL();
+  }, [WS_URL]);
   
   // Manejar mensajes entrantes
   useEffect(() => {
     if (lastMessage !== null) {
       const data = JSON.parse(lastMessage.data);
-      callbacks.forEach((callback) => callback(data));
+      // Llama a todos los callbacks registrados
+      callbacksRef.current.forEach((callback) => callback(data));
     }
-  }, [lastMessage, callbacks]);
+  }, [lastMessage]);
 
   const onMessage = useCallback((callback: (data: any) => void) => {
-    setCallbacks((prev) => [...prev, callback]);
+    // Agrega el callback a la referencia
+    callbacksRef.current.push(callback);
+
+    // Devuelve una función para eliminar el callback
+    return () => {
+      callbacksRef.current = callbacksRef.current.filter((cb) => cb !== callback);
+    };
   }, []);
+  
 
   const sendUbicacion = useCallback(
     (lat: number, lng: number) => {
@@ -91,15 +112,3 @@ const createNotification = async (error: string): Promise<Notificacion | null> =
   }
 };
 
-useEffect(() => {
-  const checkWSURL = async () => {
-    if (!WS_URL) {
-      const notification = await createNotification("WebSocket URL is not defined.");
-      if (notification) {
-        const response = await axios.post(`${BASE_URL}/notificacion`, notification);
-        console.log("Notification created", response);
-      }
-    }
-  };
-  checkWSURL();
-}, [WS_URL]);
