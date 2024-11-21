@@ -70,7 +70,7 @@ const Cuenta = () => {
                 setUserCorreo(user.correo);
                 setUserTelefono(user.numeroTelefono);
                 setUserId(user.id);
-                setUserPuntosAcumulados(user.puntosAcumulados.toString());
+                setUserPuntosAcumulados(user.puntosAcumulados ? user.puntosAcumulados.toString() : '');
                 console.log("puntos", user.puntosAcumulados);
               } else {
                 console.error('Failed to fetch user name');
