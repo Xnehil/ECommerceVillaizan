@@ -108,7 +108,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio, isAuthen
         )}
       </div>
       <div className="h-px w-full border-b border-gray-300 my-4" />
-      <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium font-poppins">
+      <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium text-ui-fg-subtle">
         <span>Total</span>
         <span className="txt-xlarge-plus font-poppins color-mostazaTexto" data-testid="cart-total" data-value={total || 0}>
           {getAmount(total)}
@@ -116,7 +116,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio, isAuthen
       </div>
       {isAuthenticated && (
         <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium font-poppins">
-          <div className="flex items-center gap-x-1">
+          <div className="flex items-center gap-x-1 text-ui-fg-subtle">
             <span>Puntos por esta compra</span>
             <TooltipProvider>
               <Tooltip>

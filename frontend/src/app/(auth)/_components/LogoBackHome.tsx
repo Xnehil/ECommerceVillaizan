@@ -6,7 +6,7 @@ function LogoBackHome() {
       {/*<img src="VillaizanLogo2png.png" className="w-[185px]" />*/}
       <img
                 src="/images/logo.png"
-                alt="Helados Villaizan"
+                alt="Paletas Villaizan"
                 className="h-12"
               />
     </Link>

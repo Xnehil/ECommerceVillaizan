@@ -41,7 +41,7 @@ export default function Footer() {
                 lineHeight: "normal",
               }}
             >
-              Helados Villaizan
+              Paletas Villaizan
             </Link>
           </div>
           <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
@@ -95,7 +95,7 @@ export default function Footer() {
         </div>
         <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
           <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Helados Villaizan. Todos los derechos reservados.
+            © {new Date().getFullYear()} Paletas Villaizan. Todos los derechos reservados.
           </Text>
         </div>
       </div>

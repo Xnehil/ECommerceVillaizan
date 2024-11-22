@@ -316,12 +316,12 @@ const CartDropdown = ({
             ) : (
               <div>
                 <div className="flex flex-col gap-y-4 items-center justify-center p-2">
-                  <span>Tu carrito está vacío. Añade más helados y disfruta el sabor de la auténtica fruta</span>
+                  <span>Tu carrito está vacío. Añade más paletas y disfruta el sabor de la auténtica fruta</span>
                   <div className="mb-4">
                     <Link href="/comprar">
                       <>
                         <span className="sr-only">Ir al catálogo</span>
-                        <Button onClick={close}>Explora nuestros helados</Button>
+                        <Button onClick={close}>Explora nuestras paletas</Button>
                       </>
                     </Link>
                   </div>

@@ -49,28 +49,30 @@ export async function getOrSetCart(only_get=false) {
       cart = null
     }
   }
-
-  if (!cart) {
-    const response = await axios.post(`${baseUrl}/admin/pedido`, {
-      "estado": "carrito",
-    })
-    cart = response.data.pedido
-    if (cart) {
-      console.log('Setting cookie with cart ID:', cart.id, " and cookie")
-      cookies().set("_medusa_cart_id", cart.id, {
-        maxAge: 60 * 60 * 24 * 7, // 1 week
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
-      })
-        return {
-          cart,
-          cookie: cart.id,
-      };
-
-
-    } else {
-      console.error('Cart is null or undefined'); // Log error if cart is null or undefined
+  try{
+      if (!cart) {
+        const response = await axios.post(`${baseUrl}/admin/pedido`, {
+          "estado": "carrito",
+        })
+        cart = response.data.pedido
+        if (cart) {
+          console.log('Setting cookie with cart ID:', cart.id, " and cookie")
+          cookies().set("_medusa_cart_id", cart.id, {
+            maxAge: 60 * 60 * 24 * 7, // 1 week
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production',
+          })
+            return {
+              cart,
+              cookie: cart.id,
+          };
+        } else {
+          console.error('Cart is null or undefined'); // Log error if cart is null or undefined
+        }
     }
+  } catch (e) {
+    console.error('Error getting or setting cart:', e)
+    return null
   }
   return {
     cart,
@@ -288,8 +290,14 @@ export async function enrichLineItems(
   }
 
   // Fetch products by their IDs
-  const response = queryParams.ids.map((id) => axios.get(`${baseUrl}/admin/detallePedido/${id}`))
-  const products = await Promise.all(response)
+  let products;
+  try{
+    const response = queryParams.ids.map((id) => axios.get(`${baseUrl}/admin/detallePedido/${id}`))
+    products = await Promise.all(response)
+  } catch (e) {
+    console.log(e)
+    return []
+  }
 
   const productData = products.map((product) => product.data);
 
