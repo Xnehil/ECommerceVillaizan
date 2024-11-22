@@ -334,7 +334,7 @@ const Cuenta = () => {
               <div className="flex space-x-2">
                 <InputWithLabel
                   label="Puntos Canjeables Acumulados"
-                  value={userPuntosAcumulados}
+                  value={userPuntosAcumulados===''? '0' : userPuntosAcumulados}
                   disabled={true}
                   onChange={handleInputChangeData(setUserPuntosAcumulados)}
                 />

@@ -537,6 +537,17 @@ class PedidoService extends TransactionBaseService {
         
     }
 
+    async encontrarPorId(id: string): Promise<Pedido> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedido = await pedidoRepo.encontrarPorId(id);
+
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedido;
+    }
+
 }
 
 export default PedidoService;
