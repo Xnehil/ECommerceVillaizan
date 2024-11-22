@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { GoogleMap, Circle, Marker, Polyline } from "@react-google-maps/api";
 import { Coordinate, Pedido, PedidoLoc } from "@/interfaces/interfaces";
+import { Button } from "react-native-elements";
+import { View,Text } from "react-native";
 
 interface MapProps {
   location: { latitude: number; longitude: number } | null;
@@ -21,12 +23,31 @@ const MapComponent: React.FC<MapProps> = ({
   pedidoSeleccionado,
   mode,
 }) => {
+  if (!pedidos || pedidos.length === 0) {
+    return (
+      <View style={{ alignItems: "center", padding: 20, backgroundColor: "red" }}>
+        <Text>
+          No hay pedidos disponibles para mostrar.
+          </Text>
+      </View>
+    );
+  }
+
+  if (!location) {
+    return (
+      <div style={{ textAlign: "center", padding: "20px", color: "red" }}>
+        Ubicación no disponible.
+      </div>
+    );
+  }
+
   const mapRef = useRef<google.maps.Map | null>(null);
   const [previousRoutes, setPreviousRoutes] = useState<{
     origin: Coordinate;
     destinations: { lat: number; lng: number }[];
     route: google.maps.LatLng[];
   }>();
+  const [error, setError] = useState<string | null>(null); // Estado para errores
 
   const mapContainerStyle = {
     height: "400px",
@@ -63,24 +84,41 @@ const MapComponent: React.FC<MapProps> = ({
     origin: { lat: number; lng: number },
     destination: { lat: number; lng: number }
   ) => {
-    try {
-      const directionsService = new google.maps.DirectionsService();
-      const result = await directionsService.route({
-        origin,
-        destination,
-        travelMode: google.maps.TravelMode.DRIVING,
-      });
-
-      if (result && result.routes && result.routes.length > 0) {
-        return result.routes[0].overview_path;
-      } else {
-        return [];
+    const MAX_RETRIES = 3; // Número máximo de reintentos
+    let retries = 0;
+  
+    while (retries < MAX_RETRIES) {
+      try {
+        const directionsService = new google.maps.DirectionsService();
+        const result = await directionsService.route({
+          origin,
+          destination,
+          travelMode: google.maps.TravelMode.DRIVING,
+        });
+  
+        if (result && result.routes && result.routes.length > 0) {
+          return result.routes[0].overview_path;
+        } else {
+          throw new Error("No se encontraron rutas para el destino especificado.");
+        }
+      } catch (error: any) {
+        retries++;
+        if (error.status === "OVER_QUERY_LIMIT") {
+          console.warn(
+            `Se alcanzó el límite de consultas. Reintento (${retries}/${MAX_RETRIES})...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, 2000)); // Espera antes de reintentar
+        } else {
+          console.error("Error al calcular la ruta:", error);
+          setError("Error al calcular la ruta. Inténtalo más tarde."); // Actualiza el estado de error
+          break;
+        }
       }
-    } catch (error) {
-      console.error("Error fetching single route:", error);
-      return [];
     }
+  
+    return []; // Devuelve una ruta vacía si falla
   };
+  
   // Fetch route for multiple destinations
   const fetchMultipleRoutes = async (
     origin: { lat: number; lng: number },
@@ -90,63 +128,72 @@ const MapComponent: React.FC<MapProps> = ({
       const directionsService = new google.maps.DirectionsService();
       const points: google.maps.LatLng[] = [];
       let lastPoint = origin;
-
+  
       for (const destination of destinations) {
         const result = await directionsService.route({
           origin: lastPoint,
           destination: { lat: destination.lat, lng: destination.lng },
           travelMode: google.maps.TravelMode.DRIVING,
         });
-
+  
         if (result && result.routes && result.routes.length > 0) {
           points.push(...result.routes[0].overview_path);
           lastPoint = { lat: destination.lat, lng: destination.lng };
         }
       }
-
+  
       return points;
     } catch (error) {
-      console.error("Error fetching multiple routes:", error);
+      console.error("Error al calcular las rutas múltiples:", error);
+      setError("Error al calcular las rutas para los pedidos."); // Actualiza el estado de error
       return [];
     }
   };
-
+  
   useEffect(() => {
     const getRoute = async () => {
       if (location && pedidoLocations) {
         if (mode) {
           // Calcular rutas en modo múltiple
-
-          /*const orderedLocations = calculateOptimalRoute(
-            { lat: location.latitude, lng: location.longitude },
-            pedidoLocations
-          );*/
-
           const route = await fetchMultipleRoutes(
             { lat: location.latitude, lng: location.longitude },
-            pedidoLocations //orderedLocations.orderedPedidos
+            pedidoLocations
           );
 
           if (route) {
             setRoutePoints(route);
             setPreviousRoutes({
               origin: { lat: location.latitude, lng: location.longitude },
-              destinations: pedidoLocations, //orderedLocations.orderedPedidos,
+              destinations: pedidoLocations,
               route,
             });
           }
         } else {
-          // Modo único: calcular la ruta para el pedido seleccionado
-          const activePedido = pedidoLocations.find((loc) => loc.activo);
-          if (activePedido) {
+          // En modo único
+          const targetPedido = pedidoSeleccionado
+            ? {
+                id: pedidoSeleccionado.id,
+                nombre: pedidoSeleccionado.usuario?.nombre || "Desconocido",
+                activo: pedidoSeleccionado.estado === "enProgreso",
+                lat: parseFloat(
+                  pedidoSeleccionado.direccion?.ubicacion?.latitud || "0"
+                ),
+                lng: parseFloat(
+                  pedidoSeleccionado.direccion?.ubicacion?.longitud || "0"
+                ),
+              }
+            : pedidoLocations[0];
+          if (targetPedido) {
             const route = await fetchSingleRoute(
               { lat: location.latitude, lng: location.longitude },
-              { lat: activePedido.lat, lng: activePedido.lng }
+              { lat: targetPedido.lat, lng: targetPedido.lng }
             );
-            if (route) setRoutePoints(route);
+            if (route) {
+              setRoutePoints(route);
+            }
           } else {
             console.warn(
-              "No hay pedido activo para calcular la ruta en modo único."
+              "No hay pedidos disponibles o seleccionados en modo único."
             );
           }
         }
@@ -200,18 +247,7 @@ const MapComponent: React.FC<MapProps> = ({
       onZoomChanged={handleZoomChanged}
     >
       <button
-        style={{
-          position: "absolute",
-          top: "10px",
-          left: "10px",
-          zIndex: 1000,
-          padding: "8px 16px",
-          background: "#4285F4",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
+        style={styles.button}
         onClick={() => setShowRoutes((prev) => !prev)}
       >
         {showRoutes ? "Ocultar Rutas" : "Mostrar Rutas"}
@@ -238,13 +274,19 @@ const MapComponent: React.FC<MapProps> = ({
             const progress = index / routePoints.length;
 
             // Gradiente tipo mapa de calor: verde -> amarillo -> rojo
-            let segmentColor;
-            if (progress < 0.5) {
-              // De verde a amarillo
-              segmentColor = `rgb(${Math.round(255 * (progress * 2))}, 255, 0)`;
-            } else {
-              // De amarillo a rojo
-              segmentColor = `rgb(255, ${Math.round(255 * (1 - (progress - 0.5) * 2))}, 0)`;
+            let segmentColor = "#4285F4"; // Default color for single mode
+            if (mode) {
+              if (progress < 0.5) {
+                // De verde a amarillo
+                segmentColor = `rgb(${Math.round(
+                  255 * (progress * 2)
+                )}, 255, 0)`;
+              } else {
+                // De amarillo a rojo
+                segmentColor = `rgb(255, ${Math.round(
+                  255 * (1 - (progress - 0.5) * 2)
+                )}, 0)`;
+              }
             }
             const arrowIcon = {
               path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
@@ -259,38 +301,81 @@ const MapComponent: React.FC<MapProps> = ({
                   strokeColor: segmentColor, // Color dinámico según progreso
                   strokeOpacity: 0.9,
                   strokeWeight: 5, // Grosor de línea
-                  icons: [
-                    {
-                      icon: arrowIcon,
-                      offset: "40px",
-                    },
-                  ],
+                  icons: mode
+                    ? [
+                        {
+                          icon: arrowIcon,
+                          offset: "40px",
+                        },
+                      ]
+                    : [],
                 }}
-                
               />
             );
           })}
         </>
       )}
 
-      {pedidoLocations?.map((loc, index) => (
-        <Marker
-          key={loc.id}
-          position={{ lat: loc.lat, lng: loc.lng }}
-          label={{
-            text: (index + 1).toString(),
-            color: "black",
-            fontSize: "16px",
-            fontWeight: "bold",
-          }}
-          icon={{
-            url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
-            labelOrigin: new google.maps.Point(15, 35),
-          }}
-        />
-      ))}
+      {pedidoLocations
+        ?.filter((loc) => {
+          if (!mode) {
+            // En modo único, mostrar solo el seleccionado o el primero
+            return (
+              loc.id === pedidoSeleccionado?.id || loc === pedidoLocations[0]
+            );
+          }
+          // En modo múltiple, mostrar todos
+          return true;
+        })
+        .map((loc) => (
+          <Marker
+            key={loc.id}
+            position={{ lat: loc.lat, lng: loc.lng }}
+            icon={{
+              url:
+                mode && pedidoSeleccionado?.id === loc.id
+                  ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Azul para el seleccionado
+                  : "http://maps.google.com/mapfiles/ms/icons/red-dot.png", // Rojo para otros en modo múltiple
+            }}
+          />
+        ))}
+   View style {error && (
+  <View
+    style={{
+      position: "absolute",
+      top: 10,
+      left: "50%",
+      transform: [{ translateX: -50 }],
+      backgroundColor: "rgba(255, 0, 0, 0.8)",
+      padding: 8,
+      paddingHorizontal: 16,
+      borderRadius: 4,
+      zIndex: 1000,
+    }}
+  >
+    <Text style={{ color: "white" }}>{error}</Text>
+  </View>
+)}
     </GoogleMap>
   );
 };
+
+import { StyleSheet } from "react-native";
+
+const styles = StyleSheet.create({
+  button: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    zIndex: 1000,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: "#4285F4",
+    color: "white",
+    borderWidth: 0,
+    borderRadius: 4,
+    cursor: "pointer",
+  },
+});
 
 export default MapComponent;
