@@ -1,5 +1,5 @@
 "use client"; 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import Promotions from "@modules/home/components/promotions";
 import Banner from "@components/ui/Banner";
@@ -33,60 +33,65 @@ export default function Home() {
   const [orderTrackingCode, setOrderTrackingCode] = useState<string | null>(null);
 
   const currentDay = getCurrentDay();
+  const hasRunOnce = useRef(false);
 
   useEffect(() => {
-    console.log("session: ", session);
-    console.log("status: ", status);
+    //console.log("session: ", session);
+    //console.log("status: ", status);
     if (checkIfAuthenticated(session, status)) {
       setIsAuthenticated(true);
-      console.log("User is authenticated");
-      console.log("user id: ", session?.user?.id);
+      //console.log("User is authenticated");
+      //console.log("user id: ", session?.user?.id);
     } else {
       setIsAuthenticated(false);
-      console.log("User is not authenticated");
-      console.log("user id: ", session?.user?.id);
+      //console.log("User is not authenticated");
+      //console.log("user id: ", session?.user?.id);
     }
   }, [session, status]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoadingResponse(true);
-  
-        // Fetch the minimum order amount
-        const minOrderResponse = await axios.get(`${baseUrl}/admin/ajuste/monto_minimo_pedido`);
-        const ajuste = minOrderResponse.data.ajuste;
-        if (ajuste && ajuste.valor) {
-          setMinOrderAmount(ajuste.valor);
-        }
-  
-        // Fetch the operating hours for the current day
-        const hoursResponse = await axios.get(`${baseUrl}/admin/ajuste/horario_${currentDay}`);
-        const ajusteHoras = hoursResponse.data.ajuste;
-        const [start, end] = ajusteHoras.valor.split("-");
-        setStartTime(start);
-        setEndTime(end);
-
-        try{
-          const orderUrl = `${baseUrl}/admin/pedido/usuario?id=${session?.user?.id}&estado=solicitado&estado=verificado&estado=enProgreso`;
-          console.log("Order URL:", orderUrl);
-          const orderResponse = await axios.get(orderUrl);
-
-          if (orderResponse.data.error) {
-            console.error(orderResponse.data.message);
-          } else if (orderResponse.data.pedidos && orderResponse.data.pedidos.length > 0) {
-            setHasActiveOrder(true);
-            setOrderTrackingCode(orderResponse.data.pedidos[0].codigoSeguimiento);
+        if(!hasRunOnce.current) {
+          hasRunOnce.current = true;
+          setIsLoadingResponse(true);
+    
+          // Fetch the minimum order amount
+          const minOrderResponse = await axios.get(`${baseUrl}/admin/ajuste/monto_minimo_pedido`);
+          const ajuste = minOrderResponse.data.ajuste;
+          if (ajuste && ajuste.valor) {
+            setMinOrderAmount(ajuste.valor);
           }
-        } catch (error) {
-          if (axios.isAxiosError(error) && error.response?.status === 404) {
-            console.log("No pedido found");
-            // Perform any fallback logic if needed
-          } else {
-            // Re-throw unexpected errors to be caught in the outer catch
-            throw error;
+    
+          // Fetch the operating hours for the current day
+          const hoursResponse = await axios.get(`${baseUrl}/admin/ajuste/horario_${currentDay}`);
+          const ajusteHoras = hoursResponse.data.ajuste;
+          const [start, end] = ajusteHoras.valor.split("-");
+          setStartTime(start);
+          setEndTime(end);
+
+          try{
+            const orderUrl = `${baseUrl}/admin/pedido/usuario?id=${session?.user?.id}&estado=solicitado&estado=verificado&estado=enProgreso`;
+            console.log("Order URL:", orderUrl);
+            const orderResponse = await axios.get(orderUrl);
+
+            if (orderResponse.data.error) {
+              console.error(orderResponse.data.message);
+            } else if (orderResponse.data.pedidos && orderResponse.data.pedidos.length > 0) {
+              setHasActiveOrder(true);
+              setOrderTrackingCode(orderResponse.data.pedidos[0].codigoSeguimiento);
+            }
+          } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+              console.log("No pedido found");
+              // Perform any fallback logic if needed
+            } else {
+              // Re-throw unexpected errors to be caught in the outer catch
+              throw error;
+            }
           }
         }
+        
         
       } catch (error) {
         console.error("Error fetching monto_minimo_pedido and hoursResponse:", error);
