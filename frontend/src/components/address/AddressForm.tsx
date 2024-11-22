@@ -3,6 +3,7 @@ import InputWithLabel from '@components/inputWithLabel';
 import { Direccion } from 'types/PaqueteEnvio';
 import axios from 'axios';
 import GoogleMapModal from '@components/GoogleMapsModal';
+import { Input } from '@components/input';
 
 interface AddressFormProps {
   state: 'Editar' | 'Crear';
@@ -366,13 +367,12 @@ const AddressForm: React.FC<AddressFormProps> = ({
         <div>
           <label htmlFor="ciudad">Ciudad</label>
           {mandatoryCiudad ? (
-            <input
-              type="text"
-              id="ciudad"
-              value={mandatoryCiudadNombre}
-              readOnly
-              className="block w-full mt-1 border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
+            <div className="flex space-x-2">
+                <Input
+                  disabled={true}
+                  value={mandatoryCiudadNombre}
+                />
+              </div>
           ) : (
             <><select
                 id="ciudad"
@@ -395,19 +395,23 @@ const AddressForm: React.FC<AddressFormProps> = ({
                   </option>
                 ))}
               </select>
-              <button
-                type="button"
-                className={`px-4 py-2 border border-gray-300 rounded-md flex items-center gap-2 ${
-                  ciudadId !== '' ? 'bg-yellow-200' : 'bg-gray-200 cursor-not-allowed'
-                }`}
-                onClick={() => setShowMapModal(true)}
-                disabled={ciudadId === ''}
-              >
-                  <img src="/images/mapa.png" alt="Mapa" className="h-8" />
-                  Selecciona en el mapa
-                </button>
+              
                 </>
           )}
+          <button
+            type="button"
+            className={`mt-4 px-4 py-2 border border-gray-300 rounded-md flex items-center gap-2 ${
+              ciudadId !== '' ? 'bg-yellow-200' : 'bg-gray-200 cursor-not-allowed'
+            }`}
+            onClick={() => {
+              setShowMapModal(true);
+              setLocalError('');
+            }}
+            disabled={ciudadId === ''}
+          >
+            <img src="/images/mapa.png" alt="Mapa" className="h-8" />
+            Selecciona en el mapa
+          </button>
         </div>
         {/* Error Message Display */}
         {localError && (
