@@ -102,7 +102,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         const respMssg = await axios.post(
           `${process.env.NEXT_PUBLIC_BASE_URL}whatsApp`,
           {
-            mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${pedido.current.codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${pedido.current.codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
+            mensaje: `🍦 *Paletas Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${pedido.current.codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: ${process.env.NEXT_PUBLIC_STOREFRONT_URL}/seguimiento?codigo=${pedido.current.codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
             numero: pedido.current.usuario?.numeroTelefono,
           }
         );
