@@ -1,4 +1,4 @@
-import { crossover, mutate, selectParent, shuffleArray } from "./utilities";
+import { shuffleArray, selectParent, crossover, mutate } from "./utilities";
 import { Pedido } from "@/interfaces/interfaces";
 
 // Tipos necesarios
@@ -8,13 +8,14 @@ type Coordinate = { lat: number; lng: number };
 type FitnessResult = {
   distance: number; // Distancia total de la ruta
   duration: number; // Tiempo total de la ruta
+  combined: number; // Suma de distancia y duración
 };
 
 // Configuración del Algoritmo Genético
-const POPULATION_SIZE = 50; // Número de soluciones en la población
-const GENERATIONS = 100; // Número de generaciones
-const MUTATION_RATE = 0.1; // Probabilidad de mutación
-const ELITE_COUNT = 5; // Número de soluciones "élite" que pasan directamente
+const POPULATION_SIZE = 100; // Tamaño de la población
+const GENERATIONS = 200; // Número de generaciones
+const MUTATION_RATE = 0.05; // Probabilidad de mutación
+const ELITE_COUNT = Math.floor(POPULATION_SIZE * 0.1); // Elitismo (10% de la población)
 
 // Cálculo de distancia y tiempo usando Google Maps
 const calculatePairwiseDistances = async (
@@ -25,61 +26,34 @@ const calculatePairwiseDistances = async (
     Array.from({ length: points.length }, () => ({
       distance: Infinity,
       duration: Infinity,
+      combined: Infinity,
     }))
   );
-
-  const MAX_RETRIES = 5; // Número máximo de reintentos
-  const BACKOFF_TIME = 2000; // Tiempo base de espera entre reintentos en milisegundos
 
   for (let i = 0; i < points.length; i++) {
     for (let j = 0; j < points.length; j++) {
       if (i !== j) {
-        let retries = 0;
-        let success = false;
+        try {
+          const response = await directionsService.route({
+            origin: points[i],
+            destination: points[j],
+            travelMode: google.maps.TravelMode.DRIVING,
+          });
 
-        while (retries < MAX_RETRIES && !success) {
-          try {
-            const response = await directionsService.route({
-              origin: points[i],
-              destination: points[j],
-              travelMode: google.maps.TravelMode.DRIVING,
-            });
-
-            if (
-              response &&
-              response.routes.length > 0 &&
-              response.routes[0].legs.length > 0
-            ) {
-              const leg = response.routes[0].legs[0];
-              distances[i][j] = {
-                distance: leg.distance?.value || 0, // Distancia en metros
-                duration: leg.duration?.value || 0, // Duración en segundos
-              };
-              success = true; // Marca como éxito
-            }
-          } catch (error: any) {
-            retries++;
-            if (error.status === "OVER_QUERY_LIMIT") {
-              console.warn(
-                `Límite de consultas alcanzado entre ${i} y ${j}. Reintentando (${retries}/${MAX_RETRIES})...`
-              );
-              await new Promise((resolve) =>
-                setTimeout(resolve, BACKOFF_TIME * retries)
-              ); // Espera antes de reintentar
-            } else {
-              console.error(
-                `Error calculando distancia entre ${i} y ${j}:`,
-                error
-              );
-              break; // Si no es un error de límite de consultas, detén los reintentos
-            }
+          if (
+            response &&
+            response.routes.length > 0 &&
+            response.routes[0].legs.length > 0
+          ) {
+            const leg = response.routes[0].legs[0];
+            distances[i][j] = {
+              distance: leg.distance?.value || 0, // Distancia en metros
+              duration: leg.duration?.value || 0, // Duración en segundos
+              combined: (leg.distance?.value || 0) + (leg.duration?.value || 0), // Suma de distancia y duración
+            };
           }
-        }
-
-        if (!success) {
-          console.error(
-            `No se pudo calcular la distancia entre ${i} y ${j} después de ${MAX_RETRIES} intentos.`
-          );
+        } catch (error) {
+          console.error(`Error calculando distancia entre ${i} y ${j}:`, error);
         }
       }
     }
@@ -109,7 +83,15 @@ const calculateTotalFitness = (
   totalDistance += distances[last][first].distance;
   totalDuration += distances[last][first].duration;
 
-  return { distance: totalDistance, duration: totalDuration };
+  return { distance: totalDistance, duration: totalDuration, combined: totalDistance + totalDuration };
+};
+
+// Selección por torneo
+const selectParentTournament = (fitnessResults: { route: number[]; fitness: FitnessResult }[]): number[] => {
+  const tournamentSize = 5;
+  const tournament = shuffleArray(fitnessResults).slice(0, tournamentSize);
+  tournament.sort((a, b) => a.fitness.combined - b.fitness.combined);
+  return tournament[0].route;
 };
 
 // Algoritmo Genético
@@ -118,88 +100,43 @@ export const geneticAlgorithm = async (
   start: Coordinate,
   pedidos: Pedido[]
 ): Promise<Pedido[]> => {
-  const points: Coordinate[] = [start, ...pedidos.map((pedido) => {
-    const lat = Number(pedido.direccion?.ubicacion?.latitud);
-    const lng = Number(pedido.direccion?.ubicacion?.longitud);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      throw new Error(`Pedido con id ${pedido.id} tiene coordenadas inválidas.`);
+  const points = [start, ...pedidos.map(p => {
+    if (p.direccion && p.direccion.ubicacion) {
+      return { lat: +p.direccion.ubicacion.latitud, lng: +p.direccion.ubicacion.longitud };
     }
-
-    return { lat, lng };
+    return { lat: 0, lng: 0 }; // Default value or handle the error as needed
   })];
-
   const distances = await calculatePairwiseDistances(directionsService, points);
-  console.log("Rutas calculadas:", distances);
 
-  // Genera una población inicial aleatoria (índices de pedidos)
-  let population: number[][] = Array.from({ length: POPULATION_SIZE }, () =>
+  let population = Array.from({ length: POPULATION_SIZE }, () =>
     shuffleArray([...Array(pedidos.length).keys()])
   );
 
   for (let generation = 0; generation < GENERATIONS; generation++) {
-    // Evalúa el fitness de cada individuo
-    const fitnessResults = population.map((route) => ({
+    const fitnessResults = population.map(route => ({
       route,
       fitness: calculateTotalFitness(distances, [0, ...route]),
     }));
+    fitnessResults.sort((a, b) => a.fitness.distance - b.fitness.distance);
 
-    // Ordena por aptitud (menor tiempo y distancia)
-    fitnessResults.sort(
-      (a, b) =>
-        a.fitness.distance + a.fitness.duration -
-        (b.fitness.distance + b.fitness.duration)
-    );
+    const newPopulation = fitnessResults.slice(0, ELITE_COUNT).map(r => r.route);
 
-    // Selecciona los mejores individuos (elitismo)
-    const newPopulation: number[][] = fitnessResults
-      .slice(0, ELITE_COUNT)
-      .map((result) => result.route);
-
-    // Cruza y mutación
     while (newPopulation.length < POPULATION_SIZE) {
-      const parent1 = selectParent(
-        fitnessResults.map((result) => ({
-          route: result.route.map((index) => pedidos[index]),
-          fitness: result.fitness,
-        }))
-      );
+      const parent1 = selectParentTournament(fitnessResults);
+      const parent2 = selectParentTournament(fitnessResults);
 
-      const parent2 = selectParent(
-        fitnessResults.map((result) => ({
-          route: result.route.map((index) => pedidos[index]),
-          fitness: result.fitness,
-        }))
-      );
-
-      const offspring: Pedido[] = crossover(parent1, parent2);
+      const offspring = crossover(parent1.map(i => pedidos[i]), parent2.map(i => pedidos[i]));
       const mutatedOffspring = mutate(offspring, MUTATION_RATE);
-      const mutatedOffspringIndices = mutatedOffspring.map((pedido) =>
-        pedidos.findIndex(
-          (p) =>
-            p.direccion?.ubicacion?.latitud ===
-              pedido.direccion?.ubicacion?.latitud &&
-            p.direccion?.ubicacion?.longitud ===
-              pedido.direccion?.ubicacion?.longitud
-        )
-      );
-      newPopulation.push(mutatedOffspringIndices);
+      newPopulation.push(mutatedOffspring.map(p => pedidos.indexOf(p)));
     }
 
-    // Actualiza la población
     population = newPopulation;
 
-    console.log(
-      `Generation ${generation + 1}: Best fitness (distance + duration) = ${
-        fitnessResults[0].fitness.distance + fitnessResults[0].fitness.duration
-      }`
-    );
+    console.log(`Generation ${generation + 1}: Best fitness = ${fitnessResults[0].fitness.combined}`);
   }
 
-  // Devuelve la mejor ruta encontrada
   const bestRouteIndices = population[0];
-  return bestRouteIndices.map((index: number) => pedidos[index]); // Convierte índices en objetos Pedido
+  return bestRouteIndices.map(i => pedidos[i]);
 };
 
 export default geneticAlgorithm;
-  

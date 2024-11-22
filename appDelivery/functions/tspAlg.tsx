@@ -1,5 +1,4 @@
-import { Coordinate, PedidoLoc } from "@/interfaces/interfaces";
-
+import { Pedido, Coordinate } from "@/interfaces/interfaces";
 
 // Calcula la distancia entre dos puntos usando la fórmula de Haversine
 function haversineDistance(coord1: Coordinate, coord2: Coordinate): number {
@@ -37,26 +36,25 @@ function getPermutations<T>(array: T[]): T[][] {
 }
 
 // Encuentra la ruta óptima utilizando fuerza bruta
-function findOptimalRoute(
+function findOptimalRouteForPedidos(
   start: Coordinate,
-  pedidos: PedidoLoc[]
-): { route: PedidoLoc[]; totalDistance: number } {
+  pedidos: Pedido[]
+): { route: Pedido[]; totalDistance: number } {
   const permutations = getPermutations(pedidos);
 
-  let optimalRoute: PedidoLoc[] = [];
+  let optimalRoute: Pedido[] = [];
   let minDistance = Infinity;
 
-  //console.log(`Número total de permutaciones a evaluar: ${permutations.length}`);
-
-  permutations.forEach((perm, index) => {
+  permutations.forEach((perm) => {
     let currentDistance = 0;
     let prevPoint = start;
 
-    //console.log(`Evaluando permutación ${index + 1}/${permutations.length}`);
-
     // Calcula la distancia total para esta permutación
     perm.forEach((pedido) => {
-      const pedidoCoord = { lat: pedido.lat, lng: pedido.lng };
+      const pedidoCoord = {
+        lat: Number(pedido.direccion?.ubicacion?.latitud),
+        lng: Number(pedido.direccion?.ubicacion?.longitud),
+      };
       currentDistance += haversineDistance(prevPoint, pedidoCoord);
       prevPoint = pedidoCoord;
     });
@@ -64,38 +62,35 @@ function findOptimalRoute(
     // Regresa al punto inicial
     currentDistance += haversineDistance(prevPoint, start);
 
-    //console.log(
-    //  `Permutación ${index + 1}: Distancia total = ${currentDistance.toFixed(2)} km`
-    //);
-
     // Actualiza la ruta óptima
     if (currentDistance < minDistance) {
-      //console.log(
-      //  `Nueva ruta óptima encontrada en permutación ${index + 1}: Distancia = ${currentDistance.toFixed(2)} km`
-      //);
       minDistance = currentDistance;
       optimalRoute = perm;
     }
   });
 
-  //console.log("Ruta óptima final:", optimalRoute.map((pedido) => pedido.id));
-  //console.log("Distancia total mínima:", minDistance.toFixed(2), "km");
-  //Invertir arreglo
+  // Invierte el arreglo para regresar el pedido al origen
   optimalRoute = optimalRoute.reverse();
+
   return { route: optimalRoute, totalDistance: minDistance };
 }
 
-
-// Función para llamar con pedidoLocations
-function calculateOptimalRoute(
+// Función principal para calcular la ruta óptima
+function calculateOptimalRouteForPedidos(
   startLocation: Coordinate,
-  pedidoLocations: { id: string; nombre: string; activo: boolean; lat: number; lng: number }[]
-): { orderedPedidos: { id: string; nombre: string; activo: boolean; lat: number; lng: number }[]; totalDistance: number } {
-  const result = findOptimalRoute(startLocation, pedidoLocations);
+  pedidos: Pedido[]
+): { orderedPedidos: Pedido[]; totalDistance: number } {
+  const validPedidos = pedidos.filter(
+    (pedido) =>
+      pedido.direccion?.ubicacion?.latitud &&
+      pedido.direccion?.ubicacion?.longitud
+  );
+
+  const result = findOptimalRouteForPedidos(startLocation, validPedidos);
   return {
     orderedPedidos: result.route,
     totalDistance: result.totalDistance,
   };
 }
 
-export { haversineDistance, getPermutations, findOptimalRoute, calculateOptimalRoute };
+export { haversineDistance, getPermutations, findOptimalRouteForPedidos, calculateOptimalRouteForPedidos };

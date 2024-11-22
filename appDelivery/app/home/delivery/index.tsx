@@ -24,8 +24,8 @@ import Mapa from "@/components/Entregas/Mapa";
 import StyledIcon from "@/components/StyledIcon";
 import TabBarIcon from "@/components/StyledIcon";
 import { useWebSocketContext } from "@/components/sockets/WebSocketContext";
-import { PedidoLoc } from "@/interfaces/interfaces";
 import { geneticAlgorithm } from "@/functions/optimalRouteGenetic";
+import { findOptimalRouteForPedidos } from "@/functions/tspAlg";
 
 export default function Entregas() {
   const [pedidosAceptados, setPedidosAceptados] = useState<Pedido[]>([]);
@@ -161,8 +161,8 @@ export default function Entregas() {
 
       console.log("Iniciando algoritmo...");
       const directionsService = new google.maps.DirectionsService();
-
-      geneticAlgorithm(directionsService, corrdinate, pedidosValidos)
+      const startLocation = { lat: stableLocation.latitude, lng: stableLocation.longitude }
+      /*geneticAlgorithm(directionsService, corrdinate, pedidosValidos)
         .then((pedidosOrdenados) => {
           
           console.log("Pedidos reordenados:");
@@ -177,7 +177,17 @@ export default function Entregas() {
         })
         .catch((error) => {
           console.error("Error al ejecutar el algoritmo genético:", error);
-        });
+        });*/
+      const pedidosOrdenados = findOptimalRouteForPedidos(startLocation, pedidosValidos);
+      console.log("Pedidos reordenados:");
+          console.log(pedidosOrdenados.route);
+
+          setPedidosAceptados(pedidosOrdenados.route);
+
+          // Llamar a handlePrimerPedido si hay pedidos reordenados
+          if (pedidosOrdenados.route[0]) {
+            handlePrimerPedido(pedidosOrdenados.route [0].id,pedidosOrdenados.route);
+          }
     } catch (error) {
       console.error("Error al obtener los pedidos:", error);
     }

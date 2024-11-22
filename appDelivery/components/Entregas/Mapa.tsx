@@ -36,8 +36,7 @@ const MapComponent: React.FC<MapProps> = ({
   const [center, setCenter] = useState<{ lat: number; lng: number }>(
     defaultCoordinates
   );
-  const [showRoutes, setShowRoutes] = useState(false); 
-
+  const [showRoutes, setShowRoutes] = useState(false);
 
   const [circleRadius, setCircleRadius] = useState(250);
   const [routePoints, setRoutePoints] = useState<google.maps.LatLng[]>([]);
@@ -122,17 +121,17 @@ const MapComponent: React.FC<MapProps> = ({
             { lat: location.latitude, lng: location.longitude },
             pedidoLocations
           );*/
-          
+
           const route = await fetchMultipleRoutes(
             { lat: location.latitude, lng: location.longitude },
-            pedidoLocations//orderedLocations.orderedPedidos
+            pedidoLocations //orderedLocations.orderedPedidos
           );
 
           if (route) {
             setRoutePoints(route);
             setPreviousRoutes({
               origin: { lat: location.latitude, lng: location.longitude },
-              destinations: pedidoLocations,//orderedLocations.orderedPedidos,
+              destinations: pedidoLocations, //orderedLocations.orderedPedidos,
               route,
             });
           }
@@ -200,7 +199,7 @@ const MapComponent: React.FC<MapProps> = ({
       }}
       onZoomChanged={handleZoomChanged}
     >
-            <button
+      <button
         style={{
           position: "absolute",
           top: "10px",
@@ -231,25 +230,63 @@ const MapComponent: React.FC<MapProps> = ({
         />
       )}
       {showRoutes && routePoints.length > 0 && (
-        <Polyline
-          path={routePoints}
-          options={{
-            strokeColor: "#FF0000",
-            strokeOpacity: 0.8,
-            strokeWeight: 3,
-          }}
-        />
+        <>
+          {routePoints.map((point, index) => {
+            if (index === 0) return null; // Saltar el primer punto
+
+            // Progreso normalizado (0 para inicio, 1 para fin)
+            const progress = index / routePoints.length;
+
+            // Gradiente tipo mapa de calor: verde -> amarillo -> rojo
+            let segmentColor;
+            if (progress < 0.5) {
+              // De verde a amarillo
+              segmentColor = `rgb(${Math.round(255 * (progress * 2))}, 255, 0)`;
+            } else {
+              // De amarillo a rojo
+              segmentColor = `rgb(255, ${Math.round(255 * (1 - (progress - 0.5) * 2))}, 0)`;
+            }
+            const arrowIcon = {
+              path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+              scale: 3,
+              strokeColor: "#000",
+            };
+            return (
+              <Polyline
+                key={index}
+                path={[routePoints[index - 1], point]} // Segmento entre dos puntos
+                options={{
+                  strokeColor: segmentColor, // Color dinámico según progreso
+                  strokeOpacity: 0.9,
+                  strokeWeight: 5, // Grosor de línea
+                  icons: [
+                    {
+                      icon: arrowIcon,
+                      offset: "40px",
+                    },
+                  ],
+                }}
+                
+              />
+            );
+          })}
+        </>
       )}
-      {pedidoLocations?.map((loc) => (
+
+      {pedidoLocations?.map((loc, index) => (
         <Marker
           key={loc.id}
           position={{ lat: loc.lat, lng: loc.lng }}
-          label={loc.nombre}
-          icon={
-            pedidoSeleccionado?.id === loc.id
-              ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-              : undefined
-          }
+          label={{
+            text: (index + 1).toString(),
+            color: "black",
+            fontSize: "16px",
+            fontWeight: "bold",
+          }}
+          icon={{
+            url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png",
+            labelOrigin: new google.maps.Point(15, 35),
+          }}
         />
       ))}
     </GoogleMap>
