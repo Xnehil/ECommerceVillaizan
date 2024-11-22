@@ -50,17 +50,14 @@ function LoginPage() {
         >
           Ingresar
         </Button>
+        {/*
         <section className="flex flex-row items-center justify-between">
           <Link className={buttonVariants({ variant: "link" })} href={"/crear-cuenta"}>
             Crea una cuenta
           </Link>
-          {/* Recuperar contraseña */}
-          
-          {/*<Link className={buttonVariants({ variant: "link" })} href={"/recuperar-contrasena"}>
-            Recuperar contraseña
-          </Link>*/}
           
         </section>
+        */}
       </div>
     </div>
   );
