@@ -117,7 +117,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ data, onSetCostoEnvio, isAuthen
       {isAuthenticated && (
         <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium font-poppins">
           <div className="flex items-center gap-x-1">
-            <span>Puntos Canjeables</span>
+            <span>Puntos por esta compra</span>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
