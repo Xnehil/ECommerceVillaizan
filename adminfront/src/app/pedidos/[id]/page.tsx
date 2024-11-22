@@ -140,17 +140,14 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
     console.log("Confirmando pago");
     try {
       // await new Promise((resolve) => setTimeout(resolve, 3000));
-      const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
-        {
-          ...pedido.current,
-          pagado: true,
-        }
-      );
-      if (response.status !== 200) {
-        throw new Error("Error al actualizar el pedido");
+
+      const responsePagoConfirmado = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}pedido/pagoConfirmado`, {'id': pedido.current.id});
+
+      if (responsePagoConfirmado.status !== 200) {
+        throw new Error("Error al realizar el flujo de pago confirmado");
       }
-      console.log("Pedido saved", response.data);
+
+      console.log("Pedido saved", responsePagoConfirmado.data);
       pedido.current.pagado = true;
 
       setIsLoading(false);

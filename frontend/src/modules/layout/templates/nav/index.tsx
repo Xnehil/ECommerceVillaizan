@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { Button } from "@components/Button";
@@ -45,18 +45,19 @@ export default function Nav() {
   const loginUrl = `${urlLogin}/login?callbackUrl=${currentUrl}`;
   const [finishedLoadingName, setFinishedLoadingName] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const hasRunOnce = useRef(false);
   
   useEffect(() => {
-    console.log("session: ", session);
-    console.log("status: ", status);
+    //console.log("session: ", session);
+    //console.log("status: ", status);
     if (checkIfAuthenticated(session, status)) {
       setIsAuthenticated(true);
-      console.log("User is authenticated");
-      console.log("user id: ", session?.user?.id);
+      //console.log("User is authenticated");
+      //console.log("user id: ", session?.user?.id);
     } else {
       setIsAuthenticated(false);
-      console.log("User is not authenticated");
-      console.log("user id: ", session?.user?.id);
+      //console.log("User is not authenticated");
+      //console.log("user id: ", session?.user?.id);
     }
   }, [session, status]);
   
@@ -66,56 +67,50 @@ export default function Nav() {
   };
 
   useEffect(() => {
+  
     async function fetchUserName() {
-      if (status !== "loading") {
-        // Function to get cookies
-        const getCookie = (name: string) => {
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) {
-            const part = parts.pop();
-            if (part) {
-              return part.split(';').shift();
-            }
+      // Function to get cookies
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+          const part = parts.pop();
+          if (part) {
+            return part.split(";").shift();
           }
-          return null;
-        };
-        //En caso de que el usuario esté autenticado
+        }
+        return null;
+      };
+  
+      if (status !== "loading" && !hasRunOnce.current) {
+        hasRunOnce.current = true; // Set the flag to true to prevent re-execution
+  
         if (session?.user?.id) {
           console.log("User is authenticated");
           try {
             setFinishedLoadingName(false);
-            
+  
             // Fetch user information
             const response = await axios.get(`${baseUrl}/admin/usuario/${session.user.id}`);
             const user = response.data.usuario;
             if (user) {
-              setUserName(user.nombre + ' ' + user.apellido);
+              setUserName(user.nombre + " " + user.apellido);
             } else {
-              console.error('Failed to fetch user name');
+              console.error("Failed to fetch user name");
               setIsErrorPopupVisible(true);
             }
-  
-            
   
             // Handle cart logic
             const cartId = getCookie("_medusa_cart_id");
             if (cartId) {
-              //No carga el carrito que haya elaborado estando no autenticado
-
-              
               const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
               const pedido = response.data.pedido;
               if (pedido) {
-                if (!pedido.usuario || (pedido.usuario.id !== session.user.id)) {
-                  /*await axios.put(`${baseUrl}/admin/pedido/${pedido.id}`, {
-                    "usuario": { "id": session.user.id }
-                  });*/
+                if (!pedido.usuario || pedido.usuario.id !== session.user.id) {
                   document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
                   document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
                 }
               }
-                
             } else {
               try {
                 const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
@@ -124,55 +119,47 @@ export default function Nav() {
                   document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
                 }
               } catch (error) {
-                // Handle 404 specifically
                 if (axios.isAxiosError(error) && error.response?.status === 404) {
                   console.log("No pedido found, proceeding without setting cart cookie.");
-                  // Perform any fallback logic if needed
                 } else {
-                  // Re-throw unexpected errors to be caught in the outer catch
                   throw error;
                 }
               }
             }
           } catch (error) {
-            console.error('Error fetching user name or handling cart logic:', error);
+            console.error("Error fetching user name or handling cart logic:", error);
             setIsErrorPopupVisible(true);
   
             if (axios.isAxiosError(error)) {
               if (error.response) {
                 console.error(`Server error: ${error.response.status}`);
               } else if (error.request) {
-                console.error('Network error: Please check your internet connection.');
+                console.error("Network error: Please check your internet connection.");
               } else {
-                console.error('An unexpected error occurred.');
+                console.error("An unexpected error occurred.");
               }
             } else {
-              console.error('An unexpected error occurred.');
+              console.error("An unexpected error occurred.");
             }
           } finally {
             setFinishedLoadingName(true);
           }
-        }
-        else{
+        } else {
           console.log("User is not authenticated");
-          // En caso de que el usuario no esté autenticado
           const cartId = getCookie("_medusa_cart_id");
           if (cartId) {
             const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
-            const pedido : Pedido = response.data.pedido;
+            const pedido = response.data.pedido;
             if (pedido) {
               console.log("Pedido encontrado: ", pedido);
               if (pedido.usuario && pedido.usuario.conCuenta) {
                 console.log("Pedido con usuario con cuenta");
-                // Si el pedido tiene un usuario con cuenta, se elimina la cookie y se recarga la página
                 document.cookie = `_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict`;
                 document.cookie = `_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict`;
                 window.location.href = "/";
-                //await axios.delete(`${baseUrl}/admin/pedido/${cartId}`);
               }
             }
           }
-
         }
       }
     }
