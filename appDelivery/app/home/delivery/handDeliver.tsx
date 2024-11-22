@@ -17,11 +17,19 @@ import SwipeButton from "rn-swipe-button";
 import axios from "axios";
 import { AntDesign, FontAwesome, Ionicons } from "@expo/vector-icons";
 import TabBarIcon from "@/components/StyledIcon";
-import { DetallePedido, Pago, Pedido, Venta } from "@/interfaces/interfaces";
+import {
+  DetallePedido,
+  MetodoDePago,
+  Pago,
+  Pedido,
+  PedidoXMetodoPago,
+  Venta,
+} from "@/interfaces/interfaces";
 import { Link, router } from "expo-router";
 import { getCurrentDelivery, storeCurrentDelivery } from "@/functions/storage";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import { useRef } from "react";
+import { Picker } from "@react-native-picker/picker";
 
 const EntregarPedido = () => {
   const route = useRoute();
@@ -40,17 +48,216 @@ const EntregarPedido = () => {
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [mensajeModal, setMensajeModal] = useState<string | null>(null);
-  const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion">("auto");
+  const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion" | "si/no">(
+    "auto"
+  );
   const [imageView, setImageView] = useState<boolean>(false);
+  const [editPagoModalVisible, setEditPagoModalVisible] = useState(false);
+  const [metodosPagoEditados, setMetodosPagoEditados] = useState<
+    PedidoXMetodoPago[]
+  >(pedidoCompleto?.pedidosXMetodoPago || []);
+  const metodoPagoVacio = {
+    id: "",
+    creadoEn: "",
+    actualizadoEn: "",
+    desactivadoEn: null,
+    usuarioCreacion: "",
+    usuarioActualizacion: null,
+    estaActivo: true,
+    monto: 0,
+    metodoPago: {
+      id: "",
+      creadoEn: "",
+      actualizadoEn: "",
+      desactivadoEn: null,
+      usuarioCreacion: "",
+      usuarioActualizacion: null,
+      estaActivo: true,
+      nombre: "",
+    },
+    pedido: {} as Pedido,
+    Pago: null,
+  };
+  const [nuevoMetodoPago, setNuevoMetodoPago] =
+    useState<PedidoXMetodoPago>(metodoPagoVacio);
+
+  // Función para abrir el modal de edición
+  const handleEditarPago = () => {
+    setMetodosPagoEditados(pedidoCompleto?.pedidosXMetodoPago || []);
+    setEditPagoModalVisible(true);
+  };
+
+  // Función para agregar un método de pago
+  const agregarMetodoPago = () => {
+    if (
+      !nuevoMetodoPago ||
+      !nuevoMetodoPago.metodoPago ||
+      nuevoMetodoPago.monto <= 0
+    ) {
+      mostrarMensaje(
+        "Ingrese un método de pago y un monto válido",
+        "confirmacion"
+      );
+      return;
+    }
+
+    const metodoDePago: PedidoXMetodoPago = {
+      id: nuevoMetodoPago.id,
+      creadoEn: new Date().toISOString(),
+      actualizadoEn: new Date().toISOString(),
+      desactivadoEn: null,
+      usuarioCreacion: "sistema",
+      usuarioActualizacion: null,
+      estaActivo: true,
+      monto: nuevoMetodoPago.monto,
+      metodoPago: {
+        id: nuevoMetodoPago.metodoPago.id,
+        creadoEn: "",
+        actualizadoEn: "",
+        desactivadoEn: null,
+        usuarioCreacion: "",
+        usuarioActualizacion: null,
+        estaActivo: true,
+        nombre: nuevoMetodoPago.metodoPago.nombre,
+      },
+      pedido: pedidoCompleto as Pedido,
+      Pago: null,
+    };
+    console.log(metodoDePago);
+    setMetodosPagoEditados((prev) => [...prev, metodoDePago]);
+    setNuevoMetodoPago(metodoPagoVacio);
+  };
+
+  // Función para eliminar un método de pago
+  const eliminarMetodoPago = (id: string) => {
+    setMetodosPagoEditados((prev) => prev.filter((mp) => mp.id !== id));
+  };
+  const confirmarCambiosPago = async () => {
+    try {
+      if (metodosPagoEditados.length === 0) {
+        mostrarMensaje("Debe haber al menos un método de pago", "confirmacion");
+        return;
+      }
+  
+      const sumaMontos = metodosPagoEditados.reduce((acc, metodo) => {
+        if (typeof metodo.monto === "number") {
+          return acc + metodo.monto;
+        } else {
+          return acc + Number(metodo.monto) || 0;
+        }
+      }, 0);
+  
+      console.log(
+        "Suma de montos:",
+        sumaMontos.toFixed(2),
+        "Monto pedido:",
+        pedidoCompleto?.total
+      );
+  
+      if (sumaMontos.toFixed(2) !== String(pedidoCompleto?.total)) {
+        mostrarMensaje(
+          "La suma de los montos debe ser igual al total del pedido",
+          "confirmacion"
+        );
+        return;
+      }
+  
+      // Crear o actualizar métodos de pago
+      const metodosPagoAProcesar = [...metodosPagoEditados];
+      const promesas: Promise<void>[] = metodosPagoEditados.map(async (metodo) => {
+        if (metodo.id) {
+          // Actualizar si tiene ID
+          await axios.put(`${BASE_URL}/pedidoXMetodoPago/${metodo.id}`, {
+            monto: metodo.monto,
+            metodoPago: metodo.metodoPago.id,
+            pedido: { id: pedidoCompleto?.id },
+          });
+        } else {
+          // Crear si no tiene ID
+          const response = await axios.post(`${BASE_URL}/pedidoXMetodoPago`, {
+            monto: metodo.monto,
+            metodoPago: metodo.metodoPago.id,
+            pedido: { id: pedidoCompleto?.id },
+          });
+  
+          // Actualizar el ID en el array local
+          const index = metodosPagoAProcesar.findIndex(
+            (mp) => mp.metodoPago.id === metodo.metodoPago.id
+          );
+          if (index !== -1) {
+            metodosPagoAProcesar[index] = {
+              ...metodosPagoAProcesar[index],
+              id: response.data.id,
+            };
+          }
+        }
+      });
+  
+      // Eliminar métodos que ya no están en la lista editada
+      const idsActuales = metodosPagoEditados.map((mp) => mp.id);
+      const idsOriginales = pedidoCompleto?.pedidosXMetodoPago?.map((mp) => mp.id);
+      const idsParaEliminar = idsOriginales?.filter(
+        (id) => !idsActuales.includes(id)
+      );
+  
+      if (idsParaEliminar?.length) {
+        idsParaEliminar.forEach((id) =>
+          promesas.push(
+            axios.delete(`${BASE_URL}/pedidoXMetodoPago/${id}`).then(() => {})
+          )
+        );
+      }
+  
+      // Esperar a que todas las promesas se resuelvan
+      await Promise.all(promesas);
+  
+      // Actualizar el pedido con los métodos procesados
+      const response = await axios.put(
+        `${BASE_URL}/pedido/${pedidoCompleto?.id}`,
+        {
+          pedidosXMetodoPago: metodosPagoAProcesar,
+        }
+      );
+  
+      console.log(response.data);
+  
+      mostrarMensaje("Métodos de pago actualizados exitosamente");
+      setEditPagoModalVisible(false);
+  
+      // Actualizar estado local
+      setPedidoCompleto((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          pedidosXMetodoPago: metodosPagoAProcesar,
+        };
+      });
+    } catch (error) {
+      console.error("Error al actualizar métodos de pago:", error);
+      mostrarMensaje("Error al actualizar los métodos de pago", "confirmacion");
+    }
+  };
+  
+
+  // Función para cancelar los cambios
+  const cancelarEdicionPago = () => {
+    setNuevoMetodoPago(metodoPagoVacio);
+    setEditPagoModalVisible(false);
+  };
+
   const mostrarMensaje = (
     mensaje: string,
-    tipo: "auto" | "confirmacion" = "auto"
+    tipo: "auto" | "si/no" | "confirmacion" = "auto"
   ) => {
     setMensajeModal(mensaje);
     setTipoModal(tipo);
 
     if (tipo === "auto") {
       setTimeout(() => setMensajeModal(null), 3000);
+    }
+
+    if (tipo === "si/no") {
+      return true;
     }
   };
 
@@ -285,7 +492,7 @@ const EntregarPedido = () => {
       if (tipo === "pedido") {
         // Manejar imagen de pedido
         if (!fotoPedido) throw new Error("No hay imagen de pedido disponible.");
-  
+
         const fileUrl = await uploadImage(fotoPedido, `${tipo}-${id}`);
         mostrarMensaje("Imagen de pedido enviada con éxito");
         return { [id]: fileUrl }; // Retorna un objeto con la URL de la imagen del pedido
@@ -293,9 +500,9 @@ const EntregarPedido = () => {
         // Manejar imágenes de pago
         if (Object.keys(fotosPago).length === 0)
           throw new Error("No hay imágenes de métodos de pago disponibles.");
-  
+
         const urls: Record<string, string> = {}; // Almacena las URLs de las imágenes
-  
+
         for (const [idMetodoPago, imagenData] of Object.entries(fotosPago)) {
           if (imagenData) {
             const fileUrl = await uploadImage(
@@ -305,7 +512,7 @@ const EntregarPedido = () => {
             urls[idMetodoPago] = fileUrl; // Asigna la URL al método de pago correspondiente
           }
         }
-  
+
         mostrarMensaje("Imágenes de métodos de pago enviadas con éxito");
         return urls; // Retorna un objeto con las URLs generadas para cada método de pago
       }
@@ -370,13 +577,8 @@ const EntregarPedido = () => {
     }
   };
 
-  const handleConfirmarEntrega = async () => {
+  const confirmarEntrega = async () => {
     try {
-      const confirm = window.confirm(
-        "¿Está seguro de que desea confirmar la entrega?"
-      );
-      if (!confirm) return;
-      const pedido = parsedPedido;
       const fotosPagoNecesarias = pedidoCompleto?.pedidosXMetodoPago?.length;
       if (fotoPedido === null || fotoPedido === undefined) {
         mostrarMensaje("Falta foto de pedido");
@@ -456,7 +658,7 @@ const EntregarPedido = () => {
             esTransferencia: true,
             montoCobrado: pedidoCompleto.total,
             numeroOperacion: null,
-            urlEvidencia: urlPago[metodoPago.id],	
+            urlEvidencia: urlPago[metodoPago.id],
             codigoTransaccion: null,
             venta: ventaData.data.id,
             pedidosXMetodoPago: metodoPago,
@@ -472,8 +674,41 @@ const EntregarPedido = () => {
 
         // Usar Promise.all para esperar a que todas las solicitudes se completen
         try {
+          // Enviar pagos en paralelo
           const resultados = await Promise.all(promesasPagos);
           console.log("Todos los pagos se han procesado:", resultados);
+
+          // Enlazar cada pago con su respectivo pedidosXMetodoPago
+          for (let i = 0; i < resultados.length; i++) {
+            const pagoActualizado = resultados[i]?.data;
+            const metodoPago = pedidoCompleto.pedidosXMetodoPago[i];
+
+            // Validar que los datos existan
+            if (!pagoActualizado || !metodoPago) {
+              console.warn(
+                `No se pudo procesar el enlace para el índice ${i}. Datos faltantes.`
+              );
+              continue;
+            }
+
+            try {
+              // Enlazar el pago con pedidosXMetodoPago
+              await axios.put(
+                `${BASE_URL}/pedidosXMetodoPago/${metodoPago.id}`,
+                {
+                  pago: pagoActualizado.id,
+                }
+              );
+              console.log(
+                `Pago ${pagoActualizado.id} enlazado con pedidosXMetodoPago ${metodoPago.id}`
+              );
+            } catch (error) {
+              console.error(
+                `Error al enlazar el pago ${pagoActualizado.id} con pedidosXMetodoPago ${metodoPago.id}:`,
+                error
+              );
+            }
+          }
         } catch (error) {
           console.error("Ocurrió un error al procesar los pagos:", error);
         }
@@ -494,8 +729,67 @@ const EntregarPedido = () => {
     }
   };
 
+  const handleConfirmarEntrega = async () => {
+    Alert.alert(
+      "Confirmación de Entrega",
+      "¿Está seguro de que desea confirmar la entrega?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+          onPress: () => console.log("Confirmación cancelada"),
+        },
+        {
+          text: "Confirmar",
+          onPress: async () => {
+            await confirmarEntrega();
+          },
+        },
+      ]
+    );
+  };
+
+  const [devMetodos, setdevMetodos] = useState<MetodoDePago[]>([]);
+  useEffect(() => {
+    const metodos: MetodoDePago[] = [
+      {
+        id: "mp_01J99CS1H128G2P7486ZB5YACH",
+        nombre: "Pago en Efectivo",
+        creadoEn: "",
+        actualizadoEn: "",
+        desactivadoEn: null,
+        usuarioCreacion: "",
+        usuarioActualizacion: null,
+        estaActivo: false,
+      },
+      {
+        id: "mp_01JBDQD78HBD6A0V1DVMEQAFKV",
+        nombre: "Yape",
+        creadoEn: "",
+        actualizadoEn: "",
+        desactivadoEn: null,
+        usuarioCreacion: "",
+        usuarioActualizacion: null,
+        estaActivo: false,
+      },
+      {
+        id: "mp_01JBDQDH47XDE75XCGSS739E6G",
+        nombre: "Plin",
+        creadoEn: "",
+        actualizadoEn: "",
+        desactivadoEn: null,
+        usuarioCreacion: "",
+        usuarioActualizacion: null,
+        estaActivo: false,
+      },
+    ];
+    setdevMetodos(metodos);
+  }, []);
+
   const fetchPedidoCompleto = async (idPedido: string) => {
     try {
+      //Obtener metodos de pago
+
       // Obtener los datos del pedido
       const pedidoResponseDetalle = await axios.get(
         `${BASE_URL}/pedido/${idPedido}/conDetalle?pedido=true`
@@ -659,59 +953,76 @@ const EntregarPedido = () => {
               <View style={styles.columnTitle}>
                 <Text style={styles.metodoPagoTitulo}>Método(s) de Pago</Text>
               </View>
-              <FlatList
-                style={{ maxHeight: 100, width: "120%" }}
-                data={pedidoCompleto?.pedidosXMetodoPago || []}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <View style={styles.metodoInfoContainer}>
-                    <View style={styles.metodoInfo}>
-                      <View style={styles.leftInfo}>
-                        <View style={styles.iconContainer}>
-                          {item.metodoPago?.nombre === "plin" ? (
-                            <Image
-                              source={require("@assets/images/plin.jpg")}
-                              style={styles.iconoPago}
-                            />
-                          ) : item.metodoPago?.nombre === "yape" ? (
-                            <Image
-                              source={require("@assets/images/yape.png")}
-                              style={styles.iconoPago}
-                            />
-                          ) : (
-                            <FontAwesome name="money" size={30} color="black" />
-                          )}
-                        </View>
-                        <View>
-                          <Text style={styles.metodoNombre2}>
-                            {item.metodoPago?.nombre || "No especificado"}
-                          </Text>
-                          <Text style={styles.montoMetodo}>
-                            S/ {item.monto}
-                          </Text>
+              {pedidoCompleto?.pedidosXMetodoPago &&
+              pedidoCompleto.pedidosXMetodoPago.length > 0 ? (
+                <>
+                  <FlatList
+                    style={{ maxHeight: 100, width: "120%" }}
+                    data={pedidoCompleto?.pedidosXMetodoPago || []}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                      <View style={styles.metodoInfoContainer}>
+                        <View style={styles.metodoInfo}>
+                          <View style={styles.leftInfo}>
+                            <View style={styles.iconContainer}>
+                              {item.metodoPago?.nombre === "plin" ? (
+                                <Image
+                                  source={require("@assets/images/plin.jpg")}
+                                  style={styles.iconoPago}
+                                />
+                              ) : item.metodoPago?.nombre === "yape" ? (
+                                <Image
+                                  source={require("@assets/images/yape.png")}
+                                  style={styles.iconoPago}
+                                />
+                              ) : (
+                                <FontAwesome
+                                  name="money"
+                                  size={30}
+                                  color="black"
+                                />
+                              )}
+                            </View>
+                            <View>
+                              <Text style={styles.metodoNombre2}>
+                                {item.metodoPago?.nombre || "No especificado"}
+                              </Text>
+                              <Text style={styles.montoMetodo}>
+                                S/ {item.monto}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={styles.rightInfo}>
+                            <TouchableOpacity
+                              onPress={() => showImageOptions(item.id, "pago")}
+                            >
+                              <TabBarIcon
+                                IconComponent={FontAwesome}
+                                name="camera"
+                                color={
+                                  fotosPago[item.id] ? "#3BD100" : "#C9CC00"
+                                } // Verde si hay foto
+                                size={30}
+                              />
+                            </TouchableOpacity>
+                          </View>
                         </View>
                       </View>
-                      <View style={styles.rightInfo}>
-                        <TouchableOpacity
-                          onPress={() => showImageOptions(item.id, "pago")}
-                        >
-                          <TabBarIcon
-                            IconComponent={FontAwesome}
-                            name="camera"
-                            color={fotosPago[item.id] ? "#3BD100" : "#C9CC00"} // Verde si hay foto
-                            size={30}
-                          />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                )}
-              />
+                    )}
+                  />
+                </>
+              ) : (
+                <>
+                  <Text style={styles.productosText}>
+                    No hay métodos de pago
+                  </Text>
+                </>
+              )}
             </View>
           </View>
           <View style={styles.agregarParcialButton}>
-            <TouchableOpacity>
-              <Text style={styles.agregarParcial}>+ Agregar parcial</Text>
+            <TouchableOpacity onPress={handleEditarPago}>
+              <Text style={styles.agregarParcial}>+ Editar pago</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -817,6 +1128,178 @@ const EntregarPedido = () => {
           </View>
         </Modal>
       )}
+      <Modal
+        visible={editPagoModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={cancelarEdicionPago}
+      >
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Editar Métodos de Pago</Text>
+          <FlatList
+            data={metodosPagoEditados}
+            keyExtractor={(item) => item.id || item.metodoPago.id}
+            renderItem={({ item }) => (
+              <View style={styles.metodoInfoContainer}>
+                <Picker
+                  selectedValue={item.metodoPago.id || ""}
+                  onValueChange={(itemValue) =>
+                    setMetodosPagoEditados((prev) =>
+                      prev.map((mp) =>
+                        mp.id === item.id
+                          ? {
+                              ...mp,
+                              metodoPago: {
+                                id: itemValue,
+                                nombre:
+                                  devMetodos.find((m) => m.id === itemValue)
+                                    ?.nombre || "",
+                                creadoEn:
+                                  devMetodos.find((m) => m.id === itemValue)
+                                    ?.creadoEn || "",
+                                actualizadoEn:
+                                  devMetodos.find((m) => m.id === itemValue)
+                                    ?.actualizadoEn || "",
+                                desactivadoEn:
+                                  devMetodos.find((m) => m.id === itemValue)
+                                    ?.desactivadoEn || null,
+                                usuarioCreacion:
+                                  devMetodos.find((m) => m.id === itemValue)
+                                    ?.usuarioCreacion || "",
+                                usuarioActualizacion:
+                                  devMetodos.find((m) => m.id === itemValue)
+                                    ?.usuarioActualizacion || null,
+                                estaActivo:
+                                  devMetodos.find((m) => m.id === itemValue)
+                                    ?.estaActivo || true,
+                              },
+                            }
+                          : mp
+                      )
+                    )
+                  }
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Seleccione un método" value="" />
+                  <Picker.Item
+                    key={"mp_01J99CS1H128G2P7486ZB5YACH"}
+                    label={"Pago en Efectivo"}
+                    value={"mp_01J99CS1H128G2P7486ZB5YACH"}
+                  />
+                  <Picker.Item
+                    key={"mp_01JBDQD78HBD6A0V1DVMEQAFKV"}
+                    label={"Yape"}
+                    value={"mp_01JBDQD78HBD6A0V1DVMEQAFKV"}
+                  />
+                  <Picker.Item
+                    key={"mp_01JBDQDH47XDE75XCGSS739E6G"}
+                    label={"Plin"}
+                    value={"mp_01JBDQDH47XDE75XCGSS739E6G"}
+                  />
+                </Picker>
+
+                <TextInput
+                  style={styles.input}
+                  value={item.monto.toFixed(2)}
+                  keyboardType="numeric"
+                  onChangeText={(text) =>
+                    setMetodosPagoEditados((prev) =>
+                      prev.map((mp) =>
+                        mp.id === item.id
+                          ? { ...mp, monto: parseFloat(text) }
+                          : mp
+                      )
+                    )
+                  }
+                  placeholder="Monto"
+                />
+
+                <TouchableOpacity onPress={() => eliminarMetodoPago(item.id)}>
+                  <Text style={styles.botonEliminar}>Eliminar</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+          <View style={styles.nuevoMetodoPago}>
+            <Picker
+              selectedValue={nuevoMetodoPago?.metodoPago?.id || ""}
+              onValueChange={(itemValue) =>
+                setNuevoMetodoPago((prev) => {
+                  if (!prev) return metodoPagoVacio;
+                  const selectedMetodo = devMetodos.find(
+                    (m) => m.id === itemValue
+                  );
+                  return {
+                    ...prev,
+                    metodoPago: {
+                      id: selectedMetodo?.id || "-1",
+                      creadoEn: selectedMetodo?.creadoEn || "",
+                      actualizadoEn: selectedMetodo?.actualizadoEn || "",
+                      desactivadoEn: selectedMetodo?.desactivadoEn || null,
+                      usuarioCreacion: selectedMetodo?.usuarioCreacion || "",
+                      usuarioActualizacion:
+                        selectedMetodo?.usuarioActualizacion || null,
+                      estaActivo: selectedMetodo?.estaActivo || true,
+                      nombre: selectedMetodo?.nombre || "",
+                    },
+                  };
+                })
+              }
+              style={styles.picker}
+            >
+              <Picker.Item label="Seleccione un método" value="" />
+              <Picker.Item
+                key={"mp_01J99CS1H128G2P7486ZB5YACH"}
+                label={"Pago en Efectivo"}
+                value={"mp_01J99CS1H128G2P7486ZB5YACH"}
+              />
+              <Picker.Item
+                key={"mp_01JBDQD78HBD6A0V1DVMEQAFKV"}
+                label={"Yape"}
+                value={"mp_01JBDQD78HBD6A0V1DVMEQAFKV"}
+              />
+              <Picker.Item
+                key={"mp_01JBDQDH47XDE75XCGSS739E6G"}
+                label={"Plin"}
+                value={"mp_01JBDQDH47XDE75XCGSS739E6G"}
+              />
+            </Picker>
+
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              onChangeText={(text) =>
+                setNuevoMetodoPago((prev) => {
+                  if (!prev) return metodoPagoVacio;
+                  return {
+                    ...prev,
+                    monto: text ? parseFloat(text) : 0,
+                  };
+                })
+              }
+              placeholder="Monto"
+            />
+            <TouchableOpacity onPress={agregarMetodoPago}>
+              <Text style={styles.botonAgregar}>Agregar</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.modalBotones}>
+            <TouchableOpacity
+              style={styles.boton}
+              onPress={cancelarEdicionPago}
+            >
+              <Text style={styles.botonTexto2}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.boton}
+              onPress={confirmarCambiosPago}
+            >
+              <Text style={styles.botonTexto2}>Confirmar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -847,6 +1330,36 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     flexWrap: "wrap",
     flexDirection: "column",
+  },
+  nuevoMetodoPago: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "90%",
+    marginVertical: 10,
+    padding: 10,
+    backgroundColor: "#f8f8f8",
+    borderRadius: 8,
+  },
+  botonAgregar: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: "#28a745",
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    borderRadius: 8,
+    textAlign: "center",
+  },
+  botonEliminar: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: "#dc3545",
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "bold",
+    borderRadius: 8,
+    textAlign: "center",
   },
   infoContainer: {},
   buttonContainer: {
@@ -1178,6 +1691,17 @@ const styles = StyleSheet.create({
   rightInfo: {
     justifyContent: "center",
     alignItems: "center",
+  },
+  picker: {
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    borderRadius: 4,
+    backgroundColor: "#fff",
+    alignContent: "center",
+    justifyContent: "center",
   },
 });
 

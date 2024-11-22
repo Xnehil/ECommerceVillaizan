@@ -283,4 +283,18 @@ export interface PedidoXMetodoPago {
   monto: number;
   pedido: Pedido;
   metodoPago: MetodoDePago;
+  Pago: Pago | null;
 }
+
+export interface Coordinate  {
+  lat: number;
+  lng: number;
+};
+
+export interface PedidoLoc{
+  id: string;
+  nombre: string;
+  activo: boolean;
+  lat: number;
+  lng: number;
+};
