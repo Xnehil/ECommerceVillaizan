@@ -65,12 +65,12 @@ const Cuenta = () => {
               console.log("response", response);
               const user = response.data.usuario;
               if (user) {
-                setUserNombre(user.nombre);
-                setUserApellido(user.apellido);
-                setUserCorreo(user.correo);
-                setUserTelefono(user.numeroTelefono);
-                setUserId(user.id);
-                setUserPuntosAcumulados(user.puntosAcumulados.toString());
+                setUserNombre(user.nombre? user.nombre : '');
+                setUserApellido(user.apellido? user.apellido : '');
+                setUserCorreo(user.correo? user.correo : '');
+                setUserTelefono(user.numeroTelefono? user.numeroTelefono : '');
+                setUserId(user.id? user.id : '');
+                setUserPuntosAcumulados(user.puntosAcumulados ? user.puntosAcumulados.toString() : '');
                 console.log("puntos", user.puntosAcumulados);
               } else {
                 console.error('Failed to fetch user name');
@@ -166,14 +166,21 @@ const Cuenta = () => {
   //const handleEditData = () => setIsEditing(true);
 
   const handleEditData = () => {
-    setOriginalNombre(userNombre);
-    setOriginalApellido(userApellido);
-    setOriginalNumeroTelefono(userTelefono);
+    if (userNombre !== '') setOriginalNombre(userNombre);
+    if (userApellido !== '') setOriginalApellido(userApellido);
+    if (userTelefono !== '') setOriginalNumeroTelefono(userTelefono);
 
     setIsEditing(true);
   };
 
   const handleCancelData = () => {
+    setUserNombre(originalNombre);
+    setUserApellido(originalApellido);
+    setUserTelefono(originalNumeroTelefono);
+    setValidationErrorNombre(null);
+    setValidationErrorApellido(null);
+    setValidationErrorNumeroTelefono(null);
+
     setIsEditing(false);
     setIsDialogOpen(false);
   };
@@ -339,15 +346,7 @@ const Cuenta = () => {
                     {/* Cancel Button */}
                     <Button
                       variant="secondary"
-                      onClick={() => {
-                        handleCancelData();
-                        setUserNombre(originalNombre);
-                        setUserApellido(originalApellido);
-                        setUserTelefono(originalNumeroTelefono);
-                        setValidationErrorNombre(null);
-                        setValidationErrorApellido(null);
-                        setValidationErrorNumeroTelefono(null);
-                      }}
+                      onClick={handleCancelData}
                     >
                       Cancelar
                     </Button>

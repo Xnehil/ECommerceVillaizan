@@ -141,7 +141,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: "/login",
     signOut: "/",
   },
-  
+  /*
   cookies: {
     sessionToken: {
       name: domain === "localhost" ? 'authjs.session-token' : `__Secure-next-auth.session-token`,
@@ -174,5 +174,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     },
   },
+  */
   trustHost: true
 });
