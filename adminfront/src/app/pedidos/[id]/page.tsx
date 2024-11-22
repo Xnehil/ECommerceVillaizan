@@ -102,7 +102,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         const respMssg = await axios.post(
           `${process.env.NEXT_PUBLIC_BASE_URL}whatsApp`,
           {
-            mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${pedido.current.codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: http://localhost:8000/seguimiento?codigo=${pedido.current.codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
+            mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${pedido.current.codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: ${process.env.ECOMMERCE_URL}/seguimiento?codigo=${pedido.current.codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
             numero: pedido.current.usuario?.numeroTelefono,
           }
         );
@@ -163,7 +163,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         description: "Ocurrió un error al confirmar el pago.",
       });
     }
-  }; 
+  };
 
   return (
     <div className="content-container">
@@ -207,33 +207,40 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
                 </>
               </div>
             )}
-            {pedido.current.estado === "entregado" && !pedido.current.pagado && (
-              <div className="lower-buttons-container">
-                <>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="default">Confirmar Pago</Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          ¿Estás seguro de confirmar el pago?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          El pago de este pedido será confirmado. Asegúrate de que los datos sean correctos.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmPayment}>
-                          Confirmar Pago
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </>
-              </div>
-            )}
+            {pedido.current.estado === "entregado" &&
+              !pedido.current.pagado &&
+              pedido.current.pedidosXMetodoPago?.some(
+                (metodo) =>
+                  metodo.metodoPago.nombre === "yape" ||
+                  metodo.metodoPago.nombre === "plin"
+              ) && (
+                <div className="lower-buttons-container">
+                  <>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="default">Confirmar Pago</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            ¿Estás seguro de confirmar el pago?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            El pago de este pedido será confirmado. Asegúrate de
+                            que los datos sean correctos.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleConfirmPayment}>
+                            Confirmar Pago
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                </div>
+              )}
           </div>
         </>
       )}
