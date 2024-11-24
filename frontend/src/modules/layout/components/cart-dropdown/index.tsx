@@ -247,7 +247,7 @@ const CartDropdown = ({
                             </div>
                           </div>
                           <DeleteButton
-                            id={item.id}
+                            itemParam={item}
                             className="mt-1"
                             data-testid="cart-item-remove-button"
                             cart={cartState}
