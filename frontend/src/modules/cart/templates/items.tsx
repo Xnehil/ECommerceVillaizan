@@ -9,9 +9,10 @@ import { DetallePedido, Pedido } from "types/PaquetePedido"
 type ItemsTemplateProps = {
   carrito: Pedido
   setCarrito: (carrito: Pedido) => void
+  isAuthenticated: boolean
 }
 
-const ItemsTemplate = ({  carrito, setCarrito }: ItemsTemplateProps) => {
+const ItemsTemplate = ({  carrito, setCarrito, isAuthenticated }: ItemsTemplateProps) => {
   const [refresh, setRefresh] = useState(false);
   const [items, setItems] = useState(carrito.detalles || []);
 
@@ -53,7 +54,7 @@ const ItemsTemplate = ({  carrito, setCarrito }: ItemsTemplateProps) => {
                   return (a.creadoEn ?? 0) > (b.creadoEn ?? 0) ? -1 : 1
                 })
                 .map((item) => {
-                  return <Item key={item.id} item={item} onDelete = {() =>  deleteItem(item.id)} />
+                  return <Item key={item.id} item={item} onDelete = {() =>  deleteItem(item.id)} isAuthenticated={isAuthenticated} />
                 })
             : Array.from(Array(5).keys()).map((i) => {
                 return <SkeletonLineItem key={i} />

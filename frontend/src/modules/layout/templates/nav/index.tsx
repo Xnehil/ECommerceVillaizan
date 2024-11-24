@@ -26,13 +26,6 @@ export async function handleSignOut() {
   await signOut();
 }
 
-function checkIfAuthenticated(session: any, status: string) {
-  if (status !== "loading") {
-    return session?.user?.id ? true : false;
-  }
-  return false;
-}
-
 const urlLogin = process.env.NEXT_PUBLIC_APP_URL;
 
 export default function Nav() {
@@ -46,20 +39,19 @@ export default function Nav() {
   const [finishedLoadingName, setFinishedLoadingName] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const hasRunOnce = useRef(false);
+  const hasRunOnceAuth = useRef(false);
   
   useEffect(() => {
-    //console.log("session: ", session);
-    //console.log("status: ", status);
-    if (checkIfAuthenticated(session, status)) {
-      setIsAuthenticated(true);
-      //console.log("User is authenticated");
-      //console.log("user id: ", session?.user?.id);
-    } else {
-      setIsAuthenticated(false);
-      //console.log("User is not authenticated");
-      //console.log("user id: ", session?.user?.id);
+    if(status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true;
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
     }
   }, [session, status]);
+
   
 
   const toggleDropdown = () => {
