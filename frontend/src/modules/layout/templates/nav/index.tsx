@@ -175,7 +175,7 @@ export default function Nav() {
           {/* Logo */}
           <div className="flex items-center h-full gap-x-10">
               <img src="/images/logo.png" alt="Paletas Villaizan" className="h-12" />
-            <Link href="/" className="hover:text-ui-fg-base text-white font-sans">Home</Link>
+            <Link href="/" className="hover:text-ui-fg-base text-white font-sans">Inicio</Link>
             <Link href="/comprar" className="hover:text-ui-fg-base text-white font-sans">Catálogo</Link>
           </div>
 
@@ -198,16 +198,19 @@ export default function Nav() {
                         Ver cuenta
                       </Link>
                       <Link href="/historial" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)}>
-                        Historial de Pedidos
+                        Historial de pedidos
                       </Link>
+                      <a href="https://puntos.heladosvillaizan.tech" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)} target="_blank" rel="noopener noreferrer">
+                        Canjear puntos
+                      </a>
                       <button
-                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
+                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans"
                         onClick={() => {
                           handleSignOut();
                           setIsDropdownOpen(false);
                         }}
                       >
-                        Cerrar Sesión
+                        Cerrar sesión
                       </button>
                     </div>
                   )}
