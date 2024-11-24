@@ -8,6 +8,7 @@ import Parametros from "@/app/configuracion/parametros";
 import Categorias from "@/app/configuracion/categorias/categorias";
 import Subcategorias from "@/app/configuracion/subcategorias/subcategorias";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import PlantillaPg from "@/app/configuracion/plantillas/plantillaPg";
 
 const ConfiguracionPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,9 +21,10 @@ const ConfiguracionPage: React.FC = () => {
         <Separator />
 
         <Tabs defaultValue="general" defaultChecked={true} className="w-full">
-          <TabsList className="grid w-1/5 grid-cols-2">
+          <TabsList className="grid w-2/5 grid-cols-3">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="productos">Productos</TabsTrigger>
+            <TabsTrigger value="plantilla">Plantilla de stock</TabsTrigger>
           </TabsList>
           <TabsContent className="w-full" value="general">
             <div className="information-container">
@@ -30,11 +32,16 @@ const ConfiguracionPage: React.FC = () => {
             </div>
           </TabsContent>
           <TabsContent value="productos">
-              <h5>Productos</h5>
-              <div className="information-container mt-4">
-                <Categorias />
-                <Subcategorias />
-              </div>
+            <h5>Productos</h5>
+            <div className="information-container mt-4">
+              <Categorias />
+              <Subcategorias />
+            </div>
+          </TabsContent>
+          <TabsContent value="plantilla">
+            <div className="information-container">
+              <PlantillaPg />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
