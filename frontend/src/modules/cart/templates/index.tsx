@@ -8,8 +8,10 @@ import SignInPrompt from "../components/sign-in-prompt"
 import Divider from "@modules/common/components/divider"
 import { Customer } from "@medusajs/medusa"
 import { Pedido } from "types/PaquetePedido"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import BackButton from "@components/BackButton"
+import { useSession } from "next-auth/react"
+
 
 const CartTemplate = ({
   cart,
@@ -19,10 +21,25 @@ const CartTemplate = ({
   customer?: Omit<Customer, "password_hash"> | null
 }) => {
   const [carritoState, setCarritoState] = useState<Pedido>(cart)
+  const { data: session, status } = useSession();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const hasRunOnce = useRef(false);
+  
   const handleBackClick = () => {
     //Enviar a /comprar
     window.history.back()
   }
+
+  useEffect(() => {
+    if(status !== "loading" && !hasRunOnce.current) {
+      hasRunOnce.current = true;
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+    }
+  }, [session, status]);
 
   return (
     
@@ -41,14 +58,14 @@ const CartTemplate = ({
                   <Divider />
                 </>
               )} */}
-              <ItemsTemplate carrito={carritoState} setCarrito={setCarritoState} />
+              <ItemsTemplate carrito={carritoState} setCarrito={setCarritoState} isAuthenticated={isAuthenticated} />
             </div>
             <div className="relative">
               <div className="flex flex-col gap-y-8 sticky top-12">
                 {cart  && (
                   <>
                     <div className="bg-white py-6">
-                      <Summary carrito={carritoState} />
+                      <Summary carrito={carritoState} isAuthenticated={isAuthenticated}/>
                     </div>
                   </>
                 )}

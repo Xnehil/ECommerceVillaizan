@@ -10,10 +10,11 @@ import { useSession } from 'next-auth/react';
 
 type SummaryProps = {
   carrito: Pedido
+  isAuthenticated: boolean
 }
 
-const Summary = ({ carrito }: SummaryProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+const Summary = ({ carrito, isAuthenticated}: SummaryProps) => {
+
   const { data: session, status } = useSession();
   const subtotal = carrito.detalles.reduce((acc: number, item) => {
     return acc + Number(item.subtotal) || 0
@@ -26,22 +27,7 @@ const Summary = ({ carrito }: SummaryProps) => {
   const minimo = 25 // Mínimo para proceder al pago
   const isDisabled = subtotal < minimo
 
-  function checkIfAuthenticated(session: any, status: string) {
-    if (status !== "loading") {
-      return session?.user?.id ? true : false;
-    }
-    return false;
-  }
 
-  useEffect(() => {
-    if (checkIfAuthenticated(session, status)) {
-      setIsAuthenticated(true);
-      console.log("User is authenticated");
-    } else {
-      setIsAuthenticated(false);
-      console.log("User is not authenticated");
-    }
-  }, [session, status]);
 
   return (
     <div className="bg-cremaFondo p-6 pb-12">

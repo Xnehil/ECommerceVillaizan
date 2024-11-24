@@ -37,6 +37,9 @@ const LineItemUnitPrice = ({
           {"S/ " + Number(originalPrice).toFixed(2)}
         </span>
 </span>
+{
+  
+}
     </div>
   )
 }
