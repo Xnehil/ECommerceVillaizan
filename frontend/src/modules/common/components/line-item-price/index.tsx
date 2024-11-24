@@ -46,7 +46,7 @@ const LineItemPrice = ({
           </>
         )} */}
         <span
-          className={"text-black font-poppins text-base not-italic font-normal leading-normal pr-1"}
+          className="text-black font-poppins text-base not-italic font-normal leading-normal pr-1 whitespace-nowrap"
           style={{ fontWeight: 550 }}
           data-testid="product-price"
         >

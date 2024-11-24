@@ -235,11 +235,17 @@ const CartDropdown = ({
                                   Cantidad: {item.cantidad}
                                 </span>
                               </div>
-                              <div className="flex pr-4">
+                              <div className="flex flex-col pr-4">
                                 <LineItemPrice
                                   item={item}
                                   style="tight"
                                 />
+                                {/* Show Puntos Canjeables below LineItemPrice */}
+                                {isAuthenticated && item.producto && item.producto.cantidadPuntos && item.producto.cantidadPuntos > 0 && (
+                                  <span className="text-sm text-gray-500 mt-1">
+                                    {item.producto.cantidadPuntos * item.cantidad} puntos
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
