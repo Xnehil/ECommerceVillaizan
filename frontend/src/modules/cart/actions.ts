@@ -243,6 +243,8 @@ export async function updateLineItem({
   }
 
   try {
+    
+
     await axios.put(`${baseUrl}/admin/detallePedido/${detallePedidoId}`, {
       cantidad: cantidad,
       subtotal: subtotal,

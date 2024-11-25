@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 
 import EntregaPopup from "./EntregaPopup" // Asegúrate de importar el componente EntregaPopup
 import BuscandoPopup from "./BuscandoPopup"
@@ -44,12 +44,6 @@ if (!baseUrl) {
   console.error("NEXT_PUBLIC_MEDUSA_BACKEND_URL is not defined")
 }
 
-function checkIfAuthenticated(session: any, status: string) {
-  if (status !== "loading") {
-    return session?.user?.id ? true : false
-  }
-  return false
-}
 
 const ResumenCompra: React.FC<ResumenCompraProps> = ({
   descuento,
@@ -82,16 +76,18 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const mostrarCostoEnvio = false
   const { data: session, status } = useSession()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const hasRunOnceAuth = useRef(false);
 
   useEffect(() => {
-    if (checkIfAuthenticated(session, status)) {
-      setIsAuthenticated(true)
-      console.log("User is authenticated")
-    } else {
-      setIsAuthenticated(false)
-      console.log("User is not authenticated")
+    if(status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true;
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
     }
-  }, [session, status])
+  }, [session, status]);
 
   const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!isButtonDisabled) {

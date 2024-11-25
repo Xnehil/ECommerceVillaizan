@@ -39,6 +39,7 @@ const ItemsPreviewTemplate = ({ items, region }: ItemsTemplateProps) => {
                       key={item.id}
                       item={item}
                       onDelete = {() =>  deleteItem(item.id)}
+                      isAuthenticated={false}
                     />
                   )
                 })

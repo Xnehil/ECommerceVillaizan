@@ -28,10 +28,14 @@ const CartButton: React.FC<CartButtonProps> = ({ carrito, setCarrito }) => {
   useEffect(() => {
     // Fetch the cart data when the component is mounted
     const getCart = async () => {
-      // console.log("Fetching cart...");
+
       const { cart } = await fetchCart();
       const enrichedItems = await enrichLineItems(cart.detalles);
-      // console.log("Detalles enriquecidos:", enrichedItems);
+      //iterate each detalles and if detalles.estaActivo false, then remove it from the array
+
+      // Filter out inactive items
+      cart.detalles = enrichedItems.filter(item => item.estaActivo);
+
       cart.detalles = enrichedItems;
       setCarrito(cart);
     };

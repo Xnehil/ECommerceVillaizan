@@ -2,7 +2,7 @@ import { Heading } from "@medusajs/ui";
 import CartTotals from "@modules/common/components/cart-totals";
 import Divider from "@modules/common/components/divider";
 import { Pedido } from "types/PaquetePedido";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 
@@ -15,12 +15,6 @@ type Summary2Props = {
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
-function checkIfAuthenticated(session: any, status: string) {
-  if (status !== "loading") {
-    return session?.user?.id ? true : false;
-  }
-  return false;
-}
 
 const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2Props) => {
   const [minimo, setMinimo] = useState<number>(25); // Default value, will be updated after fetch
@@ -28,16 +22,19 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
   const [loading, setLoading] = useState<boolean>(true); // For loading state
   const { data: session, status } = useSession();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const hasRunOnceAuth = useRef(false);
 
   useEffect(() => {
-    if (checkIfAuthenticated(session, status)) {
-      setIsAuthenticated(true);
-      console.log("User is authenticated");
-    } else {
-      setIsAuthenticated(false);
-      console.log("User is not authenticated");
+    if(status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true;
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
     }
   }, [session, status]);
+
 
   const [minOrderAmount, setMinOrderAmount] = useState<number>(25); // For the minimum order amount from the backend
 
