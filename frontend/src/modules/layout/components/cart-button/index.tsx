@@ -44,7 +44,9 @@ const CartButton: React.FC<CartButtonProps> = ({ carrito, setCarrito }) => {
 
   useEffect(() => {
     if (carrito && !done) {
+      carrito.detalles = carrito.detalles.filter(item => item.estaActivo);
       setDone(true);
+
       console.log("Carrito cargado:", carrito);
     }
   }
