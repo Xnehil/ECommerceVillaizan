@@ -6,6 +6,9 @@ import {
   TouchableOpacity,
   Switch,
   Pressable,
+  Modal,
+  ScrollView,
+  TextInput,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
@@ -14,12 +17,14 @@ import axios from "axios";
 import {
   Motorizado,
   MotorizadoResponse,
+  Pedido,
+  PedidosResponse,
   Usuario,
   UsuarioResponse,
 } from "@/interfaces/interfaces";
 import { useRouter } from "expo-router";
 import { getUserData, storeMotorizadoData } from "@/functions/storage";
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL; 
+const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 function Icon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];
@@ -43,10 +48,39 @@ function Icon(props: {
 export default function TabOneScreen() {
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
+  const [modalCancelVisible, setModalCancelVisible] = useState(false);
+  const [motivoCancelacion, setMotivoCancelacion] = useState("");
+  const [otroMotivo, setOtroMotivo] = useState("");
 
   const [data_usuario, setDataUsuario] = useState<Usuario | null>(null);
-  const [motorizado,setMotorizado] = useState<Motorizado | null>();
+  const [motorizado, setMotorizado] = useState<Motorizado | null>();
+  const [mensajeModal, setMensajeModal] = useState<string | null>(null);
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion" | "si/no">(
+    "auto"
+  );
+  const [resolveCallback, setResolveCallback] = useState<null | Function>(null);
+
+  const mostrarMensaje = (
+    mensaje: string,
+    tipo: "auto" | "si/no" | "confirmacion" = "auto"
+  ): Promise<boolean> => {
+    setMensajeModal(mensaje);
+    setTipoModal(tipo);
+
+    if (tipo === "auto") {
+      setTimeout(() => setMensajeModal(null), 3000);
+      return Promise.resolve(false); // No necesita confirmación
+    }
+
+    if (tipo === "si/no") {
+      return new Promise((resolve) => {
+        setResolveCallback(() => resolve);
+      });
+    }
+
+    return Promise.resolve(false);
+  };
 
   // Obtén los datos del usuario
   const getData = async (): Promise<Usuario | null> => {
@@ -70,13 +104,13 @@ export default function TabOneScreen() {
         const response = await axios.post<MotorizadoResponse>(
           `${BASE_URL}/motorizado/usuario`,
           {
-            id_usuario: userData?.id
+            id_usuario: userData?.id,
           }
         );
         const motorizado = response.data.motorizado;
         console.log(motorizado);
         storeMotorizadoData(motorizado);
-        setMotorizado(motorizado)
+        setMotorizado(motorizado);
         const usuario = motorizado.usuario;
         setDataUsuario(usuario);
         setIsConnected(motorizado?.disponible ?? false);
@@ -97,27 +131,123 @@ export default function TabOneScreen() {
 
   // Función para actualizar el estado 'estaActivo' en la base de datos
   const actualizarEstadoMotorizado = async (nuevoEstado: boolean) => {
-    console.log("Estado " + nuevoEstado);
-    console.log("Data motorizado: " + motorizado);
-    if (motorizado?.id) {
+    if (motorizado?.id && nuevoEstado == true) {
       try {
         const response = await axios.put(
           `${BASE_URL}/motorizado/${motorizado.id}`,
-          { disponible: nuevoEstado }
+          { disponible: false }
         );
         console.log(response.data);
         console.log("Estado del motorizado actualizado con éxito.");
+        setIsConnected(true);
       } catch (error) {
         console.error("Error al actualizar el estado del motorizado:", error);
       }
+    } else if (motorizado?.id && nuevoEstado == false) {
+      const pedidosEnProceso = await fetchPedidos();
+      setPedidos(pedidosEnProceso ?? []);
+      if (pedidosEnProceso && pedidosEnProceso.length > 0) {
+        setModalCancelVisible(true);
+      } else {
+        setIsConnected(false);
+      }
     }
   };
+
+  async function fetchPedidos() {
+    if (!data_usuario?.id) {
+      console.log("Usuario no encontrado");
+      return;
+    }
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/usuario/${data_usuario?.id}/repartidorPedidos`
+      );
+      console.log(data_usuario?.id);
+      const pedidosResponse: PedidosResponse = response.data;
+      const pedidosEnProceso = pedidosResponse.pedidos.filter(
+        (pedido) =>
+          //pedido.estado === "solicitado" ||
+          pedido.estado === "verificado" || pedido.estado === "enProgreso"
+      );
+      return pedidosEnProceso;
+    } catch (error) {
+      console.error("Error al obtener los pedidos:", error);
+    }
+  }
 
   // Función para manejar el cambio del switch
   const toggleSwitch = async () => {
     const nuevoEstado = !isConnected;
     await actualizarEstadoMotorizado(nuevoEstado);
-    setIsConnected(nuevoEstado);
+  };
+
+  const confirmarCancelacion = async () => {
+    if ((motivoCancelacion === "Otro" && otroMotivo === "") || otroMotivo) {
+      mostrarMensaje("Por favor, especifica el motivo de la cancelación");
+      return;
+    }
+    const confirmacion = await mostrarMensaje(
+      "Se reasignarán todos los pedidos que se le han asignado",
+      "si/no"
+    );
+
+    if (confirmacion == true && motorizado?.id) {
+      try {
+        const response = await axios.put(
+          `${BASE_URL}/motorizado/${motorizado.id}`,
+          { disponible: false }
+        );
+        console.log(response.data);
+        console.log("Estado del motorizado actualizado con éxito.");
+        setIsConnected(false);
+      } catch (error) {
+        console.error("Error al actualizar el estado del motorizado:", error);
+      }
+      //Reasignar los pedidos, estado = reasignar
+      try {
+        for (const pedido of pedidos) {
+          const response = await axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
+            estado: "manual",
+            motivoCancelacion:
+              motivoCancelacion === "Otro" ? otroMotivo : motivoCancelacion,
+          });
+          console.log(response.data);
+        }
+      } catch (error) {
+        console.error("Error al reasignar los pedidos:", error);
+        mostrarMensaje(
+          "Error al reasignar los pedidos, favor intentar de nuevo",
+          "auto"
+        );
+      }
+      try {
+        const promises = pedidos.map((pedido) =>
+          axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
+            estado: "reasignar",
+            motivoCancelacion:
+              motivoCancelacion === "Otro" ? otroMotivo : motivoCancelacion,
+          })
+        );
+        const responses = await Promise.all(promises);
+        responses.forEach((response) => console.log(response.data));
+      } catch (error) {
+        console.error("Error al reasignar los pedidos:", error);
+        mostrarMensaje(
+          "Error al reasignar los pedidos, favor intentar de nuevo",
+          "auto"
+        );
+      }
+      setModalCancelVisible(false);
+      setIsConnected(false);
+      motivoCancelacion;
+    }
+  };
+
+  const handleRespuestaModal = (respuesta: boolean) => {
+    if (resolveCallback) resolveCallback(respuesta);
+    setMensajeModal(null);
+    setResolveCallback(null);
   };
 
   return (
@@ -152,34 +282,29 @@ export default function TabOneScreen() {
         to={"/home/delivery"}
         style={[styles.card, !isConnected && styles.disabledCard]}
       >
-        <Pressable
-          style={styles.card_inside}
-          disabled={!isConnected} 
-        >
+        <Pressable style={styles.card_inside} disabled={!isConnected}>
           <MaterialIcons name="list-alt" size={24} color="white" />
           <View style={styles.cardText}>
-        <Text style={[styles.cardTitle, styles.cardContent]}>
-          Ver mis entregas
-        </Text>
-        <Text style={styles.cardContent}>
-          Ver tus entregas activas y todos los disponibles
-        </Text>
+            <Text style={[styles.cardTitle, styles.cardContent]}>
+              Ver mis entregas
+            </Text>
+            <Text style={styles.cardContent}>
+              Ver tus entregas activas y todos los disponibles
+            </Text>
           </View>
         </Pressable>
       </Link>
-
-
 
       <Link to={"/home/settings/inventory"} style={styles.card}>
         <Pressable style={styles.card_inside}>
           <MaterialIcons name="inventory" size={24} color="white" />
           <View style={styles.cardText}>
-        <Text style={[styles.cardTitle, styles.cardContent]}>
-          Actualizar Inventario
-        </Text>
-        <Text style={styles.cardContent}>
-          Ingresa la cantidad disponible de cada producto
-        </Text>
+            <Text style={[styles.cardTitle, styles.cardContent]}>
+              Actualizar Inventario
+            </Text>
+            <Text style={styles.cardContent}>
+              Ingresa la cantidad disponible de cada producto
+            </Text>
           </View>
         </Pressable>
       </Link>
@@ -187,20 +312,119 @@ export default function TabOneScreen() {
         <Pressable style={styles.card_inside}>
           <MaterialIcons name="point-of-sale" size={24} color="white" />
           <View style={styles.cardText}>
-        <Text style={[styles.cardTitle, styles.cardContent]}>
-          Realizar venta
-        </Text>
-        <Text style={styles.cardContent}>
-          Registra una venta externa
-        </Text>
+            <Text style={[styles.cardTitle, styles.cardContent]}>
+              Realizar venta
+            </Text>
+            <Text style={styles.cardContent}>Registra una venta externa</Text>
           </View>
         </Pressable>
       </Link>
+      <Modal
+        visible={modalCancelVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalCancelVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <Text style={styles.modalTitle}>Cancelar Entrega</Text>
+          <Text style={styles.modalSubtitle}>Selecciona el motivo:</Text>
+          <ScrollView>
+            {[
+              "Pedido excede stock",
+              "Problemas mecánicos",
+              "Condiciones climáticas adversas",
+              "Pedido en hora no disponible",
+              "Ubicación insegura",
+              "Problemas de salud",
+              "Falta de medios de pago",
+              "Otro",
+            ].map((motivo) => (
+              <TouchableOpacity
+                key={motivo}
+                onPress={() => setMotivoCancelacion(motivo)}
+                style={[
+                  styles.motivoItem,
+                  motivoCancelacion === motivo && styles.motivoItemSelected,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.motivoText,
+                    motivoCancelacion === motivo && styles.motivoTextSelected,
+                  ]}
+                >
+                  {motivo}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            {motivoCancelacion === "Otro" && (
+              <TextInput
+                style={styles.input}
+                placeholder="Especifica el motivo"
+                value={otroMotivo}
+                onChangeText={setOtroMotivo}
+              />
+            )}
+          </ScrollView>
+          <View style={styles.modalBotones}>
+            <TouchableOpacity
+              style={styles.boton}
+              onPress={() => setModalCancelVisible(false)}
+            >
+              <Text style={styles.botonTexto2}>Cancelar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.boton}
+              onPress={confirmarCancelacion}
+            >
+              <Text style={styles.botonTexto2}>Confirmar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {mensajeModal && (
+        <Modal
+          visible={true}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setMensajeModal(null)}
+        >
+          <View style={styles.mensajeModalContainer}>
+            <View style={styles.mensajeModalContent}>
+              <Text style={styles.mensajeModalTexto}>{mensajeModal}</Text>
+              {tipoModal === "si/no" && (
+                <View style={styles.botonesContainer}>
+                  <TouchableOpacity
+                    style={styles.boton}
+                    onPress={() => handleRespuestaModal(false)}
+                  >
+                    <Text style={styles.botonTexto}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.boton}
+                    onPress={() => handleRespuestaModal(true)}
+                  >
+                    <Text style={styles.botonTexto}>Confirmar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              {tipoModal === "confirmacion" && (
+                <TouchableOpacity
+                  style={styles.boton}
+                  onPress={() => setMensajeModal(null)}
+                >
+                  <Text style={styles.botonTexto2}>Aceptar</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   );
 }
 
-      /*<Link to={"/home/vehicule"} style={styles.card}>
+/*<Link to={"/home/vehicule"} style={styles.card}>
         <Pressable style={styles.card_inside}>
           <MaterialIcons name="directions-car" size={24} color="white" />
           <View style={styles.cardText}>
@@ -213,7 +437,7 @@ export default function TabOneScreen() {
           </View>
         </Pressable>
       </Link>*/
-      
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -283,5 +507,124 @@ const styles = StyleSheet.create({
   },
   disabledCard: {
     backgroundColor: "gray",
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "white",
+    padding: 20,
+    marginHorizontal: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  motivoItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  motivoText: {
+    fontSize: 16,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginTop: 10,
+  },
+  motivoTextSelected: {
+    fontWeight: "bold",
+    color: "#aa0000",
+  },
+  optionButton: {
+    backgroundColor: "#4CAF50", // Verde para las opciones de cámara y galería
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 5,
+  },
+  optionButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    backgroundColor: "#F44336", // Rojo para el botón de cancelar
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  modalBotones: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  boton: {
+    backgroundColor: "#aa0000", // Rojo oscuro
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 10,
+    marginHorizontal: 5,
+    flex: 1,
+  },
+  botonTexto2: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  motivoItemSelected: {
+    backgroundColor: "#f0f0f0",
+  },
+  mensajeModalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  mensajeModalContent: {
+    width: "80%",
+    padding: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  mensajeModalTexto: {
+    fontSize: 18,
+    textAlign: "center",
+  },
+
+  metodoInfoContainer: {
+    backgroundColor: "#f9f9f9",
+    borderRadius: 8,
+    marginBottom: 5,
+    padding: 10,
+    elevation: 2, // Sombra para destacar cada método
+  },
+  botonesContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+  botonTexto: {
+    color: "white",
+    fontSize: 14,
   },
 });
