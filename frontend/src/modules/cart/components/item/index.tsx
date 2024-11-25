@@ -240,13 +240,13 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo}:
               {item.producto.cantidadPuntos * item.cantidad} puntos
             </span>
           )}
-          {item.promocion && item.promocion.esValido && item.promocion.porcentajeDescuento > 0 && item.promocion.limiteStock && item.promocion.limiteStock >0 && (
+          {/*item.promocion && item.promocion.esValido && item.promocion.porcentajeDescuento > 0 && item.promocion.limiteStock && item.promocion.limiteStock >0 && (
             <span className="text-xs text-ui-fg-subtle">
               {item.promocion.limiteStock} stock restante
             </span>
           )
 
-          }
+          */}
         </div>
       </span>
       </Table.Cell>
