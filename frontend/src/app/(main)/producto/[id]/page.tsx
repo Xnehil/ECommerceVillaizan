@@ -113,6 +113,9 @@ export default function ProductDetail() {
         });
         nuevoDetalle = { ...detalleAnterior, cantidad, subtotal: detalleAnterior.precio * cantidad };
       } else {
+        console.log("Promocion?",(isAuthenticated && product.promocion && product.promocion.esValido && product.promocion.estaActivo))
+        console.log("Promocion",product.promocion)
+        console.log("isAuthenticated",isAuthenticated)
         const response = await addItem({
           cantidad: 1,
           idProducto: product.id,
