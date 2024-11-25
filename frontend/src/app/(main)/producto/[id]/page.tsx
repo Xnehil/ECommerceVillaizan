@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Producto } from "types/PaqueteProducto";
 import { Pedido } from "types/PaquetePedido";
 import axios from 'axios';
@@ -21,6 +21,7 @@ export default function ProductDetail() {
   const { data: session, status } = useSession();
   const [existenPuntos, setExistenPuntos] = useState<boolean>(false);
   const [puntos, setPuntos] = useState<number>(0);
+  const hasRunOnceAuth = useRef(false);
 
   const fetchCarrito = async (): Promise<{ cart: Pedido; cookieValue?: string }> => {
     const respuesta = await getOrSetCart();
@@ -69,20 +70,15 @@ export default function ProductDetail() {
     fetchProduct();
   }, [id]);
 
-  function checkIfAuthenticated(session: any, status: string) {
-    if (status !== "loading") {
-      return session?.user?.id ? true : false;
-    }
-    return false;
-  }
 
   useEffect(() => {
-    if (checkIfAuthenticated(session, status)) {
-      setIsAuthenticated(true);
-      console.log("User is authenticated");
-    } else {
-      setIsAuthenticated(false);
-      console.log("User is not authenticated");
+    if(status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true;
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
     }
   }, [session, status]);
 
@@ -122,7 +118,7 @@ export default function ProductDetail() {
           idProducto: product.id,
           precio: precioProducto,
           idPedido: carrito?.id || "",
-          idPromocion: product.promocion?.id || "",
+          idPromocion: (isAuthenticated && product.promocion && product.promocion.esValido && product.promocion.estaActivo) ? product.promocion.id : "",
         });
 
         if (response && typeof response === "object" && "detallePedido" in response) {

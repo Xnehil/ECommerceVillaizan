@@ -153,6 +153,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
       const enrichedItems = await enrichLineItems(cart.detalles)
       cart.detalles = enrichedItems
+      cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
 
       setCarritoState(cart)
     } catch (error) {

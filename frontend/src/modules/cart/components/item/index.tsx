@@ -21,9 +21,10 @@ type ItemProps = {
   item: Omit<DetallePedido, "beforeInsert">
   type?: "full" | "preview"
   onDelete: () => void
+  isAuthenticated: boolean
 }
 
-const Item = ({ item,  type = "full", onDelete}: ItemProps) => {
+const Item = ({ item,  type = "full", onDelete, isAuthenticated}: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -120,19 +121,26 @@ const Item = ({ item,  type = "full", onDelete}: ItemProps) => {
             )}
 
       <Table.Cell className="!pr-0">
-        <span
-          className={clx("!pr-0", {
-            "flex flex-col items-end h-full justify-center": type === "preview",
-          })}
-        >
-          {type === "preview" && (
-            <span className="flex gap-x-1 ">
-              <Text className="text-ui-fg-muted">{item.cantidad}x </Text>
-              <LineItemUnitPrice item={item}  style="tight" />
-            </span>
-          )}
-          <LineItemPrice item={item}  />
-        </span>
+      <span
+  className={clx("!pr-0", {
+    "flex flex-col items-end h-full justify-center": type === "preview",
+  })}
+>
+  {type === "preview" && (
+    <span className="flex gap-x-1">
+      <Text className="text-ui-fg-muted">{item.cantidad}x </Text>
+      <LineItemUnitPrice item={item} style="tight" />
+    </span>
+  )}
+  <div className="flex flex-col items-center justify-center space-y-1">
+    <LineItemPrice item={item} />
+    {isAuthenticated && item.producto && item.producto.cantidadPuntos && item.producto.cantidadPuntos > 0 && (
+      <span className="text-xs text-ui-fg-subtle">
+        {item.producto.cantidadPuntos * item.cantidad} puntos
+      </span>
+    )}
+  </div>
+</span>
       </Table.Cell>
 
       <Table.Cell className="!pr-0 justify-end pl-2">  

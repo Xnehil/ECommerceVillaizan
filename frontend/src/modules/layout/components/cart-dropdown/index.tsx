@@ -23,12 +23,6 @@ import {
   TooltipTrigger,
 } from "@components/tooltip";
 
-function checkIfAuthenticated(session: any, status: string) {
-  if (status !== "loading") {
-    return session?.user?.id ? true : false;
-  }
-  return false;
-}
 
 const CartDropdown = ({
   cart: cartState,
@@ -66,16 +60,19 @@ const CartDropdown = ({
   }
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { data: session, status } = useSession();
+  const hasRunOnceAuth = useRef(false);
 
   useEffect(() => {
-    if (checkIfAuthenticated(session, status)) {
-      setIsAuthenticated(true);
-      console.log("User is authenticated");
-    } else {
-      setIsAuthenticated(false);
-      console.log("User is not authenticated");
+    if(status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true;
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
     }
   }, [session, status]);
+
   
 
 
@@ -235,11 +232,17 @@ const CartDropdown = ({
                                   Cantidad: {item.cantidad}
                                 </span>
                               </div>
-                              <div className="flex pr-4">
+                              <div className="flex flex-col pr-4">
                                 <LineItemPrice
                                   item={item}
                                   style="tight"
                                 />
+                                {/* Show Puntos Canjeables below LineItemPrice */}
+                                {isAuthenticated && item.producto && item.producto.cantidadPuntos && item.producto.cantidadPuntos > 0 && (
+                                  <span className="text-sm text-gray-500 mt-1">
+                                    {item.producto.cantidadPuntos * item.cantidad} puntos
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
