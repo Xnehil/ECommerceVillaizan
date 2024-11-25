@@ -118,7 +118,7 @@ export default function ProductDetail() {
           idProducto: product.id,
           precio: precioProducto,
           idPedido: carrito?.id || "",
-          idPromocion: product.promocion?.id || "",
+          idPromocion: (isAuthenticated && product.promocion && product.promocion.esValido && product.promocion.estaActivo) ? product.promocion.id : "",
         });
 
         if (response && typeof response === "object" && "detallePedido" in response) {
