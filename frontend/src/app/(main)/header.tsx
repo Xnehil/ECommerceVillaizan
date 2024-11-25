@@ -13,7 +13,7 @@ const Header = () => {
             <a>
               <img
                 src="/logo.png"
-                alt="Helados Villaizan"
+                alt="Paletas Villaizan"
                 className="h-12 inline-block"
               />
             </a>

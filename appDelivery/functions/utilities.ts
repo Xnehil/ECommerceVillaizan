@@ -1,7 +1,4 @@
-// Utilidades
-
-import { PedidoLoc } from "./tspAlg";
-
+import { Pedido } from "@/interfaces/interfaces";
 
 type FitnessResult = {
   distance: number; // Distancia total de la ruta
@@ -23,8 +20,8 @@ const shuffleArray = <T>(array: T[]): T[] => {
  * Selecciona un padre para el algoritmo genético basado en fitness
  */
 const selectParent = (
-  fitnessResults: { route: PedidoLoc[]; fitness: FitnessResult }[]
-): PedidoLoc[] => {
+  fitnessResults: { route: Pedido[]; fitness: FitnessResult }[]
+): Pedido[] => {
   const totalFitness = fitnessResults.reduce(
     (sum, result) =>
       sum + 1 / (result.fitness.duration + result.fitness.distance),
@@ -47,7 +44,7 @@ const selectParent = (
 /**
  * Realiza el cruce entre dos padres para generar un hijo
  */
-const crossover = (parent1: PedidoLoc[], parent2: PedidoLoc[]): PedidoLoc[] => {
+const crossover = (parent1: Pedido[], parent2: Pedido[]): Pedido[] => {
   const start = Math.floor(Math.random() * parent1.length);
   const end = Math.floor(Math.random() * (parent1.length - start) + start);
   const offspring = parent1.slice(start, end);
@@ -64,7 +61,7 @@ const crossover = (parent1: PedidoLoc[], parent2: PedidoLoc[]): PedidoLoc[] => {
 /**
  * Realiza una mutación aleatoria en una ruta
  */
-const mutate = (route: PedidoLoc[], mutationRate: number): PedidoLoc[] => {
+const mutate = (route: Pedido[], mutationRate: number): Pedido[] => {
   if (Math.random() > mutationRate) return route;
 
   const index1 = Math.floor(Math.random() * route.length);

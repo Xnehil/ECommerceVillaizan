@@ -134,7 +134,7 @@ const downloadXMLFile = async (pedido: Pedido) => {
 const sendMessageConfirmation = async () => {
   try {
     await axios.post("http://localhost:9000/admin/whatsApp", {
-      mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉 Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega: bit.ly/4fLaj5h`,
+      mensaje: `🍦 *Paletas Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉 Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega: bit.ly/4fLaj5h`,
       numero: "959183082",
     });
     console.log("Mensaje de confirmación enviado a WhatsApp.");
@@ -326,7 +326,7 @@ const TrackingPage: React.FC = () => {
     const sendMessage = async (codigoSeguimiento: string) => {
       try {
         await axios.post(baseUrl+"/admin/whatsApp", {
-          mensaje: `🍦 *Helados Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: ${process.env.NEXT_PUBLIC_BASE_URL}/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
+          mensaje: `🍦 *Paletas Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: ${process.env.NEXT_PUBLIC_BASE_URL}/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
           numero: "959183082"
         });
         console.log("Mensaje enviado a WhatsApp.");

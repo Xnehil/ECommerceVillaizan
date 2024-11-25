@@ -166,9 +166,9 @@ export default function Nav() {
         <nav className="content-container text-ui-fg-subtle flex items-center justify-between w-full h-full px-6">
           {/* Logo */}
           <div className="flex items-center h-full gap-x-10">
-              <img src="/images/logo.png" alt="Helados Villaizan" className="h-12" />
-            <Link href="/" className="hover:text-ui-fg-base text-white">Home</Link>
-            <Link href="/comprar" className="hover:text-ui-fg-base text-white">Catálogo</Link>
+              <img src="/images/logo.png" alt="Paletas Villaizan" className="h-12" />
+            <Link href="/" className="hover:text-ui-fg-base text-white font-sans">Home</Link>
+            <Link href="/comprar" className="hover:text-ui-fg-base text-white font-sans">Catálogo</Link>
           </div>
 
           {/* Main Navigation */}
@@ -178,7 +178,7 @@ export default function Nav() {
             ) : session ? (
               <>
                 {finishedLoadingName ? (
-                  <span className="text-lg text-white">Hola, {userName}</span>
+                  <span className="text-lg text-white font-sans">Hola, {userName}</span>
                 ) : (
                   <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
                 )}
@@ -186,10 +186,10 @@ export default function Nav() {
                   <img src="/images/userIcon.png" alt="Icon" className="h-6 w-6 cursor-pointer" onClick={toggleDropdown} />
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                      <Link href="/cuenta" className="block px-4 py-2 text-gray-800 hover:bg-gray-200" onClick={() => setIsDropdownOpen(false)}>
+                      <Link href="/cuenta" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)}>
                         Ver cuenta
                       </Link>
-                      <Link href="/historial" className="block px-4 py-2 text-gray-800 hover:bg-gray-200" onClick={() => setIsDropdownOpen(false)}>
+                      <Link href="/historial" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)}>
                         Historial de Pedidos
                       </Link>
                       <button
@@ -211,7 +211,7 @@ export default function Nav() {
                   {/*<Link href="/login" className="hover:text-ui-fg-base text-white" onClick={() => setIsMobileMenuOpen(false)}>
                     ¡Inicia sesión y accede a promociones!
                   </Link>*/}
-                  {<a href={loginUrl} className="hover:text-ui-fg-base text-white">
+                  {<a href={loginUrl} className="hover:text-ui-fg-base text-white font-sans">
                     ¡Inicia sesión y accede a promociones!
                   </a>}
                 </Button>

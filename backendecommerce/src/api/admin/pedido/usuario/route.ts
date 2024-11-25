@@ -48,7 +48,7 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     const pedidoService: PedidoService = req.scope.resolve("pedidoService");
     const id = req.query.id as string;
     const estado = req.query.estado as string;
-    const validEstados = ['carrito', 'solicitado', 'verificado', 'enProgreso', 'entregado', 'cancelado', 'noCarrito'];
+    const validEstados = ['carrito', 'solicitado', 'verificado', 'enProgreso', 'entregado', 'cancelado', 'noCarrito', 'manual'];
     const filter: { estado?: string | string[] } = {};
 
     if (Array.isArray(estado)) {

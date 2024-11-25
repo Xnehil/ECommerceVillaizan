@@ -149,7 +149,7 @@ export default function Home() {
       <div className="relative w-full">
         <img
           src="/images/helados-promo.png"
-          alt="Promoción Helados Villaizan"
+          alt="Promoción Paletas Villaizan"
           className="w-full object-cover"
         />
       </div>

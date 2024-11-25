@@ -9,7 +9,7 @@ const Header = () => {
           <Link href="/">
             <img
               src="/images/logo.PNG"
-              alt="Helados Villaizan"
+              alt="Paletas Villaizan"
               className="h-12 inline-block"
             />
           </Link>

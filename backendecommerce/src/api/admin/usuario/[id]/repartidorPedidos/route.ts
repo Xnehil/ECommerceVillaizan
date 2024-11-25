@@ -65,7 +65,7 @@ export const GET = async (
     const enriquecido = req.query.enriquecido === 'true';
     const estado = req.query.estado as string | string[];
 
-    const validEstados = ['carrito', 'solicitado', 'verificado', 'enProgreso', 'entregado', 'cancelado'];
+    const validEstados = ['carrito', 'solicitado', 'verificado', 'enProgreso', 'entregado', 'cancelado', 'manual'];
     const filter: { estado?: string | string[] } = {};
 
 

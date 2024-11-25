@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import axios from "axios";
 import { Motorizado, InventarioMotorizado } from "@/interfaces/interfaces";
+import { getUserData } from "@/functions/storage";
 
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
@@ -28,9 +29,14 @@ export default function FlujoInicialScreen() {
       setLoading(true);
 
       // Obtener el vehículo del repartidor
+      const usuario = await getUserData();
+      if (usuario === null) {
+        Alert.alert("Error", "No se pudo obtener los datos del usuario");
+        return;
+      }
       const { data: motorizadoResponse } = await axios.post(
         `${BASE_URL}/motorizado/usuario`,
-        { id_usuario: "ID_USUARIO" } // Reemplaza "ID_USUARIO" por la lógica de obtención
+        { id_usuario: usuario?.id } 
       );
       setMotorizado(motorizadoResponse.motorizado);
 
@@ -58,8 +64,7 @@ export default function FlujoInicialScreen() {
       Alert.alert("Error", "No se encontró un vehículo asignado.");
       return;
     }
-    setVehiculoConfirmado(true);
-    Alert.alert("Vehículo confirmado", "El vehículo ha sido confirmado.");
+    setVehiculoConfirmado((prev) => !prev);
   };
 
   // Modificar inventario
@@ -77,7 +82,7 @@ export default function FlujoInicialScreen() {
       Alert.alert("Error", "No tienes inventario asignado para confirmar.");
       return;
     }
-    setInventarioConfirmado(true);
+    setInventarioConfirmado((prev) => !prev);
     Alert.alert("Inventario confirmado", "El inventario ha sido confirmado.");
   };
 
@@ -90,8 +95,9 @@ export default function FlujoInicialScreen() {
       );
       return;
     }
-    router.push("/home");
-  };
+    router.push({
+      pathname: "/home",
+    });  };
 
   // Renderizar inventario
   const renderInventarioItem = ({ item }: { item: InventarioMotorizado }) => (
@@ -116,7 +122,7 @@ export default function FlujoInicialScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Flujo Inicial</Text>
+      <Text style={styles.title}>Configuracion Inicial</Text>
 
       {/* Sección de vehículo */}
       <View style={styles.section}>
@@ -126,9 +132,8 @@ export default function FlujoInicialScreen() {
             <Text>Placa: {motorizado.placa}</Text>
             <Text>Ciudad: {"No asignado"}</Text>
             <TouchableOpacity
-              style={styles.button}
+              style={vehiculoConfirmado ? styles.button : styles.prevButton}
               onPress={confirmarVehiculo}
-              disabled={vehiculoConfirmado}
             >
               <Text style={styles.buttonText}>
                 {vehiculoConfirmado ? "Vehículo confirmado" : "Confirmar Vehículo"}
@@ -140,26 +145,25 @@ export default function FlujoInicialScreen() {
         )}
       </View>
 
-      {/* Sección de inventario */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Inventario</Text>
         {inventario.length > 0 ? (
-          <>
+            <>
             <FlatList
               data={inventario}
               renderItem={renderInventarioItem}
               keyExtractor={(item) => item.id}
+              style={{ maxHeight: 200 }} // Limitar el tamaño de la FlatList
             />
             <TouchableOpacity
-              style={styles.button}
+              style={inventarioConfirmado ? styles.button : styles.prevButton}
               onPress={confirmarInventario}
-              disabled={inventarioConfirmado}
             >
               <Text style={styles.buttonText}>
-                {inventarioConfirmado ? "Inventario confirmado" : "Confirmar Inventario"}
+              {inventarioConfirmado ? "Inventario confirmado" : "Confirmar Inventario"}
               </Text>
             </TouchableOpacity>
-          </>
+            </>
         ) : (
           <Text>No tienes inventario asignado.</Text>
         )}
@@ -178,6 +182,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: "#fff",
+  },
+  prevButton: {
+    backgroundColor: "red",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginTop: 10,
   },
   title: {
     fontSize: 24,
