@@ -16,6 +16,11 @@ export default function Footer() {
       title: "Catálogo",
       handle: "comprar",
     },
+    {
+      id: 3,
+      title: "Canjear puntos",
+      handle: "https://puntos.paletasvillaizan.tech",
+    }
   ];
 
   const ayuda = [
@@ -41,7 +46,7 @@ export default function Footer() {
                 lineHeight: "normal",
               }}
             >
-              Helados Villaizan
+              Paletas Villaizan
             </Link>
           </div>
           <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
@@ -55,13 +60,22 @@ export default function Footer() {
                     }
                   )}
                 >
-                  {enlaces?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <Link className="hover:text-ui-fg-base" href={`/${c.handle}`}>
-                        {c.title}
-                      </Link>
-                    </li>
-                  ))}
+                  {enlaces?.slice(0, 6).map((c) => {
+                    const isExternalLink = c.handle.startsWith('https');
+                    return (
+                      <li key={c.id}>
+                        {isExternalLink ? (
+                          <a className="hover:text-ui-fg-base" href={c.handle} target="_blank" rel="noopener noreferrer">
+                            {c.title}
+                          </a>
+                        ) : (
+                          <Link className="hover:text-ui-fg-base" href={`/${c.handle}`}>
+                            {c.title}
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}
@@ -95,7 +109,7 @@ export default function Footer() {
         </div>
         <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
           <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Helados Villaizan. Todos los derechos reservados.
+            © {new Date().getFullYear()} Paletas Villaizan. Todos los derechos reservados.
           </Text>
         </div>
       </div>

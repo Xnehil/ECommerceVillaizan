@@ -3,13 +3,21 @@ import { Motorizado } from "../models/Motorizado";
 import { Repository } from "typeorm";
 import { MedusaError } from "@medusajs/utils";
 import motorizadoRepository from "src/repositories/Motorizado";
+import PedidoRepository from "@repositories/Pedido";
+import NotificacionService from "./Notificacion";
+import { Notificacion } from "../models/Notificacion";
+import { enviarMensajeAdmins } from "../loaders/websocketLoader";
 
 class MotorizadoService extends TransactionBaseService {
     protected motorizadoRepository_: typeof motorizadoRepository;
+    protected pedidoRepository_: typeof PedidoRepository;
+    protected notificacionService_: NotificacionService;
 
     constructor(container) {
         super(container);
         this.motorizadoRepository_ = container.motorizadoRepository;
+        this.pedidoRepository_ = container.pedidoRepository;
+        this.notificacionService_ = container.notificacionService;
     }
 
     getMessage() {
@@ -36,7 +44,7 @@ class MotorizadoService extends TransactionBaseService {
 
     async listarConPaginacion(
         selector?: Selector<Motorizado>,
-        config: FindConfig<Motorizado> = {
+           config: FindConfig<Motorizado> = {
             skip: 0,
             take: 20,
             relations: [],
@@ -77,6 +85,11 @@ class MotorizadoService extends TransactionBaseService {
         return await this.atomicPhase_(async (manager) => {
             const motorizadoRepo = manager.withRepository(this.motorizadoRepository_);
             const motorizado = await this.recuperar(id);
+            // Si pasa de true a false, se pasan sus pedidos a manual
+            if (motorizado.disponible && !data.disponible) {
+                await this.pasarPedidosAManual(motorizado);
+
+            }
             Object.assign(motorizado, data);
             return await motorizadoRepo.save(motorizado);
         });
@@ -132,6 +145,34 @@ class MotorizadoService extends TransactionBaseService {
         }
     
         return motorizados;
+    }
+
+    async pasarPedidosAManual(motorizado : Motorizado): Promise<void> {
+        console.log("Pasando pedidos a manual");
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedidos = await pedidoRepo.findByMotorizadoId(motorizado.id, ["solicitado", "verificado", "enProgreso"]);
+        console.log("Se van a pasar " + pedidos.length + " pedidos a manual");
+        const motorizadoConUsuario = await this.recuperar(motorizado.id, { relations: ["usuario"] });
+        for (const pedido of pedidos) {
+            pedido.estado = "manual";
+        }
+        try {
+            await pedidoRepo.save(pedidos);
+        } catch (error) {
+            console.error("Error al pasar pedidos a manual", error);
+        }
+        // Enviar notificación al admin
+        try{
+            let nuevaNoti = new Notificacion();
+            nuevaNoti.asunto = "Motorizado no disponible";
+            nuevaNoti.descripcion = "El motorizado " + motorizadoConUsuario.usuario.nombre + " con placa " + motorizado.placa + " se ha marcado como no disponible. Llámalo al "+ (motorizadoConUsuario.usuario.numeroTelefono ?? "901320560") +" para verificar su estado y revisa sus pedidos.";
+            nuevaNoti.tipoNotificacion = "motorizadoOffline";
+            nuevaNoti.sistema ="ecommerceAdmin";
+            await this.notificacionService_.crear(nuevaNoti);
+            enviarMensajeAdmins("motorizadoOffline", JSON.stringify(nuevaNoti));
+        } catch (error) {
+            console.error("Error al enviar notificación de motorizado offline", error);
+        }
     }
 }
 

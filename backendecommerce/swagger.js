@@ -873,7 +873,7 @@ const options = {
               properties: {
                 estado: {
                   type: 'string',
-                  enum: ['carrito', 'solicitado', 'verificado', 'enProgreso', 'entregado', 'cancelado'],
+                  enum: ['carrito', 'solicitado', 'verificado', 'enProgreso', 'entregado', 'cancelado', 'manual'],
                   example: 'enProgreso',
                 },
                 prioridadEntrega: {

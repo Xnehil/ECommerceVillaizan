@@ -48,6 +48,7 @@ const Parametros: React.FC<ParametrosProps> = () => {
   const [montoMinimo, setMontoMinimo] = useState("");
   const [cancelarPedido, setCancelarPedido] = useState(false);
   const [tiempoConfirmacion, setTiempoConfirmacion] = useState("");
+  const [telefonoContacto, setTelefonoContacto] = useState("");
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -79,8 +80,14 @@ const Parametros: React.FC<ParametrosProps> = () => {
           const tc = ajustes.find((a) => a.llave === "tiempo_confirmacion");
           setTiempoConfirmacion(tc?.valor || "");
 
+          const tel = ajustes.find(
+            (a) => a.llave === "nro_telefono_contacto_reclamo"
+          );
+          console.log("Telefono", tel?.valor);
+          setTelefonoContacto(tel?.valor || "");
+
           console.log("Parameters", parametros.current);
-          
+
           setIsLoading(false);
         } catch (error) {
           console.error("Error fetching parameters", error);
@@ -90,7 +97,7 @@ const Parametros: React.FC<ParametrosProps> = () => {
             description:
               "Ocurrió un error al obtener los parámetros. Por favor, intente de nuevo.",
           });
-        } 
+        }
       }
     };
     if (a.current === 0) {
@@ -103,6 +110,25 @@ const Parametros: React.FC<ParametrosProps> = () => {
   };
 
   const handleCancel = () => {
+    const mm = parametros.current.find(
+      (a) => a.llave === "monto_minimo_pedido"
+    );
+    setMontoMinimo(mm?.valor || "");
+
+    const cp = parametros.current.find(
+      (a) => a.llave === "permitir_cancelaciones"
+    );
+    setCancelarPedido(cp?.valor === "true");
+
+    const tc = parametros.current.find(
+      (a) => a.llave === "tiempo_confirmacion"
+    );
+    setTiempoConfirmacion(tc?.valor || "");
+
+    const tel = parametros.current.find(
+      (a) => a.llave === "nro_telefono_contacto_reclamo"
+    );
+    setTelefonoContacto(tel?.valor || "");
     setIsEditing(false);
   };
 
@@ -222,6 +248,44 @@ const Parametros: React.FC<ParametrosProps> = () => {
     setTiempoConfirmacion(numericValue.toString());
   };
 
+  const handleTelefonoContactoChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = event.target.value;
+    // Allow only numbers
+    const regex = /^\+?\d*$/;
+    if ((regex.test(value) || value === "") && value.length <= 12) {
+      setTelefonoContacto(value);
+    }
+  };
+
+  const handleTelefonoContactoBlur = () => {
+    // get the numbers from the string, removing the '+' sign if present
+    const numero = telefonoContacto.replace("+", "");
+    // validate string length
+    if (numero.length < 9) {
+      toast({
+        variant: "destructive",
+        description: "El número de teléfono debe tener al menos 9 dígitos",
+      });
+      setTelefonoContacto(
+        parametros.current.find(
+          (a) => a.llave === "nro_telefono_contacto_reclamo"
+        )?.valor || ""
+      );
+    } else if (numero.length > 11) {
+      toast({
+        variant: "destructive",
+        description: "El número de teléfono no puede tener más de 11 dígitos",
+      });
+      setTelefonoContacto(
+        parametros.current.find(
+          (a) => a.llave === "nro_telefono_contacto_reclamo"
+        )?.valor || ""
+      );
+    }
+  };
+
   const handleCancelarPedidoChange = (checked: boolean) => {
     setIsDialogOpen(true);
   };
@@ -236,6 +300,10 @@ const Parametros: React.FC<ParametrosProps> = () => {
       <h5>General</h5>
       {isLoading && (
         <div className="flex flex-col space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+          </div>
           <div className="space-y-2">
             <Skeleton className="h-4 w-[250px]" />
             <Skeleton className="h-4 w-[200px]" />
@@ -305,6 +373,20 @@ const Parametros: React.FC<ParametrosProps> = () => {
                 value={tiempoConfirmacion}
                 onChange={handleTiempoConfirmacionChange}
                 onBlur={handleTiempoConfirmacionBlur}
+              />
+            </div>
+          </div>
+          <div className="w-full max-w-sm flex">
+            <div className="flex">
+              <InputWithLabel
+                label="Nro. de teléfono de contacto"
+                placeholder="999999999"
+                type="text"
+                disabled={!isEditing}
+                tooltip="El número de teléfono al que se contactarán los clientes para presentar reclamos."
+                value={telefonoContacto}
+                onChange={handleTelefonoContactoChange}
+                onBlur={handleTelefonoContactoBlur}
               />
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from "next-auth/react";
 import { Button } from "@components/Button";
@@ -45,18 +45,19 @@ export default function Nav() {
   const loginUrl = `${urlLogin}/login?callbackUrl=${currentUrl}`;
   const [finishedLoadingName, setFinishedLoadingName] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const hasRunOnce = useRef(false);
   
   useEffect(() => {
-    console.log("session: ", session);
-    console.log("status: ", status);
+    //console.log("session: ", session);
+    //console.log("status: ", status);
     if (checkIfAuthenticated(session, status)) {
       setIsAuthenticated(true);
-      console.log("User is authenticated");
-      console.log("user id: ", session?.user?.id);
+      //console.log("User is authenticated");
+      //console.log("user id: ", session?.user?.id);
     } else {
       setIsAuthenticated(false);
-      console.log("User is not authenticated");
-      console.log("user id: ", session?.user?.id);
+      //console.log("User is not authenticated");
+      //console.log("user id: ", session?.user?.id);
     }
   }, [session, status]);
   
@@ -66,56 +67,50 @@ export default function Nav() {
   };
 
   useEffect(() => {
+  
     async function fetchUserName() {
-      if (status !== "loading") {
-        // Function to get cookies
-        const getCookie = (name: string) => {
-          const value = `; ${document.cookie}`;
-          const parts = value.split(`; ${name}=`);
-          if (parts.length === 2) {
-            const part = parts.pop();
-            if (part) {
-              return part.split(';').shift();
-            }
+      // Function to get cookies
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) {
+          const part = parts.pop();
+          if (part) {
+            return part.split(";").shift();
           }
-          return null;
-        };
-        //En caso de que el usuario esté autenticado
+        }
+        return null;
+      };
+  
+      if (status !== "loading" && !hasRunOnce.current) {
+        hasRunOnce.current = true; // Set the flag to true to prevent re-execution
+  
         if (session?.user?.id) {
           console.log("User is authenticated");
           try {
             setFinishedLoadingName(false);
-            
+  
             // Fetch user information
             const response = await axios.get(`${baseUrl}/admin/usuario/${session.user.id}`);
             const user = response.data.usuario;
             if (user) {
-              setUserName(user.nombre + ' ' + user.apellido);
+              setUserName(user.nombre + " " + user.apellido);
             } else {
-              console.error('Failed to fetch user name');
+              console.error("Failed to fetch user name");
               setIsErrorPopupVisible(true);
             }
-  
-            
   
             // Handle cart logic
             const cartId = getCookie("_medusa_cart_id");
             if (cartId) {
-              //No carga el carrito que haya elaborado estando no autenticado
-
-              
               const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
               const pedido = response.data.pedido;
               if (pedido) {
-                if (!pedido.usuario || (pedido.usuario.id !== session.user.id)) {
-                  /*await axios.put(`${baseUrl}/admin/pedido/${pedido.id}`, {
-                    "usuario": { "id": session.user.id }
-                  });*/
+                if (!pedido.usuario || pedido.usuario.id !== session.user.id) {
                   document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
                   document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
                 }
               }
-                
             } else {
               try {
                 const response = await axios.get(`${baseUrl}/admin/pedido/usuarioCarrito/${session.user.id}`);
@@ -124,55 +119,47 @@ export default function Nav() {
                   document.cookie = `_medusa_cart_id=${pedido.id}; max-age=604800; path=/; secure; samesite=strict`;
                 }
               } catch (error) {
-                // Handle 404 specifically
                 if (axios.isAxiosError(error) && error.response?.status === 404) {
                   console.log("No pedido found, proceeding without setting cart cookie.");
-                  // Perform any fallback logic if needed
                 } else {
-                  // Re-throw unexpected errors to be caught in the outer catch
                   throw error;
                 }
               }
             }
           } catch (error) {
-            console.error('Error fetching user name or handling cart logic:', error);
+            console.error("Error fetching user name or handling cart logic:", error);
             setIsErrorPopupVisible(true);
   
             if (axios.isAxiosError(error)) {
               if (error.response) {
                 console.error(`Server error: ${error.response.status}`);
               } else if (error.request) {
-                console.error('Network error: Please check your internet connection.');
+                console.error("Network error: Please check your internet connection.");
               } else {
-                console.error('An unexpected error occurred.');
+                console.error("An unexpected error occurred.");
               }
             } else {
-              console.error('An unexpected error occurred.');
+              console.error("An unexpected error occurred.");
             }
           } finally {
             setFinishedLoadingName(true);
           }
-        }
-        else{
+        } else {
           console.log("User is not authenticated");
-          // En caso de que el usuario no esté autenticado
           const cartId = getCookie("_medusa_cart_id");
           if (cartId) {
             const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
-            const pedido : Pedido = response.data.pedido;
+            const pedido = response.data.pedido;
             if (pedido) {
               console.log("Pedido encontrado: ", pedido);
               if (pedido.usuario && pedido.usuario.conCuenta) {
                 console.log("Pedido con usuario con cuenta");
-                // Si el pedido tiene un usuario con cuenta, se elimina la cookie y se recarga la página
                 document.cookie = `_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict`;
                 document.cookie = `_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict`;
                 window.location.href = "/";
-                //await axios.delete(`${baseUrl}/admin/pedido/${cartId}`);
               }
             }
           }
-
         }
       }
     }
@@ -187,9 +174,9 @@ export default function Nav() {
         <nav className="content-container text-ui-fg-subtle flex items-center justify-between w-full h-full px-6">
           {/* Logo */}
           <div className="flex items-center h-full gap-x-10">
-              <img src="/images/logo.png" alt="Helados Villaizan" className="h-12" />
-            <Link href="/" className="hover:text-ui-fg-base text-white">Home</Link>
-            <Link href="/comprar" className="hover:text-ui-fg-base text-white">Catálogo</Link>
+              <img src="/images/logo.png" alt="Paletas Villaizan" className="h-12" />
+            <Link href="/" className="hover:text-ui-fg-base text-white font-sans">Inicio</Link>
+            <Link href="/comprar" className="hover:text-ui-fg-base text-white font-sans">Catálogo</Link>
           </div>
 
           {/* Main Navigation */}
@@ -199,7 +186,7 @@ export default function Nav() {
             ) : session ? (
               <>
                 {finishedLoadingName ? (
-                  <span className="text-lg text-white">Hola, {userName}</span>
+                  <span className="text-lg text-white font-sans">Hola, {userName}</span>
                 ) : (
                   <Button isLoading loaderClassname="w-6 h-6" variant="ghost"></Button>
                 )}
@@ -207,20 +194,23 @@ export default function Nav() {
                   <img src="/images/userIcon.png" alt="Icon" className="h-6 w-6 cursor-pointer" onClick={toggleDropdown} />
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                      <Link href="/cuenta" className="block px-4 py-2 text-gray-800 hover:bg-gray-200" onClick={() => setIsDropdownOpen(false)}>
+                      <Link href="/cuenta" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)}>
                         Ver cuenta
                       </Link>
-                      <Link href="/historial" className="block px-4 py-2 text-gray-800 hover:bg-gray-200" onClick={() => setIsDropdownOpen(false)}>
-                        Historial de Pedidos
+                      <Link href="/historial" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)}>
+                        Historial de pedidos
                       </Link>
+                      <a href="https://puntos.heladosvillaizan.tech" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)} target="_blank" rel="noopener noreferrer">
+                        Canjear puntos
+                      </a>
                       <button
-                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200"
+                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans"
                         onClick={() => {
                           handleSignOut();
                           setIsDropdownOpen(false);
                         }}
                       >
-                        Cerrar Sesión
+                        Cerrar sesión
                       </button>
                     </div>
                   )}
@@ -232,7 +222,7 @@ export default function Nav() {
                   {/*<Link href="/login" className="hover:text-ui-fg-base text-white" onClick={() => setIsMobileMenuOpen(false)}>
                     ¡Inicia sesión y accede a promociones!
                   </Link>*/}
-                  {<a href={loginUrl} className="hover:text-ui-fg-base text-white">
+                  {<a href={loginUrl} className="hover:text-ui-fg-base text-white font-sans">
                     ¡Inicia sesión y accede a promociones!
                   </a>}
                 </Button>

@@ -15,6 +15,11 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface InformacionPedidoProps {
   pedido: MutableRefObject<Pedido>;
@@ -78,7 +83,12 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
             pedido.current.pedidosXMetodoPago.length > 0
               ? pedido.current.pedidosXMetodoPago.length > 1
                 ? "Dividido"
-                : pedido.current.pedidosXMetodoPago[0].metodoPago.nombre.charAt(0).toUpperCase() + pedido.current.pedidosXMetodoPago[0].metodoPago.nombre.slice(1)
+                : pedido.current.pedidosXMetodoPago[0].metodoPago.nombre
+                    .charAt(0)
+                    .toUpperCase() +
+                  pedido.current.pedidosXMetodoPago[0].metodoPago.nombre.slice(
+                    1
+                  )
               : "No disponible"
           }
         />
@@ -113,10 +123,38 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                 <Label className="block text-sm font-normal text-muted-foreground">
                   {pedido.current.pedidosXMetodoPago?.length} formas de pago
                 </Label>
-                <div className="flex flex-col space-y-2 ">
+                <div className="flex flex-col space-y-2">
                   {pedido.current.pedidosXMetodoPago?.map((detalle, index) => (
-                    <div key={index} className="flex flex-row justify-between">
-                      <p>{detalle.metodoPago.nombre.charAt(0).toUpperCase() + detalle.metodoPago.nombre.slice(1)}</p>
+                    <div
+                      key={index}
+                      className="flex flex-row justify-between items-center"
+                    >
+                      <div className="flex flex-row space-x-2 items-center">
+                        <p>
+                          {detalle.metodoPago.nombre.charAt(0).toUpperCase() +
+                            detalle.metodoPago.nombre.slice(1)}
+                        </p>
+                        {(detalle.metodoPago.nombre === "yape" ||
+                          detalle.metodoPago.nombre === "plin") &&
+                          detalle.pago && (
+                            <Popover>
+                              <PopoverTrigger>
+                                <Button variant="outline">Evidencia</Button>
+                              </PopoverTrigger>
+                              <PopoverContent>
+                                <img
+                                  src={detalle.pago.urlEvidencia}
+                                  alt="Evidencia de pago"
+                                />
+                                <a href={detalle.pago.urlEvidencia} download>
+                                  <Button variant="ghost" className="mt-2">
+                                    Descargar Evidencia
+                                  </Button>
+                                </a>
+                              </PopoverContent>
+                            </Popover>
+                          )}
+                      </div>
                       <p>S/. {Number(detalle.monto).toFixed(2)}</p>
                     </div>
                   ))}
@@ -150,13 +188,6 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                 : "Fecha no disponible"
             }
           />
-          {/* <InputWithLabel
-            label="Código de seguimiento"
-            type="text"
-            placeholder=" "
-            disabled={true}
-            value={pedido.current.codigoSeguimiento}
-          /> */}
         </>
       )}
       {pedido.current.estado === "cancelado" && (

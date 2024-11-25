@@ -106,6 +106,7 @@ export const PUT = async (
         const motorizado = await motorizadoService.actualizar(id, motorizadoData);
         res.json({ motorizado });
     } catch (error) {
+        console.log(error);
         if (error.message === "Motorizado no encontrado") {
             res.status(404).json({ error: "Motorizado no encontrado" });
         } else {

@@ -63,7 +63,7 @@ export default function TabLayout() {
 
     // Consultar periódicamente
     const motorizadoInterval = setInterval(fetchMotorizadoData, 10000);
-    const notificacionesInterval = setInterval(fetchNotificaciones, 1000);
+    const notificacionesInterval = setInterval(fetchNotificaciones, 30000);
 
     return () => {
       clearInterval(motorizadoInterval);

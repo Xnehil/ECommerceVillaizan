@@ -58,7 +58,7 @@ const Promotions = () => {
       {promociones.length > 0 && (
         <>
           <h2 className="text-3xl font-bold mb-8">Disfruta de nuestras promociones</h2>
-          <p className="text-lg mb-6 text-gray-600">Recuerda que las promociones solo son válidas para usuarios que han iniciado sesión.</p>
+          <p className="text-lg mb-6 text-gray-600">¡Crea tu cuenta si quieres acceder a estas promociones!</p>
           <div className="relative max-w-4xl mx-auto">
           <Swiper
             spaceBetween={1}
@@ -164,7 +164,7 @@ const Promotions = () => {
           <div className="mt-8">
             <Link href="/comprar" passHref>
               <button className="bg-red-600 text-white px-6 py-3 rounded-lg font-bold">
-                Catálogo de Helados
+                Catálogo de Paletas
               </button>
             </Link>
           </div>

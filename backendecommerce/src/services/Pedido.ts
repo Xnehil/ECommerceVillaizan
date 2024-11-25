@@ -491,8 +491,9 @@ class PedidoService extends TransactionBaseService {
             // Hacer post a https://heladeria2.od2.vtiger.com/restapi/vtap/api/addVenta con campos ValorRandom e IdConsumidorCRM
             const bodyData={
                 "ValorRandom": Math.random(),
-                "IdConsumidorCRM": pedido.usuario.id
+                "IdConsumidorCRM": pedido.usuario.idCRM ?? "4x621"
             }
+            // console.log("Body data: ", bodyData);
             let ventaId = null;
             try{
                 const response = await fetch('https://heladeria2.od2.vtiger.com/restapi/vtap/api/addVenta', {
@@ -503,8 +504,13 @@ class PedidoService extends TransactionBaseService {
                     },
                     body: JSON.stringify(bodyData),
                 });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                  }
+                  
                 const data = await response.json();
-                console.log("Venta creada en CRM: ", data);
+                // console.log("Venta creada en CRM: ", data);
                 ventaId = data.result.id;
             } catch (error) {
                 console.error("Error creando venta en CRM: ", error);
@@ -512,10 +518,11 @@ class PedidoService extends TransactionBaseService {
             // https://heladeria2.od2.vtiger.com/restapi/vtap/api/addVentaxProduct con campos valorAleatorio, idVentaCRM, idProductoCRM
             for (let detalle of pedido.detalles){
                 const bodyData={
-                    "ValorAleatorio": Math.random(),
-                    "IdVentaCRM": ventaId,
-                    "IdProductoCRM": detalle.producto.idCRM
+                    "valorAleatorio": Math.random(),
+                    "idVentaCRM": ventaId,
+                    "idProductoCRM": detalle.producto.idCRM ?? "6x626" //Menta por defecto
                 }
+                // console.log("Body data: ", bodyData);
                 try{
                     const response = await fetch('https://heladeria2.od2.vtiger.com/restapi/vtap/api/addVentaxProduct', {
                         method: 'POST',
@@ -526,7 +533,7 @@ class PedidoService extends TransactionBaseService {
                         body: JSON.stringify(bodyData),
                     });
                     const data = await response.json();
-                    console.log("Venta x producto creada en CRM: ", data);
+                    // console.log("Venta x producto creada en CRM: ", data);
                 } catch (error) {
                     console.error("Error creando venta x producto en CRM: ", error);
                 }
@@ -535,6 +542,17 @@ class PedidoService extends TransactionBaseService {
             console.log("Usuario sin cuenta");
         }
         
+    }
+
+    async encontrarPorId(id: string): Promise<Pedido> {
+        const pedidoRepo = this.activeManager_.withRepository(this.pedidoRepository_);
+        const pedido = await pedidoRepo.encontrarPorId(id);
+
+        if (!pedido) {
+            throw new MedusaError(MedusaError.Types.NOT_FOUND, "Pedido no encontrado");
+        }
+
+        return pedido;
     }
 
 }

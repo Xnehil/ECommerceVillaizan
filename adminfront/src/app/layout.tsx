@@ -115,6 +115,14 @@ const mapearMensaje = (tipo: string, router: any, data: any) => {
         data: data,
       };
       break;
+    case "motorizadoOffline":
+      dataBonita = {
+        type: "Motorizado desconectado",
+        data: JSON.parse(data).descripcion,
+        action: "/pedidos",
+        button: "Ver pedidos",
+      };
+      break;
     default:
       dataBonita = {
         type: "Mensaje de tipo: " + tipo,
