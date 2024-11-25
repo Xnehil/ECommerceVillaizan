@@ -112,7 +112,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormVa
         <button
           onClick={handleClick}
           className="w-1/2 h-12 bg-transparent border border-black text-black rounded-2xl mx-auto mt-4 hover:bg-gray-100"
-          /*disabled={isDisabled}*/
+          disabled={isDisabled}
           title={isDisabled ? tooltipMessage : undefined}
         >
           Pasa a comprar
