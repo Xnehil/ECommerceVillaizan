@@ -331,9 +331,8 @@ export async function addItem({
   precio: number
   idPromocion: string
 }) {
-
-  try{
-    console.log("Adding item to cart")
+  try {
+    console.log("Adding item to cart");
 
     const requestBody: RequestBody = {
       producto: {
@@ -347,15 +346,16 @@ export async function addItem({
       precio: precio
     };
 
-    // Only add idPromocion if it's not an empty string
-    if (idPromocion !== "") {
+    // Only add idPromocion if it's a non-empty string
+    if (idPromocion && idPromocion.trim() !== "") {
       requestBody.promocion = { id: idPromocion };
     }
-    const response = await axios.post(`${baseUrl}/admin/detallePedido`, requestBody)
+
+    const response = await axios.post(`${baseUrl}/admin/detallePedido`, requestBody);
     return response.data;
   } catch (e) {
-    console.log(e)
-    return null
+    console.error("Error adding item:", e);
+    return null;
   }
 }
 

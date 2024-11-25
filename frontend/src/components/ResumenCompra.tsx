@@ -566,22 +566,18 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           onClick={toggleSeleccion}
         />
         <span>He leído y acepto los&nbsp;</span>
-        <Link href="/terminos" passHref>
-          <span style={{ cursor: "pointer", textDecoration: "underline" }}>
-            términos y condiciones
-          </span>
-        </Link>
+        <a href="/terminos" target="_blank" rel="noopener noreferrer" style={{ cursor: "pointer", textDecoration: "underline" }}>
+          términos y condiciones
+        </a>
       </div>
       <div style={{ marginTop: "20px", marginBottom: "20px" }}>
         <span>
           Tu data personal será usada para mejorar tu experiencia en esta
           página, para otros propósitos revisar la{" "}
         </span>
-        <Link href="/terminos" passHref>
-          <span style={{ cursor: "pointer", textDecoration: "underline" }}>
+        <a href="/politicaprivacidad" target="_blank" rel="noopener noreferrer" style={{ cursor: "pointer", textDecoration: "underline" }}>
             Política de Privacidad
-          </span>
-        </Link>
+        </a>
       </div>
 
       <button

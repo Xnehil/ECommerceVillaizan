@@ -138,7 +138,7 @@ export default function ProductPreview({
           //precio: productPreview.precioEcommerce,
           precio: precioProducto,
           idPedido: carrito?.id || "",
-          idPromocion: productPreview.promocion?.id || "",
+          idPromocion: (isAuthenticated && productPreview.promocion?.esValido && productPreview.promocion?.estaActivo) ? productPreview.promocion.id : ""
         })
         if (
           response &&
