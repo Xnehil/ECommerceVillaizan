@@ -28,6 +28,7 @@ interface AddressFormParentProps {
   rucError?: string | null;
   locationError?: string | null;
   telefonoError?: string | null;
+  onComprobanteChange: (value: string) => void;
 }
 
 const AddressFormParent: React.FC<AddressFormParentProps> = ({
@@ -55,6 +56,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
   locationError,
   telefonoError,
   setCalle,
+  onComprobanteChange
 }) => {
   const { data: session } = useSession() // Get session data
   const [comprobante, setComprobante] = useState<string>(""); 
@@ -160,6 +162,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
 
   const handleComprobanteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setComprobante(e.target.value);
+    onComprobanteChange(e.target.value); // Pass value to parent
   };
 
   const handleDniBlur = () => {
