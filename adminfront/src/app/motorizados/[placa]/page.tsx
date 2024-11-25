@@ -149,14 +149,7 @@ const MotorizadoPage: React.FC<MotorizadoPageProps> = ({
 
   const handleCancel = () => {
     // get the original stock values from inventario, just for the ones that are in both inventarios
-    copyInventario.current.forEach((copyItem) => {
-      const originalItem = inventario.current.find(
-        (item) => item.producto.id === copyItem.producto.id
-      );
-      if (originalItem) {
-        copyItem.stock = originalItem.stock;
-      }
-    });
+    copyInventario.current = JSON.parse(JSON.stringify(inventario.current));
 
     const timeout = (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
@@ -175,6 +168,28 @@ const MotorizadoPage: React.FC<MotorizadoPageProps> = ({
     setIsLoading(true);
     console.log("Saving inventory");
     try {
+      // delete the elements that are in inventario but not in copyInventario or that have stock 0 in copyInventario
+      const toDelete = inventario.current.filter(
+        (item) =>
+          !copyInventario.current.find(
+            (copyItem) =>
+              item.producto.id === copyItem.producto.id && copyItem.stock > 0
+          )
+      );
+
+      console.log("toDelete:", toDelete);
+
+      for (const item of toDelete) {
+        const response = await axios.delete(
+          `${process.env.NEXT_PUBLIC_BASE_URL}inventarioMotorizado/${item.id}`
+        );
+        if (!response) {
+          throw new Error("Failed to save inventory");
+        }
+        const data = await response.data;
+        console.log("Inventory deleted:", data);
+      }
+
       // post the elements that are in copyInventario but not in inventario
       const toAdd = copyInventario.current.filter(
         (copyItem) =>
