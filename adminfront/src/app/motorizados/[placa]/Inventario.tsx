@@ -61,6 +61,7 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const [openSelect, setOpenSelect] = useState(false);
 
   const products = useRef<Producto[]>([]);
 
@@ -94,13 +95,7 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
             (element) => element.producto.id === product.id
           );
           if (!found) {
-            inventario.current.push({
-              producto: product,
-              stock: 0,
-              stockMinimo: 0,
-              esMerma: false,
-              motorizado: motorizado.current,
-            } as InventarioMotorizado);
+            products.current.push(product);
           }
         });
 
@@ -279,6 +274,38 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
     products.current.push(product.producto);
   };
 
+  const handleAddProducts = () => {
+    setIsLoading(true);
+    // Get the products that are checked
+    const productsToAdd = products.current.filter((product) => {
+      return checkedProducts[product.id];
+    });
+    console.log("Products to add:", productsToAdd);
+
+    if (inventario.current) {
+      // add the products to the inventario
+      productsToAdd.forEach((product) => {
+        inventario.current.push({
+          producto: product,
+          stock: 0,
+          stockMinimo: 0,
+          esMerma: false,
+          motorizado: motorizado.current,
+        } as InventarioMotorizado);
+      });
+    }
+
+    // filter the products that are not in the plantilla
+    products.current = products.current.filter((product) => {
+      return !checkedProducts[product.id];
+    });
+
+    // Reset the checked products
+    setCheckedProducts({});
+    setOpenSelect(false);
+    setIsLoading(false);
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -296,6 +323,49 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
                 nombre="productos"
                 npagination={5}
               />
+              {isEditing && (
+                <div className="lower-buttons-container mt-8">
+                  <Sheet open={openSelect} onOpenChange={setOpenSelect}>
+                    <SheetTrigger asChild>
+                      <Button>Agregar productos</Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                      <SheetHeader>
+                        <SheetTitle>Productos</SheetTitle>
+                        <SheetDescription>
+                          Seleccionar los productos a agregar
+                        </SheetDescription>
+                      </SheetHeader>
+                      {openSelect && (
+                        <div className="space-y-2 mt-2">
+                          {products.current?.map((producto) => (
+                            <div key={producto.id} className="w-3/4">
+                              <CheckboxWithLabel
+                                id={producto.id}
+                                label={producto.nombre}
+                                checked={checkedProducts[producto.id] || false}
+                                onChange={(checked: boolean) => {
+                                  setCheckedProducts((prev) => ({
+                                    ...prev,
+                                    [producto.id]: checked,
+                                  }));
+                                }}
+                              />
+                            </div>
+                          ))}
+                          <Button
+                            variant="default"
+                            className="mt-4"
+                            onClick={handleAddProducts}
+                          >
+                            Agregar productos
+                          </Button>
+                        </div>
+                      )}
+                    </SheetContent>
+                  </Sheet>
+                </div>
+              )}
             </>
           ) : (
             <DataTable
