@@ -208,7 +208,7 @@ export default function TabOneScreen() {
       try {
         for (const pedido of pedidos) {
           const response = await axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
-            estado: "reasignar",
+            estado: "manual",
             motivoCancelacion:
               motivoCancelacion === "Otro" ? otroMotivo : motivoCancelacion,
           });
