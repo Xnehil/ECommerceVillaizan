@@ -271,6 +271,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
 
   const isFormValid = () => {
+    return true;
     /*
     console.log("check nombre", nombre.trim() !== "")
     console.log("check dni", numeroDni.length === 8)
@@ -281,7 +282,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     console.log("check selectedLocation lat",  selectedLocation?.lat !== null)
     console.log("check selectedLocation lng", selectedLocation?.lng !== null)
     */
-
+    /*
     if (!isAuthenticated && showMapModal == false) {
       //En caso no este autenticado 
       //console.log("NO ESTA AUTENTICADO")
@@ -367,6 +368,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
       return false
     }
+      */
 
   }
 
