@@ -23,7 +23,7 @@ const MapComponent: React.FC<MapProps> = ({
   pedidoSeleccionado,
   mode,
 }) => {
-  if (!pedidos || pedidos.length === 0) {
+  /*if (!pedidos || pedidos.length === 0) {
     return (
       <View style={{ alignItems: "center", padding: 20, backgroundColor: "red" }}>
         <Text>
@@ -31,7 +31,7 @@ const MapComponent: React.FC<MapProps> = ({
           </Text>
       </View>
     );
-  }
+  }*/
 
   if (!location) {
     return (
