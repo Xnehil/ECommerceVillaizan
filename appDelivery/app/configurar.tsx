@@ -45,6 +45,10 @@ export default function FlujoInicialScreen() {
         `${BASE_URL}/inventarioMotorizado/motorizado`,
         { id_motorizado: motorizadoResponse.motorizado.id }
       );
+      // Eliminar inventarios donde esMerma es true y seVende es false
+      inventarioResponse.inventarios = inventarioResponse.inventarios.filter(
+        (inv: InventarioMotorizado) => !inv.esMerma && inv.producto.seVendeEcommerce
+      );
       setInventario(inventarioResponse.inventarios);
     } catch (error) {
       console.error("Error al obtener datos iniciales:", error);

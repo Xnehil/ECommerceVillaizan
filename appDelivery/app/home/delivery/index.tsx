@@ -160,7 +160,7 @@ export default function Entregas() {
       };
 
       console.log("Iniciando algoritmo...");
-      const directionsService = new google.maps.DirectionsService();
+      // const directionsService = new google.maps.DirectionsService();
       const startLocation = { lat: stableLocation.latitude, lng: stableLocation.longitude }
       /*geneticAlgorithm(directionsService, corrdinate, pedidosValidos)
         .then((pedidosOrdenados) => {

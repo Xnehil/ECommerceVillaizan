@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { GoogleMap, Circle, Marker, Polyline } from "@react-google-maps/api";
+import MapView, { Marker, Polyline, Circle, LatLng, Region, PROVIDER_GOOGLE } from "react-native-maps";
 import { Coordinate, Pedido, PedidoLoc } from "@/interfaces/interfaces";
 import { Button } from "react-native-elements";
 import { View,Text } from "react-native";
+import axios from "axios";
 
 interface MapProps {
   location: { latitude: number; longitude: number } | null;
@@ -41,11 +42,11 @@ const MapComponent: React.FC<MapProps> = ({
     );
   }
 
-  const mapRef = useRef<google.maps.Map | null>(null);
+  const mapRef = useRef<MapView | null>(null);
   const [previousRoutes, setPreviousRoutes] = useState<{
     origin: Coordinate;
     destinations: { lat: number; lng: number }[];
-    route: google.maps.LatLng[];
+    route: LatLng[];
   }>();
   const [error, setError] = useState<string | null>(null); // Estado para errores
 
@@ -54,13 +55,15 @@ const MapComponent: React.FC<MapProps> = ({
     width: "100%",
   };
 
-  const [center, setCenter] = useState<{ lat: number; lng: number }>(
-    defaultCoordinates
+  const [center, setCenter] = useState<{ latitude: number; longitude: number }>(location
+    ? { latitude: location.latitude, longitude: location.longitude }
+    : { latitude: 37.78825, longitude: -122.4324 }
   );
+
   const [showRoutes, setShowRoutes] = useState(false);
 
   const [circleRadius, setCircleRadius] = useState(250);
-  const [routePoints, setRoutePoints] = useState<google.maps.LatLng[]>([]);
+  const [routePoints, setRoutePoints] = useState<LatLng[]>([]);
   const [pedidoLocations, setPedidoLocations] = useState<PedidoLoc[]>([]);
   useEffect(() => {
     const pedidolocations = pedidos?.map((pedido) => {
@@ -89,17 +92,23 @@ const MapComponent: React.FC<MapProps> = ({
   
     while (retries < MAX_RETRIES) {
       try {
-        const directionsService = new google.maps.DirectionsService();
-        const result = await directionsService.route({
-          origin,
-          destination,
-          travelMode: google.maps.TravelMode.DRIVING,
+        const response = await axios.get('https://maps.googleapis.com/maps/api/directions/json', {
+          params: {
+            origin: `${origin.lat},${origin.lng}`,
+            destination: `${destination.lat},${destination.lng}`,
+            mode: 'driving',
+            key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, // Add your API key here
+          },
         });
-  
+
+        const result = response.data;
+
         if (result && result.routes && result.routes.length > 0) {
-          return result.routes[0].overview_path;
+          const route = result.routes[0].overview_polyline.points;
+          const decodedRoute = decodePolyline(route);
+          return decodedRoute;
         } else {
-          throw new Error("No se encontraron rutas para el destino especificado.");
+          throw new Error('No se encontraron rutas para el destino especificado.');
         }
       } catch (error: any) {
         retries++;
@@ -119,35 +128,44 @@ const MapComponent: React.FC<MapProps> = ({
     return []; // Devuelve una ruta vacía si falla
   };
   
-  // Fetch route for multiple destinations
+  const fetchRoute = async (
+    origin: { lat: number; lng: number },
+    destination: { lat: number; lng: number }
+  ) => {
+    const response = await axios.get('https://maps.googleapis.com/maps/api/directions/json', {
+      params: {
+        origin: `${origin.lat},${origin.lng}`,
+        destination: `${destination.lat},${destination.lng}`,
+        mode: 'driving',
+        key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, // Add your API key here
+      },
+    });
+  
+    const result = response.data;
+  
+    if (result && result.routes && result.routes.length > 0) {
+      const route = result.routes[0].overview_polyline.points;
+      const decodedRoute = decodePolyline(route);
+      return decodedRoute;
+    } else {
+      throw new Error('No se encontraron rutas para el destino especificado.');
+    }
+  };
+  
   const fetchMultipleRoutes = async (
     origin: { lat: number; lng: number },
-    destinations: { lat: number; lng: number; id: string }[]
+    destinations: { lat: number; lng: number }[]
   ) => {
-    try {
-      const directionsService = new google.maps.DirectionsService();
-      const points: google.maps.LatLng[] = [];
-      let lastPoint = origin;
+    let lastPoint = origin;
+    const points: LatLng[] = [];
   
-      for (const destination of destinations) {
-        const result = await directionsService.route({
-          origin: lastPoint,
-          destination: { lat: destination.lat, lng: destination.lng },
-          travelMode: google.maps.TravelMode.DRIVING,
-        });
-  
-        if (result && result.routes && result.routes.length > 0) {
-          points.push(...result.routes[0].overview_path);
-          lastPoint = { lat: destination.lat, lng: destination.lng };
-        }
-      }
-  
-      return points;
-    } catch (error) {
-      console.error("Error al calcular las rutas múltiples:", error);
-      setError("Error al calcular las rutas para los pedidos."); // Actualiza el estado de error
-      return [];
+    for (const destination of destinations) {
+      const route = await fetchRoute(lastPoint, destination);
+      points.push(...route);
+      lastPoint = { lat: destination.lat, lng: destination.lng };
     }
+  
+    return points;
   };
   
   useEffect(() => {
@@ -204,65 +222,61 @@ const MapComponent: React.FC<MapProps> = ({
   }, [location, pedidoLocations, mode]);
 
   // Calcula el radio del círculo según el nivel de zoom
-  const calculateCircleRadius = (zoom: number) => {
-    const baseRadius = 50;
-    const zoomFactor = Math.pow(2, 15 - zoom);
-    return baseRadius * zoomFactor;
-  };
+  const calculateCircleRadius = (longitudeDelta: number) => {
+    console.log("Calculating circle radius... with delta", longitudeDelta);
+    const maxRadius = 500; // Maximum radius in meters
+    const minRadius = 20;  // Minimum radius in meters
+    const scaleFactor = 100;
 
-  const handleZoomChanged = () => {
-    if (mapRef.current) {
-      const newZoom = mapRef.current.getZoom();
-      if (newZoom !== undefined) {
-        setCircleRadius(calculateCircleRadius(newZoom));
-      }
+    const calculatedRadius = scaleFactor * longitudeDelta;
+    return Math.min(Math.max(calculatedRadius, minRadius), maxRadius);
+  };
+  
+  const handleRegionChangeComplete = (region: Region) => {
+    if (region && region.longitudeDelta) {
+      const newRadius = calculateCircleRadius(region.longitudeDelta);
+      setCircleRadius(newRadius);
     }
   };
 
   useEffect(() => {
     if (mapRef.current && location) {
-      const bounds = new google.maps.LatLngBounds();
-      bounds.extend(
-        new google.maps.LatLng(location.latitude, location.longitude)
-      );
+      const coordinates = [
+        { latitude: location.latitude, longitude: location.longitude },
+      ];
 
       if (pedidoLocations) {
         pedidoLocations.forEach((loc) => {
-          bounds.extend(new google.maps.LatLng(loc.lat, loc.lng));
+          coordinates.push({ latitude: loc.lat, longitude: loc.lng });
         });
       }
 
-      mapRef.current.fitBounds(bounds);
+      mapRef.current.fitToCoordinates(coordinates, {
+        edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+        animated: true,
+      });
     }
-  }, [location, pedidoLocations, mode]);
+  }, [location, pedidoLocations]);
 
   return (
-    <GoogleMap
-      mapContainerStyle={mapContainerStyle}
-      center={center}
-      zoom={13} // Default zoom level
-      onLoad={(map) => {
-        mapRef.current = map;
+      <MapView
+      ref={mapRef}
+      style={{ flex: 1 }}
+      provider={PROVIDER_GOOGLE}
+      initialRegion={{
+        ...center,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
       }}
-      onZoomChanged={handleZoomChanged}
+      onRegionChangeComplete={handleRegionChangeComplete}
     >
-      <button
-        style={styles.button}
-        onClick={() => setShowRoutes((prev) => !prev)}
-      >
-        {showRoutes ? "Ocultar Rutas" : "Mostrar Rutas"}
-      </button>
       {location && (
         <Circle
           center={center}
           radius={circleRadius}
-          options={{
-            fillColor: "#4285F4",
-            fillOpacity: 0.8,
-            strokeColor: "#4285F4",
-            strokeOpacity: 0.8,
-            strokeWeight: 1,
-          }}
+          fillColor="rgba(66, 133, 244, 0.8)"
+          strokeColor="#4285F4"
+          strokeWidth={1}
         />
       )}
       {showRoutes && routePoints.length > 0 && (
@@ -278,38 +292,22 @@ const MapComponent: React.FC<MapProps> = ({
             if (mode) {
               if (progress < 0.5) {
                 // De verde a amarillo
-                segmentColor = `rgb(${Math.round(
+                segmentColor = `rgba(${Math.round(
                   255 * (progress * 2)
-                )}, 255, 0)`;
+                )}, 255, 0, 0.9)`;
               } else {
                 // De amarillo a rojo
-                segmentColor = `rgb(255, ${Math.round(
+                segmentColor = `rgba(255, ${Math.round(
                   255 * (1 - (progress - 0.5) * 2)
-                )}, 0)`;
+                )}, 0, 0.9)`;
               }
             }
-            const arrowIcon = {
-              path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-              scale: 3,
-              strokeColor: "#000",
-            };
             return (
               <Polyline
                 key={index}
-                path={[routePoints[index - 1], point]} // Segmento entre dos puntos
-                options={{
-                  strokeColor: segmentColor, // Color dinámico según progreso
-                  strokeOpacity: 0.9,
-                  strokeWeight: 5, // Grosor de línea
-                  icons: mode
-                    ? [
-                        {
-                          icon: arrowIcon,
-                          offset: "40px",
-                        },
-                      ]
-                    : [],
-                }}
+                coordinates={[routePoints[index - 1], point]}
+                strokeColor={segmentColor}
+                strokeWidth={5}
               />
             );
           })}
@@ -330,16 +328,15 @@ const MapComponent: React.FC<MapProps> = ({
         .map((loc) => (
           <Marker
             key={loc.id}
-            position={{ lat: loc.lat, lng: loc.lng }}
-            icon={{
-              url:
-                mode && pedidoSeleccionado?.id === loc.id
-                  ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Azul para el seleccionado
-                  : "http://maps.google.com/mapfiles/ms/icons/red-dot.png", // Rojo para otros en modo múltiple
-            }}
+            coordinate={{ latitude: loc.lat, longitude: loc.lng }}
+            image={
+              mode && pedidoSeleccionado?.id === loc.id
+                ? require('../../assets/images/blue-dot.png') // Selected marker
+                : require('../../assets/images/red-dot.png') // Other markers
+            }
           />
         ))}
-   View style {error && (
+ {error && (
   <View
     style={{
       position: "absolute",
@@ -356,7 +353,7 @@ const MapComponent: React.FC<MapProps> = ({
     <Text style={{ color: "white" }}>{error}</Text>
   </View>
 )}
-    </GoogleMap>
+     </MapView>
   );
 };
 
@@ -379,3 +376,37 @@ const styles = StyleSheet.create({
 });
 
 export default MapComponent;
+
+const decodePolyline = (encoded: string): LatLng[] => {
+  let points: LatLng[] = [];
+  let index = 0, len = encoded.length;
+  let lat = 0, lng = 0;
+
+  while (index < len) {
+    let b, shift = 0, result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lat += dlat;
+
+    shift = 0;
+    result = 0;
+    do {
+      b = encoded.charCodeAt(index++) - 63;
+      result |= (b & 0x1f) << shift;
+      shift += 5;
+    } while (b >= 0x20);
+    let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+    lng += dlng;
+
+    points.push({
+      latitude: lat / 1e5,
+      longitude: lng / 1e5,
+    });
+  }
+
+  return points;
+};
