@@ -265,8 +265,8 @@ const MapComponent: React.FC<MapProps> = ({
       provider={PROVIDER_GOOGLE}
       initialRegion={{
         ...center,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
+        latitudeDelta: 0.1922,
+        longitudeDelta: 0.1421,
       }}
       onRegionChangeComplete={handleRegionChangeComplete}
     >
