@@ -15,6 +15,8 @@ import OptionSelect from "@modules/products/components/option-select"
 import MobileActions from "../mobile-actions"
 import ProductPrice from "../product-price"
 import { Producto } from "types/PaqueteProducto"
+import { useSession } from "next-auth/react"
+import axios from "axios"
 
 type ProductActionsProps = {
   product: Producto
@@ -29,6 +31,8 @@ export type PriceType = {
   percentage_diff?: string
 }
 
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+
 export default function ProductActions({
   product,
   region,
@@ -36,6 +40,9 @@ export default function ProductActions({
 }: ProductActionsProps) {
   const [options, setOptions] = useState<Record<string, string>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const { data: session, status } = useSession()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const hasRunOnceAuth = useRef(false);
 
   const countryCode = useParams().countryCode as string
 
@@ -122,18 +129,60 @@ export default function ProductActions({
 
   // add the selected variant to the cart
   const handleAddToCart = async () => {
-    if (!product?.id) return null
+    try{
+      if (!product?.id) return null
 
-    setIsAdding(true)
+      setIsAdding(true)
 
-    await addToCart({
-      cantidad: 1,
-      idProducto: product.id || "",
-      precio:  product.precioEcommerce
-    })
+      if(isAuthenticated && product.promocion && product.promocion.esValido && product.promocion.limiteStock && product.promocion.limiteStock >0) {
+        const responseGet = await axios.get(`${baseUrl}/admin/promocion/${product.promocion.id}`);
+        if(responseGet.data.error) {
+          throw new Error(responseGet.data.error)
+        }
+        const promoResponse = responseGet.data.promocion;
+        const responseUpdate = await axios.put(`${baseUrl}/admin/promocion/${product.promocion.id}`, {limiteStock: promoResponse.limiteStock - 1});
+        if(responseUpdate.data.error) {
+          throw new Error(responseUpdate.data.error)
+        }
+        product.promocion.limiteStock = promoResponse.limiteStock - 1;
+        if(product.promocion.limiteStock === 0) {
+          const responseUpdate = await axios.put(`${baseUrl}/admin/promocion/${product.promocion.id}`, {esValido: false});
+          if(responseUpdate.data.error) {
+            throw new Error(responseUpdate.data.error)
+          }
+          product.promocion.esValido = false;
+        }
+      }
 
-    setIsAdding(false)
+      await addToCart({
+        cantidad: 1,
+        idProducto: product.id || "",
+        precio:  product.precioEcommerce
+      })
+
+ 
+    }
+    catch(e) {
+      console.error(e);
+      
+    }
+    finally {
+      setIsAdding(false)
+    }
+
+    
   }
+
+  useEffect(() => {
+    if(status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true;
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
+    }
+  }, [session, status]);
 
   return (
     <>

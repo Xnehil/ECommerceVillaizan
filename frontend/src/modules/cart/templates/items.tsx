@@ -3,6 +3,7 @@ import { Heading, Table } from "@medusajs/ui"
 
 import Item from "@modules/cart/components/item"
 import SkeletonLineItem from "@modules/skeletons/components/skeleton-line-item"
+import axios from "axios"
 import { useEffect, useState } from "react"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
 
@@ -11,6 +12,8 @@ type ItemsTemplateProps = {
   setCarrito: (carrito: Pedido) => void
   isAuthenticated: boolean
 }
+
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
 const ItemsTemplate = ({  carrito, setCarrito, isAuthenticated }: ItemsTemplateProps) => {
   const [refresh, setRefresh] = useState(false);
@@ -25,6 +28,32 @@ const ItemsTemplate = ({  carrito, setCarrito, isAuthenticated }: ItemsTemplateP
 
     setItems(updatedItems);
     setRefresh(!refresh); 
+  };
+
+  const onChangePromo = async () => {
+    try {
+      const updatedItems = await Promise.all(items.map(async item => {
+        // Update the promo for each item
+        if (item.promocion !== null && item.promocion !== undefined && item.promocion.esValido === true) {
+          const response = await axios.get(`${baseUrl}/admin/promocion/${item.promocion.id}`);
+          const promo = response.data.promocion;
+          return {
+            ...item,
+            promocion: promo
+          };
+        } else {
+          return item;
+        }
+      }));
+  
+      // Update the state with the new items
+      setItems(updatedItems);
+  
+      // Refresh the component
+      setRefresh(!refresh);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
@@ -54,7 +83,7 @@ const ItemsTemplate = ({  carrito, setCarrito, isAuthenticated }: ItemsTemplateP
                   return (a.creadoEn ?? 0) > (b.creadoEn ?? 0) ? -1 : 1
                 })
                 .map((item) => {
-                  return <Item key={item.id} item={item} onDelete = {() =>  deleteItem(item.id)} isAuthenticated={isAuthenticated} />
+                  return <Item key={item.id} item={item} onDelete = {() =>  deleteItem(item.id)} isAuthenticated={isAuthenticated} onChangePromo={() => onChangePromo()}/>
                 })
             : Array.from(Array(5).keys()).map((i) => {
                 return <SkeletonLineItem key={i} />
