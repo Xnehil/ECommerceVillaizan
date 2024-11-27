@@ -25,11 +25,13 @@ type ItemProps = {
   onDelete: () => void
   isAuthenticated: boolean
   onChangePromo: () => void
+  items: DetallePedido[]
+  setItems: (items: DetallePedido[]) => void
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
-const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo}: ItemProps) => {
+const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo, items, setItems }: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -62,11 +64,13 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo}:
     console.log("La nueva cantidad es ", nuevaCantidad)
     console.log("La cantidad original es ", cantidadOriginal)
     //En caso de que sea una promocion, se actualiza el stock de la promocion (si es que tiene)
-    if(item.promocion && item.promocion.limiteStock){
+    let itemActualizado : DetallePedido = {...item} 
+
+    if (itemActualizado.promocion && itemActualizado.promocion.limiteStock != null) {
       console.log("Se va a actualizar el stock de la promocion")
       const diff = nuevaCantidad - cantidadOriginal
       if(diff > 0){
-        if(!item.promocion.esValido){
+        if(!itemActualizado.promocion.esValido){
           console.log("La promocion ya no es valida")
           setCantidad(cantidadOriginal)
           setError('La promoción ya no es válida')
@@ -74,29 +78,29 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo}:
           return
         }
         //Se estan agregando productos, por lo que se descontara del stock de promocion
-        item.promocion.limiteStock -= diff
-        if(item.promocion.limiteStock < 0){
+        itemActualizado.promocion.limiteStock -= diff
+        if(itemActualizado.promocion.limiteStock < 0){
           console.log("No hay suficiente stock de la promocion")
           setCantidad(cantidadOriginal)
-          item.promocion.limiteStock = item.promocion.limiteStock + diff
+          itemActualizado.promocion.limiteStock = itemActualizado.promocion.limiteStock + diff
           setError('No hay suficiente stock de la promoción')
           setUpdating(false)
           return
         }
-        else if(item.promocion.limiteStock === 0){
+        else if(itemActualizado.promocion.limiteStock === 0){
           setNoMorePromoStock(true)
-          item.promocion.esValido = false
+          itemActualizado.promocion.esValido = false
         }
       }
       else{
-        if(item.promocion.limiteStock === 0){
-          item.promocion.esValido = true          
+        if(itemActualizado.promocion.limiteStock === 0){
+          itemActualizado.promocion.esValido = true          
         }
         //Se estan quitando productos, por lo que se sumara al stock de promocion
-        item.promocion.limiteStock += (diff*-1)
+        itemActualizado.promocion.limiteStock += (diff*-1)
       }
       try{
-        const response = await axios.put(`${baseUrl}/admin/promocion/${item.promocion.id}`, {limiteStock: item.promocion.limiteStock, esValido: item.promocion.esValido})
+        const response = await axios.put(`${baseUrl}/admin/promocion/${itemActualizado.promocion.id}`, {limiteStock: itemActualizado.promocion.limiteStock, esValido: itemActualizado.promocion.esValido})
         if(response.data.error){
           setError(response.data.message)
         }
@@ -110,7 +114,7 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo}:
         setUpdating(false)
       }
     }
-
+    
     const message = await updateLineItem({
       detallePedidoId: item.id,
       cantidad: nuevaCantidad,
@@ -122,11 +126,17 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo}:
       })
       .finally(() => {
         setUpdating(false)
-        item.cantidad = nuevaCantidad
-        item.subtotal = nuevaCantidad  * item.precio
+        itemActualizado.cantidad = nuevaCantidad
+        itemActualizado.subtotal = nuevaCantidad  * item.precio
       })
-    console.log("Se actualizo la cantidad de un item")
-    item.cantidad = nuevaCantidad
+    console.log("Se actualizó itemActualizado ", itemActualizado)
+
+    const nuevosDetalles =
+      items.map((detalle) =>
+        detalle.id === itemActualizado.id ? itemActualizado : detalle
+      ) || [];
+
+    setItems(nuevosDetalles)
     setCantidad(nuevaCantidad)
     //setOriginalValue(nuevaCantidad)
     message && setError(message)
@@ -138,9 +148,9 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo}:
     const value = parseInt(e.target.value, 10);
     if (value >= 1 && value <= 30) {
       
-      //changeQuantity(value,originalValue);
-      //setCantidad(value);
-      //setOriginalValue(value)
+      // changeQuantity(value,originalValue);
+      // setCantidad(value);
+      // setOriginalValue(value)
     }
   };
 
@@ -184,11 +194,10 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo}:
                 <input
                   type="number"
                   value={cantidad}
-                  onChange={handleChange}
+                  onChange={(e) => changeQuantity(parseInt(e.target.value),cantidad)}
                   min="1"
                   max="30"
                   className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded text-center no-spinner"
-                  disabled
                 />
                 <button
                   className="w-8 h-8 flex items-center justify-center bg-cremaFondo rounded text-black font-black cursor-pointer"
@@ -240,13 +249,12 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo}:
               {item.producto.cantidadPuntos * item.cantidad} puntos
             </span>
           )}
-          {/*item.promocion && item.promocion.esValido && item.promocion.porcentajeDescuento > 0 && item.promocion.limiteStock && item.promocion.limiteStock >0 && (
+          {/* {item.promocion && item.promocion.esValido && item.promocion.porcentajeDescuento > 0 && item.promocion.limiteStock && item.promocion.limiteStock >0 && (
             <span className="text-xs text-ui-fg-subtle">
               {item.promocion.limiteStock} stock restante
             </span>
           )
-
-          */}
+          } */}
         </div>
       </span>
       </Table.Cell>

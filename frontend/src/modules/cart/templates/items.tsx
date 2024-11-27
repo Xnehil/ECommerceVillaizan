@@ -21,11 +21,9 @@ const ItemsTemplate = ({  carrito, setCarrito, isAuthenticated }: ItemsTemplateP
 
 
   const deleteItem = (itemId:string) => {
-    // Your deletion logic here
     const updatedItems = items.filter(item => item.id !== itemId);
-    //Refresh carrito so the other components can update
-    setCarrito({...carrito, detalles: updatedItems});
 
+    setCarrito({...carrito, detalles: updatedItems});
     setItems(updatedItems);
     setRefresh(!refresh); 
   };
@@ -83,7 +81,7 @@ const ItemsTemplate = ({  carrito, setCarrito, isAuthenticated }: ItemsTemplateP
                   return (a.creadoEn ?? 0) > (b.creadoEn ?? 0) ? -1 : 1
                 })
                 .map((item) => {
-                  return <Item key={item.id} item={item} onDelete = {() =>  deleteItem(item.id)} isAuthenticated={isAuthenticated} onChangePromo={() => onChangePromo()}/>
+                  return <Item key={item.id} item={item} onDelete = {() =>  deleteItem(item.id)} isAuthenticated={isAuthenticated} onChangePromo={() => onChangePromo()} items={items} setItems={setItems} />
                 })
             : Array.from(Array(5).keys()).map((i) => {
                 return <SkeletonLineItem key={i} />

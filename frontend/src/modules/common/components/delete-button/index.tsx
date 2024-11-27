@@ -31,23 +31,29 @@ const DeleteButton = ({
         const updatedCart = cart.detalles.filter((item) => item.id !== itemParam.id)
         setCart({ ...cart, detalles: updatedCart }) 
       }
-      console.log("Deleting item:")
+      console.log("Deleting item:", itemParam)
       if(itemParam.promocion && !!itemParam.promocion.limiteStock) {
-        console.log("Updating promo stock")
-        const responseGet = await axios.get(`${urlBase}/admin/promocion/${itemParam.promocion.id}`)
-        if(responseGet.data.error) {
-          throw new Error(responseGet.data.error)
-        }
-        const promoResponse = responseGet.data.promocion
-        console.log("The body of the response is:", promoResponse)
         console.log("Item param is:", itemParam)
         console.log("Id of the promo is:", itemParam.promocion.id)
-        console.log("The body that is being sent is:", {limiteStock: promoResponse.limiteStock + itemParam.cantidad, esValido: true})
-        const responseUpdate = await axios.put(`${urlBase}/admin/promocion/${itemParam.promocion.id}`, {limiteStock: promoResponse.limiteStock + itemParam.cantidad, esValido: true})
+        console.log("The body that is being sent is:", {cantidad: itemParam.cantidad, operacion: "+"})
+        const responseUpdate = await axios.patch(`${urlBase}/admin/promocion/${itemParam.promocion.id}`, {cantidad: itemParam.cantidad, operacion: "+"})
         if(responseUpdate.data.error) {
           throw new Error(responseUpdate.data.error)
         }
-            
+        // try{
+        //   const response = await axios.put(`${baseUrl}/admin/promocion/${item.promocion.id}`, {limiteStock: item.promocion.limiteStock, esValido: item.promocion.esValido})
+        //   if(response.data.error){
+        //     setError(response.data.message)
+        //   }
+        //   console.log("Se actualizo el stock de la promocion")
+        //   onChangePromo()
+        //   console.log("Se actualizo la promocion de los detalles")
+        // }
+        // catch(error){
+        //   setError('Error al actualizar el stock de la promoción')
+        //   console.error("ERROR al actualizar el stock de la promocion", error)
+        //   setUpdating(false)
+        // }
       }
       console.log("Done updating promo stock")
       

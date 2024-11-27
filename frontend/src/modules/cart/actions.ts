@@ -4,6 +4,7 @@ import { revalidateTag } from "next/cache"
 import axios from "axios"
 import { DetallePedido } from "types/PaquetePedido"
 import { cookies } from "next/headers"
+import { Promocion } from "types/PaquetePromocion"
 
 interface RequestBody {
   producto: {
@@ -208,7 +209,7 @@ export async function addToCart({
   }
 
   try {
-    const response=await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio, idPromocion:""}) //Esto ya está modificado
+    const response=await addItem({ idPedido: cart.id, idProducto: idProducto, cantidad: cantidad , precio: precio})
     // revalidateTag("cart")
     console.log("Item ", idProducto, " added to cart")
     return response
@@ -323,13 +324,13 @@ export async function addItem({
   idProducto,
   cantidad,
   precio,
-  idPromocion
+  promocion
 }: {
   idPedido: string
   idProducto: string
   cantidad: number
   precio: number
-  idPromocion: string
+  promocion?: Promocion
 }) {
   try {
     console.log("Adding item to cart");
@@ -347,8 +348,8 @@ export async function addItem({
     };
 
     // Only add idPromocion if it's a non-empty string
-    if (idPromocion && idPromocion.trim() !== "") {
-      requestBody.promocion = { id: idPromocion };
+    if (promocion?.id && promocion?.id.trim() !== "") {
+      requestBody.promocion = promocion;
     }
 
     const response = await axios.post(`${baseUrl}/admin/detallePedido`, requestBody);
