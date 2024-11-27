@@ -95,6 +95,26 @@ export default function ProductDetail() {
     setError(null);
 
     try {
+      if(isAuthenticated && product.promocion && product.promocion.esValido && product.promocion.limiteStock && product.promocion.limiteStock >0) {
+        const responseGet = await axios.get(`${baseUrl}/admin/promocion/${product.promocion.id}`);
+        if(responseGet.data.error) {
+          throw new Error(responseGet.data.error)
+        }
+        const promoResponse = responseGet.data.promocion;
+        const responseUpdate = await axios.put(`${baseUrl}/admin/promocion/${product.promocion.id}`, {limiteStock: promoResponse.limiteStock - 1});
+        if(responseUpdate.data.error) {
+          throw new Error(responseUpdate.data.error)
+        }
+        product.promocion.limiteStock = promoResponse.limiteStock - 1;
+        if(product.promocion.limiteStock === 0) {
+          const responseUpdate = await axios.put(`${baseUrl}/admin/promocion/${product.promocion.id}`, {esValido: false});
+          if(responseUpdate.data.error) {
+            throw new Error(responseUpdate.data.error)
+          }
+          product.promocion.esValido = false;
+        }
+      }
+
       let precioProducto = product.precioEcommerce;
       if (isAuthenticated && product.promocion && product.promocion.porcentajeDescuento) {
         const porcentaje = product.promocion.porcentajeDescuento;

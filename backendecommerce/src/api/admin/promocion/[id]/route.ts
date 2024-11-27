@@ -139,4 +139,56 @@ export const DELETE = async (
     }
 };
 
+/**
+ * @swagger
+ * /promocion/{id}:
+ *   patch:
+ *     summary: Actualiza el stock de una promoción
+ *     tags: [Promociones]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID de la promoción
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cantidad:
+ *                 type: number
+ *                 description: Cantidad a modificar
+ *               operacion:
+ *                 type: string
+ *                 enum: ["+", "-"]
+ *                 description: Operación a realizar
+ *     responses:
+ *       200:
+ *         description: Stock actualizado exitosamente
+ *       400:
+ *         description: Operación inválida
+ *       404:
+ *         description: Promoción no encontrada
+ */
+
+export const PATCH = async (
+    req: MedusaRequest,
+    res: MedusaResponse
+  ) => {
+    const promocionService: PromocionService = req.scope.resolve("promocionService");
+    const { id } = req.params;
+    const { cantidad, operacion } = req.body as { cantidad: number; operacion: "+" | "-" };
+  
+    try {
+      const updatedPromocion = await promocionService.actualizarStock(id, cantidad, operacion);
+      return res.status(200).json({ promocion: updatedPromocion });
+    } catch (error) {
+      return res.status(500).json({ message: "Error al actualizar el stock", error });
+    }
+  };
+
 export const AUTHENTICATE = false;

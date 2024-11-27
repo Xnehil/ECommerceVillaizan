@@ -132,6 +132,23 @@ class PromocionService extends TransactionBaseService {
     
         return promociones;
     }
+
+    async actualizarStock(id: string, cantidad: number, operacion: string): Promise<Promocion> {
+        return await this.atomicPhase_(async (manager) => {
+            const promocionRepo = manager.withRepository(this.promocionRepository_);
+            const promocion = await this.recuperar(id);
+            if(!promocion) {
+                throw new MedusaError(MedusaError.Types.NOT_FOUND, "Promocion no encontrada");
+            }
+            if(operacion === "+") {
+                promocion.limiteStock += cantidad;
+            }
+            else if(operacion === "-") {
+                promocion.limiteStock -= cantidad;
+            }
+            return await promocionRepo.save(promocion);
+        });
+    }
 }
 
 export default PromocionService;

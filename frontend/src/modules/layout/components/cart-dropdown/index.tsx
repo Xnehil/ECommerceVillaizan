@@ -237,7 +237,7 @@ const CartDropdown = ({
                                   item={item}
                                   style="tight"
                                 />
-                                {/* Show Puntos Canjeables below LineItemPrice */}
+ 
                                 {isAuthenticated && item.producto && item.producto.cantidadPuntos && item.producto.cantidadPuntos > 0 && (
                                   <span className="text-sm text-gray-500 mt-1">
                                     {item.producto.cantidadPuntos * item.cantidad} puntos
@@ -247,7 +247,7 @@ const CartDropdown = ({
                             </div>
                           </div>
                           <DeleteButton
-                            id={item.id}
+                            itemParam={item}
                             className="mt-1"
                             data-testid="cart-item-remove-button"
                             cart={cartState}

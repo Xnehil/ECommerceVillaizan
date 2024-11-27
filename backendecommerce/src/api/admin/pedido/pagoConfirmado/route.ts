@@ -114,7 +114,7 @@ export const POST = async (
 
         //console.log("Pedido encontrado");
 
-        const updatePromocion = async (detalle) => {
+        /*const updatePromocion = async (detalle) => {
             if (detalle.promocion && detalle.promocion.limiteStock !== null) {
                 const promocion = await promocionService.recuperar(detalle.promocion.id);
                 if (promocion.limiteStock > 0) {
@@ -129,7 +129,7 @@ export const POST = async (
                     await promocionService.actualizar(detalle.promocion.id, promocion);
                 }
             }
-        };
+        };*/
         
         const updateProducto = async (detalle) => {
             if (detalle.producto) {
@@ -144,7 +144,7 @@ export const POST = async (
         };
         
         const updatePromises = pedido.detalles.map(async (detalle) => {
-            await updatePromocion(detalle);
+            //await updatePromocion(detalle);
             await updateProducto(detalle);
         });
 

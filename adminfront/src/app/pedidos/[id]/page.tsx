@@ -141,7 +141,10 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
     try {
       // await new Promise((resolve) => setTimeout(resolve, 3000));
 
-      const responsePagoConfirmado = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}pedido/pagoConfirmado`, {'id': pedido.current.id});
+      const responsePagoConfirmado = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}pedido/pagoConfirmado`,
+        { id: pedido.current.id }
+      );
 
       if (responsePagoConfirmado.status !== 200) {
         throw new Error("Error al realizar el flujo de pago confirmado");
@@ -161,6 +164,78 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         variant: "destructive",
         title: "Error",
         description: "Ocurrió un error al confirmar el pago.",
+      });
+    }
+  };
+
+  const handleConfirmEntregado = async () => {
+    setIsLoading(true);
+    console.log("Marcando como entregado");
+    try {
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      const responseEntregado = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
+        {
+          ...pedido.current,
+          estado: "entregado",
+        }
+      );
+
+      if (responseEntregado.status !== 200) {
+        throw new Error("Error al marcar como entregado");
+      }
+
+      console.log("Pedido saved", responseEntregado.data);
+      pedido.current.estado = "entregado";
+
+      setIsLoading(false);
+      toast({
+        description: "Se marcó como entregado correctamente.",
+      });
+    } catch (error: any) {
+      console.error("Error saving product", error);
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ocurrió un error al marcar como entregado.",
+      });
+    }
+  };
+
+  const handleConfirmCancelado = async () => {
+    setIsLoading(true);
+    console.log("Marcando como cancelado");
+    try {
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      const responseCancelado = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
+        {
+          ...pedido.current,
+          estado: "cancelado",
+        }
+      );
+
+      if (responseCancelado.status !== 200) {
+        throw new Error("Error al marcar como cancelado");
+      }
+
+      console.log("Pedido saved", responseCancelado.data);
+      pedido.current.estado = "cancelado";
+
+      setIsLoading(false);
+      toast({
+        description: "Se marcó como cancelado correctamente.",
+      });
+    } catch (error: any) {
+      console.error("Error saving product", error);
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ocurrió un error al marcar como cancelado.",
       });
     }
   };
@@ -241,6 +316,56 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
                   </>
                 </div>
               )}
+            {pedido.current.estado === "manual" && (
+              <div className="lower-buttons-container">
+                <>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">Cancelado</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          ¿Estás seguro de marcar como cancelado este pedido?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          El pedido será marcado como cancelado. Esta acción no
+                          se puede deshacer.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Regresar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmCancelado}>
+                          Marcar como cancelado
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="default">Entregado</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          ¿Estás seguro de marcar como entregado este pedido?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          El pedido será marcado como entregado. Esta acción no
+                          se puede deshacer.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmEntregado}>
+                          Marcar como entregado
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              </div>
+            )}
           </div>
         </>
       )}

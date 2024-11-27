@@ -11,6 +11,7 @@ import { Pedido } from "types/PaquetePedido"
 import { useEffect, useRef, useState } from "react"
 import BackButton from "@components/BackButton"
 import { useSession } from "next-auth/react"
+import Summary2 from "./summary2"
 
 
 const CartTemplate = ({
@@ -65,7 +66,7 @@ const CartTemplate = ({
                 {cart  && (
                   <>
                     <div className="bg-white py-6">
-                      <Summary carrito={carritoState} isAuthenticated={isAuthenticated}/>
+                      <Summary2 carrito={carritoState} handleSubmit={() => {}} isFormValid={true} showWarnings={false} checkFormValidity={() => true} showErrorValidacion={false} mensajeErrorValidacion="" />
                     </div>
                   </>
                 )}

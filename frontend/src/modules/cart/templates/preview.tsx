@@ -40,6 +40,7 @@ const ItemsPreviewTemplate = ({ items, region }: ItemsTemplateProps) => {
                       item={item}
                       onDelete = {() =>  deleteItem(item.id)}
                       isAuthenticated={false}
+                      onChangePromo={async () => {}}
                     />
                   )
                 })

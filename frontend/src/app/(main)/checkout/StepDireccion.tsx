@@ -15,11 +15,27 @@ import { Button } from "@components/Button"
 import AddressFormParent from "./AddressFormParent"
 import BackButton from "@components/BackButton"
 import { Heading } from "@medusajs/ui"
+import CryptoJS from "crypto-js";
 
 interface StepDireccionProps {
   setStep: (step: string) => void
   googleMapsLoaded: boolean
 }
+
+const encryptionKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY || "default_key";
+
+// Function to decrypt data
+const decryptData = (data: string | null): string | null => {
+  if (data) {
+      try {
+          return CryptoJS.AES.decrypt(data, encryptionKey).toString(CryptoJS.enc.Utf8);
+      } catch (error) {
+          console.error("Decryption failed:", error);
+          return null;
+      }
+  }
+  return null;
+};
 
 const StepDireccion: React.FC<StepDireccionProps> = ({
   setStep,
@@ -67,6 +83,13 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [googleLoaded, setGoogleLoaded] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const hasRunOnceAuth = useRef(false)
+  const [mensajeErrorValidacion, setMensajeErrorValidacion] = useState("")
+  const [showErrorValidacion, setShowErrorValidacion] = useState(false)
+  const [formValidity, setFormValidity] = useState<boolean>(false);
+
+  useEffect(() => {
+    setFormValidity(isFormValid()); // Compute once during render
+  }, [nombre, numeroDni, telefono, calle, referencia, selectedLocation, numeroRuc, selectedAddressId, comprobante]); // Add dependencies as needed
 
   useEffect(() => {
     if (status !== "loading" && !hasRunOnceAuth.current) {
@@ -125,6 +148,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
   const handleToggleAddress = (addressId: string | null) => {
     setSelectedAddressId(addressId)
+    localStorage.addItem("selectedAddressId", addressId)
     console.log("Selected Address ID:", addressId)
   }
 
@@ -182,18 +206,24 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const handleComprobanteChange = (value: string) => {
     setComprobante(value); // Update parent state
     console.log("Comprobante value from child:", value);
+    localStorage.setItem("comprobante", CryptoJS.AES.encrypt(value, encryptionKey).toString());
   };
 
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setNombre(value)
-    localStorage.setItem("nombre", value) // Save to localStorage
+    if(value.trim() !== "" && value.trim().length > 0 && value.trim().length < 100) {
+      localStorage.setItem("nombre", CryptoJS.AES.encrypt(value, encryptionKey).toString());
+    }
+    
   }
 
   const handleNroInteriorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setNumeroInterior(value)
-    localStorage.setItem("nroInterior", value)
+    if(value.trim() !== "" && value.trim().length > 0 && value.trim().length < 100) {
+      localStorage.setItem("nroInterior", CryptoJS.AES.encrypt(value, encryptionKey).toString());
+    }
   }
 
   const handleTelefonoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -202,12 +232,13 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     // Ensure the value contains only digits before updating the state
     if (/^\d*$/.test(value)) {
       setTelefono(value)
-      localStorage.setItem("telefono", value) // Save to localStorage
+      
 
       // Check if the value exceeds 9 digits
       if (value.length > 9) {
         setTelefonoError("El teléfono no puede tener más de 9 dígitos")
       } else {
+        localStorage.setItem("telefono", CryptoJS.AES.encrypt(value, encryptionKey).toString());
         setTelefonoError(null) // Clear error if it's valid
       }
     }
@@ -217,10 +248,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     const value = e.target.value;
     if (/^\d*$/.test(value)) {
       setNumeroDni(value);
-      localStorage.setItem("dni", value);
+      
       if (value.length > 8) {
         setDniError("El DNI no puede tener más de 8 dígitos");
       } else {
+        localStorage.setItem("dni", CryptoJS.AES.encrypt(value, encryptionKey).toString());
         setDniError(null);
       }
     }
@@ -230,7 +262,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     const value = e.target.value;
     if (/^\d*$/.test(value)) {
       setNumeroRuc(value);
-      localStorage.setItem("ruc", value);
+      localStorage.setItem("ruc", CryptoJS.AES.encrypt(value, encryptionKey).toString());
       if (value.length !== 11) {
         setDniError("El RUC debe tener 11 dígitos");
       } else {
@@ -242,133 +274,91 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const handleCalleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setCalle(value)
-    localStorage.setItem("calle", value) // Save to localStorage
+    if(value.trim() !== "" && value.trim().length > 0 && value.trim().length < 255) {
+      localStorage.setItem("calle", CryptoJS.AES.encrypt(value, encryptionKey).toString());
+    }
   }
 
   const handleCiudadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setCiudadNombre(value)
-    localStorage.setItem("ciudad", value)
+    localStorage.setItem("ciudad", CryptoJS.AES.encrypt(value, encryptionKey).toString());
   }
 
   const handleReferenciaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setReferencia(value)
-    localStorage.setItem("referencia", value) // Save to localStorage
+    if(value.trim() !== "" && value.trim().length > 0 && value.trim().length < 255) {
+      localStorage.setItem("referencia", CryptoJS.AES.encrypt(value, encryptionKey).toString());
+    }
   }
-  /*
-  useEffect(() => {
-    console.log("check nombre", nombre.trim() !== "")
-    console.log("check dni", numeroDni.length === 8)
-    console.log("check telefono", telefono.length === 9)
-    console.log("check calle", calle.trim() !== "")
-    console.log("check referencia", referencia.trim() !== "")
-    console.log("check selectedLocation", selectedLocation)
-    console.log("check selectedLocation lat", selectedLocation?.lat)
-    console.log("check selectedLocation lng", selectedLocation?.lng)
-    console.log("check selectedAddressId", selectedAddressId)
-  }, [nombre, numeroDni, telefono, calle, referencia, selectedLocation, selectedAddressId])*/
 
 
   const isFormValid = () => {
-    return true;
-    /*
-    console.log("check nombre", nombre.trim() !== "")
-    console.log("check dni", numeroDni.length === 8)
-    console.log("check telefono", telefono.length === 9)
-    console.log("check calle", calle.trim() !== "")
-    console.log("check referencia", referencia.trim() !== "")
-    console.log("check selectedLocation", selectedLocation !== null)
-    console.log("check selectedLocation lat",  selectedLocation?.lat !== null)
-    console.log("check selectedLocation lng", selectedLocation?.lng !== null)
-    */
-    /*
-    if (!isAuthenticated && showMapModal == false) {
-      //En caso no este autenticado 
-      //console.log("NO ESTA AUTENTICADO")
-      if(comprobante === "boleta") {
-        //console.log("selectedLocation:", selectedLocation)
-        const response = !!(
-          nombre.trim() !== "" &&
-          numeroDni.length === 8 &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          selectedLocation &&
-          selectedLocation.lat !== null &&
-          selectedLocation.lng !== null
-        )
-        //console.log("Response:", response)
-        return response;
+      
+    try{
+      let mensajesError: string[] = [];
+      let checkNombre = nombre.trim() !== "" && nombre.trim().length > 0 && nombre.trim().length < 100
+      if(!checkNombre) {
+        mensajesError.push("Nombre inválido")
+        console.log("Error nombre")
       }
-      else if(comprobante === "factura") {
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          numeroRuc.length === 11 &&
-          selectedLocation &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkDni = numeroDni.length === 8 || comprobante !== "boleta"
+      if(!checkDni) {
+        mensajesError.push("DNI inválido")
+        console.log("Error dni")
       }
-      else if(comprobante === "boletaSimple") {
-        console.log("selectedLocation:", selectedLocation)
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          selectedLocation &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkTelefono = telefono.length === 9
+      if(!checkTelefono) {
+        mensajesError.push("Teléfono inválido")
+        console.log("Error telefono")
       }
-      return false;
-    } else {
-      //En caso este autenticado
-      if(comprobante === "boleta") {
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          selectedAddressId !== null &&
-          selectedLocation &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkCalle = (calle.trim() !== "" && calle.trim().length > 0 && calle.trim().length < 255) || isAuthenticated 
+      if(!checkCalle) {
+        mensajesError.push("Calle inválida")
+        console.log("Error calle")
       }
-      else if(comprobante === "factura") {
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          numeroRuc.length === 11 &&
-          selectedAddressId !== null &&
-          selectedLocation  &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkReferencia = (referencia.trim() !== "" && referencia.trim().length > 0 && referencia.trim().length < 255) || isAuthenticated
+      if(!checkReferencia) {
+        mensajesError.push("Referencia inválida")
+        console.log("Error referencia")
       }
-      else if(comprobante === "boletaSimple") {
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          selectedAddressId !== null &&
-          selectedLocation &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkSelectedLocation = selectedLocation || isAuthenticated
+      if(!checkSelectedLocation) {
+        mensajesError.push("Ubicación en el mapa inválida")
+        console.log("Error ubicación")
+      }
+      let checkRuc = numeroRuc.length === 11 || comprobante !== "factura"
+      if(!checkRuc) {
+        mensajesError.push("RUC inválido")
+        console.log("Error ruc")
+      }
+      let checkSelectedAddressId = selectedAddressId !== null || !isAuthenticated
+      if(!checkSelectedAddressId) {
+        mensajesError.push("Dirección inválida")
+        console.log("Error dirección")
+      }
+      let checkComprobante = comprobante === "boleta" || comprobante === "factura" || comprobante === "boletaSimple"
+      if(!checkComprobante) {
+        mensajesError.push("Comprobante inválido")
+        console.log("Error comprobante")
       }
 
-      return false
+      if(mensajesError.length > 0) {
+        console.log("Mensajes de error:", mensajesError)
+        setMensajeErrorValidacion(mensajesError.join(", "))
+        setShowErrorValidacion(true)
+        return false
+      }
+      else {
+        setShowErrorValidacion(false)
+        return true
+      }
     }
-      */
+    catch(error) {
+      console.error("Error en validación de formulario:", error)
+      return false
+    }    
 
   }
 
@@ -523,14 +513,18 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
               if (user.persona && user.persona.id) {
                 setUserPersonaId(user.persona.id)
               }
-              if (user.persona && user.persona.numeroDocumento !== null) {
+              if (user.persona && user.persona.numeroDocumento !== null && user.persona.tipoDocumento ==="DNI") {
                 setNumeroDni(user.persona.numeroDocumento)
-                localStorage.setItem("dni", user.persona.numeroDocumento)
+                localStorage.setItem("dni", CryptoJS.AES.encrypt(user.persona.numeroDocumento, encryptionKey).toString());
+              }
+              else if(user.persona && user.persona.numeroDocumento !== null && user.persona.tipoDocumento ==="RUC") {
+                setNumeroRuc(user.persona.numeroDocumento)
+                localStorage.setItem("ruc", CryptoJS.AES.encrypt(user.persona.numeroDocumento, encryptionKey).toString());
               }
 
               // Set localStorage with user data
-              localStorage.setItem("nombre", user.nombre)
-              localStorage.setItem("telefono", user.numeroTelefono)
+              localStorage.setItem("nombre", CryptoJS.AES.encrypt(user.nombre, encryptionKey).toString());
+              localStorage.setItem("telefono", CryptoJS.AES.encrypt(user.numeroTelefono, encryptionKey).toString());
 
               setNombre(user.nombre)
               setTelefono(user.numeroTelefono)
@@ -553,12 +547,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   }, [session, status])
 
   useEffect(() => {
-    const savedNombre = localStorage.getItem("nombre")
-    const savedTelefono = localStorage.getItem("telefono")
-    const savedDni = localStorage.getItem("dni")
-    const savedCalle = localStorage.getItem("calle")
-    const savedNroInterior = localStorage.getItem("nroInterior")
-    const savedReferencia = localStorage.getItem("referencia")
+    const savedNombre = decryptData(localStorage.getItem("nombre"));
+    const savedTelefono = decryptData(localStorage.getItem("telefono"));
+    const savedDni = decryptData(localStorage.getItem("dni"));
+    const savedCalle = decryptData(localStorage.getItem("calle"));
+    const savedNroInterior = decryptData(localStorage.getItem("nroInterior"));
+    const savedReferencia = decryptData(localStorage.getItem("referencia"));
+    const savedComprobante = decryptData(localStorage.getItem("comprobante"));
+    const savedAddressId = decryptData(localStorage.getItem("selectedAddressId"));
 
     if (savedNombre) setNombre(savedNombre)
     if (savedTelefono) setTelefono(savedTelefono)
@@ -566,6 +562,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     if (savedNroInterior) setNumeroInterior(savedNroInterior)
     if (savedCalle) setCalle(savedCalle)
     if (savedReferencia) setReferencia(savedReferencia)
+    if(savedComprobante) setComprobante(savedComprobante)
+    if(savedAddressId) setSelectedAddressId(savedAddressId)
     fetchCart()
     loadGoogleMapsScript()
   }, [])
@@ -617,6 +615,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
                 locationError={locationError}
                 telefonoError={telefonoError}
                 onComprobanteChange={handleComprobanteChange}
+                comprobantePassed={comprobante}
               />
             </div>
           )}
@@ -627,9 +626,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
               <Summary2
                 carrito={carritoState}
                 handleSubmit={handleSubmitPadre}
-                isFormValid={isFormValid()}
+                isFormValid={formValidity}
                 showWarnings={showWarnings}
                 checkFormValidity={isFormValid}
+                showErrorValidacion={showErrorValidacion}
+                mensajeErrorValidacion={mensajeErrorValidacion}
               />
             ) : (
               <p>Cargando carrito...</p>

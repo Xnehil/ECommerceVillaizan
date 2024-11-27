@@ -41,6 +41,9 @@ import {
   AlertDialogTrigger,
 } from "@components/ui/alert-dialog";
 
+
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
+
 export default function ProductPreview({
   productPreview,
   isFeatured,
@@ -101,6 +104,31 @@ export default function ProductPreview({
     setError(null)
 
     try {
+
+      if(estaAutenticado && productPreview.promocion && productPreview.promocion.esValido && productPreview.promocion.limiteStock && productPreview.promocion.limiteStock >0) {
+        const responseGet = await axios.get(`${baseUrl}/admin/promocion/${productPreview.promocion.id}`);
+        if(responseGet.data.error) {
+          throw new Error(responseGet.data.error)
+        }
+        const promoResponse = responseGet.data.promocion;
+        //console.log("The body of the response is:", promoResponse)
+        //console.log("The body that is being sent is:", {limiteStock: promoResponse.limiteStock - 1})
+        const responseUpdate = await axios.put(`${baseUrl}/admin/promocion/${productPreview.promocion.id}`, {limiteStock: promoResponse.limiteStock - 1});
+        
+        if(responseUpdate.data.error) {
+          throw new Error(responseUpdate.data.error)
+        }
+        productPreview.promocion.limiteStock = promoResponse.limiteStock - 1;
+        if(productPreview.promocion.limiteStock === 0) {
+          const responseUpdate = await axios.put(`${baseUrl}/admin/promocion/${productPreview.promocion.id}`, {esValido: false});
+          if(responseUpdate.data.error) {
+            throw new Error(responseUpdate.data.error)
+          }
+          productPreview.promocion.esValido = false;
+        }
+      }
+
+
       let precioProducto = productPreview.precioEcommerce
       if(isAuthenticated){
         if (productPreview.promocion && productPreview.promocion.porcentajeDescuento) {
@@ -138,7 +166,7 @@ export default function ProductPreview({
           //precio: productPreview.precioEcommerce,
           precio: precioProducto,
           idPedido: carrito?.id || "",
-          idPromocion: (isAuthenticated && productPreview.promocion?.esValido && productPreview.promocion?.estaActivo) ? productPreview.promocion.id : ""
+          promocion: (isAuthenticated && productPreview.promocion?.esValido && productPreview.promocion?.estaActivo) ? productPreview.promocion : undefined,
         })
         if (
           response &&
@@ -195,6 +223,13 @@ export default function ProductPreview({
       const detalleAnterior = carrito?.detalles.find(
         (detalle) => detalle.producto.id === productPreview.id
       )
+      if(estaAutenticado && productPreview.promocion && productPreview.promocion.esValido && productPreview.promocion.limiteStock && productPreview.promocion.limiteStock >0) {
+        const response = await axios.patch(`${baseUrl}/admin/promocion/${productPreview.promocion.id}`, {cantidad: 1, operacion: "+"});
+        if(response.data.error) {
+          throw new Error(response.data.error)
+        }
+        productPreview.promocion.limiteStock = productPreview.promocion.limiteStock + 1;
+      }
       if (detalleAnterior && detalleAnterior.cantidad > 1) {
         const cantidad = detalleAnterior.cantidad - 1
         await updateLineItem({

@@ -11,12 +11,14 @@ import Pendientes from "@/app/pedidos/pendientes/pendientes";
 import Activos from "@/app/pedidos/activos/activos";
 import Historial from "@/app/pedidos/historial/historial";
 import Revision from "@/app/pedidos/revision/revision";
+import Manual from "@/app/pedidos/manuales/manuales";
 
 const PedidosPage: React.FC = () => {
   const pedPendientes = useRef<Pedido[]>([]);
   const pedActivos = useRef<Pedido[]>([]);
   const pedHistorial = useRef<Pedido[]>([]);
   const pedRevision = useRef<Pedido[]>([]);
+  const pedManuales = useRef<Pedido[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const a = useRef(0);
@@ -49,7 +51,10 @@ const PedidosPage: React.FC = () => {
 
         const pedidosData: Pedido[] = data.pedidos.sort(
           (a: Pedido, b: Pedido) => {
-            return new Date(b.solicitadoEn ?? 0).getTime() - new Date(a.solicitadoEn ?? 0).getTime();
+            return (
+              new Date(b.solicitadoEn ?? 0).getTime() -
+              new Date(a.solicitadoEn ?? 0).getTime()
+            );
           }
         );
 
@@ -76,6 +81,9 @@ const PedidosPage: React.FC = () => {
               break;
             case "cancelado":
               pedHistorial.current.push(pedido);
+              break;
+            case "manual":
+              pedManuales.current.push(pedido);
               break;
             default:
               // Handle any other states if necessary
@@ -116,6 +124,7 @@ const PedidosPage: React.FC = () => {
             <TabsTrigger value="pendientes">Pendientes</TabsTrigger>
             <TabsTrigger value="activos">Activos</TabsTrigger>
             <TabsTrigger value="revision">Pago por confirmar</TabsTrigger>
+            <TabsTrigger value="manual">Manuales</TabsTrigger>
             <TabsTrigger value="historial">Historial</TabsTrigger>
           </TabsList>
           <TabsContent className="w-full" value="pendientes">
@@ -131,6 +140,11 @@ const PedidosPage: React.FC = () => {
           <TabsContent value="revision">
             <div className="information-container">
               {!isLoading && <Revision revision={pedRevision} />}
+            </div>
+          </TabsContent>
+          <TabsContent value="manual">
+            <div className="information-container">
+              {!isLoading && <Manual manual={pedManuales} />}
             </div>
           </TabsContent>
           <TabsContent value="historial">

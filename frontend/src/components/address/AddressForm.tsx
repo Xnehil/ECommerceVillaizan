@@ -52,6 +52,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
   const [errorValidationNombre, setErrorValidationNombre] = useState<  string | null>(null)
   const [errorValidationCalle, setErrorValidationCalle] = useState<  string | null>(null)
   const [errorValidationReferencia, setErrorValidationReferencia] = useState<  string | null>(null)
+  const [errorValidationNumeroExterior, setErrorValidationNumeroExterior] = useState<  string | null>(null)
+  const [errorValidationNumeroInterior, setErrorValidationNumeroInterior] = useState<  string | null>(null)
 
   const handleMapSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
@@ -82,25 +84,50 @@ const AddressForm: React.FC<AddressFormProps> = ({
 
 
   useEffect(() => {
-    if (state === 'Editar' && direccion) {
-      setNombre(direccion.nombre ?? '');
-      setCalle(direccion.calle ?? '');
-      setNumeroExterior(direccion.numeroExterior ?? '');
-      setNumeroInterior(direccion.numeroInterior ?? '');
-      setReferencia(direccion.referencia ?? '');
-      setCiudadId(direccion.ciudad?.id ?? '');
-      setCiudadNombre(direccion.ciudad?.nombre ?? '');
-      setUserIdInternal(userId);
-      // If ubicacion exists, set selectedLocation based on its latitud and longitud
-      if (direccion.ubicacion) {
-        setSelectedLocation({
-          lat: parseFloat(direccion.ubicacion?.latitud?.toString() || '0'),
-          lng: parseFloat(direccion.ubicacion?.longitud?.toString() || '0'),
-        });
-        console.log('Selected location:', selectedLocation);
+    const fetchUbicacion = async () => {
+      try {
+        if (state === 'Editar' && direccion) {
+          setNombre(direccion.nombre ?? '');
+          setCalle(direccion.calle ?? '');
+          setNumeroExterior(direccion.numeroExterior ?? '');
+          setNumeroInterior(direccion.numeroInterior ?? '');
+          setReferencia(direccion.referencia ?? '');
+          setCiudadId(direccion.ciudad?.id ?? '');
+          setCiudadNombre(direccion.ciudad?.nombre ?? '');
+          setUserIdInternal(userId);
+          
+          // If ubicacion exists, set selectedLocation based on its latitud and longitud
+          console.log('Direccion:', direccion);
+          console.log('Ubicacion:', direccion.ubicacion);
+          if (direccion.ubicacion) {
+            const responseUbicacion = await axios.get(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ubicacion/${direccion.ubicacion.id}`);
+            const ubicacion = responseUbicacion.data.ubicacion;
+            
+            if (ubicacion) {
+              console.log("Asignando ubicacion", ubicacion);
+              setSelectedLocation({
+                lat: parseFloat(ubicacion.latitud?.toString() || '0'),
+                lng: parseFloat(ubicacion.longitud?.toString() || '0'),
+              });
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Error en fetchUbicacion", e);
+        setErrorMessage('No se pudo cargar la ubicación. Intente de nuevo más tarde.');
+        setIsErrorPopupVisible(true);
       }
-    }
+    };
+  
+    fetchUbicacion();
   }, [state, direccion, userId]);
+  
+  // Add a new useEffect to log the selectedLocation after it updates
+  useEffect(() => {
+    if (selectedLocation) {
+      console.log('Selected location updated:', selectedLocation);
+    }
+  }, [selectedLocation]); // This effect will run whenever selectedLocation changes
 
   useEffect(() => {
     if(mandatoryCiudad){
@@ -164,6 +191,15 @@ const AddressForm: React.FC<AddressFormProps> = ({
 
     if (countWords(referencia) > 255) {
       setLocalError('La referencia no puede superar las 255 palabras.');
+      return;
+    }
+
+    if(numeroExterior.trim() !== '' && countWords(numeroExterior) > 20){
+      setLocalError('El número exterior no puede superar las 20 palabras.');
+      return;
+    }
+    if(numeroInterior.trim() !== '' && countWords(numeroInterior) > 20){
+      setLocalError('El número interior no puede superar las 20 palabras.');
       return;
     }
 
@@ -248,6 +284,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
         console.log('Creating new address ',dataDireccion);
         const response = await axios.post(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/direccion`, dataDireccion);
         const createdDireccion = response.data.direccion;
+        console.log('Created address:', createdDireccion);
         onCreatedDireccion(createdDireccion);
       }
     } catch (error) {
@@ -277,6 +314,32 @@ const AddressForm: React.FC<AddressFormProps> = ({
         setErrorValidationCalle('La calle no puede superar las 255 palabras');
       }else{
         setErrorValidationCalle(null);
+      }
+    }
+  }
+
+  const numeroExteriorBlur = () => {
+    if (numeroExterior.trim() === '') {
+      setErrorValidationNumeroExterior('El número exterior no puede estar vacío');
+    } else {
+      if(countWords(numeroExterior) > 20){
+        setErrorValidationNumeroExterior('El número exterior no puede superar las 20 palabras');
+      }
+      else {
+        setErrorValidationNumeroExterior(null);
+      }
+    }
+  }
+
+  const numeroInteriorBlur = () => {
+    if (numeroInterior.trim() === '') {
+      setErrorValidationNumeroInterior('El número interior no puede estar vacío');
+    } else {
+      if(countWords(numeroInterior) > 20){
+        setErrorValidationNumeroInterior('El número interior no puede superar las 20 palabras');
+      }
+      else {
+        setErrorValidationNumeroInterior(null);
       }
     }
   }
@@ -317,10 +380,11 @@ const AddressForm: React.FC<AddressFormProps> = ({
           {mandatoryCiudad ? ` en ${mandatoryCiudadNombre}` : ''}
         </h2>
         <InputWithLabel
-          label="Nombre"
+          label="Nombre de Dirección"
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           required
+          placeholder="Por ejemplo, Oficina"
           tooltip="Máximo 250 palabras"
           onBlur={handleNombreBlur}
         />
@@ -332,7 +396,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
           value={calle}
           onChange={(e) => setCalle(e.target.value)}
           required
-          placeholder="Av. La Republica"
+          placeholder="Por ejemplo, Av. La Republica"
           tooltip="Máximo 255 palabras"
           onBlur={handleCalleBlur}
         />
@@ -343,15 +407,26 @@ const AddressForm: React.FC<AddressFormProps> = ({
           label="Número Exterior"
           value={numeroExterior}
           onChange={(e) => setNumeroExterior(e.target.value)}
-          type = "number"
+          tooltip="Máximo 20 palabras"
+          onBlur={numeroExteriorBlur}
+          maxLength={20}
+          
         />
+        {
+          errorValidationNumeroExterior && <p className="text-red-500 mt-2">{errorValidationNumeroExterior}</p>
+        }
         <InputWithLabel
           label="Número Interior"
           value={numeroInterior}
           onChange={(e) => setNumeroInterior(e.target.value)}
-          type = "number"
+          tooltip="Máximo 20 palabras"
+          onBlur={numeroInteriorBlur}
+          maxLength={20}
 
         />
+        {
+          errorValidationNumeroInterior && <p className="text-red-500 mt-2">{errorValidationNumeroInterior}</p>
+        }
         <InputWithLabel
           label="Referencia"
           value={referencia}

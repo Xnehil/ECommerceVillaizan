@@ -20,6 +20,7 @@ import { MoreHorizontal, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
+  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -38,10 +39,20 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import CheckboxWithLabel from "@/components/forms/checkboxWithLabel";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface PlantillaPgProps {}
 
 const PlantillaPg: React.FC<PlantillaPgProps> = () => {
+  const planOriginal = useRef<Plantilla | null>(null);
   const plant = useRef<Plantilla | null>(null);
   const a = useRef(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +91,7 @@ const PlantillaPg: React.FC<PlantillaPgProps> = () => {
         const plantillaData = data.plantillas[0] as Plantilla;
 
         plant.current = plantillaData;
+        planOriginal.current = JSON.parse(JSON.stringify(plant.current));
 
         console.log("Plantilla:", plant.current);
 
@@ -94,7 +106,7 @@ const PlantillaPg: React.FC<PlantillaPgProps> = () => {
         });
         console.log("Filtered products:", products.current);
       } catch (error) {
-        console.error("Failed to fetch categories", error);
+        console.error("Failed to fetch plantilla", error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -232,11 +244,11 @@ const PlantillaPg: React.FC<PlantillaPgProps> = () => {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>
-                  ¿Estás seguro de que deseas eliminar esta categoría?
+                  ¿Estás seguro de que deseas eliminar este producto?
                 </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Esta acción no se puede deshacer. Esto eliminará
-                  permanentemente la categoría de nuestros servidores.
+                  Esta acción no se puede deshacer. Esto eliminará el producto
+                  de la plantilla.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -247,7 +259,7 @@ const PlantillaPg: React.FC<PlantillaPgProps> = () => {
                 </AlertDialogCancel>
                 <Button
                   variant="destructive"
-                  onClick={() => handleDelete(row.original.id)}
+                  onClick={() => handleDelete(row.original.producto.id)}
                 >
                   Eliminar
                 </Button>
@@ -260,10 +272,33 @@ const PlantillaPg: React.FC<PlantillaPgProps> = () => {
   ];
 
   const handleCancel = () => {
+    // Reset the plantilla
+    setIsLoading(true);
+    plant.current = JSON.parse(JSON.stringify(planOriginal.current));
+    setIsLoading(false);
     setIsEditing(false);
   };
 
-  const handleDelete = async (id: string) => {};
+  const handleDelete = async (id: string) => {
+    // Make DELETE request to delete category
+
+    setIsOpen(false);
+
+    console.log("Deleting product:", id);
+    // find the product in the plantilla or in productToAdd
+    const product = plant.current?.productos.find((p) => p.producto.id === id);
+    if (!product) {
+      return;
+    }
+
+    if (plant.current) {
+      plant.current.productos = plant.current.productos.filter(
+        (p) => p.producto.id !== id
+      );
+    }
+
+    products.current.push(product.producto);
+  };
 
   const handleAddProducts = () => {
     setIsLoading(true);
@@ -283,6 +318,7 @@ const PlantillaPg: React.FC<PlantillaPgProps> = () => {
             } as PlantillaProducto)
         )
       );
+      console.log("Plantilla after adding products:", plant.current);
     }
 
     // filter the products that are not in the plantilla
@@ -294,6 +330,52 @@ const PlantillaPg: React.FC<PlantillaPgProps> = () => {
     setCheckedProducts({});
     setOpenSelect(false);
     setIsLoading(false);
+  };
+
+  const handleSave = async () => {
+    // Make PUT request to update plantilla
+    setIsLoading(true);
+
+    // remove any product that has 0 stock
+    if (plant.current) {
+      products.current = products.current.concat(
+        plant.current.productos
+          .filter((product) => product.cantidad === 0)
+          .map((product) => product.producto)
+      );
+
+      plant.current.productos = plant.current.productos.filter(
+        (product) => product.cantidad > 0
+      );
+    }
+
+    try {
+      console.log("Saving plantilla:", plant.current);
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}plantilla/${plant.current?.id}`,
+        plant.current
+      );
+      if (!response) {
+        throw new Error("Failed to save plantilla");
+      }
+      const data = await response.data;
+      console.log("Plantilla saved:", data);
+
+      toast({
+        description: "La plantilla se ha guardado exitosamente.",
+      });
+    } catch (error) {
+      console.error("Failed to save plantilla", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description:
+          "Ocurrió un error al guardar la plantilla. Por favor, intente de nuevo.",
+      });
+    } finally {
+      setIsLoading(false);
+      setIsEditing(false);
+    }
   };
 
   return (
@@ -370,9 +452,44 @@ const PlantillaPg: React.FC<PlantillaPgProps> = () => {
         <div className="lower-buttons-container mt-8">
           {isEditing ? (
             <>
-              <Button variant="default" onClick={handleCancel}>
-                Cancelar
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="secondary">Cancelar</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>¿Estás seguro de cancelar?</DialogTitle>
+                    <DialogDescription>
+                      Se perderán los cambios realizados.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button onClick={handleCancel}>Confirmar</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="default">Guardar</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      ¿Estás seguro de guardar?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Se guardarán los cambios realizados.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleSave}>
+                      Guardar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </>
           ) : (
             <Button
