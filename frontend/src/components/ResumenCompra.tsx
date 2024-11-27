@@ -435,10 +435,10 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         <span style={{ color: "black" }}>Total</span>
         <span style={{ color: "#B88E2F" }}>S/ {total.toFixed(2)}</span>
       </div>
-      <hr style={{ margin: "10px 0" }} />
+      
       {/* Mostrar CANJES DE PUNTOS*/}
       {isAuthenticated && (
-        <div
+        <><hr style={{ margin: "10px 0" }} /><div
           style={{
             display: "flex",
             justifyContent: "space-between",
@@ -463,7 +463,7 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
             </TooltipProvider>
           </div>
           <span>{canjePuntos}</span>
-        </div>
+        </div></>
       )}
 
       <hr style={{ margin: "10px 0" }} />

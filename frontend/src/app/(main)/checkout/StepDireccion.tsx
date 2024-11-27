@@ -88,6 +88,22 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [formValidity, setFormValidity] = useState<boolean>(false);
 
   useEffect(() => {
+    const encryptedLocation = localStorage.getItem("selectedLocation");
+    if (encryptedLocation) {
+      try {
+        const decryptedLocation = JSON.parse(
+          CryptoJS.AES.decrypt(encryptedLocation, encryptionKey).toString(CryptoJS.enc.Utf8)
+        );
+        if (decryptedLocation && decryptedLocation.lat && decryptedLocation.lng) {
+          setSelectedLocation(decryptedLocation);
+        }
+      } catch (error) {
+        console.error("Failed to decrypt or parse the location:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     setFormValidity(isFormValid()); // Compute once during render
   }, [nombre, numeroDni, telefono, calle, referencia, selectedLocation, numeroRuc, selectedAddressId, comprobante]); // Add dependencies as needed
 
@@ -155,6 +171,13 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const handleMapSelect = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng })
     setLocationError("")
+
+    const encryptedLocation = CryptoJS.AES.encrypt(
+      JSON.stringify({ lat, lng }),
+      encryptionKey
+    ).toString();
+    localStorage.setItem("selectedLocation", encryptedLocation);
+
     if (googleLoaded) {
       const geocoder = new google.maps.Geocoder()
       const latlng = new google.maps.LatLng(lat, lng)
@@ -475,7 +498,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
           }
         )
         console.log("Pedido actualizado con dirección y usuario:", respuestaAntesDePago.data)
-        setStep("pago")
+        //setStep("pago")
+        window.location.href = '/checkout?step=pago';
       } else {
         console.error("No se encontró el ID del pedido.")
       }
