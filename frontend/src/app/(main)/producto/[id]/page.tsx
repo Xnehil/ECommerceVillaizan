@@ -141,7 +141,7 @@ export default function ProductDetail() {
           idProducto: product.id,
           precio: precioProducto,
           idPedido: carrito?.id || "",
-          idPromocion: (isAuthenticated && product.promocion?.esValido && product.promocion?.estaActivo) ? product.promocion.id : ""
+          promocion: (isAuthenticated && product.promocion?.esValido && product.promocion?.estaActivo) ? product.promocion : null
         });
 
         if (response && typeof response === "object" && "detallePedido" in response) {

@@ -330,7 +330,7 @@ export async function addItem({
   idProducto: string
   cantidad: number
   precio: number
-  promocion?: Promocion
+  promocion?: Promocion | null
 }) {
   try {
     console.log("Adding item to cart");
@@ -348,7 +348,7 @@ export async function addItem({
     };
 
     // Only add idPromocion if it's a non-empty string
-    if (promocion?.id && promocion?.id.trim() !== "") {
+    if (promocion && promocion?.id && promocion?.id.trim() !== "") {
       requestBody.promocion = promocion;
     }
 
