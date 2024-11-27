@@ -94,7 +94,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormVa
 
   // Message for the tooltip when the button is disabled
   const tooltipMessage = subtotal < minimo 
-    ? `El subtotal debe ser de al menos ${minimo} soles para proceder al pago.` 
+    ? `El total debe ser de al menos ${minimo} soles para proceder al pago.` 
     : `Por favor, complete todos los campos obligatorios. Recuerde seleccionar su ubicación en el mapa.`;
 
   return (

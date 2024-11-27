@@ -19,6 +19,10 @@ const ItemsTemplate = ({  carrito, setCarrito, isAuthenticated }: ItemsTemplateP
   const [refresh, setRefresh] = useState(false);
   const [items, setItems] = useState(carrito.detalles || []);
 
+  useEffect(() => {
+    setCarrito({...carrito, detalles: items});
+  }, [items]);
+
 
   const deleteItem = (itemId:string) => {
     const updatedItems = items.filter(item => item.id !== itemId);

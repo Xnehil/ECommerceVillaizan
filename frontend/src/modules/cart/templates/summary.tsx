@@ -26,6 +26,7 @@ const Summary = ({ carrito, isAuthenticated}: SummaryProps) => {
 
   const minimo = 25 // Mínimo para proceder al pago
   const isDisabled = subtotal < minimo
+  
 
 
 
@@ -50,7 +51,7 @@ const Summary = ({ carrito, isAuthenticated}: SummaryProps) => {
           <Button
             className="w-1/2 h-12 bg-transparent border border-black border-[1px] text-black align-middle mx-auto hover:bg-transparent hover:border-black hover:text-black font-poppins rounded-2xl"
             disabled={isDisabled}
-            title={isDisabled ? "El subtotal debe ser al menos " + minimo + " para proceder al pago." : ""}
+            title={isDisabled ? "El total debe ser al menos " + minimo + " para proceder al pago." : ""}
           >
             Elige dirección
           </Button>
