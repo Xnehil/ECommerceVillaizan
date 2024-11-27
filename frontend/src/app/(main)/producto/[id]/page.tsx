@@ -76,9 +76,12 @@ export default function ProductDetail() {
       hasRunOnceAuth.current = true;
       if (session?.user?.id) {
         setIsAuthenticated(true);
+        console.log("Authenticated");
       } else {
         setIsAuthenticated(false);
+        console.log("Not authenticated");
       }
+      
     }
   }, [session, status]);
 
@@ -138,7 +141,7 @@ export default function ProductDetail() {
           idProducto: product.id,
           precio: precioProducto,
           idPedido: carrito?.id || "",
-          idPromocion: (isAuthenticated && product.promocion && product.promocion.esValido && product.promocion.estaActivo) ? product.promocion.id : "",
+          idPromocion: (isAuthenticated && product.promocion?.esValido && product.promocion?.estaActivo) ? product.promocion.id : ""
         });
 
         if (response && typeof response === "object" && "detallePedido" in response) {

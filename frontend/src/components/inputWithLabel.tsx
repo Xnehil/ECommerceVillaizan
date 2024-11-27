@@ -9,7 +9,6 @@ import {
 } from "@components/tooltip";
 
 interface InputWithLabelProps {
-  // id: string;
   label: string;
   type?: string;
   placeholder?: string;
@@ -20,6 +19,7 @@ interface InputWithLabelProps {
   disabled?: boolean;
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
   tooltip?: string;
+  maxLength?: number;  // Add maxLength prop
 }
 
 const InputWithLabel: React.FC<InputWithLabelProps> = ({
@@ -33,6 +33,7 @@ const InputWithLabel: React.FC<InputWithLabelProps> = ({
   value,
   onBlur,
   tooltip,
+  maxLength,  // Destructure maxLength prop
 }) => {
   return (
     <div className="grid w-full max-w-sm items-center space-y-2">
@@ -63,6 +64,7 @@ const InputWithLabel: React.FC<InputWithLabelProps> = ({
         disabled={disabled}
         value={value}
         onBlur={onBlur}
+        maxLength={maxLength}  // Pass maxLength to Input
       />
     </div>
   );

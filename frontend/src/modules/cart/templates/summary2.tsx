@@ -11,18 +11,35 @@ type Summary2Props = {
   handleSubmit: () => void;
   isFormValid: boolean;
   showWarnings: boolean;
+  checkFormValidity: () => boolean;
+  showErrorValidacion: boolean;
+  mensajeErrorValidacion: string;
 };
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
 
-const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2Props) => {
+const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormValidity,showErrorValidacion,mensajeErrorValidacion }: Summary2Props) => {
   const [minimo, setMinimo] = useState<number>(25); // Default value, will be updated after fetch
   const [costoEnvio, setCostoEnvio] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true); // For loading state
   const { data: session, status } = useSession();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const hasRunOnceAuth = useRef(false);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
+  const [clickedWhenDisabled, setClickedWhenDisabled] = useState<boolean>(false); // Track click when disabled
+
+  const subtotal = carrito.detalles.reduce((acc: number, item) => {
+    return acc + Number(item.subtotal) || 0;
+  }, 0);
+
+
+  useEffect(() => {
+    const isFormValidLocal = checkFormValidity();
+    const isDisabledLocal = subtotal < minimo || !isFormValidLocal;
+    setIsDisabled(isDisabledLocal);
+  }
+  , [isFormValid, subtotal, minimo]);
 
   useEffect(() => {
     if(status !== "loading" && !hasRunOnceAuth.current) {
@@ -38,10 +55,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
 
   const [minOrderAmount, setMinOrderAmount] = useState<number>(25); // For the minimum order amount from the backend
 
-  const subtotal = carrito.detalles.reduce((acc: number, item) => {
-    return acc + Number(item.subtotal) || 0;
-  }, 0);
-
+ 
   // Fetch the minimum order amount on component mount
   useEffect(() => {
     const fetchMinOrderAmount = async () => {
@@ -61,15 +75,22 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
     fetchMinOrderAmount();
   }, []);
 
-  const isDisabled = subtotal < minimo || !isFormValid;
 
   const handleClick = () => {
-    if (isDisabled) {
-      // Optionally, you can handle notifications here if needed
+    //console.log("Clicking button");
+    const isFormValidLocal = checkFormValidity();
+    const isDisabledLocal = subtotal < minimo || !isFormValidLocal;
+    if (isDisabledLocal) {
+      console.log("DISABLED")
+      setClickedWhenDisabled(true);
+
     } else {
+
       handleSubmit();
     }
   };
+
+
 
   // Message for the tooltip when the button is disabled
   const tooltipMessage = subtotal < minimo 
@@ -95,14 +116,36 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
             Por favor, complete todos los campos obligatorios. Recuerde seleccionar su ubicación en el mapa.
           </p>
         )}
-        <button
-          onClick={handleClick}
-          className="w-1/2 h-12 bg-transparent border border-black text-black rounded-2xl mx-auto mt-4 hover:bg-gray-100"
-          disabled={isDisabled}
-          title={isDisabled ? tooltipMessage : undefined}
-        >
-          Pasa a comprar
-        </button>
+        {
+          showErrorValidacion && clickedWhenDisabled  && (
+            <p className="text-red-400 text-sm font-poppins mt-2 text-center">
+              {mensajeErrorValidacion}
+            </p>
+          )
+        }
+        <div className="w-full flex justify-center">
+  <button
+    onClick={(e) => {
+      if (isDisabled) {
+        setClickedWhenDisabled(true); // Track the click
+        e.preventDefault(); // Prevent any unintended behavior
+      } else {
+        handleClick(); // Normal click handler
+      }
+    }}
+    onMouseEnter={() => {
+      if (isDisabled) {
+        setClickedWhenDisabled(true);
+      }
+    }}
+    className={`w-1/2 h-12 bg-transparent border border-black text-black rounded-2xl mx-auto mt-4 hover:bg-gray-100 ${
+      isDisabled ? "cursor-not-allowed opacity-50" : ""
+    }`}
+    title={isDisabled ? tooltipMessage : undefined}
+  >
+    Pasa a comprar
+  </button>
+</div>
       </div>
     </div>
   );

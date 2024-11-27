@@ -65,6 +65,26 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   )
 
   const [googleLoaded, setGoogleLoaded] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const hasRunOnceAuth = useRef(false)
+  const [mensajeErrorValidacion, setMensajeErrorValidacion] = useState("")
+  const [showErrorValidacion, setShowErrorValidacion] = useState(false)
+  const [formValidity, setFormValidity] = useState<boolean>(false);
+
+  useEffect(() => {
+    setFormValidity(isFormValid()); // Compute once during render
+  }, [nombre, numeroDni, telefono, calle, referencia, selectedLocation, numeroRuc, selectedAddressId, comprobante]); // Add dependencies as needed
+
+  useEffect(() => {
+    if (status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true
+      if (session?.user?.id) {
+        setIsAuthenticated(true)
+      } else {
+        setIsAuthenticated(false)
+      }
+    }
+  }, [session, status])
 
   const loadGoogleMapsScript = async () => {
     if (
@@ -161,8 +181,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     }
   }
 
+  /*
   const handleComprobanteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setComprobante(e.target.value);
+  };*/
+
+  const handleComprobanteChange = (value: string) => {
+    setComprobante(value); // Update parent state
+    console.log("Comprobante value from child:", value);
   };
 
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,34 +264,85 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     localStorage.setItem("referencia", value) // Save to localStorage
   }
 
+
   const isFormValid = () => {
-    if (!session?.user?.id && showMapModal == false) {
-      return (
-        nombre.trim() !== "" &&
-        numeroDni.length === 8 &&
-        telefono.length === 9 &&
-        calle.trim() !== "" &&
-        referencia.trim() !== "" 
-        // selectedLocation !== null &&
-        // selectedLocation?.lat !== null &&
-        // selectedLocation?.lng !== null
-      )
-    } else {
-      return (
-        nombre.trim() !== "" &&
-        numeroDni.length === 8 &&
-        telefono.length === 9 &&
-        selectedAddressId !== null
-      )
+      
+    try{
+      let mensajesError: string[] = [];
+      let checkNombre = nombre.trim() !== "" && nombre.trim().length > 0 && nombre.trim().length < 100
+      if(!checkNombre) {
+        mensajesError.push("Nombre inválido")
+        console.log("Error nombre")
+      }
+      let checkDni = numeroDni.length === 8 || comprobante !== "boleta"
+      if(!checkDni) {
+        mensajesError.push("DNI inválido")
+        console.log("Error dni")
+      }
+      let checkTelefono = telefono.length === 9
+      if(!checkTelefono) {
+        mensajesError.push("Teléfono inválido")
+        console.log("Error telefono")
+      }
+      let checkCalle = (calle.trim() !== "" && calle.trim().length > 0 && calle.trim().length < 255) || isAuthenticated 
+      if(!checkCalle) {
+        mensajesError.push("Calle inválida")
+        console.log("Error calle")
+      }
+      let checkReferencia = (referencia.trim() !== "" && referencia.trim().length > 0 && referencia.trim().length < 255) || isAuthenticated
+      if(!checkReferencia) {
+        mensajesError.push("Referencia inválida")
+        console.log("Error referencia")
+      }
+      let checkSelectedLocation = selectedLocation || isAuthenticated
+      if(!checkSelectedLocation) {
+        mensajesError.push("Ubicación en el mapa inválida")
+        console.log("Error ubicación")
+      }
+      let checkRuc = numeroRuc.length === 11 || comprobante !== "factura"
+      if(!checkRuc) {
+        mensajesError.push("RUC inválido")
+        console.log("Error ruc")
+      }
+      let checkSelectedAddressId = selectedAddressId !== null || !isAuthenticated
+      if(!checkSelectedAddressId) {
+        mensajesError.push("Dirección inválida")
+        console.log("Error dirección")
+      }
+      let checkComprobante = comprobante === "boleta" || comprobante === "factura" || comprobante === "boletaSimple"
+      if(!checkComprobante) {
+        mensajesError.push("Comprobante inválido")
+        console.log("Error comprobante")
+      }
+
+      if(mensajesError.length > 0) {
+        console.log("Mensajes de error:", mensajesError)
+        setMensajeErrorValidacion(mensajesError.join(", "))
+        setShowErrorValidacion(true)
+        return false
+      }
+      else {
+        setShowErrorValidacion(false)
+        return true
+      }
     }
+    catch(error) {
+      console.error("Error en validación de formulario:", error)
+      return false
+    }    
+
   }
 
   const handleSubmitPadre = async () => {
-    console.log("SUBMIT PADRE")
-    if (!isFormValid()) {
+    //console.log("SUBMIT PADRE")
+    const responseFormValid = isFormValid()
+    //console.log("RESPONSE FORM VALID:", responseFormValid)
+
+    if (!responseFormValid) {
       setShowWarnings(true)
       return
     }
+    //console.log("PADRE FORM VALID")
     setShowWarnings(false)
     const ciudadCookie = getCityCookie()
     const direccionData = {
@@ -500,6 +577,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
                 dniError={dniError}
                 locationError={locationError}
                 telefonoError={telefonoError}
+                onComprobanteChange={handleComprobanteChange}
               />
             </div>
           )}
@@ -510,8 +588,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
               <Summary2
                 carrito={carritoState}
                 handleSubmit={handleSubmitPadre}
-                isFormValid={isFormValid()}
+                isFormValid={formValidity}
                 showWarnings={showWarnings}
+                checkFormValidity={isFormValid}
+                showErrorValidacion={showErrorValidacion}
+                mensajeErrorValidacion={mensajeErrorValidacion}
               />
             ) : (
               <p>Cargando carrito...</p>
