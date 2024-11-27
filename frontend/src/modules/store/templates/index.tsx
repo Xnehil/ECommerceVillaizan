@@ -11,7 +11,7 @@ import SelectCity from "@components/SelectCity"
 import ConfirmChangeCityPopup from "@components/ConfirmChangeCityPopup" // Importar el popup de confirmación
 import { CityCookie } from "types/global"
 import { deleteCart } from "@modules/cart/actions"
-
+const urlLogin = process.env.NEXT_PUBLIC_APP_URL;
 const StoreTemplate = ({
   sortBy,
   page,
@@ -28,6 +28,8 @@ const StoreTemplate = ({
   const [selectCityPopup, setSelectCityPopup] = useState(false)
   const [showConfirmPopup, setShowConfirmPopup] = useState(false) // Estado para el popup de confirmación
   const [city, setCity] = useState<CityCookie | null>(null)
+  const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+  const loginUrl = `${urlLogin}/login?callbackUrl=${currentUrl}`;
 
   useEffect(() => {
     const cityCookie: CityCookie = getCityCookie()
@@ -79,7 +81,7 @@ const StoreTemplate = ({
       {!selectCityPopup && (
         <div className="w-full">
           <div className="mb-8 text-2xl-semi">
-            <Link href="/account" passHref>
+            <Link href={loginUrl} passHref>
               <h1
                 data-testid="store-page-title"
                 className="cursor-pointer text-white text-3xl font-bold bg-gradient-to-r from-orange-400 to-red-500 p-4 text-center rounded-lg shadow-lg uppercase"
