@@ -24,6 +24,7 @@ const fetchCart = async () => {
   const enrichedItems = await enrichLineItems(cart.detalles);
   // console.log("Detalles enriquecidos:", enrichedItems);
   cart.detalles = enrichedItems;
+  cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
 
 
   let state ="carrito"

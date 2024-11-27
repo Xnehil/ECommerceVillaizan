@@ -63,7 +63,12 @@ const PedidosPage: React.FC = () => {
               pedActivos.current.push(pedido);
               break;
             case "entregado":
-              if (!pedido.pagado) {
+              const yapeOrPlin = pedido.pedidosXMetodoPago.some(
+                (metodo) =>
+                  metodo.metodoPago?.nombre === "yape" ||
+                  metodo.metodoPago?.nombre === "plin"
+              );
+              if (!pedido.pagado && yapeOrPlin) {
                 pedRevision.current.push(pedido);
               } else {
                 pedHistorial.current.push(pedido);

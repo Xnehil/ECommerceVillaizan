@@ -23,6 +23,7 @@ const fetchCart = async () => {
 
   const enrichedItems = await enrichLineItems(cart.detalles);
   cart.detalles = enrichedItems;
+  cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
 
   return cart;
 };

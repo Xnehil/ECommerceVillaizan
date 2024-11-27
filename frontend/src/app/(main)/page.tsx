@@ -5,6 +5,7 @@ import Promotions from "@modules/home/components/promotions";
 import Banner from "@components/ui/Banner";
 import axios from "axios";
 import { Button } from "@components/Button";
+import Hero from "@modules/home/components/hero";
 
 function getCurrentDay(): string {
   const daysInSpanish = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
@@ -146,13 +147,7 @@ export default function Home() {
       </div>
 )}
       {/* Imagen debajo del Hero */}
-      <div className="relative w-full">
-        <img
-          src="/images/helados-promo.png"
-          alt="Promoción Paletas Villaizan"
-          className="w-full object-cover"
-        />
-      </div>
+      <Hero />
       {/* Sección de Código de Seguimiento */}
       {isAuthenticated ? null : (
       <div className="tracking-section py-12 bg-[#f3f4f6] flex flex-col items-center rounded-lg shadow-lg mx-6 my-12">

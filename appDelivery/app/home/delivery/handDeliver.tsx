@@ -56,6 +56,8 @@ const EntregarPedido = () => {
   const [metodosPagoEditados, setMetodosPagoEditados] = useState<
     PedidoXMetodoPago[]
   >(pedidoCompleto?.pedidosXMetodoPago || []);
+  const [resolveCallback, setResolveCallback] = useState<null | Function>(null);
+
   const metodoPagoVacio = {
     id: "",
     creadoEn: "",
@@ -138,7 +140,7 @@ const EntregarPedido = () => {
         mostrarMensaje("Debe haber al menos un método de pago", "confirmacion");
         return;
       }
-  
+
       const sumaMontos = metodosPagoEditados.reduce((acc, metodo) => {
         if (typeof metodo.monto === "number") {
           return acc + metodo.monto;
@@ -146,14 +148,14 @@ const EntregarPedido = () => {
           return acc + Number(metodo.monto) || 0;
         }
       }, 0);
-  
+
       console.log(
         "Suma de montos:",
         sumaMontos.toFixed(2),
         "Monto pedido:",
         pedidoCompleto?.total
       );
-  
+
       if (sumaMontos.toFixed(2) !== String(pedidoCompleto?.total)) {
         mostrarMensaje(
           "La suma de los montos debe ser igual al total del pedido",
@@ -161,45 +163,50 @@ const EntregarPedido = () => {
         );
         return;
       }
-  
+
       // Crear o actualizar métodos de pago
       const metodosPagoAProcesar = [...metodosPagoEditados];
-      const promesas: Promise<void>[] = metodosPagoEditados.map(async (metodo) => {
-        if (metodo.id) {
-          // Actualizar si tiene ID
-          await axios.put(`${BASE_URL}/pedidoXMetodoPago/${metodo.id}`, {
-            monto: metodo.monto,
-            metodoPago: metodo.metodoPago.id,
-            pedido: { id: pedidoCompleto?.id },
-          });
-        } else {
-          // Crear si no tiene ID
-          const response = await axios.post(`${BASE_URL}/pedidoXMetodoPago`, {
-            monto: metodo.monto,
-            metodoPago: metodo.metodoPago.id,
-            pedido: { id: pedidoCompleto?.id },
-          });
-  
-          // Actualizar el ID en el array local
-          const index = metodosPagoAProcesar.findIndex(
-            (mp) => mp.metodoPago.id === metodo.metodoPago.id
-          );
-          if (index !== -1) {
-            metodosPagoAProcesar[index] = {
-              ...metodosPagoAProcesar[index],
-              id: response.data.id,
-            };
+      const promesas: Promise<void>[] = metodosPagoEditados.map(
+        async (metodo) => {
+          if (metodo.id) {
+            // Actualizar si tiene ID  
+            await axios.put(`${BASE_URL}/pedidoXMetodoPago/${metodo.id}`, {
+              monto: metodo.monto,
+              metodoPago: metodo.metodoPago.id,
+              pedido: { id: pedidoCompleto?.id },
+            });
+          } else {
+            // Crear si no tiene ID
+            const response = await axios.post(`${BASE_URL}/pedidoXMetodoPago`, {
+              monto: metodo.monto,
+              metodoPago: metodo.metodoPago.id,
+              pedido: { id: pedidoCompleto?.id },
+            });
+            console.log(response.data);
+
+            // Actualizar el ID en el array local
+            const index = metodosPagoAProcesar.findIndex(
+              (mp) => mp.metodoPago.id === metodo.metodoPago.id
+            );
+            if (index !== -1) {
+              metodosPagoAProcesar[index] = {
+                ...metodosPagoAProcesar[index],
+                id: response.data.id,
+              };
+            }
           }
         }
-      });
-  
+      );
+
       // Eliminar métodos que ya no están en la lista editada
       const idsActuales = metodosPagoEditados.map((mp) => mp.id);
-      const idsOriginales = pedidoCompleto?.pedidosXMetodoPago?.map((mp) => mp.id);
+      const idsOriginales = pedidoCompleto?.pedidosXMetodoPago?.map(
+        (mp) => mp.id
+      );
       const idsParaEliminar = idsOriginales?.filter(
         (id) => !idsActuales.includes(id)
       );
-  
+
       if (idsParaEliminar?.length) {
         idsParaEliminar.forEach((id) =>
           promesas.push(
@@ -207,37 +214,29 @@ const EntregarPedido = () => {
           )
         );
       }
-  
+
       // Esperar a que todas las promesas se resuelvan
       await Promise.all(promesas);
-  
       // Actualizar el pedido con los métodos procesados
-      const response = await axios.put(
+      /*const response = await axios.put(
         `${BASE_URL}/pedido/${pedidoCompleto?.id}`,
         {
           pedidosXMetodoPago: metodosPagoAProcesar,
         }
       );
   
-      console.log(response.data);
-  
+      console.log(response.data);*/
+
       mostrarMensaje("Métodos de pago actualizados exitosamente");
       setEditPagoModalVisible(false);
-  
+
       // Actualizar estado local
-      setPedidoCompleto((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          pedidosXMetodoPago: metodosPagoAProcesar,
-        };
-      });
+      fetchData(true);
     } catch (error) {
       console.error("Error al actualizar métodos de pago:", error);
       mostrarMensaje("Error al actualizar los métodos de pago", "confirmacion");
     }
   };
-  
 
   // Función para cancelar los cambios
   const cancelarEdicionPago = () => {
@@ -245,21 +244,35 @@ const EntregarPedido = () => {
     setEditPagoModalVisible(false);
   };
 
+
   const mostrarMensaje = (
     mensaje: string,
     tipo: "auto" | "si/no" | "confirmacion" = "auto"
-  ) => {
+  ): Promise<boolean> => {
     setMensajeModal(mensaje);
     setTipoModal(tipo);
 
     if (tipo === "auto") {
       setTimeout(() => setMensajeModal(null), 3000);
+      return Promise.resolve(false); // No necesita confirmación
     }
 
     if (tipo === "si/no") {
-      return true;
+      return new Promise((resolve) => {
+        setResolveCallback(() => resolve); // Guardamos el resolve para usar después
+      });
     }
+
+    return Promise.resolve(false);
   };
+
+
+  const handleRespuestaModal = (respuesta: boolean) => {
+    if (resolveCallback) resolveCallback(respuesta);
+    setMensajeModal(null);
+    setResolveCallback(null);
+  };
+
 
   useEffect(() => {
     if (videoStream && videoRef.current) {
@@ -690,11 +703,11 @@ const EntregarPedido = () => {
               );
               continue;
             }
-
+            let error_pxm = null;
             try {
               // Enlazar el pago con pedidosXMetodoPago
               await axios.put(
-                `${BASE_URL}/pedidosXMetodoPago/${metodoPago.id}`,
+                `${BASE_URL}/pedidoXMetodoPago/${metodoPago.id}`,
                 {
                   pago: pagoActualizado.id,
                 }
@@ -703,10 +716,14 @@ const EntregarPedido = () => {
                 `Pago ${pagoActualizado.id} enlazado con pedidosXMetodoPago ${metodoPago.id}`
               );
             } catch (error) {
+              error_pxm = error;
               console.error(
                 `Error al enlazar el pago ${pagoActualizado.id} con pedidosXMetodoPago ${metodoPago.id}:`,
                 error
               );
+            }
+            if (error_pxm) {
+              throw error_pxm;
             }
           }
         } catch (error) {
@@ -730,24 +747,20 @@ const EntregarPedido = () => {
   };
 
   const handleConfirmarEntrega = async () => {
-    Alert.alert(
-      "Confirmación de Entrega",
+    const confirmacion = await mostrarMensaje(
       "¿Está seguro de que desea confirmar la entrega?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-          onPress: () => console.log("Confirmación cancelada"),
-        },
-        {
-          text: "Confirmar",
-          onPress: async () => {
-            await confirmarEntrega();
-          },
-        },
-      ]
+      "si/no"
     );
+
+    if (confirmacion) {
+      console.log("Entrega confirmada");
+      confirmarEntrega();
+      // Lógica de confirmación de entrega
+    } else {
+      console.log("Entrega cancelada");
+    }
   };
+  
 
   const [devMetodos, setdevMetodos] = useState<MetodoDePago[]>([]);
   useEffect(() => {
@@ -826,21 +839,26 @@ const EntregarPedido = () => {
       setPedidoCompleto(pedidoData);
       console.log(pedidoData);
       router.replace("/home/delivery/handDeliver");
+      console.log("Actualizado completo");
     } catch (error) {
       console.error("Error fetching pedido completo:", error);
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (parsedPedido?.id) {
-        fetchPedidoCompleto(parsedPedido.id);
-      } else {
-        const pedido = await getCurrentDelivery();
-        setPedidoCompleto(pedido);
+  const fetchData = async (reload: boolean = false) => {
+    if (parsedPedido?.id || reload) {
+      if (reload && pedidoCompleto?.id) {
+        fetchPedidoCompleto(pedidoCompleto.id);
       }
-    };
-
+      else{
+        fetchPedidoCompleto(parsedPedido.id);
+      }
+    } else {
+      const pedido = await getCurrentDelivery();
+      setPedidoCompleto(pedido);
+    }
+    console.log("Actualizado");
+  };
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -872,8 +890,7 @@ const EntregarPedido = () => {
                   name="whatsapp"
                   color="green"
                   size={30}
-                  style={{ marginRight: 10 }}
-                />
+                  />
               </TouchableOpacity>
             </View>
           </View>
@@ -957,7 +974,7 @@ const EntregarPedido = () => {
               pedidoCompleto.pedidosXMetodoPago.length > 0 ? (
                 <>
                   <FlatList
-                    style={{ maxHeight: 100, width: "120%" }}
+                    style={{ maxHeight: 100, width: "100%" }}
                     data={pedidoCompleto?.pedidosXMetodoPago || []}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
@@ -965,12 +982,14 @@ const EntregarPedido = () => {
                         <View style={styles.metodoInfo}>
                           <View style={styles.leftInfo}>
                             <View style={styles.iconContainer}>
-                              {item.metodoPago?.nombre === "plin" ? (
+                              {item.metodoPago?.nombre.toLowerCase() ===
+                              "plin" ? (
                                 <Image
                                   source={require("@assets/images/plin.jpg")}
                                   style={styles.iconoPago}
                                 />
-                              ) : item.metodoPago?.nombre === "yape" ? (
+                              ) : item.metodoPago?.nombre.toLowerCase() ===
+                                "yape" ? (
                                 <Image
                                   source={require("@assets/images/yape.png")}
                                   style={styles.iconoPago}
@@ -1116,6 +1135,22 @@ const EntregarPedido = () => {
           <View style={styles.mensajeModalContainer}>
             <View style={styles.mensajeModalContent}>
               <Text style={styles.mensajeModalTexto}>{mensajeModal}</Text>
+              {tipoModal === "si/no" && (
+                <View style={styles.botonesContainer}>
+                  <TouchableOpacity
+                    style={styles.boton}
+                    onPress={() => handleRespuestaModal(false)}
+                  >
+                    <Text style={styles.botonTexto}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.boton}
+                    onPress={() => handleRespuestaModal(true)}
+                  >
+                    <Text style={styles.botonTexto}>Confirmar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
               {tipoModal === "confirmacion" && (
                 <TouchableOpacity
                   style={styles.boton}
@@ -1200,7 +1235,11 @@ const EntregarPedido = () => {
 
                 <TextInput
                   style={styles.input}
-                  value={item.monto.toFixed(2)}
+                  value={
+                    typeof item?.monto === "string"
+                      ? parseFloat(item.monto || "0").toFixed(2)
+                      : item?.monto?.toFixed(2) || "0.00"
+                  }
                   keyboardType="numeric"
                   onChangeText={(text) =>
                     setMetodosPagoEditados((prev) =>
@@ -1368,6 +1407,7 @@ const styles = StyleSheet.create({
   },
   clienteContainer: {
     paddingHorizontal: 10,
+    marginRight: 25,
   },
   tituloContainer: {
     justifyContent: "center",
@@ -1404,6 +1444,7 @@ const styles = StyleSheet.create({
   },
   pedidoContainer: {
     paddingHorizontal: 10,
+    marginRight: 25,
   },
   metodosListado: {
     flex: 1,
@@ -1607,6 +1648,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
   },
+  botonesContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
   cancelButtonText: {
     color: "#FFFFFF",
     fontSize: 16,
@@ -1687,6 +1733,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#555",
     marginTop: 5,
+  },
+  botonTexto: {
+    color: "white",
+    fontSize: 14,
   },
   rightInfo: {
     justifyContent: "center",

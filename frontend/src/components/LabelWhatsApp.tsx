@@ -83,7 +83,7 @@ const LabelWhatsApp: React.FC<LabelWhatsAppProps> = ({ nombreConsumidor, codigoS
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-md shadow-md text-center">
             <p className="text-black-600 mb-4">
-              Se le redirigirá a la página de WhatsApp, ¿está seguro de continuar?
+              Se abrirá una nueva pestaña de WhatsApp Web para que hables con nosotros, ¿estás seguro de continuar?
             </p>
             <button
               style={styles.cancelButton}

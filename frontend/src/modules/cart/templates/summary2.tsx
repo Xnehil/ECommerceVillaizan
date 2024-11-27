@@ -11,12 +11,13 @@ type Summary2Props = {
   handleSubmit: () => void;
   isFormValid: boolean;
   showWarnings: boolean;
+  checkFormValidity: () => void;
 };
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
 
-const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2Props) => {
+const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormValidity }: Summary2Props) => {
   const [minimo, setMinimo] = useState<number>(25); // Default value, will be updated after fetch
   const [costoEnvio, setCostoEnvio] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true); // For loading state
@@ -64,9 +65,22 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings }: Summary2
   const isDisabled = subtotal < minimo || !isFormValid;
 
   const handleClick = () => {
+    //console.log("Clicking button");
     if (isDisabled) {
+      console.log("DISABLED")
+      /*
+      console.log("DISABLED")
+      console.log("Subtotal", subtotal);
+      console.log("Minimo", minimo);
+      console.log("Form valid", isFormValid);
+      checkFormValidity();*/
       // Optionally, you can handle notifications here if needed
     } else {
+      /*
+      console.log("NOT DISABLED")
+      console.log("Subtotal", subtotal);
+      console.log("Minimo", minimo);
+      console.log("Form valid", isFormValid);*/
       handleSubmit();
     }
   };

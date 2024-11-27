@@ -16,6 +16,11 @@ export default function Footer() {
       title: "Catálogo",
       handle: "comprar",
     },
+    {
+      id: 3,
+      title: "Canjear puntos",
+      handle: "https://puntos.paletasvillaizan.tech",
+    }
   ];
 
   const ayuda = [
@@ -55,13 +60,22 @@ export default function Footer() {
                     }
                   )}
                 >
-                  {enlaces?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <Link className="hover:text-ui-fg-base" href={`/${c.handle}`}>
-                        {c.title}
-                      </Link>
-                    </li>
-                  ))}
+                  {enlaces?.slice(0, 6).map((c) => {
+                    const isExternalLink = c.handle.startsWith('https');
+                    return (
+                      <li key={c.id}>
+                        {isExternalLink ? (
+                          <a className="hover:text-ui-fg-base" href={c.handle} target="_blank" rel="noopener noreferrer">
+                            {c.title}
+                          </a>
+                        ) : (
+                          <Link className="hover:text-ui-fg-base" href={`/${c.handle}`}>
+                            {c.title}
+                          </Link>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             )}

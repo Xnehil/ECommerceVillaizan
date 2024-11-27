@@ -65,6 +65,19 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   )
 
   const [googleLoaded, setGoogleLoaded] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const hasRunOnceAuth = useRef(false)
+
+  useEffect(() => {
+    if (status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true
+      if (session?.user?.id) {
+        setIsAuthenticated(true)
+      } else {
+        setIsAuthenticated(false)
+      }
+    }
+  }, [session, status])
 
   const loadGoogleMapsScript = async () => {
     if (
@@ -153,6 +166,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
       const enrichedItems = await enrichLineItems(cart.detalles)
       cart.detalles = enrichedItems
+      cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
 
       setCarritoState(cart)
     } catch (error) {
@@ -160,8 +174,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     }
   }
 
+  /*
   const handleComprobanteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setComprobante(e.target.value);
+  };*/
+
+  const handleComprobanteChange = (value: string) => {
+    setComprobante(value); // Update parent state
+    console.log("Comprobante value from child:", value);
   };
 
   const handleNombreChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,35 +256,132 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     setReferencia(value)
     localStorage.setItem("referencia", value) // Save to localStorage
   }
+  /*
+  useEffect(() => {
+    console.log("check nombre", nombre.trim() !== "")
+    console.log("check dni", numeroDni.length === 8)
+    console.log("check telefono", telefono.length === 9)
+    console.log("check calle", calle.trim() !== "")
+    console.log("check referencia", referencia.trim() !== "")
+    console.log("check selectedLocation", selectedLocation)
+    console.log("check selectedLocation lat", selectedLocation?.lat)
+    console.log("check selectedLocation lng", selectedLocation?.lng)
+    console.log("check selectedAddressId", selectedAddressId)
+  }, [nombre, numeroDni, telefono, calle, referencia, selectedLocation, selectedAddressId])*/
+
 
   const isFormValid = () => {
-    if (!session?.user?.id && showMapModal == false) {
-      return (
-        nombre.trim() !== "" &&
-        numeroDni.length === 8 &&
-        telefono.length === 9 &&
-        calle.trim() !== "" &&
-        referencia.trim() !== "" 
-        // selectedLocation !== null &&
-        // selectedLocation?.lat !== null &&
-        // selectedLocation?.lng !== null
-      )
+    return true;
+    /*
+    console.log("check nombre", nombre.trim() !== "")
+    console.log("check dni", numeroDni.length === 8)
+    console.log("check telefono", telefono.length === 9)
+    console.log("check calle", calle.trim() !== "")
+    console.log("check referencia", referencia.trim() !== "")
+    console.log("check selectedLocation", selectedLocation !== null)
+    console.log("check selectedLocation lat",  selectedLocation?.lat !== null)
+    console.log("check selectedLocation lng", selectedLocation?.lng !== null)
+    */
+    /*
+    if (!isAuthenticated && showMapModal == false) {
+      //En caso no este autenticado 
+      //console.log("NO ESTA AUTENTICADO")
+      if(comprobante === "boleta") {
+        //console.log("selectedLocation:", selectedLocation)
+        const response = !!(
+          nombre.trim() !== "" &&
+          numeroDni.length === 8 &&
+          telefono.length === 9 &&
+          calle.trim() !== "" &&
+          referencia.trim() !== "" &&
+          selectedLocation &&
+          selectedLocation.lat !== null &&
+          selectedLocation.lng !== null
+        )
+        //console.log("Response:", response)
+        return response;
+      }
+      else if(comprobante === "factura") {
+        return !!(
+          nombre.trim() !== "" &&
+          telefono.length === 9 &&
+          calle.trim() !== "" &&
+          referencia.trim() !== "" &&
+          numeroRuc.length === 11 &&
+          selectedLocation &&
+          selectedLocation?.lat !== null &&
+          selectedLocation?.lng !== null
+        )
+      }
+      else if(comprobante === "boletaSimple") {
+        console.log("selectedLocation:", selectedLocation)
+        return !!(
+          nombre.trim() !== "" &&
+          telefono.length === 9 &&
+          calle.trim() !== "" &&
+          referencia.trim() !== "" &&
+          selectedLocation &&
+          selectedLocation?.lat !== null &&
+          selectedLocation?.lng !== null
+        )
+      }
+      return false;
     } else {
-      return (
-        nombre.trim() !== "" &&
-        numeroDni.length === 8 &&
-        telefono.length === 9 &&
-        selectedAddressId !== null
-      )
+      //En caso este autenticado
+      if(comprobante === "boleta") {
+        return !!(
+          nombre.trim() !== "" &&
+          telefono.length === 9 &&
+          calle.trim() !== "" &&
+          referencia.trim() !== "" &&
+          selectedAddressId !== null &&
+          selectedLocation &&
+          selectedLocation?.lat !== null &&
+          selectedLocation?.lng !== null
+        )
+      }
+      else if(comprobante === "factura") {
+        return !!(
+          nombre.trim() !== "" &&
+          telefono.length === 9 &&
+          calle.trim() !== "" &&
+          referencia.trim() !== "" &&
+          numeroRuc.length === 11 &&
+          selectedAddressId !== null &&
+          selectedLocation  &&
+          selectedLocation?.lat !== null &&
+          selectedLocation?.lng !== null
+        )
+      }
+      else if(comprobante === "boletaSimple") {
+        return !!(
+          nombre.trim() !== "" &&
+          telefono.length === 9 &&
+          calle.trim() !== "" &&
+          referencia.trim() !== "" &&
+          selectedAddressId !== null &&
+          selectedLocation &&
+          selectedLocation?.lat !== null &&
+          selectedLocation?.lng !== null
+        )
+      }
+
+      return false
     }
+      */
+
   }
 
   const handleSubmitPadre = async () => {
-    console.log("SUBMIT PADRE")
-    if (!isFormValid()) {
+    //console.log("SUBMIT PADRE")
+    const responseFormValid = isFormValid()
+    //console.log("RESPONSE FORM VALID:", responseFormValid)
+
+    if (!responseFormValid) {
       setShowWarnings(true)
       return
     }
+    //console.log("PADRE FORM VALID")
     setShowWarnings(false)
     const ciudadCookie = getCityCookie()
     const direccionData = {
@@ -499,6 +616,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
                 dniError={dniError}
                 locationError={locationError}
                 telefonoError={telefonoError}
+                onComprobanteChange={handleComprobanteChange}
               />
             </div>
           )}
@@ -511,6 +629,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
                 handleSubmit={handleSubmitPadre}
                 isFormValid={isFormValid()}
                 showWarnings={showWarnings}
+                checkFormValidity={isFormValid}
               />
             ) : (
               <p>Cargando carrito...</p>
