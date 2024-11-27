@@ -29,6 +29,7 @@ interface AddressFormParentProps {
   locationError?: string | null;
   telefonoError?: string | null;
   onComprobanteChange: (value: string) => void;
+  comprobantePassed: string
 }
 
 const AddressFormParent: React.FC<AddressFormParentProps> = ({
@@ -56,7 +57,8 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
   locationError,
   telefonoError,
   setCalle,
-  onComprobanteChange
+  onComprobanteChange,
+  comprobantePassed
 }) => {
   const { data: session } = useSession() // Get session data
   const [comprobante, setComprobante] = useState<string>(""); 
@@ -122,6 +124,12 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
 
     document.head.appendChild(script)
   }
+
+  useEffect(() => {
+    if (comprobantePassed !== "") {
+      setComprobante(comprobantePassed)
+    }
+  }, [comprobantePassed])
 
   useEffect(() => {
     loadGoogleMapsScript()
