@@ -65,9 +65,11 @@ const CartTemplate = ({
               <div className="flex flex-col gap-y-8 sticky top-12">
                 {cart  && (
                   <>
+                  <a href="/checkout?step=direccion">
                     <div className="bg-white py-6">
                       <Summary2 carrito={carritoState} handleSubmit={() => {}} isFormValid={true} showWarnings={false} checkFormValidity={() => true} showErrorValidacion={false} mensajeErrorValidacion="" />
                     </div>
+                  </a>
                   </>
                 )}
               </div>
