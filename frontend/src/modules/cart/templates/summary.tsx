@@ -43,7 +43,7 @@ const Summary = ({ carrito, isAuthenticated}: SummaryProps) => {
           </p>
         )}
         <Link
-          href={isDisabled ? "#" : `/checkout2?step=direccion&envio=${costoEnvio}`}
+          href={isDisabled ? "#" : `/checkout?step=direccion&envio=${costoEnvio}`}
           data-testid="checkout-button"
           className="flex justify-center"
         >

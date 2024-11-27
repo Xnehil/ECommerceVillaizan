@@ -1,4 +1,4 @@
-const excludedPaths = ["/checkout", "/account/*"]
+const excludedPaths = ["/account/*"]
 
 module.exports = {
   siteUrl: process.env.NEXT_PUBLIC_VERCEL_URL,

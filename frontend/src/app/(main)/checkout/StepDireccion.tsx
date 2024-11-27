@@ -294,7 +294,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         mensajesError.push("Referencia inválida")
         console.log("Error referencia")
       }
-      let checkSelectedLocation = selectedLocation
+      let checkSelectedLocation = selectedLocation || isAuthenticated
       if(!checkSelectedLocation) {
         mensajesError.push("Ubicación en el mapa inválida")
         console.log("Error ubicación")
