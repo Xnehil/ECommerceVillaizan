@@ -30,6 +30,7 @@ const StoreTemplate = ({
   const [city, setCity] = useState<CityCookie | null>(null)
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const loginUrl = `${urlLogin}/login?callbackUrl=${currentUrl}`;
+  
 
   useEffect(() => {
     const cityCookie: CityCookie = getCityCookie()
@@ -78,9 +79,10 @@ const StoreTemplate = ({
     >
       {selectCityPopup && <CiudadPopup2 setCity={setCity} resetCarrito={resetCarrito} />}
       
-      {!selectCityPopup && (
+      {!selectCityPopup &&  (
         <div className="w-full">
-          <div className="mb-8 text-2xl-semi">
+          { !isAuthenticated && (
+            <div className="mb-8 text-2xl-semi">
             <Link href={loginUrl} passHref>
               <h1
                 data-testid="store-page-title"
@@ -90,6 +92,10 @@ const StoreTemplate = ({
               </h1>
             </Link>
           </div>
+          )
+
+          }
+          
 
           {city && (
             <SelectCity
