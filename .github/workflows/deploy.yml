@@ -53,7 +53,7 @@ jobs:
             git pull origin master
             cd frontend/ 
             npm install
-            yarn build
+            npm run build
             pm2 delete all
             pm2 start npm --name "ecommerce" -- start
             cd ../adminfront/
