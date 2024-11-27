@@ -11,7 +11,7 @@ import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { updateLineItem } from "@modules/cart/actions"
 import Spinner from "@modules/common/icons/spinner"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
@@ -38,6 +38,7 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo, 
   const [noMoreStock, setNoMoreStock] = useState(false)
   const [noMorePromoStock, setNoMorePromoStock] = useState(false)
   const [cantidad, setCantidad] = useState(item.cantidad);
+  const prevCantidadRef = useRef<number>(item.cantidad);
   const handle  = item.producto.id
 
 
@@ -60,11 +61,17 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo, 
   const changeQuantity = async (nuevaCantidad: number, cantidadOriginal:number) => {
     setError(null)
     setUpdating(true)
-    console.log("Se va a cambiar la cantidad de un item ", item)
+    let itemActualizado : DetallePedido = {...item} 
+    console.log("Se va a cambiar la cantidad de un item ", itemActualizado)
     console.log("La nueva cantidad es ", nuevaCantidad)
     console.log("La cantidad original es ", cantidadOriginal)
     //En caso de que sea una promocion, se actualiza el stock de la promocion (si es que tiene)
-    let itemActualizado : DetallePedido = {...item} 
+
+    if(nuevaCantidad == cantidadOriginal){
+      setUpdating(false)
+      return
+    }
+    
 
     if (itemActualizado.promocion && itemActualizado.promocion.limiteStock != null) {
       console.log("Se va a actualizar el stock de la promocion")
@@ -73,17 +80,17 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo, 
         if(!itemActualizado.promocion.esValido){
           console.log("La promocion ya no es valida")
           setCantidad(cantidadOriginal)
-          setError('La promoción ya no es válida')
+          setError('¡Nos quedamos sin stock!')
           setUpdating(false)
           return
         }
         //Se estan agregando productos, por lo que se descontara del stock de promocion
         itemActualizado.promocion.limiteStock -= diff
         if(itemActualizado.promocion.limiteStock < 0){
-          console.log("No hay suficiente stock de la promocion")
+          console.log('¡Nos quedamos sin stock!')
           setCantidad(cantidadOriginal)
           itemActualizado.promocion.limiteStock = itemActualizado.promocion.limiteStock + diff
-          setError('No hay suficiente stock de la promoción')
+          setError('¡Nos quedamos sin stock!')
           setUpdating(false)
           return
         }
@@ -194,7 +201,17 @@ const Item = ({ item,  type = "full", onDelete, isAuthenticated, onChangePromo, 
                 <input
                   type="number"
                   value={cantidad}
-                  onChange={(e) => changeQuantity(parseInt(e.target.value),cantidad)}
+                  onChange={(e) => {
+                    const newValue = parseInt(e.target.value, 10);
+                    if (newValue < 1 || newValue > 30) return;
+                    prevCantidadRef.current = cantidad; // Store the previous cantidad
+                    setCantidad(isNaN(newValue) ? 0 : newValue); // Update cantidad
+                  }}
+                  onBlur={(e) => {
+                    const newValue = parseInt(e.target.value, 10);
+                    const previousValue = prevCantidadRef.current; // Retrieve the previous cantidad
+                    changeQuantity(newValue, previousValue); // Call changeQuantity with new and previous values
+                  }}
                   min="1"
                   max="30"
                   className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded text-center no-spinner"

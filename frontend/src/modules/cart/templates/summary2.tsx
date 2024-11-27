@@ -108,7 +108,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormVa
 
         {subtotal < minimo && !loading && (
           <p className="text-red-400 text-sm font-poppins mt-2 text-center">
-            El subtotal debe ser de al menos {minimo} soles para proceder al pago.
+            El total debe ser de al menos {minimo} soles para proceder al pago.
           </p>
         )}
         {showWarnings && !isFormValid && (
