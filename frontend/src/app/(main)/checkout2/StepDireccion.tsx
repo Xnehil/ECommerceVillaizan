@@ -67,6 +67,13 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [googleLoaded, setGoogleLoaded] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const hasRunOnceAuth = useRef(false)
+  const [mensajeErrorValidacion, setMensajeErrorValidacion] = useState("")
+  const [showErrorValidacion, setShowErrorValidacion] = useState(false)
+  const [formValidity, setFormValidity] = useState<boolean>(false);
+
+  useEffect(() => {
+    setFormValidity(isFormValid()); // Compute once during render
+  }, [nombre, numeroDni, telefono, calle, referencia, selectedLocation, numeroRuc, selectedAddressId, comprobante]); // Add dependencies as needed
 
   useEffect(() => {
     if (status !== "loading" && !hasRunOnceAuth.current) {
@@ -256,119 +263,73 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     setReferencia(value)
     localStorage.setItem("referencia", value) // Save to localStorage
   }
-  /*
-  useEffect(() => {
-    console.log("check nombre", nombre.trim() !== "")
-    console.log("check dni", numeroDni.length === 8)
-    console.log("check telefono", telefono.length === 9)
-    console.log("check calle", calle.trim() !== "")
-    console.log("check referencia", referencia.trim() !== "")
-    console.log("check selectedLocation", selectedLocation)
-    console.log("check selectedLocation lat", selectedLocation?.lat)
-    console.log("check selectedLocation lng", selectedLocation?.lng)
-    console.log("check selectedAddressId", selectedAddressId)
-  }, [nombre, numeroDni, telefono, calle, referencia, selectedLocation, selectedAddressId])*/
 
 
   const isFormValid = () => {
-    return true;
-    /*
-    console.log("check nombre", nombre.trim() !== "")
-    console.log("check dni", numeroDni.length === 8)
-    console.log("check telefono", telefono.length === 9)
-    console.log("check calle", calle.trim() !== "")
-    console.log("check referencia", referencia.trim() !== "")
-    console.log("check selectedLocation", selectedLocation !== null)
-    console.log("check selectedLocation lat",  selectedLocation?.lat !== null)
-    console.log("check selectedLocation lng", selectedLocation?.lng !== null)
-    */
-    /*
-    if (!isAuthenticated && showMapModal == false) {
-      //En caso no este autenticado 
-      //console.log("NO ESTA AUTENTICADO")
-      if(comprobante === "boleta") {
-        //console.log("selectedLocation:", selectedLocation)
-        const response = !!(
-          nombre.trim() !== "" &&
-          numeroDni.length === 8 &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          selectedLocation &&
-          selectedLocation.lat !== null &&
-          selectedLocation.lng !== null
-        )
-        //console.log("Response:", response)
-        return response;
+      
+    try{
+      let mensajesError: string[] = [];
+      let checkNombre = nombre.trim() !== "" && nombre.trim().length > 0 && nombre.trim().length < 100
+      if(!checkNombre) {
+        mensajesError.push("Nombre inválido")
+        console.log("Error nombre")
       }
-      else if(comprobante === "factura") {
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          numeroRuc.length === 11 &&
-          selectedLocation &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkDni = numeroDni.length === 8 || comprobante !== "boleta"
+      if(!checkDni) {
+        mensajesError.push("DNI inválido")
+        console.log("Error dni")
       }
-      else if(comprobante === "boletaSimple") {
-        console.log("selectedLocation:", selectedLocation)
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          selectedLocation &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkTelefono = telefono.length === 9
+      if(!checkTelefono) {
+        mensajesError.push("Teléfono inválido")
+        console.log("Error telefono")
       }
-      return false;
-    } else {
-      //En caso este autenticado
-      if(comprobante === "boleta") {
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          selectedAddressId !== null &&
-          selectedLocation &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkCalle = (calle.trim() !== "" && calle.trim().length > 0 && calle.trim().length < 255) || isAuthenticated 
+      if(!checkCalle) {
+        mensajesError.push("Calle inválida")
+        console.log("Error calle")
       }
-      else if(comprobante === "factura") {
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          numeroRuc.length === 11 &&
-          selectedAddressId !== null &&
-          selectedLocation  &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkReferencia = (referencia.trim() !== "" && referencia.trim().length > 0 && referencia.trim().length < 255) || isAuthenticated
+      if(!checkReferencia) {
+        mensajesError.push("Referencia inválida")
+        console.log("Error referencia")
       }
-      else if(comprobante === "boletaSimple") {
-        return !!(
-          nombre.trim() !== "" &&
-          telefono.length === 9 &&
-          calle.trim() !== "" &&
-          referencia.trim() !== "" &&
-          selectedAddressId !== null &&
-          selectedLocation &&
-          selectedLocation?.lat !== null &&
-          selectedLocation?.lng !== null
-        )
+      let checkSelectedLocation = selectedLocation
+      if(!checkSelectedLocation) {
+        mensajesError.push("Ubicación en el mapa inválida")
+        console.log("Error ubicación")
+      }
+      let checkRuc = numeroRuc.length === 11 || comprobante !== "factura"
+      if(!checkRuc) {
+        mensajesError.push("RUC inválido")
+        console.log("Error ruc")
+      }
+      let checkSelectedAddressId = selectedAddressId !== null || !isAuthenticated
+      if(!checkSelectedAddressId) {
+        mensajesError.push("Dirección inválida")
+        console.log("Error dirección")
+      }
+      let checkComprobante = comprobante === "boleta" || comprobante === "factura" || comprobante === "boletaSimple"
+      if(!checkComprobante) {
+        mensajesError.push("Comprobante inválido")
+        console.log("Error comprobante")
       }
 
-      return false
+      if(mensajesError.length > 0) {
+        console.log("Mensajes de error:", mensajesError)
+        setMensajeErrorValidacion(mensajesError.join(", "))
+        setShowErrorValidacion(true)
+        return false
+      }
+      else {
+        setShowErrorValidacion(false)
+        return true
+      }
     }
-      */
+    catch(error) {
+      console.error("Error en validación de formulario:", error)
+      return false
+    }    
 
   }
 
@@ -627,9 +588,11 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
               <Summary2
                 carrito={carritoState}
                 handleSubmit={handleSubmitPadre}
-                isFormValid={isFormValid()}
+                isFormValid={formValidity}
                 showWarnings={showWarnings}
                 checkFormValidity={isFormValid}
+                showErrorValidacion={showErrorValidacion}
+                mensajeErrorValidacion={mensajeErrorValidacion}
               />
             ) : (
               <p>Cargando carrito...</p>
