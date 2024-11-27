@@ -100,6 +100,11 @@ export default function ProductPreview({
       return
     }
 
+    if(productPreview.promocion && productPreview.promocion.esValido && productPreview.promocion.limiteStock && productPreview.promocion.limiteStock === 1) {
+      setError("Se nos acabaron estas paletas. ¡Prueba otras!")
+      return
+    }
+
     setIsAdding(true)
     setError(null)
 
@@ -366,7 +371,7 @@ export default function ProductPreview({
       {/* Mensaje de error */}
       {error && (
         <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2 flex items-center">
-          <span className="material-icons">error_outline</span>
+          <span className="material-icons"></span>
           <span className="ml-2">{error}</span>
         </div>
       )}
