@@ -36,9 +36,9 @@ const MapComponent: React.FC<MapProps> = ({
 
   if (!location) {
     return (
-      <div style={{ textAlign: "center", padding: "20px", color: "red" }}>
-        Ubicación no disponible.
-      </div>
+      <View style={{ alignItems: "center", padding: 20 }}>
+        <Text style={{ color: "red" }}>Ubicación no disponible.</Text>
+      </View>
     );
   }
 
@@ -259,101 +259,93 @@ const MapComponent: React.FC<MapProps> = ({
   }, [location, pedidoLocations]);
 
   return (
+    <View style={{ flex: 1 }}>
       <MapView
-      ref={mapRef}
-      style={{ flex: 1 }}
-      provider={PROVIDER_GOOGLE}
-      initialRegion={{
-        ...center,
-        latitudeDelta: 0.1922,
-        longitudeDelta: 0.1421,
-      }}
-      onRegionChangeComplete={handleRegionChangeComplete}
-    >
-      {location && (
-        <Circle
-          center={center}
-          radius={circleRadius}
-          fillColor="rgba(66, 133, 244, 0.8)"
-          strokeColor="#4285F4"
-          strokeWidth={1}
-        />
-      )}
-      {showRoutes && routePoints.length > 0 && (
-        <>
-          {routePoints.map((point, index) => {
-            if (index === 0) return null; // Saltar el primer punto
-
-            // Progreso normalizado (0 para inicio, 1 para fin)
-            const progress = index / routePoints.length;
-
-            // Gradiente tipo mapa de calor: verde -> amarillo -> rojo
-            let segmentColor = "#4285F4"; // Default color for single mode
-            if (mode) {
-              if (progress < 0.5) {
-                // De verde a amarillo
-                segmentColor = `rgba(${Math.round(
-                  255 * (progress * 2)
-                )}, 255, 0, 0.9)`;
-              } else {
-                // De amarillo a rojo
-                segmentColor = `rgba(255, ${Math.round(
-                  255 * (1 - (progress - 0.5) * 2)
-                )}, 0, 0.9)`;
-              }
-            }
-            return (
-              <Polyline
-                key={index}
-                coordinates={[routePoints[index - 1], point]}
-                strokeColor={segmentColor}
-                strokeWidth={5}
-              />
-            );
-          })}
-        </>
-      )}
-
-      {pedidoLocations
-        ?.filter((loc) => {
-          if (!mode) {
-            // En modo único, mostrar solo el seleccionado o el primero
-            return (
-              loc.id === pedidoSeleccionado?.id || loc === pedidoLocations[0]
-            );
-          }
-          // En modo múltiple, mostrar todos
-          return true;
-        })
-        .map((loc) => (
-          <Marker
-            key={loc.id}
-            coordinate={{ latitude: loc.lat, longitude: loc.lng }}
-            image={
-              mode && pedidoSeleccionado?.id === loc.id
-                ? require('../../assets/images/blue-dot.png') // Selected marker
-                : require('../../assets/images/red-dot.png') // Other markers
-            }
+        ref={mapRef}
+        style={{ flex: 1 }}
+        provider={PROVIDER_GOOGLE}
+        initialRegion={{
+          ...center,
+          latitudeDelta: 0.1922,
+          longitudeDelta: 0.1421,
+        }}
+        onRegionChangeComplete={handleRegionChangeComplete}
+      >
+        {/* Your MapView children */}
+        {location && (
+          <Circle
+            center={center}
+            radius={circleRadius}
+            fillColor="rgba(66, 133, 244, 0.8)"
+            strokeColor="#4285F4"
+            strokeWidth={1}
           />
-        ))}
- {error && (
-  <View
-    style={{
-      position: "absolute",
-      top: 10,
-      left: "50%",
-      transform: [{ translateX: -50 }],
-      backgroundColor: "rgba(255, 0, 0, 0.8)",
-      padding: 8,
-      paddingHorizontal: 16,
-      borderRadius: 4,
-      zIndex: 1000,
-    }}
-  >
-    <Text style={{ color: "white" }}>{error}</Text>
-  </View>
-)}
-     </MapView>
+        )}
+        {showRoutes && routePoints.length > 0 && (
+          <>
+            {routePoints.map((point, index) => {
+              if (index === 0) return null;
+  
+              const progress = index / routePoints.length;
+  
+              let segmentColor = '#4285F4';
+              if (mode) {
+                if (progress < 0.5) {
+                  segmentColor = `rgba(${Math.round(255 * (progress * 2))}, 255, 0, 0.9)`;
+                } else {
+                  segmentColor = `rgba(255, ${Math.round(255 * (1 - (progress - 0.5) * 2))}, 0, 0.9)`;
+                }
+              }
+              return (
+                <Polyline
+                  key={index}
+                  coordinates={[routePoints[index - 1], point]}
+                  strokeColor={segmentColor}
+                  strokeWidth={5}
+                />
+              );
+            })}
+          </>
+        )}
+        {pedidoLocations
+          ?.filter((loc) => {
+            if (!mode) {
+              return loc.id === pedidoSeleccionado?.id || loc === pedidoLocations[0];
+            }
+            return true;
+          })
+          .map((loc) => (
+            <Marker
+              key={loc.id}
+              coordinate={{ latitude: loc.lat, longitude: loc.lng }}
+              image={
+                mode && pedidoSeleccionado?.id === loc.id
+                  ? require('../../assets/images/blue-dot.png')
+                  : require('../../assets/images/red-dot.png')
+              }
+            />
+          ))}
+      </MapView>
+  
+      {/* Move the error View outside the MapView */}
+      {error && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 10,
+            left: '50%',
+            transform: [{ translateX: -0.5 * 300 }], // Adjust based on expected width
+            backgroundColor: 'rgba(255, 0, 0, 0.8)',
+            padding: 8,
+            paddingHorizontal: 16,
+            borderRadius: 4,
+            zIndex: 1000,
+          }}
+        >
+          <Text style={{ color: 'white' }}>{error}</Text>
+        </View>
+      )}
+    </View>
   );
 };
 

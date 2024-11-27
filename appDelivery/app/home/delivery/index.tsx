@@ -127,8 +127,8 @@ export default function Entregas() {
       const pedidosHistorial = pedidosResponse.pedidos.filter(
         (pedido) => pedido.estado === "entregado" || pedido.estado === "zz"
       );
-      console.log("Historial de pedidos:");
-      console.log(pedidosHistorial);
+      // console.log("Historial de pedidos:");
+      // console.log(pedidosHistorial);
       setHistorialPedidos(pedidosHistorial);
 
       // Convertir pedidosEnProceso a pedidosLoc
