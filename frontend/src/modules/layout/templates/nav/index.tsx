@@ -45,6 +45,7 @@ export default function Nav() {
   const hasRunOnce = useRef(false);
   const hasRunOnceAuth = useRef(false);
   
+  
   useEffect(() => {
     if(status !== "loading" && !hasRunOnceAuth.current) {
       hasRunOnceAuth.current = true;

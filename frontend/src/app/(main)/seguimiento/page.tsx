@@ -16,6 +16,7 @@ import PedidoCancelado from "@components/PedidoCancelado";
 import ConfirmModal from "./confirmModal"; 
 import { useSession } from "next-auth/react";
 import ErrorPopup from "@components/ErrorPopup";
+import MapaTrackingWrapper from "@components/MapaTrackingWrapper";
 
 const MapaTracking = dynamic(() => import("@components/MapaTracking"), {
   ssr: false,
@@ -178,6 +179,7 @@ const TrackingPage: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [modalMessage, setModalMessage] = useState("");
   const [mensajePopup, setMensajePopup] = useState<string>("");
+  
    // Función para abrir el modal de confirmación
    const handleCancelClick = () => {
     setShowConfirmModal(true);
@@ -478,10 +480,10 @@ const TrackingPage: React.FC = () => {
                   }}
                 >
                   {enRuta === "ruta" ? (
-                    <MapaTracking
-                      pedido={pedido}
-                      driverPosition={driverPosition ?? [-6.476, -76.361]}
-                    />
+                    <MapaTrackingWrapper
+                    pedido={pedido}
+                    driverPosition={driverPosition ?? [-6.476, -76.361]}
+                  />
                   ) : enRuta === "espera" ? (
                     <EnEsperaTracking
                       codigoSeguimiento={pedido?.codigoSeguimiento ?? "ADA123"}
