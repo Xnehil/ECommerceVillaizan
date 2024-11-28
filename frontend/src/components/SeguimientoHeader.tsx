@@ -45,7 +45,7 @@ interface OrderDetailsProps {
     <div className="mt-5 flex flex-col items-center justify-center w-full">
         {/* Conditional Header for CODIGO DE SEGUIMIENTO */}
         {pedido && pedido.codigoSeguimiento && (
-            <h2 className="text-2xl font-semibold text-white bg-blue-600 py-2 px-4 rounded-lg shadow-md mb-6">
+            <h2 className="text-2xl font-semibold text-white bg-black py-2 px-4 rounded-lg shadow-md mb-6">
                 CÓDIGO DE SEGUIMIENTO: {pedido.codigoSeguimiento}
             </h2>
         )}

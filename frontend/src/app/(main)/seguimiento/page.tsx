@@ -306,7 +306,9 @@ const TrackingPage: React.FC = () => {
               setEnRuta("entregado")
               // De momento lo enviamos a la página de inicio
               setShowPopup(true); // Show the error popup
-              setMensajePopup("🍦 *Paletas Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉 Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega: <a href='https://bit.ly/4fLaj5h' target='_blank' rel='noopener noreferrer'>Encuesta de Satisfacción</a>");
+              setMensajePopup(
+                "🍦 Paletas Villaizan 🍦<br><br>¡Felicidades!<br>Tu pedido ha sido entregado con éxito. 🎉<br><br>Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega:<br><a href='https://bit.ly/4fLaj5h' target='_blank' rel='noopener noreferrer'>Encuesta de Satisfacción</a>"
+              );
               //window.location.href = "/"
             }
           },
