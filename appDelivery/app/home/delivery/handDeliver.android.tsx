@@ -85,19 +85,18 @@ const EntregarPedido = () => {
   const [resolveCallback, setResolveCallback] = useState<null | Function>(null);
   const cameraRef = useRef(null);
 
-  const takePhoto = async () => {
+  const takePhoto = async (id: string) => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
       if (currentImageType == "pedido"){
-        setFotoPedido(photo);
-        setCurrentImageId(pedidoCompleto?.id ?? null);
+        setFotoPedido(photo.uri);
       }
       else if (currentImageType == "pago"){
-        setFotosPago((prev) => ({ ...prev, [pedidoCompleto?.id ??
-          ""]: photo }));
+        setFotosPago((prev) => ({ ...prev, [id]: photo.uri }));
         }
       setIsCameraActive(false);
-      
+      setImageOptionsVisible(false);
+      console.log("photito",photo);
     } else {
       Alert.alert("Error", "No se pudo capturar la foto");
     }
@@ -390,7 +389,7 @@ const EntregarPedido = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.camerabutton}
-                    onPress={takePhoto}
+                    onPress={() => currentImageId && takePhoto(currentImageId)}
                   >
                     <Text style={styles.text}>Tomar foto</Text>
                   </TouchableOpacity>
@@ -487,7 +486,7 @@ const EntregarPedido = () => {
       if (tipo === "pedido") {
         // Manejar imagen de pedido
         if (!fotoPedido) throw new Error("No hay imagen de pedido disponible.");
-
+  
         const fileUrl = await uploadImage(fotoPedido, `${tipo}-${id}`);
         mostrarMensaje("Imagen de pedido enviada con éxito");
         return { [id]: fileUrl }; // Retorna un objeto con la URL de la imagen del pedido
@@ -495,57 +494,57 @@ const EntregarPedido = () => {
         // Manejar imágenes de pago
         if (Object.keys(fotosPago).length === 0)
           throw new Error("No hay imágenes de métodos de pago disponibles.");
-
-        const urls: Record<string, string> = {}; // Almacena las URLs de las imágenes
-
-        for (const [idMetodoPago, imagenData] of Object.entries(fotosPago)) {
-          if (imagenData) {
-            const fileUrl = await uploadImage(
-              imagenData,
-              `${tipo}-${idMetodoPago}`
-            );
+  
+        const urls: Record<string, string> = {};
+  
+        for (const [idMetodoPago, imagenUri] of Object.entries(fotosPago)) {
+          if (imagenUri) {
+            console.log("Enviando imagen de método de pago", idMetodoPago, ", ", imagenUri);
+            const fileUrl = await uploadImage(imagenUri, `${tipo}-${idMetodoPago}`);
             urls[idMetodoPago] = fileUrl; // Asigna la URL al método de pago correspondiente
           }
         }
-
+  
         mostrarMensaje("Imágenes de métodos de pago enviadas con éxito");
         return urls; // Retorna un objeto con las URLs generadas para cada método de pago
       }
     } catch (error) {
-      console.error(`Error al enviar la imagen de ${tipo}:`, error);
+      console.error(`Error al enviar la imagen de ${tipo}: ${error}`, "confirmacion");
       mostrarMensaje(`Error al enviar la imagen de ${tipo}.`, "confirmacion");
+      setIsLoading(false);
       return null; // Retorna null en caso de error
     }
   };
-
+  
   // Función auxiliar para subir una imagen a la API
-  const uploadImage = async (imagenData: string, fileName: string) => {
-    const byteString = atob(imagenData.split(",")[1]);
-    const mimeString = imagenData.split(",")[0].split(":")[1].split(";")[0];
-    const arrayBuffer = new ArrayBuffer(byteString.length);
-    const intArray = new Uint8Array(arrayBuffer);
-
-    for (let i = 0; i < byteString.length; i++) {
-      intArray[i] = byteString.charCodeAt(i);
+  const uploadImage = async (imagenUri: string, fileName: string) => {
+    try {
+      // Obtener Blob desde la URI
+      const response = await fetch(imagenUri);
+      const blob = await response.blob();
+      console.log("Blob generado:", blob);
+      console.log("Nombre del archivo:", fileName);
+      
+      const file = new File([blob], `${fileName}.png`, { type: blob.type });
+  
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fileName", `${fileName}.png`);
+  
+      if (fileName.startsWith("pago")) {
+        formData.append("folderId", "1z4G9rU8EW9whmnrrVcaL76an-8vM-Ncv");
+      } else if (fileName.startsWith("pedido")) {
+        formData.append("folderId", "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb");
+      }
+  
+      const responseUpload = await axios.post(`${BASE_URL}/imagenes`, formData);
+      return responseUpload.data.fileUrl; // Retorna la URL generada
+    } catch (error) {
+      console.error("Error al cargar la imagen:", error);
+      throw error;
     }
-
-    const blob = new Blob([intArray], { type: mimeString });
-    const file = new File([blob], `${fileName}.png`, { type: mimeString });
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("fileName", `${fileName}.png`);
-
-    if (fileName.startsWith("pago")) {
-      formData.append("folderId", "1z4G9rU8EW9whmnrrVcaL76an-8vM-Ncv");
-    } else if (fileName.startsWith("pedido")) {
-      formData.append("folderId", "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb");
-    }
-
-    const response = await axios.post(`${BASE_URL}/imagenes`, formData);
-    return response.data.fileUrl; // Retorna la URL generada
   };
-
+  
   const handleCancelEntrega = () => {
     setModalCancelVisible(true); // Mostrar el modal de cancelación
   };
@@ -582,7 +581,7 @@ const EntregarPedido = () => {
         fotosPagoNecesarias === undefined ||
         Object.keys(fotosPago).length !== fotosPagoNecesarias
       ) {
-        mostrarMensaje("Falta foto todos los metodos de pago");
+        mostrarMensaje(`Falta foto de todos los métodos de pago (${fotosPagoNecesarias ? fotosPagoNecesarias : ""})`);
         return;
       }
       setIsLoading(true);
