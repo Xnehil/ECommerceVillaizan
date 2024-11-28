@@ -72,8 +72,6 @@ export default function ProductPreview({
   )
   const cantidadActual = detalleAnterior?.cantidad || 0
 
-  console.log("El producto es:", productPreview)
-
   useEffect(() => {
     if (isAuthenticated) {
       setEstaAutenticado(true)
