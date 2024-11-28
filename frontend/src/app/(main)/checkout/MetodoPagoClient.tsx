@@ -122,7 +122,19 @@ export default function MetodoPagoClient({
           ? "plin"
           : "pagoEfec"
       setSelectedImageId(imageId)
-      setPaymentAmount(pedidoInput.pedidosXMetodoPago[0].monto)
+      if(pedidoInput){
+        console.log("Pedido input:", pedidoInput)
+        if(pedidoInput.pedidosXMetodoPago){
+          console.log("Pedido input pedidosXMetodoPago:", pedidoInput.pedidosXMetodoPago)
+          if(pedidoInput.pedidosXMetodoPago[0]){
+            console.log("Pedido input pedidosXMetodoPago[0]:", pedidoInput.pedidosXMetodoPago[0])
+            console.log("Monto:", pedidoInput.pedidosXMetodoPago[0].monto)
+            const montoValue = pedidoInput.pedidosXMetodoPago[0].monto.toFixed(2);
+            setPaymentAmount(parseFloat(montoValue));
+          }
+        }
+      }
+      
     } else if (
       pedidoInput.pedidosXMetodoPago &&
       pedidoInput.pedidosXMetodoPago.length > 1

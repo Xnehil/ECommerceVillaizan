@@ -227,6 +227,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
         };
 
         if(direccion.ubicacion){
+          console.log('Deleting ubicacion ',direccion.ubicacion.id);
           //delete ciudad.ubicacion;
           const responseDelete = await axios.delete(`${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/ubicacion/${direccion.ubicacion.id}`);
         }

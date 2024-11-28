@@ -396,7 +396,10 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
               <button
                 type="button"
                 className="px-4 py-2 bg-yellow-200 border border-gray-300 rounded-md flex items-center gap-2"
-                onClick={handleClickMapa}
+                onClick={() => {
+                  handleClickMapa();
+                  setDireccionValidationError(null);
+                }}
               >
                 <img src="/images/mapa.png" alt="Mapa" className="h-8" />
                 Selecciona en el mapa
