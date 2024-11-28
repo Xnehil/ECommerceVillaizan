@@ -122,16 +122,32 @@ export default function MetodoPagoClient({
           ? "plin"
           : "pagoEfec"
       setSelectedImageId(imageId)
-      if(pedidoInput){
-        console.log("Pedido input:", pedidoInput)
-        if(pedidoInput.pedidosXMetodoPago){
-          console.log("Pedido input pedidosXMetodoPago:", pedidoInput.pedidosXMetodoPago)
-          if(pedidoInput.pedidosXMetodoPago[0]){
-            console.log("Pedido input pedidosXMetodoPago[0]:", pedidoInput.pedidosXMetodoPago[0])
-            console.log("Monto:", pedidoInput.pedidosXMetodoPago[0].monto)
-            const montoValue = pedidoInput.pedidosXMetodoPago[0].monto.toFixed(2);
-            setPaymentAmount(parseFloat(montoValue));
-          }
+      if (pedidoInput) {
+        console.log("Pedido input:", pedidoInput);
+        if (pedidoInput.pedidosXMetodoPago) {
+            console.log("Pedido input pedidosXMetodoPago:", pedidoInput.pedidosXMetodoPago);
+            if (pedidoInput.pedidosXMetodoPago[0]) {
+                console.log("Pedido input pedidosXMetodoPago[0]:", pedidoInput.pedidosXMetodoPago[0]);
+                
+                const monto = pedidoInput.pedidosXMetodoPago[0].monto;
+                console.log("Monto:", monto);
+                
+                // Check if monto is a valid number
+                if (typeof monto === 'number' && !isNaN(monto)) {
+                    const montoValue = monto.toFixed(2);
+                    setPaymentAmount(parseFloat(montoValue));
+                } 
+                // Check if monto is a string that can be converted to a number
+                else if (typeof monto === 'string' && !isNaN(parseFloat(monto))) {
+                    const montoValue = parseFloat(monto).toFixed(2);
+                    setPaymentAmount(parseFloat(montoValue));
+                }
+                // Handle cases where monto is neither a number nor a string that can be parsed to a number
+                else {
+                    console.error("Monto is not a valid number or parsable string:", monto);
+                    // Handle the error as appropriate
+                }
+            }
         }
       }
       

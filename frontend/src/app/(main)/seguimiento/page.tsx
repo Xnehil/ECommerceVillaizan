@@ -164,6 +164,7 @@ const TrackingPage: React.FC = () => {
   const [mensajeEnviado, setMensajeEnviado] = useState<boolean>(false); // Control de envío único
   const [errorCancelacion, setErrorCancelacion] = useState<string | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState<boolean>(false);
+  const [showConfirmModal2, setShowConfirmModal2] = useState<boolean>(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const search = useSearchParams();
   const [codigo, setCodigo] = useState<string | null>(
@@ -175,6 +176,7 @@ const TrackingPage: React.FC = () => {
   const wsRef = useRef<ExtendedWebSocket | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [modalMessage, setModalMessage] = useState("");
    // Función para abrir el modal de confirmación
    const handleCancelClick = () => {
     setShowConfirmModal(true);
@@ -203,13 +205,18 @@ const TrackingPage: React.FC = () => {
         estado: "cancelado",
       });
       setEnRuta("cancelado");
-      setShowConfirmModal(false); // Cierra el modal
-      alert("Tu pedido ha sido cancelado exitosamente.");
+      setShowConfirmModal(false);
+      //alert("Tu pedido ha sido cancelado exitosamente.");
+      setModalMessage("Tu pedido ha sido cancelado exitosamente.");
       //window.location.href = "/";
     } catch (error) {
       console.error("Error al intentar cancelar el pedido:", error);
-      setShowConfirmModal(false); // Cierra el modal
-      alert("Ocurrió un error al cancelar el pedido. Por favor, intenta nuevamente.");
+      setShowConfirmModal(false);
+      setModalMessage("Ocurrió un error al cancelar el pedido. Por favor, intenta nuevamente.");
+      //alert("Ocurrió un error al cancelar el pedido. Por favor, intenta nuevamente.");
+    }
+    finally{
+      window.location.href = window.location.href;
     }
   };
 
