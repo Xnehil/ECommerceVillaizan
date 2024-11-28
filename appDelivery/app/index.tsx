@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, Button, StyleSheet, Text } from "react-native";
+import { View, TextInput, Button, StyleSheet, Text, ActivityIndicator } from "react-native";
 import * as Google from "expo-auth-session/providers/google";
 import { useAuthRequest } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
@@ -67,39 +67,43 @@ export default function LoginScreen() {
       setLoading(false);
     }
   }
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Inicio de Sesión</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Usuario"
-        value={username}
-        onChangeText={setUsername}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      <View style={styles.buttonContainer}>
-        <View style={styles.buttonContainer}>
-          <Button title="Iniciar Sesión" onPress={credentialLogIn} />
-        </View>
-        <View style={styles.buttonContainer}>
-          <Button
-            title="Iniciar Sesión con Google"
-            disabled={!request}
-            onPress={() => {
-              promptAsync();
-            }}
+      {loading ? (
+        <ActivityIndicator size="small" color="#007AFF" />
+      ) : (
+        <>
+          <Text style={styles.title}>Inicio de Sesión</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Usuario"
+            value={username}
+            onChangeText={setUsername}
           />
-        </View>
-      </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Contraseña"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+          <View style={styles.buttonContainer}>
+            <Button title="Iniciar Sesión" onPress={credentialLogIn} />
+          </View>
+          <View style={styles.buttonContainer}>
+            <Button
+              title="Iniciar Sesión con Google"
+              disabled={!request}
+              onPress={() => {
+                promptAsync();
+              }}
+            />
+          </View>
+        </>
+      )}
     </View>
   );
+
 }
 
 const styles = StyleSheet.create({
@@ -115,10 +119,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 16,
     textAlign: "center",
+    color: "white",
   },
   input: {
     height: 40,
-    borderColor: "gray",
+    borderColor: "white",
+    backgroundColor: "white",
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
