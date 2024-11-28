@@ -10,14 +10,13 @@ import 'leaflet.gridlayer.googlemutant';
 interface MapaTrackingProps {
     pedido: Pedido | null;
     driverPosition: LatLngExpression;
-    destinationPosition: LatLngExpression;
 }
 
-const MapaTracking: React.FC<MapaTrackingProps> = ({ pedido, driverPosition, destinationPosition }) => {
+const MapaTracking: React.FC<MapaTrackingProps> = ({ pedido, driverPosition }) => {
     if (!pedido) {
         return null;
     }
-    const posicionDestino = destinationPosition as LatLngExpression;
+    const posicionDestino = (pedido.direccion?.ubicacion?.latitud && pedido.direccion?.ubicacion?.longitud ? [pedido.direccion?.ubicacion?.latitud, pedido.direccion?.ubicacion?.longitud] : [-6.484, -76.364]) as LatLngExpression;
     let latLngDriver = driverPosition as LatLngExpression;
     const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 

@@ -14,30 +14,20 @@ export const metadata: Metadata = {
 };
 
 const fetchCart = async () => {
-  try{
-    const respuesta = await getOrSetCart();
-    let cart: Pedido = respuesta?.cart;
-
-    if (!cart || !cart.detalles || cart.detalles.length === 0) {
-      return null; // Retorna null si el carrito está vacío o no tiene detalles
-    }
-
-    if(cart.estado !== "carrito"){
-      return null; // Retorna null si el carrito no está en estado "carrito"
-    }
-
-    const enrichedItems = await enrichLineItems(cart.detalles);
-    cart.detalles = enrichedItems;
-    cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
-    
-
-    return cart;
+  const respuesta = await getOrSetCart();
+  if (!respuesta) {
+    return null
   }
-  catch(e){
-    console.log("Error al cargar el carrito", e);
-    return null;
+  const cart: Pedido = respuesta.cart;
+
+  if (cart.estado !== "carrito") {
+    return null; // Retorna null si el carrito no está en estado "carrito"
   }
-  
+
+  const enrichedItems = await enrichLineItems(cart.detalles);
+  cart.detalles = enrichedItems.filter(item => item.estaActivo); // Filtra los items inactivos
+
+  return cart;
 };
 
 

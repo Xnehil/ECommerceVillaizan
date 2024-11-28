@@ -16,7 +16,6 @@ import PedidoCancelado from "@components/PedidoCancelado";
 import ConfirmModal from "./confirmModal"; 
 import { useSession } from "next-auth/react";
 import ErrorPopup from "@components/ErrorPopup";
-import MapaTrackingWrapper from "@components/MapaTrackingWrapper";
 
 const MapaTracking = dynamic(() => import("@components/MapaTracking"), {
   ssr: false,
@@ -219,7 +218,9 @@ const TrackingPage: React.FC = () => {
       //alert("Ocurrió un error al cancelar el pedido. Por favor, intenta nuevamente.");
     }
     finally{
-      window.location.href = window.location.href;
+      if (typeof window !== 'undefined') {
+        window.location.href = window.location.href;
+      }
     }
   };
 
@@ -375,7 +376,9 @@ const TrackingPage: React.FC = () => {
     if (pedido) {
       setLoading(false);
       mapRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-      window.scrollBy(0, -30);
+      if (typeof window !== 'undefined') {
+        window.scrollBy(0, -30);
+      }
     }
   }, [pedido]);
 
@@ -480,10 +483,10 @@ const TrackingPage: React.FC = () => {
                   }}
                 >
                   {enRuta === "ruta" ? (
-                    <MapaTrackingWrapper
-                    pedido={pedido}
-                    driverPosition={driverPosition ?? [-6.476, -76.361]}
-                  />
+                    <MapaTracking
+                      pedido={pedido}
+                      driverPosition={driverPosition ?? [-6.476, -76.361]}
+                    />
                   ) : enRuta === "espera" ? (
                     <EnEsperaTracking
                       codigoSeguimiento={pedido?.codigoSeguimiento ?? "ADA123"}
