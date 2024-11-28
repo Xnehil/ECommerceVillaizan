@@ -17,25 +17,20 @@ export const metadata: Metadata = {
 }
 
 const fetchCart = async () => {
-  try {
-    const respuesta = await getOrSetCart();
-    if (!respuesta) {
-      return null
-    }
-    const cart: Pedido = respuesta.cart;
-
-    if (cart.estado !== "carrito") {
-      return null; // Retorna null si el carrito no está en estado "carrito"
-    }
-
-    const enrichedItems = await enrichLineItems(cart.detalles);
-    cart.detalles = enrichedItems.filter(item => item.estaActivo); // Filtra los items inactivos
-
-    return cart;
-  } catch (e) {
-    console.log("Error al cargar el carrito", e);
-    return null;
+  const respuesta = await getOrSetCart();
+  if (!respuesta) {
+    return null
   }
+  const cart: Pedido = respuesta.cart;
+
+  if (cart.estado !== "carrito") {
+    return null; // Retorna null si el carrito no está en estado "carrito"
+  }
+
+  const enrichedItems = await enrichLineItems(cart.detalles);
+  cart.detalles = enrichedItems.filter(item => item.estaActivo); // Filtra los items inactivos
+
+  return cart;
 }
 
 export default async function MetodoPago() {
