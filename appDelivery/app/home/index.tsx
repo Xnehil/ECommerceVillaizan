@@ -184,7 +184,7 @@ export default function TabOneScreen() {
   };
 
   const confirmarCancelacion = async () => {
-    if ((motivoCancelacion === "Otro" && otroMotivo === "") || otroMotivo) {
+    if ((motivoCancelacion === "Otro" && otroMotivo === "") || motivoCancelacion === "") {
       mostrarMensaje("Por favor, especifica el motivo de la cancelación");
       return;
     }
@@ -241,7 +241,7 @@ export default function TabOneScreen() {
       }
       setModalCancelVisible(false);
       setIsConnected(false);
-      motivoCancelacion;
+      setMotivoCancelacion("");
     }
   };
 
@@ -331,13 +331,12 @@ export default function TabOneScreen() {
           <Text style={styles.modalSubtitle}>Selecciona el motivo:</Text>
           <ScrollView>
             {[
-              "Pedido excede stock",
+              "Stock minimo/insuficiente",
               "Problemas mecánicos",
               "Condiciones climáticas adversas",
-              "Pedido en hora no disponible",
-              "Ubicación insegura",
+              "Accidente",
+              "Error tecnico",
               "Problemas de salud",
-              "Falta de medios de pago",
               "Otro",
             ].map((motivo) => (
               <TouchableOpacity
