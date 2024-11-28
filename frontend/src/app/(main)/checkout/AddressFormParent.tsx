@@ -30,6 +30,7 @@ interface AddressFormParentProps {
   telefonoError?: string | null;
   onComprobanteChange: (value: string) => void;
   comprobantePassed: string
+  
 }
 
 const AddressFormParent: React.FC<AddressFormParentProps> = ({

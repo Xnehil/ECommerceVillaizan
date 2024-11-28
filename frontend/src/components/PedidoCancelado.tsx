@@ -1,5 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { Pedido } from 'types/PaquetePedido';
+import axios from 'axios';
 
 const berenjena = "/images/berenjena.png";
 const cebolla = "/images/cebolla.png";
@@ -8,16 +10,36 @@ const pinon = "/images/pinon.png";
 const tomate = "/images/tomate.png";
 const zanahoria = "/images/zanohoria.png";
 
-const PedidoCancelado: React.FC = () => {
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+
+interface PedidoCanceladoProps {
+    // Define your props here
+    pedido: Pedido | null;
+  }
+  
+
+  const PedidoCancelado: React.FC<PedidoCanceladoProps> = ({ pedido }) => {
     const router = useRouter();
     const images = [berenjena, cebolla, pera, pinon, tomate, zanahoria];
     const duplicatedImages = images.concat(images);
 
-    const handleRetry = () => {
+    const handleRetry = async () => {
+        if(!pedido){
+            router.push('/');
+            return;
+        }
+        const response = await axios.put(`${baseUrl}/admin/pedido/${pedido.id}`,{estado: "carrito"});
+        if(response.status !== 200){
+            console.error("Error al intentar reintentar el pedido");
+            router.push('/');
+            return;
+        }
+        console.log("Pedido reintentado");
         // Copy pedido cookie to cart cookie
         document.cookie = "_medusa_cart_id=" + document.cookie.replace(/(?:(?:^|.*;\s*)_medusa_pedido_id\s*\=\s*([^;]*).*$)|^.*$/, "$1") + ";max-age=3600;path=/";
         // Delete pedido cookie
         document.cookie = "_medusa_pedido_id=;max-age=-1;path=/";
+        
         router.push('/carrito');
     };
 
