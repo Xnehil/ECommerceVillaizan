@@ -9,6 +9,7 @@ import { Direccion } from "types/PaqueteEnvio"
 import Checkout from "./Checkout"
 import { notFound } from "next/navigation"
 import Toaster from "@components/Toaster"
+import ErrorPopup from "../../../components/ErrorPopup"
 
 export const metadata: Metadata = {
   title: "Metodo de Pago",
@@ -48,28 +49,14 @@ export default async function MetodoPago() {
   const cart = await fetchCart();
   // console.log("Carrito:", cart);
 
-  return (
-    <>
-      {/* Error Popup */}
-      {!cart && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-md shadow-md text-center">
-            <p className="text-black-600 mb-4">No se detectó el pedido. Intente nuevamente.</p>
-            <button
-              style={styles.confirmButton}
-              onClick={() => {
-                window.location.href = "/";
-              }}
-            >
-              Volver al Inicio
-            </button>
-          </div>
-        </div>
-      )}
+  if (!cart) {
+    return (
+      <ErrorPopup mensaje={"No se detectó el pedido. Intente nuevamente."}/>
+    );
+  }
 
-      {/* Main Checkout Component */}
-      {cart && <Checkout pedido={cart} /* usuario={usuario} direccion={direccion} */ />}
-    </>
+  return (
+    <Checkout pedido={cart} /* usuario={usuario} direccion={direccion} */ />
   );
 }
 

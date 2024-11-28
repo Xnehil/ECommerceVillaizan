@@ -15,6 +15,7 @@ import { Pedido } from "types/PaquetePedido";
 import PedidoCancelado from "@components/PedidoCancelado";
 import ConfirmModal from "./confirmModal"; 
 import { useSession } from "next-auth/react";
+import ErrorPopup from "@components/ErrorPopup";
 
 const MapaTracking = dynamic(() => import("@components/MapaTracking"), {
   ssr: false,
@@ -146,104 +147,7 @@ const sendMessageConfirmation = async () => {
   }
 };
 
-const fetchCart = async (
-  setDriverPosition: (position: [number, number]) => void,
-  setEnRuta: (enRuta: string) => void,
-  enRuta: string,
-  setMensajeEspera: (mensaje: string) => void,
-  ws: React.MutableRefObject<ExtendedWebSocket | null>,
-  codigoSeguimiento?: string | null,
-  isAuthenticated?: boolean,
-  userId?: string | null
-): Promise<Pedido> => {
-  // console.log("Fetching cart with code:", codigoSeguimiento);
-  if(isAuthenticated){
 
-  }
-  const respuesta = await retrievePedido(true, codigoSeguimiento,isAuthenticated ?? false,userId?? null);
-  console.log("Respuesta:", respuesta);
-  let cart: Pedido = respuesta
-  downloadXMLFile(cart); // paraPruebas
-  if (!cart) {
-    console.error("Cart is null or undefined")
-    window.location.href = "/"
-  }
-
-  if(cart.estado === "cancelado") {
-    setEnRuta("cancelado")
-    return cart
-  } else if(cart.estado === "entregado") {
-    setEnRuta("entregado")
-    return cart
-  }
-  
-  let aux = cart.detalles
-  const enrichedItems = await enrichLineItems(cart.detalles)
-  // console.log("Detalles enriquecidos:", enrichedItems);
-  cart.detalles = enrichedItems
-  cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
-  const response = await axios.get(baseUrl + "/admin/motorizado/"+cart.motorizado?.id+"?enriquecido=true")
-  cart.motorizado = response.data.motorizado
-//   console.log("Cart enriquecido:", cart);
-  // console.log("Motorizado enriquecido y ws:", cart.motorizado, ws.current);
-  //Conectar a websocket para recibir actualizaciones en tiempo real
-  if (cart.motorizado && ws.current === null) {
-    // Conectar a websocket para recibir actualizaciones en tiempo real
-    ws.current = connectWebSocket(
-      cart.motorizado.id, // idRepartidor
-      cart.id, // idPedido
-      cart.estado, // estado
-      (data) => {
-        console.log(data);
-        if (enRuta === "entregado") {
-          return
-        }
-        if (data.type === "locationResponse") {
-          // Si es 0, 0, entonces el motorizado está teniendo problemas de conexión. Sugerir esperar un momento o recargar la página
-          if (data.data.lat === 0 && data.data.lng === 0) {
-            setMensajeEspera("El repartidor está teniendo problemas de conexión. Por favor, espera un momento o recarga la página.")
-            setEnRuta("espera")
-          }else{
-            // Actualizar la posición del motorizado
-            setEnRuta("ruta")
-            setDriverPosition([data.data.lat, data.data.lng])
-          }
-        } else if (data.type === "canceladoResponse") {
-          // El pedido ha sido cancelado
-          console.log("Pedido cancelado")
-          setEnRuta("cancelado")
-          if (ws) {
-            ws.current?.close();
-          }
-        }else if (data.type === "confirmarResponse") {
-          // El pedido está en proceso de confirmación por parte del administrador
-          setEnRuta("espera")
-          
-          setMensajeEspera("Estamos verificando tu pedido. Por favor, espera un momento.")
-        } else if (data.type === "notYetResponse") {
-          // El motorizado está atendiendo otros pedidos
-          setEnRuta("espera")
-          setMensajeEspera("Tu pedido ha sido verificado. El repartidor está atendiendo otros pedidos.\n Por favor, espera un momento.")
-        } else if (data.type === "entregadoResponse") {
-          // El pedido ha sido entregado
-          //downloadXMLFile(cart); // paraPRD
-          setEnRuta("entregado")
-          // De momento lo enviamos a la página de inicio
-          
-          window.location.href = "/"
-        }
-      },
-      () => {
-        // Handle WebSocket connection close
-        console.log("WebSocket connection closed");
-      }
-    )
-  } else {
-    console.error("Motorizado is undefined")
-  }
-
-  return cart
-}
 
 const TrackingPage: React.FC = () => {
   const [pedido, setPedido] = useState<Pedido | null>(null);
@@ -269,6 +173,7 @@ const TrackingPage: React.FC = () => {
   const { data: session, status } = useSession();
   const hasRunOnceAuth = useRef(false);
   const wsRef = useRef<ExtendedWebSocket | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
    // Función para abrir el modal de confirmación
    const handleCancelClick = () => {
@@ -307,6 +212,115 @@ const TrackingPage: React.FC = () => {
       alert("Ocurrió un error al cancelar el pedido. Por favor, intenta nuevamente.");
     }
   };
+
+  const fetchCart = async (
+    setDriverPosition: (position: [number, number]) => void,
+    setEnRuta: (enRuta: string) => void,
+    enRuta: string,
+    setMensajeEspera: (mensaje: string) => void,
+    ws: React.MutableRefObject<ExtendedWebSocket | null>,
+    codigoSeguimiento?: string | null,
+    isAuthenticated?: boolean,
+    userId?: string | null
+  ): Promise<Pedido> => {
+    try{
+      // console.log("Fetching cart with code:", codigoSeguimiento);
+      setShowPopup(false);
+      const respuesta = await retrievePedido(true, codigoSeguimiento,isAuthenticated ?? false,userId?? null);
+      console.log("Respuesta:", respuesta);
+      let cart: Pedido = respuesta
+      if (!cart) {
+        console.error("Cart is null or undefined")
+        throw new Error("Cart is null or undefined");
+        //window.location.href = "/"
+      }
+      downloadXMLFile(cart); // paraPruebas
+      
+    
+      if(cart.estado === "cancelado") {
+        setEnRuta("cancelado")
+        return cart
+      } else if(cart.estado === "entregado") {
+        setEnRuta("entregado")
+        return cart
+      }
+      
+      let aux = cart.detalles
+      const enrichedItems = await enrichLineItems(cart.detalles)
+      // console.log("Detalles enriquecidos:", enrichedItems);
+      cart.detalles = enrichedItems
+      cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
+      const response = await axios.get(baseUrl + "/admin/motorizado/"+cart.motorizado?.id+"?enriquecido=true")
+      cart.motorizado = response.data.motorizado
+    //   console.log("Cart enriquecido:", cart);
+      // console.log("Motorizado enriquecido y ws:", cart.motorizado, ws.current);
+      //Conectar a websocket para recibir actualizaciones en tiempo real
+      if (cart.motorizado && ws.current === null) {
+        // Conectar a websocket para recibir actualizaciones en tiempo real
+        ws.current = connectWebSocket(
+          cart.motorizado.id, // idRepartidor
+          cart.id, // idPedido
+          cart.estado, // estado
+          (data) => {
+            console.log(data);
+            if (enRuta === "entregado") {
+              return
+            }
+            if (data.type === "locationResponse") {
+              // Si es 0, 0, entonces el motorizado está teniendo problemas de conexión. Sugerir esperar un momento o recargar la página
+              if (data.data.lat === 0 && data.data.lng === 0) {
+                setMensajeEspera("El repartidor está teniendo problemas de conexión. Por favor, espera un momento o recarga la página.")
+                setEnRuta("espera")
+              }else{
+                // Actualizar la posición del motorizado
+                setEnRuta("ruta")
+                setDriverPosition([data.data.lat, data.data.lng])
+              }
+            } else if (data.type === "canceladoResponse") {
+              // El pedido ha sido cancelado
+              console.log("Pedido cancelado")
+              setEnRuta("cancelado")
+              if (ws) {
+                ws.current?.close();
+              }
+            }else if (data.type === "confirmarResponse") {
+              // El pedido está en proceso de confirmación por parte del administrador
+              setEnRuta("espera")
+              
+              setMensajeEspera("Estamos verificando tu pedido. Por favor, espera un momento.")
+            } else if (data.type === "notYetResponse") {
+              // El motorizado está atendiendo otros pedidos
+              setEnRuta("espera")
+              setMensajeEspera("Tu pedido ha sido verificado. El repartidor está atendiendo otros pedidos.\n Por favor, espera un momento.")
+            } else if (data.type === "entregadoResponse") {
+              // El pedido ha sido entregado
+              //downloadXMLFile(cart); // paraPRD
+              setEnRuta("entregado")
+              // De momento lo enviamos a la página de inicio
+              
+              window.location.href = "/"
+            }
+          },
+          () => {
+            // Handle WebSocket connection close
+            console.log("WebSocket connection closed");
+          }
+        )
+      } else {
+        console.error("Motorizado is undefined")
+      }
+    
+      return cart
+    }
+    catch(e){
+      console.error("Error fetching cart:", error);
+      setShowPopup(true); // Show the error popup
+      //window.location.href = "/"; // Redirect to home
+      throw error; // Propagate the error if necessary
+    }
+    
+  }
+
   useEffect(() => {
     // const sendMessage = async (codigoSeguimiento: string) => {
     //   if (mensajeEnviadoRef.current) return; // Verifica si ya se envió el mensaje
@@ -325,12 +339,14 @@ const TrackingPage: React.FC = () => {
     //   }
     // };
 
-    fetchCart(setDriverPosition, setEnRuta, enRuta, setMensajeEspera, wsRef, codigo,isAuthenticated,userId).then((cart) => {
+    fetchCart(setDriverPosition, setEnRuta, enRuta, setMensajeEspera, wsRef, codigo, isAuthenticated, userId)
+    .then((cart) => {
       setPedido(cart);
       setLoading(false);
-      // if (cart?.codigoSeguimiento && !mensajeEnviadoRef.current) { // Evita envío duplicado usando `ref`
-      //   sendMessage(cart.codigoSeguimiento);
-      // }
+    })
+    .catch((error) => {
+      console.error("Error fetching cart:", error);
+      // You can handle any additional actions on error if necessary
     });
   }, []); // Ejecutar solo al montar el componente
 
@@ -381,6 +397,8 @@ const TrackingPage: React.FC = () => {
   };
 
   return (
+    <>
+    {showPopup && <ErrorPopup mensaje="No se detectó el pedido o usted no cuenta con el permiso para acceder al pedido. Intente nuevamente." />}
     <div>
       <img
         src="/images/bannerFlujoCompra.png"
@@ -516,6 +534,7 @@ const TrackingPage: React.FC = () => {
         )}
       </div>
     </div>
+    </>
   )
 }
 

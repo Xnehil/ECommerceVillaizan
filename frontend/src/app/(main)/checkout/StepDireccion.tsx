@@ -614,7 +614,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
           paddingLeft: "60px",
         }}
       >
-        <BackButton onClick={() => window.history.back()} />
+        <BackButton onClick={() => window.location.href ="/carrito"} />
       </div>
       <div className="content-container mx-auto py-6">
         <Heading className="text-[2rem] leading-[2.75rem] mb-4">

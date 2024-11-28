@@ -349,9 +349,10 @@ export default function MetodoPagoClient({
     setPaymentAmount(null)
   }
 
+  /*
   const handleBackClick = () => {
-    setStep("direccion")
-  }
+    window.location.href = '/checkout?step=direccion'
+  }*/
 
   const calcularTotal = () => {
     const subtotal = calcularSubtotalSinDescuentos()
@@ -438,7 +439,7 @@ export default function MetodoPagoClient({
           paddingLeft: "60px",
         }}
       >
-        <BackButton onClick={handleBackClick} />
+        <BackButton onClick={ () => {window.location.href = '/checkout?step=direccion'}} />
       </div>
 
       <h1
