@@ -122,6 +122,7 @@ export default function MetodoPagoClient({
           ? "plin"
           : "pagoEfec"
       setSelectedImageId(imageId)
+      setPaymentAmount(pedidoInput.pedidosXMetodoPago[0].monto)
     } else if (
       pedidoInput.pedidosXMetodoPago &&
       pedidoInput.pedidosXMetodoPago.length > 1

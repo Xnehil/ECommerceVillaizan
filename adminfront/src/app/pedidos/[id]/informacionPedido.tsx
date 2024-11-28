@@ -25,6 +25,17 @@ interface InformacionPedidoProps {
   pedido: MutableRefObject<Pedido>;
 }
 
+const formatDateAndTime = (date: string | Date | null) => {
+  if (!date) return "Fecha no disponible";
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) return "Fecha no disponible";
+
+  return `${parsedDate.toLocaleDateString()} - ${parsedDate.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+};
+
 const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
   const [open, setOpen] = useState(false);
   const transformEstado = (estado: string) => {
@@ -182,11 +193,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
             type="text"
             placeholder=" "
             disabled={true}
-            value={
-              pedido.current.verificadoEn
-                ? pedido.current.verificadoEn.toLocaleString()
-                : "Fecha no disponible"
-            }
+            value={formatDateAndTime(pedido.current.verificadoEn ?? null)}
           />
         </>
       )}
@@ -218,11 +225,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
           type="text"
           placeholder=" "
           disabled={true}
-          value={
-            pedido.current.entregadoEn
-              ? pedido.current.entregadoEn.toLocaleString()
-              : "Fecha no disponible"
-          }
+          value={formatDateAndTime(pedido.current.entregadoEn ?? null)}
         />
       )}
     </div>
