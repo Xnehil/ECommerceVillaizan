@@ -21,6 +21,7 @@ type PagosParcialesProps = {
   setPaymentAmount: (amount: number | null) => void // Add setPaymentAmount to props
   hideCircle?: boolean // Add hideCircle to props
   onAmountChange?: (id: string, amount: number) => void
+  errorMessage?: string
 }
 
 const PagosParciales: React.FC<PagosParcialesProps> = ({
@@ -35,6 +36,7 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
   selectedImageIds,
   hideCircle = false, // Destructure hideCircle with default value false
   onAmountChange,
+  errorMessage,
 }) => {
   const [isCircleSelected, setIsCircleSelected] = useState(false) // Estado para controlar la selección del círculo
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
@@ -85,79 +87,101 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
   return (
     <div
       style={{
-        ...styles.rectangle,
-        backgroundColor: isSelected ? "rgba(0, 0, 0, 0.1)" : "white", // Oscurecer si hay selección
-        width: width,
-        height: height,
+        display: "flex",
+        flexDirection: "column",
+        gap: "10px",
       }}
     >
-      {!hideCircle && (
-        <div
-          style={{
-            ...styles.circle,
-            backgroundColor: isCircleSelected ? "black" : "white", // Rellenar el círculo si está seleccionado
-          }}
-          onClick={handleCircleClick}
-        ></div>
-      )}
-      <span style={{ ...styles.text, marginLeft: "20px", marginRight: "20px" }}>
-        {text}
-      </span>
-      <div style={{ ...styles.imagesContainer, justifyContent: "right" }}>
-        {images.map((image, index) => (
+      <div
+        style={{
+          ...styles.rectangle,
+          backgroundColor: isSelected ? "rgba(0, 0, 0, 0.1)" : "white", // Oscurecer si hay selección
+          width: width,
+          height: height,
+        }}
+      >
+        {!hideCircle && (
           <div
-            key={index}
             style={{
-              display: "flex",
-              flexDirection: "column",
-              width: "80px",
+              ...styles.circle,
+              backgroundColor: isCircleSelected ? "black" : "white", // Rellenar el círculo si está seleccionado
             }}
-          >
+            onClick={handleCircleClick}
+          ></div>
+        )}
+        <span
+          style={{ ...styles.text, marginLeft: "20px", marginRight: "20px" }}
+        >
+          {text}
+        </span>
+        <div style={{ ...styles.imagesContainer, justifyContent: "right" }}>
+          {images.map((image, index) => (
             <div
-              style={styles.imageWrapper}
-              onMouseEnter={() => handleMouseEnter(index)}
-              onMouseLeave={handleMouseLeave}
-              onClick={() => {
-                onImageClick(image.id)
+              key={index}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                width: "80px",
               }}
             >
-              <img
-                src={image.src}
-                alt={`image-${index}`}
-                style={{
-                  ...styles.image,
-                  padding: image.src.endsWith(".png") ? "10px" : "0",
+              <div
+                style={styles.imageWrapper}
+                onMouseEnter={() => handleMouseEnter(index)}
+                onMouseLeave={handleMouseLeave}
+                onClick={() => {
+                  onImageClick(image.id)
                 }}
-              />
-              {/* Overlay if the image is selected */}
-              {selectedImageIds.includes(image.id) && (
-                <div style={styles.overlay}></div>
-              )}
-              {hoverIndex === index && (
-                <span style={styles.hoverText}>{image.hoverText}</span>
-              )}
+              >
+                <img
+                  src={image.src}
+                  alt={`image-${index}`}
+                  style={{
+                    ...styles.image,
+                    padding: image.src.endsWith(".png") ? "10px" : "0",
+                  }}
+                />
+                {/* Overlay if the image is selected */}
+                {selectedImageIds.includes(image.id) && (
+                  <div style={styles.overlay}></div>
+                )}
+                {hoverIndex === index && (
+                  <span style={styles.hoverText}>{image.hoverText}</span>
+                )}
+              </div>
+              {/* Render the input field outside the imageWrapper */}
+              {selectedImageIds.includes(image.id) &&
+                (selectedImageIds.length > 1 || image.id === "pagoEfec") && (
+                  <input
+                    type="number"
+                    style={styles.input}
+                    placeholder="Monto"
+                    value={
+                      metodosPago.find(
+                        (metodo) =>
+                          metodo.metodoPago.id === getMetodoPagoId(image.id)
+                      )?.monto
+                    }
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value)
+                      onAmountChange && onAmountChange(image.id, value)
+                    }}
+                  />
+                )}
             </div>
-            {/* Render the input field outside the imageWrapper */}
-            {selectedImageIds.includes(image.id) && (
-              <input
-                type="number"
-                style={styles.input}
-                placeholder="Monto"
-                value={
-                  metodosPago.find(
-                    (metodo) =>
-                      metodo.metodoPago.id === getMetodoPagoId(image.id)
-                  )?.monto
-                }
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value)
-                  onAmountChange && onAmountChange(image.id, value)
-                }}
-              />
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+      <span>Aceptamos billetes de hasta 100 soles</span>
+      {errorMessage && errorMessage != "" && (
+        <p
+          style={{
+            color: "red",
+            marginBottom: "10px",
+          }}
+        >
+          {errorMessage}
+        </p>
+      )}
     </div>
   )
 }

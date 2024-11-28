@@ -85,42 +85,45 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
             flexDirection: "column",
           }}
         >
-          {metodosPago?.length > 1 && (
+          {metodosPago?.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column" }}>
               {metodosPago.map((metodo, index) => {
                 const metodoPagoImageName = getMetodoPagoImageName(
                   metodo.metodoPago.nombre
                 )
-                return (
-                  <div
-                    key={index}
-                    style={{
-                      marginBottom: "2px",
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    {metodoPagoImageName &&
-                      metodoPagoImages[metodoPagoImageName] && (
-                        <img
-                          src={metodoPagoImages[metodoPagoImageName].src}
-                          alt={metodoPagoImages[metodoPagoImageName].alt}
-                          style={{ marginRight: "5px", height: "35px" }}
-                        />
-                      )}
-                    <span>{metodo.metodoPago.nombre}</span>
-                    <strong style={{ marginLeft: "5px" }}>
-                      S/{" "}
-                      {isNaN(metodo.monto) ? "0.00" : metodo.monto.toFixed(2)}
-                    </strong>
-                  </div>
-                )
+                if (metodo.monto > 0) {
+                  return (
+                    <div
+                      key={index}
+                      style={{
+                        marginBottom: "2px",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {metodoPagoImageName &&
+                        metodoPagoImages[metodoPagoImageName] && (
+                          <img
+                            src={metodoPagoImages[metodoPagoImageName].src}
+                            alt={metodoPagoImages[metodoPagoImageName].alt}
+                            style={{ marginRight: "5px", height: "35px" }}
+                          />
+                        )}
+                      <span>{metodo.metodoPago.nombre}</span>
+                      <strong style={{ marginLeft: "5px" }}>
+                        S/{" "}
+                        {isNaN(metodo.monto) ? "0.00" : metodo.monto.toFixed(2)}
+                      </strong>
+                    </div>
+                  )
+                }
               })}
             </div>
           )}
-          {metodosPago?.length > 1 &&
+          {metodosPago?.length > 0 &&
             metodosPago.some(
-              (metodo) => metodo.metodoPago.nombre === "Efectivo"
+              (metodo) =>
+                metodo.metodoPago.nombre === "Efectivo" && metodo.monto > 0
             ) &&
             subtotal < calcularPagoTotal() && (
               <>
@@ -132,7 +135,7 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
                 </p>
               </>
             )}
-          <div
+          {/* <div
             style={{
               marginBottom: "2px",
               display: "flex",
@@ -149,10 +152,10 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
             {selectedImageId && (
               <strong style={{ marginLeft: "5px" }}>{metodoPago}</strong>
             )}
-          </div>
+          </div> */}
         </div>
         {/* Mostrar monto y vuelto solo para pago en efectivo */}
-        {selectedImageId === "pagoEfec" && paymentAmount !== null && (
+        {/* {selectedImageId === "pagoEfec" && paymentAmount !== null && (
           <>
             <p style={{ textAlign: "left" }}>Monto a Pagar</p>
             <p style={{ textAlign: "left" }}>
@@ -163,7 +166,7 @@ const EntregaPopup: React.FC<EntregaPopupProps> = ({
               <strong>S/ {(paymentAmount - subtotal).toFixed(2)}</strong>
             </p>
           </>
-        )}
+        )} */}
         <div
           style={{
             ...styles.buttonContainer,
