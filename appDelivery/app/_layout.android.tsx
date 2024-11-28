@@ -12,6 +12,7 @@ import * as Location from "expo-location";
 import WebSocketComponent, {
   WebSocketComponentRef,
 } from "@/components/sockets/websocket";
+
 import { useRef, useState, useEffect } from "react";
 import { useColorScheme } from "@/components/useColorScheme";
 import { LoadScript } from "@react-google-maps/api";
@@ -54,10 +55,19 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY || ""}>
         <Stack initialRouteName="index">
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="home" options={{ headerShown: false }} />
+
+          <Stack.Screen
+            name="inventory"
+            options={{
+              presentation: "card",
+              title: "Actualizar Inventario",
+              headerBackVisible: true,
+            }}
+          />
+
           <Stack.Screen
             name="venta"
             options={{
@@ -67,7 +77,6 @@ function RootLayoutNav() {
             }}
           />
         </Stack>
-      </LoadScript>
     </ThemeProvider>
   );
 }
