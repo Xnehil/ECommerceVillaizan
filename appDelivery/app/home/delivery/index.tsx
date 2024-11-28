@@ -291,13 +291,7 @@ export default function Entregas() {
 
       {!verHistorial && (
         <View style={styles.containerMitad}>
-          <Mapa
-            //location={location}
-            location={stableLocation}
-            pedidoSeleccionado={pedidoSeleccionado}
-            pedidos={pedidosAceptados}
-            mode={modoMultiple}
-          />
+          
         </View>
       )}
 
