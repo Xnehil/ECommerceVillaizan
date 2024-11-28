@@ -251,6 +251,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
             className="mt-1 block w-full p-2 border rounded-md"
             placeholder="Juan Perez"
             onBlur={handleNombreBlur}
+            maxLength={100}
           />
           {nombreValidationError && (
             <p className="text-red-500 mt-2">{nombreValidationError}</p>
@@ -315,6 +316,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
             onBlur={handleDniBlur}
             className="mt-1 block w-full p-2 border rounded-md"
             placeholder="12345678"
+            maxLength={8} // Set the character limit here
           />
           {(dniError || dniValidationError) && (
             <p className="text-red-500 mt-2">{dniError || dniValidationError}</p>
@@ -335,6 +337,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
             onBlur={handleRucBlur}
             className="mt-1 block w-full p-2 border rounded-md"
             placeholder="10XXXXXXXXX"
+            maxLength={11} // Set the character limit here
           />
           {(rucError || rucValidationError) && (
             <p className="text-red-500 mt-2">{rucError || rucValidationError}</p>
@@ -359,6 +362,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
             placeholder="987654321"
             onChange={handleTelefonoChange}
             onBlur={handleTelefonoBlur}
+            maxLength={9}
           />
           {(telefonoError || telefonoValidationError) && (
             <p className="text-red-500 mt-2">
@@ -423,6 +427,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
                   placeholder="Calle Malvinas 123"
                   ref={inputRef}
                   onBlur={handleDireccionBlur}
+                  maxLength={255}
                 />
                 {(locationError || direccionValidationError) && (
                   <p className="text-red-500 mt-2">
@@ -444,6 +449,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
                   onChange={handleNroInteriorChange}
                   className="mt-1 block w-full p-2 border rounded-md"
                   placeholder="No rellenar si no aplica"
+                  maxLength={20}
                 />
               </div>
             </div>
@@ -469,6 +475,7 @@ const AddressFormParent: React.FC<AddressFormParentProps> = ({
                 className="mt-1 block w-full p-2 border rounded-md"
                 placeholder="Esquina del parque Tres Marías"
                 onBlur={handleReferenciaBlur}
+                maxLength={255}
               />
               {referenciaValidationError && (
                 <p className="text-red-500 mt-2">{referenciaValidationError}</p>

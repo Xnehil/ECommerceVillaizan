@@ -105,10 +105,16 @@ export const PedidoRepository = dataSource
         .leftJoinAndSelect("direccion.ciudad", "ciudad")
         .leftJoinAndSelect("direccion.ubicacion", "ubicacion")
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
-        .leftJoinAndSelect("pedido.usuario", "usuario")
+        .leftJoinAndSelect("motorizado.usuario", "usuarioMotorizado") // Unique alias
+        .leftJoinAndSelect("pedido.usuario", "usuario") // Keep original alias for pedido.usuario
         .leftJoinAndSelect("usuario.persona", "persona")
         .leftJoinAndSelect("usuario.rol", "rol")
-        .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago",  "pedidosXMetodoPago.estaActivo = :estaActivo", { estaActivo: true })
+        .leftJoinAndSelect(
+          "pedido.pedidosXMetodoPago",
+          "pedidosXMetodoPago",
+          "pedidosXMetodoPago.estaActivo = :estaActivo",
+          { estaActivo: true }
+        )
         .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
         .leftJoinAndSelect("pedidosXMetodoPago.pago", "pago")
         .leftJoinAndSelect("pedido.detalles", "detalles")

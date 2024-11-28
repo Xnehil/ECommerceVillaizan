@@ -22,6 +22,10 @@ export async function handleSignOut() {
     localStorage.removeItem('nroInterior');
     localStorage.removeItem('referencia');
     localStorage.removeItem('telefono');
+    localStorage.removeItem('comprobante');
+    localStorage.removeItem('ruc');
+    localStorage.removeItem('selectedAddressId');
+    localStorage.removeItem('selectedLocation');
   }
   await signOut();
 }

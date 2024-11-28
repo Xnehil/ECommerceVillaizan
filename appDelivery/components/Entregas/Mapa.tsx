@@ -201,7 +201,7 @@ const MapComponent: React.FC<MapProps> = ({
     };
 
     getRoute();
-  }, [location, pedidoLocations, mode]);
+  }, [location, pedidoLocations]);
 
   // Calcula el radio del círculo según el nivel de zoom
   const calculateCircleRadius = (zoom: number) => {

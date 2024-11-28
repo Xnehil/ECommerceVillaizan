@@ -514,12 +514,16 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         if (session?.user?.id) {
           try {
             // Clear specific localStorage values if user is logged in
-            localStorage.removeItem("calle")
-            localStorage.removeItem("dni")
-            localStorage.removeItem("nombre")
-            localStorage.removeItem("nroInterior")
-            localStorage.removeItem("referencia")
-            localStorage.removeItem("telefono")
+            localStorage.removeItem('calle');
+            localStorage.removeItem('dni');
+            localStorage.removeItem('nombre');
+            localStorage.removeItem('nroInterior');
+            localStorage.removeItem('referencia');
+            localStorage.removeItem('telefono');
+            localStorage.removeItem('comprobante');
+            localStorage.removeItem('ruc');
+            localStorage.removeItem('selectedAddressId');
+            localStorage.removeItem('selectedLocation');
 
             const response = await axios.get(
               `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/admin/usuario/${session.user.id}`
@@ -579,7 +583,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     const savedReferencia = decryptData(localStorage.getItem("referencia"));
     const savedComprobante = decryptData(localStorage.getItem("comprobante"));
     const savedAddressId = decryptData(localStorage.getItem("selectedAddressId"));
+    const savedRuc = decryptData(localStorage.getItem("ruc"));
 
+    if(savedRuc) setNumeroRuc(savedRuc)
     if (savedNombre) setNombre(savedNombre)
     if (savedTelefono) setTelefono(savedTelefono)
     if (savedDni) setNumeroDni(savedDni)

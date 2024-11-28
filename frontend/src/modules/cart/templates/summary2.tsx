@@ -14,12 +14,13 @@ type Summary2Props = {
   checkFormValidity: () => boolean;
   showErrorValidacion: boolean;
   mensajeErrorValidacion: string;
+  href?: string; // Optional href prop
 };
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
 
-const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormValidity,showErrorValidacion,mensajeErrorValidacion }: Summary2Props) => {
+const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormValidity,showErrorValidacion,mensajeErrorValidacion,href }: Summary2Props) => {
   const [minimo, setMinimo] = useState<number>(25); // Default value, will be updated after fetch
   const [costoEnvio, setCostoEnvio] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true); // For loading state
@@ -131,6 +132,9 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormVa
         e.preventDefault(); // Prevent any unintended behavior
       } else {
         handleClick(); // Normal click handler
+        if (href) {
+          window.location.href = href; // Navigate to the specific href if provided
+        }
       }
     }}
     onMouseEnter={() => {

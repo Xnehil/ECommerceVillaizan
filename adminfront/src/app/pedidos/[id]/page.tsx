@@ -50,7 +50,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         // console.log(a.current);
         a.current = a.current + 1;
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${idPedido}/conDetalle?pedido=true`
+          `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${idPedido}`
         );
         if (!response) {
           throw new Error("Failed to fetch pedido");

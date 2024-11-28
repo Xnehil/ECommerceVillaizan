@@ -578,7 +578,7 @@ const EntregarPedido = () => {
         motivoCancelacion: motivo,
       });
       mostrarMensaje("Entrega reasignada");
-      router.push({
+      router.replace({
         pathname: "/home/delivery/cancelada",
         params: {},
       });
@@ -735,7 +735,7 @@ const EntregarPedido = () => {
           urlEvidencia: urlPedido,
         });
 
-        router.push({
+        router.replace({
           pathname: "/home/delivery/confirmada",
           params: {},
         });
@@ -808,7 +808,10 @@ const EntregarPedido = () => {
         `${BASE_URL}/pedido/${idPedido}/conDetalle?pedido=true`
       );
       const pedidoDataDetalle = pedidoResponseDetalle.data.pedido;
-
+      if (pedidoDataDetalle.estado.toLowerCase() === "entregado") {
+        router.replace("/home/delivery");
+        return;
+      }
       const pedidoResponse = await axios.get(
         `${BASE_URL}/pedido/${idPedido}?enriquecido=true`
       );

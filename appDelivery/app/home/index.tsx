@@ -127,6 +127,7 @@ export default function TabOneScreen() {
 
   useEffect(() => {
     obtenerMotorizado();
+
   }, []);
 
   // Función para actualizar el estado 'estaActivo' en la base de datos
@@ -135,7 +136,7 @@ export default function TabOneScreen() {
       try {
         const response = await axios.put(
           `${BASE_URL}/motorizado/${motorizado.id}`,
-          { disponible: false }
+          { disponible: true }
         );
         console.log(response.data);
         console.log("Estado del motorizado actualizado con éxito.");

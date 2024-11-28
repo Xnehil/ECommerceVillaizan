@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, BackHandler } from 'react-native';
 import { router } from "expo-router";
 import { FontAwesome } from '@expo/vector-icons'; // Asegúrate de tener FontAwesome instalado
 import TabBarIcon from '@/components/StyledIcon';
@@ -7,17 +7,24 @@ import { useRoute } from "@react-navigation/native";
 
 const DeliverySuccessScreen = () => {
 
-  // Redirige después de 3 segundos
   useEffect(() => {
+    // Bloquea el botón físico de retroceso
+    const blockBackPress = () => true; // Retorna true para deshabilitar retroceso
+    BackHandler.addEventListener('hardwareBackPress', blockBackPress);
+
+    // Redirige después de 3 segundos
     const timer = setTimeout(() => {
-      router.push({
+      router.replace({
         pathname: "/home/delivery",
       });
     }, 3000);
 
-    // Limpia el timeout si el componente se desmonta
-    return () => clearTimeout(timer);
-  }, [router]);
+    // Limpieza: elimina el listener y el timeout si el componente se desmonta
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', blockBackPress);
+      clearTimeout(timer);
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
