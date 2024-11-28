@@ -19,7 +19,7 @@ export default function Footer() {
     {
       id: 3,
       title: "Canjear puntos",
-      handle: "https://puntos.paletasvillaizan.tech",
+      handle: "https://canje.heladosvillaizan.tech/",
     }
   ];
 

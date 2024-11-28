@@ -196,7 +196,7 @@ export default function Nav() {
                       <Link href="/historial" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)}>
                         Historial de pedidos
                       </Link>
-                      <a href="https://puntos.heladosvillaizan.tech" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)} target="_blank" rel="noopener noreferrer">
+                      <a href="https://canje.heladosvillaizan.tech/" className="block px-4 py-2 text-gray-800 hover:bg-gray-200 font-sans" onClick={() => setIsDropdownOpen(false)} target="_blank" rel="noopener noreferrer">
                         Canjear puntos
                       </a>
                       <button
