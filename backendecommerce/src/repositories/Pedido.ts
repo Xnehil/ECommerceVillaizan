@@ -60,6 +60,7 @@ export const PedidoRepository = dataSource
       return this.createQueryBuilder("pedido")
         .leftJoinAndSelect("pedido.direccion", "direccion")
         .leftJoinAndSelect("direccion.ciudad", "ciudad") // Add this line to include ciudad
+        .leftJoinAndSelect("direccion.ubicacion", "ubicacion")
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
         .leftJoinAndSelect("pedido.usuario", "usuario")
         .where("pedido.codigoSeguimiento = :codigoSeguimiento", { codigoSeguimiento })

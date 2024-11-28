@@ -37,8 +37,19 @@ import { useRef } from "react";
 import { Picker } from "@react-native-picker/picker";
 import * as Linking from "expo-linking";
 import { Platform } from "react-native";
+import { Camera } from "expo-camera";
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 
 const EntregarPedido = () => {
+
+  const [facing, setFacing] = useState<CameraType>('back');
+  const [permission, requestPermission] = useCameraPermissions();
+
+ 
+    const [isCameraActive, setIsCameraActive] = useState(false); // Para controlar la visibilidad de la cámara
+
+
+
   const route = useRoute();
   const { pedido } = (route.params as { pedido?: string }) || { pedido: null };
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -53,7 +64,6 @@ const EntregarPedido = () => {
   const [fotosPago, setFotosPago] = useState<Record<string, string | null>>({});
 
   const [imageOptionsVisible, setImageOptionsVisible] = useState(false);
-  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [mensajeModal, setMensajeModal] = useState<string | null>(null);
   const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion" | "si/no">(
@@ -290,6 +300,9 @@ const EntregarPedido = () => {
     setNuevoMetodoPago(metodoPagoVacio);
     setEditPagoModalVisible(false);
   };
+  function toggleCameraFacing() {
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
+  }
 
   const mostrarMensaje = (
     mensaje: string,
@@ -318,11 +331,6 @@ const EntregarPedido = () => {
     setResolveCallback(null);
   };
 
-  useEffect(() => {
-    if (videoStream && videoRef.current) {
-      videoRef.current.srcObject = videoStream; // Asigna el stream al video
-    }
-  }, [videoStream]);
   const renderImageOptionsModal = () => {
     // Función auxiliar para obtener la URI de la imagen a mostrar
     const getImageUri = (): string => {
@@ -341,91 +349,25 @@ const EntregarPedido = () => {
         transparent={true}
         onRequestClose={() => setImageOptionsVisible(false)}
       >
-        {imageView ? (
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Vista previa de la imagen</Text>
-            <Image
-              source={{ uri: getImageUri() }}
-              style={styles.previewImage}
-            />
-            <TouchableOpacity
-              style={styles.optionButton}
-              onPress={() => {
-                setImageOptionsVisible(false);
-                setImageView(false);
-              }}
-            >
-              <Text style={styles.optionButtonText}>Aceptar</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.rejectButton}
-              onPress={() => {
-                setImageView(false); // Permite cambiar la imagen
-              }}
-            >
-              <Text style={styles.optionButtonText}>Cambiar foto</Text>
+        <>
+        <View style={styles.optionButton}>
+          <TouchableOpacity onPress={() => setIsCameraActive(!isCameraActive)}>
+            <Text style={styles.optionButtonText}>
+              {isCameraActive ? "Desactivar Cámara" : "Activar Cámara"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        {isCameraActive && (
+          <CameraView style={styles.camera} facing={facing}>
+          <View style={styles.buttonContainer2}>
+            <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
+              <Text style={styles.text}>Flip Camera</Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
-
-            {videoStream ? (
-              <View style={styles.videoWrapper}>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  onLoadedMetadata={() => {
-                    console.log("Video cargado y listo para capturar.");
-                  }}
-                  style={styles.video}
-                />
-                <TouchableOpacity
-                  style={styles.captureButtonOverlay}
-                  onPress={() =>
-                    capturePhoto(currentImageId!, currentImageType!)
-                  }
-                >
-                  <Text style={styles.captureButtonText}>Tomar Foto</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <>
-                <TouchableOpacity
-                  style={styles.optionButton}
-                  onPress={() =>
-                    handleCameraCapture(currentImageId!, currentImageType!)
-                  }
-                >
-                  <Text style={styles.optionButtonText}>Tomar Foto</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.optionButton}
-                  onPress={() =>
-                    handleImageSelection(currentImageId!, currentImageType!)
-                  }
-                >
-                  <Text style={styles.optionButtonText}>
-                    Seleccionar de la Galería
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
-
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => {
-                videoStream?.getTracks().forEach((track) => track.stop());
-                setVideoStream(null);
-                setImageOptionsVisible(false);
-              }}
-            >
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
+        </CameraView> 
         )}
+        </>
+        
       </Modal>
     );
   };
@@ -440,27 +382,16 @@ const EntregarPedido = () => {
 
   const showImageOptions = (id: string, tipo: "pedido" | "pago") => {
     if (tipo === "pedido") {
-      if (fotoPedido) {
-        // Si ya hay una imagen de pedido, mostrar vista previa
-        handleImageView(id, tipo);
-      } else {
-        // Si no hay imagen de pedido, permitir selección o captura
-        setCurrentImageId(id);
-        setCurrentImageType(tipo);
-        setImageOptionsVisible(true);
-      }
+      setCurrentImageId(id);
+      setCurrentImageType(tipo);
+      setImageOptionsVisible(true); // Abre la cámara para capturar foto
     } else if (tipo === "pago") {
-      if (fotosPago[id]) {
-        // Si ya hay una imagen asociada a este método de pago, mostrar vista previa
-        handleImageView(id, tipo);
-      } else {
-        // Si no hay imagen de pago, permitir selección o captura
-        setCurrentImageId(id);
-        setCurrentImageType(tipo);
-        setImageOptionsVisible(true);
-      }
+      setCurrentImageId(id);
+      setCurrentImageType(tipo);
+      setImageOptionsVisible(true); // Abre la cámara para capturar foto
     }
   };
+
   const handleImageSelection = async (id: string, tipo: "pedido" | "pago") => {
     const input = document.createElement("input");
     input.type = "file";
@@ -491,52 +422,10 @@ const EntregarPedido = () => {
     setImageOptionsVisible(false); // Cierra el modal
   };
 
-  const handleCameraCapture = async (id: string, tipo: "pedido" | "pago") => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      setVideoStream(stream);
-    } catch (error) {
-      console.error("Error al acceder a la cámara:", error);
-      mostrarMensaje("No se pudo acceder a la cámara.", "confirmacion");
-    }
-  };
 
-  const capturePhoto = (id: string, tipo: "pedido" | "pago") => {
-    const video = videoRef.current;
 
-    if (!video || !video.videoWidth || !video.videoHeight) {
-      console.error("El video no está listo para capturar.");
-      mostrarMensaje(
-        "Espere a que el video esté listo para capturar la foto.",
-        "confirmacion"
-      );
-      return;
-    }
-
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    context?.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const imageData = canvas.toDataURL("image/png");
-
-    if (tipo === "pedido") {
-      setFotoPedido(imageData); // Asigna la imagen al estado de pedido
-    } else if (tipo === "pago") {
-      setFotosPago((prev) => ({
-        ...prev,
-        [id]: imageData, // Asigna la imagen al método de pago correspondiente
-      }));
-    }
-
-    videoStream?.getTracks().forEach((track) => track.stop()); // Detener la cámara
-    setVideoStream(null); // Limpiar el stream
-    setImageOptionsVisible(false); // Cerrar el modal
+  const closeCamera = () => {
+    setIsCameraActive(false);
   };
 
   const enviarImagen = async (id: string, tipo: "pedido" | "pago") => {
@@ -546,7 +435,7 @@ const EntregarPedido = () => {
         if (!fotoPedido) throw new Error("No hay imagen de pedido disponible.");
 
         const fileUrl = await uploadImage(fotoPedido, `${tipo}-${id}`);
-        //mostrarMensaje("Imagen de pedido enviada con éxito");
+        mostrarMensaje("Imagen de pedido enviada con éxito");
         return { [id]: fileUrl }; // Retorna un objeto con la URL de la imagen del pedido
       } else if (tipo === "pago") {
         // Manejar imágenes de pago
@@ -565,7 +454,7 @@ const EntregarPedido = () => {
           }
         }
 
-        //mostrarMensaje("Imágenes de métodos de pago enviadas con éxito");
+        mostrarMensaje("Imágenes de métodos de pago enviadas con éxito");
         return urls; // Retorna un objeto con las URLs generadas para cada método de pago
       }
     } catch (error) {
@@ -630,7 +519,6 @@ const EntregarPedido = () => {
   };
 
   const confirmarEntrega = async () => {
-
     try {
       const fotosPagoNecesarias = pedidoCompleto?.pedidosXMetodoPago?.length;
       if (fotoPedido === null || fotoPedido === undefined) {
@@ -644,7 +532,6 @@ const EntregarPedido = () => {
         return;
       }
       setIsLoading(true);
-
       const urlPedido = await enviarImagen(parsedPedido.id, "pedido");
       const urlPago = await enviarImagen(parsedPedido.id, "pago");
       if (urlPago === undefined || urlPago === null) {
@@ -672,8 +559,9 @@ const EntregarPedido = () => {
             );
         } catch (error) {
           console.error("Error calculating totalPaletas:", error);
+          setIsLoading(false);
+
         }
-        let error_pxm = null;
 
         try {
           totalMafaletas = detalles
@@ -687,6 +575,8 @@ const EntregarPedido = () => {
             );
         } catch (error) {
           console.error("Error calculating totalMafaletas:", error);
+          setIsLoading(false);
+
         }
 
         const venta: Venta = {
@@ -724,22 +614,10 @@ const EntregarPedido = () => {
             estaActivo: true,
           };
 
+          console.log(pago);
+
           // Agregar la promesa de axios al array
-          promesasPagos.push(
-            axios
-              .post(`${BASE_URL}/pago`, pago)
-              .then((response) => {
-                console.log("Pago exitoso:", response.data);
-                return response.data;
-              })
-              .catch((error) => {
-                console.error(
-                  "Error en el pago:",
-                  error.response?.data || error.message
-                );
-                throw error;
-              })
-          );
+          promesasPagos.push(axios.post(`${BASE_URL}/pago`, pago));
         }
 
         // Usar Promise.all para esperar a que todas las solicitudes se completen
@@ -760,10 +638,9 @@ const EntregarPedido = () => {
               );
               continue;
             }
+            let error_pxm = null;
             try {
               // Enlazar el pago con pedidosXMetodoPago
-              console.log("MetodopagoId: ", metodoPago.id);
-              console.log("Pagoactualizado id", pagoActualizado.id);
               await axios.put(
                 `${BASE_URL}/pedidoXMetodoPago/${metodoPago.id}`,
                 {
@@ -790,16 +667,12 @@ const EntregarPedido = () => {
           console.error("Ocurrió un error al procesar los pagos:", error);
           setIsLoading(false);
 
-          error_pxm = error;
         }
-        if (error_pxm) {
-          throw error_pxm;
-        }
+
         await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
           estado: "entregado",
           urlEvidencia: urlPedido,
         });
-        setIsLoading(false);
 
         router.replace({
           pathname: "/home/delivery/confirmada",
@@ -812,6 +685,7 @@ const EntregarPedido = () => {
       setIsLoading(false);
 
     }
+    setIsLoading(false);
 
   };
 
@@ -841,6 +715,7 @@ const EntregarPedido = () => {
       {
         id: "mp_01JBDQD78HBD6A0V1DVMEQAFKV",
         nombre: "Yape",
+        
         estaActivo: false,
       },
       {
@@ -1236,7 +1111,7 @@ const EntregarPedido = () => {
                                 nombre:
                                   devMetodos.find((m) => m.id === itemValue)
                                     ?.nombre || "",
-
+                                
                                 estaActivo:
                                   devMetodos.find((m) => m.id === itemValue)
                                     ?.estaActivo || true,
@@ -1305,7 +1180,7 @@ const EntregarPedido = () => {
                     ...prev,
                     metodoPago: {
                       id: selectedMetodo?.id || "-1",
-
+                      
                       estaActivo: selectedMetodo?.estaActivo || true,
                       nombre: selectedMetodo?.nombre || "",
                     },
@@ -1810,6 +1685,30 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignContent: "center",
     justifyContent: "center",
+  },
+
+
+
+
+
+  camera: {
+    flex: 1,
+  },
+  buttonContainer2: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: 'transparent',
+    margin: 64,
+  },
+  button: {
+    flex: 1,
+    alignSelf: 'flex-end',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
   },
 });
 

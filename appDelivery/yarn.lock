@@ -4399,6 +4399,13 @@ expo-av@^14.0.7:
   resolved "https://registry.npmjs.org/expo-av/-/expo-av-14.0.7.tgz"
   integrity sha512-FvKZxyy+2/qcCmp+e1GTK3s4zH8ZO1RfjpqNxh7ARlS1oH8HPtk1AyZAMo52tHz3yQ3UIqxQ2YbI9CFb4065lA==
 
+expo-camera@^16.0.7:
+  version "16.0.7"
+  resolved "https://registry.npmjs.org/expo-camera/-/expo-camera-16.0.7.tgz"
+  integrity sha512-F4msGjXMa2WJ6Gest9HVA8i0txwfuwNSbGtlbgcTr5givNWfxIwx5DuW+i7w+Xstv2YqSJL3qFAAIZgHfygHTQ==
+  dependencies:
+    invariant "^2.2.4"
+
 expo-constants@*, expo-constants@~16.0.0:
   version "16.0.2"
   resolved "https://registry.npmjs.org/expo-constants/-/expo-constants-16.0.2.tgz"
@@ -7643,7 +7650,7 @@ react-native-vector-icons@>7.0.0:
     prop-types "^15.7.2"
     yargs "^16.1.1"
 
-"react-native-web@>= 0.11", react-native-web@~0.19.10:
+react-native-web@*, "react-native-web@>= 0.11", react-native-web@~0.19.10:
   version "0.19.12"
   resolved "https://registry.npmjs.org/react-native-web/-/react-native-web-0.19.12.tgz"
   integrity sha512-o2T0oztoVDQjztt4YksO9S1XRjoH/AqcSvifgWLrPJgGVbMWsfhILgl6lfUdEamVZzZSVV/2gqDVMAk/qq7mZw==
@@ -7867,6 +7874,7 @@ remove-trailing-slash@^0.1.0:
     expo "~51.0.28"
     expo-auth-session "~5.5.2"
     expo-av "^14.0.7"
+    expo-camera "^16.0.7"
     expo-font "~12.0.9"
     expo-linking "~6.3.1"
     expo-location "~17.0.1"

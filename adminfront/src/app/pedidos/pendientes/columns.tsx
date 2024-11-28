@@ -15,7 +15,7 @@ import { Pedido } from "@/types/PaquetePedido";
 
 export const columns: ColumnDef<Pedido>[] = [
   {
-    accessorKey: "id",
+    accessorKey: "codigoSeguimiento",
     header: "Pedido",
     cell: ({ row }) => {
       const identificador = row.original.codigoSeguimiento;

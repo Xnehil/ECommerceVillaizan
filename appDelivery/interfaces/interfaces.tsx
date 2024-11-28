@@ -1,10 +1,6 @@
 export interface Usuario {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   nombre: string;
   apellido: string;
@@ -36,11 +32,7 @@ export interface Ciudad {
 
 export interface DetallePedido {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   cantidad: number;
   subtotal: string;
@@ -49,11 +41,7 @@ export interface DetallePedido {
 
 export interface Producto {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   codigo: string;
   nombre: string;
@@ -72,11 +60,7 @@ export interface Producto {
 
 export interface Pedido {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  creadoEn:Date|null;
   estaActivo: boolean;
   estado: string;
   prioridadEntrega: string | null;
@@ -101,11 +85,7 @@ export interface Pedido {
 
 export interface Direccion {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   calle: string;
   numeroExterior: string;
@@ -119,11 +99,7 @@ export interface Direccion {
 
 export interface Ubicacion {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   latitud: string;
   longitud: string;
@@ -131,11 +107,7 @@ export interface Ubicacion {
 
 export interface Motorizado {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   placa: string;
   urlImagen: string | null;
@@ -150,11 +122,7 @@ export interface MotorizadoResponse {
 }
 export interface InventarioMotorizado {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   stock: number;
   stockMinimo: number;
@@ -171,11 +139,7 @@ export interface InventarioMotorizadoResponse {
 
 export interface MetodoDePago {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   nombre: string;
 }
@@ -200,11 +164,7 @@ export interface Venta {
 
 export interface Pago {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   esTransferencia: boolean;
   montoCobrado: number;
@@ -219,11 +179,7 @@ export interface Pago {
 
 export interface Banco {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   nombre: string;
 }
@@ -234,11 +190,7 @@ export interface PagoResponse {
 
 export interface TipoProducto {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   nombre: string;
   subcategorias: Subcategoria[];
@@ -246,11 +198,7 @@ export interface TipoProducto {
 
 export interface Subcategoria {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   nombre: string;
   tipoProducto: TipoProducto[];
@@ -258,11 +206,7 @@ export interface Subcategoria {
 
 export interface Notificacion {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   asunto: string;
   descripcion: string | null;
@@ -274,11 +218,7 @@ export interface Notificacion {
 
 export interface PedidoXMetodoPago {
   id: string;
-  creadoEn: string;
-  actualizadoEn: string;
-  desactivadoEn: string | null;
-  usuarioCreacion: string;
-  usuarioActualizacion: string | null;
+  
   estaActivo: boolean;
   monto: number;
   pedido: Pedido;
