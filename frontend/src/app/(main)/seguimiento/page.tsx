@@ -177,6 +177,7 @@ const TrackingPage: React.FC = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [modalMessage, setModalMessage] = useState("");
+  const [mensajePopup, setMensajePopup] = useState<string>("");
    // Función para abrir el modal de confirmación
    const handleCancelClick = () => {
     setShowConfirmModal(true);
@@ -304,8 +305,9 @@ const TrackingPage: React.FC = () => {
               //downloadXMLFile(cart); // paraPRD
               setEnRuta("entregado")
               // De momento lo enviamos a la página de inicio
-              
-              window.location.href = "/"
+              setShowPopup(true); // Show the error popup
+              setMensajePopup("🍦 *Paletas Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉 Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega: <a href='https://bit.ly/4fLaj5h' target='_blank' rel='noopener noreferrer'>Encuesta de Satisfacción</a>");
+              //window.location.href = "/"
             }
           },
           () => {
@@ -322,6 +324,7 @@ const TrackingPage: React.FC = () => {
     catch(e){
       console.error("Error fetching cart:", error);
       setShowPopup(true); // Show the error popup
+      setMensajePopup("No se detectó el pedido o usted no cuenta con el permiso para acceder al pedido. Intente nuevamente.");
       //window.location.href = "/"; // Redirect to home
       throw error; // Propagate the error if necessary
     }
@@ -405,7 +408,7 @@ const TrackingPage: React.FC = () => {
 
   return (
     <>
-    {showPopup && <ErrorPopup mensaje="No se detectó el pedido o usted no cuenta con el permiso para acceder al pedido. Intente nuevamente." />}
+    {showPopup && <ErrorPopup mensaje={mensajePopup} />}
     <div>
       <img
         src="/images/bannerFlujoCompra.png"
