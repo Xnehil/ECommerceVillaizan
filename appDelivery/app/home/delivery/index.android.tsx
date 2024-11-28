@@ -99,6 +99,16 @@ export default function Entregas() {
     }
   };
 
+   // UseEffect para ejecutar fetchPedidos cada 10 segundos
+   useEffect(() => {
+    const interval = setInterval(() => {
+      fetchPedidos();
+    }, 10000); // 10 segundos
+
+    // Limpiar el intervalo cuando el componente se desmonte
+    return () => clearInterval(interval);
+  }, [usuario]);
+  
   useEffect(() => {
     getDataMemory();
   }, []);
@@ -275,13 +285,6 @@ export default function Entregas() {
     });
   }, [onMessage]);
 
-  useEffect(()=>{
-    const interval = setInterval(() =>{
-      fetchPedidos();
-    },10000);
-    return () => clearInterval(interval);
-  },[usuario]);
-
   return (
     <View style={styles.container}>
       {!verHistorial && (
@@ -298,13 +301,7 @@ export default function Entregas() {
 
       {!verHistorial && (
         <View style={styles.containerMitad}>
-          <Mapa
-            //location={location}
-            location={stableLocation}
-            pedidoSeleccionado={pedidoSeleccionado}
-            pedidos={pedidosAceptados}
-            mode={modoMultiple}
-          />
+          
         </View>
       )}
 
