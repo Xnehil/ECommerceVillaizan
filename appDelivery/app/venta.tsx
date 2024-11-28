@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -21,10 +21,13 @@ import {
   Pedido,
   Usuario,
   Venta,
+  Pago,
+  PedidoXMetodoPago,
 } from "@/interfaces/interfaces";
 import { getMotorizadoData, getUserData } from "@/functions/storage";
 import { FontAwesome } from "@expo/vector-icons";
 import HistorialVentas from "@/components/venta/SaleHistory";
+import TabBarIcon from "@/components/StyledIcon";
 
 export default function SeleccionarProductos({ navigation }: any) {
   const [mostrarHistorial, setMostrarHistorial] = useState(false);
@@ -34,15 +37,69 @@ export default function SeleccionarProductos({ navigation }: any) {
     { producto: Producto; cantidad: number }[]
   >([]);
   const [mensajeModal, setMensajeModal] = useState<string | null>(null);
-  const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion">("auto");
+  const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion" | "si/no">(
+    "auto"
+  );
 
   const [metodosPago, setMetodosPago] = useState<MetodoDePago[]>([]);
   const [metodoPagoSelect, setMetodoPagoSelect] = useState<MetodoDePago | null>(
     null
   );
+  const [fotoPedido, setFotoPedido] = useState<string | null>(null);
+  const [fotosPago, setFotosPago] = useState<Record<string, string | null>>({});
+  const [metodosPagoSeleccionados, setMetodosPagoSeleccionados] = useState<
+    { metodo: MetodoDePago; monto: number; evidencia: string | null }[]
+  >([]);
+  const [imageView, setImageView] = useState<boolean>(false);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [imageOptionsVisible, setImageOptionsVisible] = useState(false);
+  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
+  const [currentImageType, setCurrentImageType] = useState<
+    "pedido" | "pago" | null
+  >(null);
   const [imagenPago, setImagenPago] = useState<string | null>(null);
   const [mostrarResumen, setMostrarResumen] = useState<boolean>(false);
   const [totalResumen, setTotalResumen] = useState<number>(0);
+  const [resolveCallback, setResolveCallback] = useState<null | Function>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const mostrarMensaje = (
+    mensaje: string,
+    tipo: "auto" | "si/no" | "confirmacion" = "auto"
+  ): Promise<boolean> => {
+    setMensajeModal(mensaje);
+    setTipoModal(tipo);
+
+    if (tipo === "auto") {
+      setTimeout(() => setMensajeModal(null), 3000);
+      return Promise.resolve(false); // No necesita confirmación
+    }
+
+    if (tipo === "si/no") {
+      return new Promise((resolve) => {
+        setResolveCallback(() => resolve); // Guardamos el resolve para usar después
+      });
+    }
+
+    return Promise.resolve(false);
+  };
+
+  const toggleMetodoPago = (metodo: MetodoDePago) => {
+    setMetodosPagoSeleccionados((prev) => {
+      const exists = prev.find((item) => item.metodo.id === metodo.id);
+      if (exists) {
+        return prev.filter((item) => item.metodo.id !== metodo.id);
+      } else {
+        return [...prev, { metodo, monto: 0, evidencia: null }];
+      }
+    });
+  };
+
+  const updateMontoMetodoPago = (id: string, monto: number) => {
+    setMetodosPagoSeleccionados((prev) =>
+      prev.map((item) => (item.metodo.id === id ? { ...item, monto } : item))
+    );
+  };
 
   useEffect(() => {
     obtenerMetodosPago();
@@ -59,11 +116,26 @@ export default function SeleccionarProductos({ navigation }: any) {
   };
 
   const confirmarVenta = async () => {
-    if (metodoPagoSelect === null || metodoPagoSelect.nombre === null) {
-      mostrarMensaje("Seleccione un método de pago");
+    if (metodosPagoSeleccionados.length === 0) {
+      mostrarMensaje("Debes seleccionar al menos un método de pago.", "auto");
       return;
     }
     try {
+      //Confirmar suma de montos
+      const sumaMontos = metodosPagoSeleccionados.reduce(
+        (acc, item) => acc + item.monto,
+        0
+      );
+      if (sumaMontos !== totalResumen) {
+        mostrarMensaje(
+          "La suma de los montos de los métodos de pago no coincide con eltotal de la venta.",
+          "auto"
+        );
+        return;
+      }
+
+      
+
       // Crear los DetallePedido y obtener sus IDs
       const detallePedidosPromises = productosSeleccionados.map(
         async (productoSeleccionado) => {
@@ -95,23 +167,29 @@ export default function SeleccionarProductos({ navigation }: any) {
 
       const motorizado = await getMotorizadoData();
 
-      const pedidoCompleto = {
+      const pedidoCompleto: Pedido = {
         id: "",
-        estado: "Pendiente",
+        estado: "Entregado",
         prioridadEntrega: null,
-        total: totalResumen.toString(),
+        total: totalResumen,
         puntosOtorgados: 0,
         motivoCancelacion: null,
-        montoEfectivoPagar: totalResumen.toString(),
+        montoEfectivoPagar: totalResumen,
         motorizado: motorizado,
         direccion: null,
         usuario: { id: GENERIC_USER } as Usuario,
         urlEvidencia: null,
         detalles,
-        metodosPago:
-          metodoPagoSelect && metodoPagoSelect.nombre
-            ? metodosPago.filter((mp) => mp.nombre === metodoPagoSelect.nombre)
-            : [],
+        pagado: false,
+        codigoSeguimiento: "Venta directa",
+        pedidosXMetodoPago: null,
+        creadoEn: "",
+        actualizadoEn: "",
+        desactivadoEn: null,
+        usuarioCreacion: "",
+        usuarioActualizacion: null,
+        estaActivo: true,
+        pagos: null,
       };
       const pedidoResponse = await axios.post(
         `${BASE_URL}/pedido`,
@@ -120,13 +198,49 @@ export default function SeleccionarProductos({ navigation }: any) {
       const pedidoId = pedidoResponse.data.pedido.id;
       console.log(pedidoResponse);
 
+      //Guardar pedidoXMetodoPago
+      const pedidoXMetodoPagoPromises = metodosPagoSeleccionados.map(
+        async (metodoPagoSeleccionado) => {
+          const metodoPago = metodoPagoSeleccionado.metodo;
+          const monto = metodoPagoSeleccionado.monto;
+
+          const pedidoXMetodoPago: PedidoXMetodoPago = {
+            id: "",
+            monto,
+            metodoPago: metodoPago,
+            creadoEn: "",
+            actualizadoEn: "",
+            desactivadoEn: null,
+            usuarioCreacion: "",
+            usuarioActualizacion: null,
+            estaActivo: false,
+            pedido: pedidoId,
+            Pago: null,
+          };
+          const response = await axios.post(
+            `${BASE_URL}/pedidoXMetodoPago`,
+            pedidoXMetodoPago
+          );
+          return response.data.pedidoXMetodoPago;
+        }
+      );
+      const pedidoXMetodoPago = await Promise.all(pedidoXMetodoPagoPromises);
+
+      //Actualiar pedido
+      const pedidoActualizado = await axios.put(
+        `${BASE_URL}/pedido/${pedidoId}`,
+        {
+          ...pedidoCompleto,
+          pedidosXMetodoPago: pedidoXMetodoPago,
+        }
+      );
       // Crear la Venta con el Pedido
       const venta: Venta = {
         id: "",
         tipoComprobante: "Boleta",
         fechaVenta: new Date(),
-        numeroComprobante: "001-000001",
-        montoTotal: parseFloat(pedidoCompleto.total),
+        numeroComprobante: "",
+        montoTotal: pedidoCompleto.total,
         totalPaletas:
           detalles
             .filter((d) => d.producto.tipoProducto?.nombre === "Paleta")
@@ -136,7 +250,7 @@ export default function SeleccionarProductos({ navigation }: any) {
             .filter((d) => d.producto.tipoProducto?.nombre === "Mafeleta")
             .reduce((acc, d) => acc + d.cantidad, 0) || 0,
         estado: "entregado",
-        totalIgv: parseFloat(pedidoCompleto.total) * IGV,
+        totalIgv: pedidoCompleto.total * IGV,
         pedido: pedidoId,
         ordenSerie: null,
       };
@@ -145,20 +259,30 @@ export default function SeleccionarProductos({ navigation }: any) {
       console.log(ventaResponse);
       const ventaId = ventaResponse.data.id;
 
-      // Crear el Pago con el Venta y Pedido generados
-      const pago = {
-        esTransferencia: true,
-        montoCobrado: parseFloat(pedidoCompleto.total),
-        numeroOperacion: null,
-        urlEvidencia: null,
-        codigoTransaccion: null,
-        venta: ventaId,
-        metodoPago: pedidoCompleto.metodosPago[0].id,
-        banco: null,
-        pedido: pedidoId,
-      };
-      const pagoResponse = await axios.post(`${BASE_URL}/pago`, pago);
-      console.log(pagoResponse);
+      // Crear los Pagos por cada pedidoXMetodoPago
+      const pagoPromises = pedidoXMetodoPago.map((pedidoXMetodoPago) => {
+        const pago = {
+          esTransferencia: true,
+          montoCobrado: pedidoXMetodoPago.monto,
+          numeroOperacion: null,
+          urlEvidencia: null,
+          codigoTransaccion: null,
+          venta: ventaId,
+          banco: null,
+          pedido: pedidoId,
+          id: "",
+          creadoEn: "",
+          actualizadoEn: "",
+          desactivadoEn: null,
+          usuarioCreacion: "",
+          usuarioActualizacion: null,
+          estaActivo: false,
+        };
+        return axios.post(`${BASE_URL}/pago`, pago);
+      });
+
+      const pagosResponse = await Promise.all(pagoPromises);
+      console.log(pagosResponse);
 
       // Actualizar inventario de cada producto en base a la cantidad seleccionada
       const inventarioUpdates = productosSeleccionados.map(
@@ -167,13 +291,12 @@ export default function SeleccionarProductos({ navigation }: any) {
             (item) => item.producto.id === productoSeleccionado.producto.id
           );
           if (inventarioProducto) {
-              return axios.post(
-                `${BASE_URL}/inventarioMotorizado/disminuir/${inventarioProducto.id}`,
-                {
-                  cantidad: Math.abs(productoSeleccionado.cantidad),
-                }
-              );
-            
+            return axios.post(
+              `${BASE_URL}/inventarioMotorizado/disminuir/${inventarioProducto.id}`,
+              {
+                cantidad: Math.abs(productoSeleccionado.cantidad),
+              }
+            );
           }
         }
       );
@@ -189,17 +312,6 @@ export default function SeleccionarProductos({ navigation }: any) {
     }
   };
 
-  const mostrarMensaje = (
-    mensaje: string,
-    tipo: "auto" | "confirmacion" = "auto"
-  ) => {
-    setMensajeModal(mensaje);
-    setTipoModal(tipo);
-
-    if (tipo === "auto") {
-      setTimeout(() => setMensajeModal(null), 3000);
-    }
-  };
   useEffect(() => {
     obtenerInventario();
   }, []);
@@ -350,13 +462,14 @@ export default function SeleccionarProductos({ navigation }: any) {
   };
 
   const restablecerVenta = () => {
-    setProductosSeleccionados([]); 
+    setProductosSeleccionados([]);
     setTotalResumen(0);
     setMetodoPagoSelect(null);
     obtenerInventario();
   };
 
   const abrirResumenVenta = () => {
+    setImageOptionsVisible(false);
     if (productosSeleccionados.length === 0) {
       mostrarMensaje("No has seleccionado ningún producto.", "confirmacion");
       return;
@@ -368,6 +481,112 @@ export default function SeleccionarProductos({ navigation }: any) {
     setTotalResumen(total);
 
     setMostrarResumen(true);
+  };
+  const renderImageOptionsModal = () => {
+    // Función auxiliar para obtener la URI de la imagen a mostrar
+    const getImageUri = (): string => {
+      if (currentImageType === "pedido") {
+        return fotoPedido ?? ""; // Devuelve la imagen de pedido
+      } else if (currentImageType === "pago" && currentImageId) {
+        return fotosPago[currentImageId] ?? ""; // Devuelve la imagen del método de pago
+      }
+      return ""; // Retorna una cadena vacía si no hay imagen
+    };
+
+    return (
+      <Modal
+        visible={imageOptionsVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setImageOptionsVisible(false)}
+      >
+        {imageView ? (
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Vista previa de la imagen</Text>
+            <Image
+              source={{ uri: getImageUri() }}
+              style={styles.previewImage}
+            />
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={() => {
+                setImageOptionsVisible(false);
+                setImageView(false);
+              }}
+            >
+              <Text style={styles.optionButtonText}>Aceptar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.rejectButton}
+              onPress={() => {
+                setImageView(false); // Permite cambiar la imagen
+              }}
+            >
+              <Text style={styles.optionButtonText}>Cambiar foto</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
+
+            {videoStream ? (
+              <View style={styles.videoWrapper}>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  onLoadedMetadata={() => {
+                    console.log("Video cargado y listo para capturar.");
+                  }}
+                  style={styles.video}
+                />
+                <TouchableOpacity
+                  style={styles.captureButtonOverlay}
+                  onPress={() =>
+                    capturePhoto(currentImageId!, currentImageType!)
+                  }
+                >
+                  <Text style={styles.captureButtonText}>Tomar Foto</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={() =>
+                    handleCameraCapture(currentImageId!, currentImageType!)
+                  }
+                >
+                  <Text style={styles.optionButtonText}>Tomar Foto</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={() =>
+                    handleImageSelection(currentImageId!, currentImageType!)
+                  }
+                >
+                  <Text style={styles.optionButtonText}>
+                    Seleccionar de la Galería
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                videoStream?.getTracks().forEach((track) => track.stop());
+                setVideoStream(null);
+                setImageOptionsVisible(false);
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </Modal>
+    );
   };
 
   const renderItem = ({ item }: { item: InventarioMotorizado }) => {
@@ -404,6 +623,186 @@ export default function SeleccionarProductos({ navigation }: any) {
     setMostrarResumen(false);
     restablecerVenta();
   };
+
+  const handleRespuestaModal = (respuesta: boolean) => {
+    if (resolveCallback) resolveCallback(respuesta);
+    setMensajeModal(null);
+    setResolveCallback(null);
+  };
+
+  const handleImageView = (id: string, tipo: "pedido" | "pago") => {
+    console.log(`Viewing image for ${tipo} with id ${id}`);
+    setImageView(true);
+    setCurrentImageId(id);
+    setCurrentImageType(tipo);
+    setImageOptionsVisible(true);
+  };
+
+  const showImageOptions = (id: string, tipo: "pedido" | "pago") => {
+    if (tipo === "pedido") {
+      if (fotoPedido) {
+        // Si ya hay una imagen de pedido, mostrar vista previa
+        handleImageView(id, tipo);
+      } else {
+        // Si no hay imagen de pedido, permitir selección o captura
+        setCurrentImageId(id);
+        setCurrentImageType(tipo);
+        setImageOptionsVisible(true);
+      }
+    } else if (tipo === "pago") {
+      if (fotosPago[id]) {
+        // Si ya hay una imagen asociada a este método de pago, mostrar vista previa
+        handleImageView(id, tipo);
+      } else {
+        // Si no hay imagen de pago, permitir selección o captura
+        setCurrentImageId(id);
+        setCurrentImageType(tipo);
+        setImageOptionsVisible(true);
+      }
+    }
+  };
+  const handleImageSelection = async (id: string, tipo: "pedido" | "pago") => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.capture = "environment";
+
+    input.onchange = async (event: any) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const imageData = reader.result as string;
+
+          if (tipo === "pedido") {
+            setFotoPedido(imageData); // Asigna la imagen al estado de pedido
+          } else if (tipo === "pago") {
+            setFotosPago((prev) => ({
+              ...prev,
+              [id]: imageData, // Asigna la imagen al método de pago correspondiente
+            }));
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+
+    input.click();
+    setImageOptionsVisible(false); // Cierra el modal
+  };
+
+  const handleCameraCapture = async (id: string, tipo: "pedido" | "pago") => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+      setVideoStream(stream);
+    } catch (error) {
+      console.error("Error al acceder a la cámara:", error);
+      mostrarMensaje("No se pudo acceder a la cámara.", "confirmacion");
+    }
+  };
+
+  const capturePhoto = (id: string, tipo: "pedido" | "pago") => {
+    const video = videoRef.current;
+
+    if (!video || !video.videoWidth || !video.videoHeight) {
+      console.error("El video no está listo para capturar.");
+      mostrarMensaje(
+        "Espere a que el video esté listo para capturar la foto.",
+        "confirmacion"
+      );
+      return;
+    }
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    context?.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const imageData = canvas.toDataURL("image/png");
+
+    if (tipo === "pedido") {
+      setFotoPedido(imageData); // Asigna la imagen al estado de pedido
+    } else if (tipo === "pago") {
+      setFotosPago((prev) => ({
+        ...prev,
+        [id]: imageData, // Asigna la imagen al método de pago correspondiente
+      }));
+    }
+
+    videoStream?.getTracks().forEach((track) => track.stop()); // Detener la cámara
+    setVideoStream(null); // Limpiar el stream
+    setImageOptionsVisible(false); // Cerrar el modal
+  };
+
+  const enviarImagen = async (id: string, tipo: "pedido" | "pago") => {
+    try {
+      if (tipo === "pedido") {
+        // Manejar imagen de pedido
+        if (!fotoPedido) throw new Error("No hay imagen de pedido disponible.");
+
+        const fileUrl = await uploadImage(fotoPedido, `${tipo}-${id}`);
+        mostrarMensaje("Imagen de pedido enviada con éxito");
+        return { [id]: fileUrl }; // Retorna un objeto con la URL de la imagen del pedido
+      } else if (tipo === "pago") {
+        // Manejar imágenes de pago
+        if (Object.keys(fotosPago).length === 0)
+          throw new Error("No hay imágenes de métodos de pago disponibles.");
+
+        const urls: Record<string, string> = {}; // Almacena las URLs de las imágenes
+
+        for (const [idMetodoPago, imagenData] of Object.entries(fotosPago)) {
+          if (imagenData) {
+            const fileUrl = await uploadImage(
+              imagenData,
+              `${tipo}-${idMetodoPago}`
+            );
+            urls[idMetodoPago] = fileUrl; // Asigna la URL al método de pago correspondiente
+          }
+        }
+
+        mostrarMensaje("Imágenes de métodos de pago enviadas con éxito");
+        return urls; // Retorna un objeto con las URLs generadas para cada método de pago
+      }
+    } catch (error) {
+      console.error(`Error al enviar la imagen de ${tipo}:`, error);
+      mostrarMensaje(`Error al enviar la imagen de ${tipo}.`, "confirmacion");
+      return null; // Retorna null en caso de error
+    }
+  };
+
+  // Función auxiliar para subir una imagen a la API
+  const uploadImage = async (imagenData: string, fileName: string) => {
+    const byteString = atob(imagenData.split(",")[1]);
+    const mimeString = imagenData.split(",")[0].split(":")[1].split(";")[0];
+    const arrayBuffer = new ArrayBuffer(byteString.length);
+    const intArray = new Uint8Array(arrayBuffer);
+
+    for (let i = 0; i < byteString.length; i++) {
+      intArray[i] = byteString.charCodeAt(i);
+    }
+
+    const blob = new Blob([intArray], { type: mimeString });
+    const file = new File([blob], `${fileName}.png`, { type: mimeString });
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("fileName", `${fileName}.png`);
+
+    if (fileName.startsWith("pago")) {
+      formData.append("folderId", "1z4G9rU8EW9whmnrrVcaL76an-8vM-Ncv");
+    } else if (fileName.startsWith("pedido")) {
+      formData.append("folderId", "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb");
+    }
+
+    const response = await axios.post(`${BASE_URL}/imagenes`, formData);
+    return response.data.fileUrl; // Retorna la URL generada
+  };
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -430,6 +829,22 @@ export default function SeleccionarProductos({ navigation }: any) {
           <View style={styles.mensajeModalContainer}>
             <View style={styles.mensajeModalContent}>
               <Text style={styles.mensajeModalTexto}>{mensajeModal}</Text>
+              {tipoModal === "si/no" && (
+                <View style={styles.botonesContainer}>
+                  <TouchableOpacity
+                    style={styles.boton}
+                    onPress={() => handleRespuestaModal(false)}
+                  >
+                    <Text style={styles.botonTexto}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.boton}
+                    onPress={() => handleRespuestaModal(true)}
+                  >
+                    <Text style={styles.botonTexto}>Confirmar</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
               {tipoModal === "confirmacion" && (
                 <TouchableOpacity
                   style={styles.boton}
@@ -442,81 +857,100 @@ export default function SeleccionarProductos({ navigation }: any) {
           </View>
         </Modal>
       )}
-      {mostrarResumen && (
-        <Modal visible={true} transparent animationType="slide">
-          <View style={styles.resumenModalContainer}>
-            <View style={styles.resumenModalContent}>
-              <Text style={styles.titulo}>Resumen de Venta</Text>
-              <FlatList
-                data={productosSeleccionados}
-                style={styles.containerResumen}
-                renderItem={({ item }) => (
-                  <Text style={styles.productoTexto}>
-                    {item.producto.nombre} - {item.cantidad} unidades
-                  </Text>
-                )}
-                keyExtractor={(item) => item.producto.id}
-              />
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  width: "100%",
-                }}
-              >
-                <Text style={styles.subtitulo}>Total a Pagar: </Text>
-                <Text style={styles.subtitulo}>S/. {totalResumen}</Text>
-              </View>
 
-              <Text style={styles.subtitulo}>Seleccionar Método de Pago:</Text>
+      <Modal
+        visible={mostrarResumen && !imageOptionsVisible}
+        transparent
+        animationType="slide"
+      >
+        <View style={styles.resumenModalContainer}>
+          <View style={styles.resumenModalContent}>
+            <Text style={styles.titulo}>Resumen de Venta</Text>
+            <FlatList
+              data={productosSeleccionados}
+              style={styles.containerResumen}
+              renderItem={({ item }) => (
+                <Text style={styles.productoTexto}>
+                  {item.producto.nombre} - {item.cantidad} unidades
+                </Text>
+              )}
+              keyExtractor={(item) => item.producto.id}
+            />
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
+              <Text style={styles.subtitulo}>Total a Pagar: </Text>
+              <Text style={styles.subtitulo}>S/. {totalResumen}</Text>
+            </View>
+
+            <Text style={styles.subtitulo}>Seleccionar Método de Pago:</Text>
+            <View style={{ width: "100%" }}>
               <FlatList
                 data={metodosPago}
                 renderItem={({ item }) => {
-                  const isSelected = metodoPagoSelect?.id === item.id;
+                  const isSelected = metodosPagoSeleccionados.some(
+                    (metodo) => metodo.metodo.id === item.id
+                  );
+                  const selectedMetodo = metodosPagoSeleccionados.find(
+                    (metodo) => metodo.metodo.id === item.id
+                  );
                   return (
-                    <TouchableOpacity onPress={() => setMetodoPagoSelect(item)}>
+                    <View style={styles.metodoPagoContainer}>
                       <View
-                        style={[
-                          styles.metodoPagoContainer,
-                          isSelected && styles.metodoPagoContainerSelected,
-                        ]}
+                        style={{ flexDirection: "row", alignItems: "center" }}
                       >
-                        {item.nombre === "plin" ? (
-                          <Image
-                            source={require("../assets/images/plin.jpg")}
-                            style={styles.iconoPago}
+                        <TouchableOpacity
+                          onPress={() => toggleMetodoPago(item)}
+                          style={{ padding: 10 }}
+                        >
+                          <FontAwesome
+                            name={isSelected ? "check-square" : "square-o"}
+                            size={24}
+                            color={isSelected ? "green" : "gray"}
                           />
-                        ) : item.nombre === "yape" ? (
-                          <Image
-                            source={require("../assets/images/yape.png")}
-                            style={styles.iconoPago}
-                          />
-                        ) : (
-                          <View style={{ padding: 5, paddingRight: 10 }}>
-                            <FontAwesome name="money" size={30} color="black" />
-                          </View>
-                        )}
+                        </TouchableOpacity>
                         <Text style={styles.metodoTexto}>{item.nombre}</Text>
                       </View>
-                    </TouchableOpacity>
+
+                      {isSelected && (
+                        <View style={styles.montoEvidenciaContainer}>
+                          <TextInput
+                            style={styles.inputMonto}
+                            placeholder="Monto"
+                            keyboardType="numeric"
+                            onChangeText={(text) =>
+                              updateMontoMetodoPago(
+                                item.id,
+                                parseFloat(text) || 0
+                              )
+                            }
+                          />
+                        </View>
+                      )}
+                    </View>
                   );
                 }}
                 keyExtractor={(item) => item.id}
               />
-
-              <TouchableOpacity style={styles.boton3} onPress={confirmarVenta}>
-                <Text style={styles.botonTexto2}>Confirmar Venta</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.botonCancelar}
-                onPress={handleCancelar}
-              >
-                <Text style={styles.botonTexto3}>Cancelar</Text>
-              </TouchableOpacity>
             </View>
+
+            <TouchableOpacity style={styles.boton3} onPress={confirmarVenta}>
+              <Text style={styles.botonTexto2}>Confirmar Venta</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.botonCancelar}
+              onPress={handleCancelar}
+            >
+              <Text style={styles.botonTexto3}>Cancelar</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
-      )}
+        </View>
+      </Modal>
+
       <TouchableOpacity
         style={styles.botonHistorial}
         onPress={() => setMostrarHistorial(true)}
@@ -531,6 +965,7 @@ export default function SeleccionarProductos({ navigation }: any) {
       >
         <HistorialVentas onClose={() => setMostrarHistorial(false)} />
       </Modal>
+      {renderImageOptionsModal()}
     </View>
   );
 }
@@ -655,6 +1090,7 @@ const styles = StyleSheet.create({
   metodoPagoContainer: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     marginVertical: 10,
   },
   metodoPagoContainerSelected: {
@@ -703,6 +1139,105 @@ const styles = StyleSheet.create({
   },
   botonTextoHistorial: {
     color: "#fff",
+    fontWeight: "bold",
+  },
+  inputMonto: {
+    width: 80,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 5,
+    padding: 5,
+    marginHorizontal: 10,
+    textAlign: "center",
+  },
+  montoEvidenciaContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 10,
+  },
+  botonesContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "white",
+    padding: 20,
+    marginHorizontal: 20,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  previewImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  optionButton: {
+    backgroundColor: "#4CAF50", // Verde para las opciones de cámara y galería
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 5,
+  },
+  optionButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  rejectButton: {
+    backgroundColor: "#F44336", // Red color for reject button
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  videoWrapper: {
+    position: "relative",
+    width: "100%",
+    height: 400, // Ajusta según tu necesidad
+    marginBottom: 20,
+  },
+  video: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 10,
+  },
+  captureButtonOverlay: {
+    position: "absolute",
+    bottom: 20,
+    alignSelf: "center",
+    backgroundColor: "#FF6347",
+    padding: 15,
+    borderRadius: 50,
+    zIndex: 1,
+  },
+  captureButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    backgroundColor: "#F44336", // Rojo para el botón de cancelar
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  cancelButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
     fontWeight: "bold",
   },
 });

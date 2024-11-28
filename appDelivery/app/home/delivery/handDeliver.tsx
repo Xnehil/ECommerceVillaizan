@@ -53,6 +53,10 @@ const EntregarPedido = () => {
   const [tipoModal, setTipoModal] = useState<"auto" | "confirmacion" | "si/no">(
     "auto"
   );
+  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
+  const [currentImageType, setCurrentImageType] = useState<
+    "pedido" | "pago" | null
+  >(null);
   const [imageView, setImageView] = useState<boolean>(false);
   const [editPagoModalVisible, setEditPagoModalVisible] = useState(false);
   const [metodosPagoEditados, setMetodosPagoEditados] = useState<
@@ -426,10 +430,7 @@ const EntregarPedido = () => {
     );
   };
 
-  const [currentImageId, setCurrentImageId] = useState<string | null>(null);
-  const [currentImageType, setCurrentImageType] = useState<
-    "pedido" | "pago" | null
-  >(null);
+
 
   const handleImageView = (id: string, tipo: "pedido" | "pago") => {
     console.log(`Viewing image for ${tipo} with id ${id}`);
@@ -707,16 +708,23 @@ const EntregarPedido = () => {
 
         // Iterar por cada método de pago
         for (const metodoPago of pedidoCompleto.pedidosXMetodoPago) {
-          const pago = {
+          const pago : Pago = {
             esTransferencia: true,
-            montoCobrado: pedidoCompleto.total,
+            montoCobrado: metodoPago.monto,
             numeroOperacion: null,
             urlEvidencia: urlPago[metodoPago.id],
             codigoTransaccion: null,
             venta: ventaData.data.id,
-            pedidosXMetodoPago: metodoPago,
+            metodoPago: metodoPago.metodoPago,
             banco: null,
-            pedido: pedidoCompleto.id,
+            pedido: pedidoCompleto,
+            id: "",
+            creadoEn: "",
+            actualizadoEn: "",
+            desactivadoEn: null,
+            usuarioCreacion: "",
+            usuarioActualizacion: null,
+            estaActivo: true
           };
 
           console.log(pago);
