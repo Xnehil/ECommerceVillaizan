@@ -16,7 +16,7 @@ const Manual: React.FC<ManualProps> = ({ manual }) => {
         nombre="pedido"
         npagination={6}
         sb={true}
-        sbColumn="id"
+        sbColumn="codigoSeguimiento"
         sbPlaceholder="Buscar por código de seguimiento"
         dd={true}
       />

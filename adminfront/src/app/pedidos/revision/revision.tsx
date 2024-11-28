@@ -16,7 +16,7 @@ const Revision: React.FC<RevisionProps> = ({ revision }) => {
         nombre="pedido"
         npagination={6}
         sb={true}
-        sbColumn="id"
+        sbColumn="codigoSeguimiento"
         sbPlaceholder="Buscar por código de seguimiento"
         dd={true}
       />
