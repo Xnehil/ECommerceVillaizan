@@ -16,7 +16,7 @@ const Pendientes: React.FC<PendientesProps> = ({ pendientes }) => {
         nombre="pedido"
         npagination={6}
         sb={true}
-        sbColumn="id"
+        sbColumn="codigoSeguimiento"
         sbPlaceholder="Buscar por código de seguimiento"
       />
     </div>

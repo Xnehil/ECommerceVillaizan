@@ -68,7 +68,7 @@ const PedidosPage: React.FC = () => {
               pedActivos.current.push(pedido);
               break;
             case "entregado":
-              console.log(pedido);
+              // console.log(pedido);
               if(pedido.pedidosXMetodoPago && pedido.pedidosXMetodoPago.length > 0) {
                 //detecta si el pedido fue pagado con yape o plin (total o parcialmente)
                 if (!pedido.pagado) {

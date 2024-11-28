@@ -15,7 +15,7 @@ import Link from "next/link";
 
 export const columns: ColumnDef<Pedido>[] = [
   {
-    accessorKey: "id",
+    accessorKey: "codigoSeguimiento",
     header: "Pedido",
     cell: ({ row }) => {
       const identificador = row.original.codigoSeguimiento;

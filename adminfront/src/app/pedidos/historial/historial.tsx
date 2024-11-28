@@ -16,7 +16,7 @@ const Historial: React.FC<HistorialProps> = ({ historial }) => {
         nombre="pedido"
         npagination={6}
         sb={true}
-        sbColumn="id"
+        sbColumn="codigoSeguimiento"
         sbPlaceholder="Buscar por código de seguimiento"
         dd={true}
         ddColumn="estado"
