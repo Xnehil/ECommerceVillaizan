@@ -14,18 +14,25 @@ export const metadata: Metadata = {
 };
 
 const fetchCart = async () => {
-  const respuesta = await getOrSetCart();
-  let cart: Pedido = respuesta?.cart;
+  try{
+    const respuesta = await getOrSetCart();
+    let cart: Pedido = respuesta?.cart;
 
-  if (!cart || !cart.detalles || cart.detalles.length === 0) {
-    return null; // Retorna null si el carrito está vacío o no tiene detalles
+    if (!cart || !cart.detalles || cart.detalles.length === 0) {
+      return null; // Retorna null si el carrito está vacío o no tiene detalles
+    }
+
+    const enrichedItems = await enrichLineItems(cart.detalles);
+    cart.detalles = enrichedItems;
+    cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
+
+    return cart;
   }
-
-  const enrichedItems = await enrichLineItems(cart.detalles);
-  cart.detalles = enrichedItems;
-  cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
-
-  return cart;
+  catch(e){
+    console.log("Error al cargar el carrito", e);
+    return null;
+  }
+  
 };
 
 
