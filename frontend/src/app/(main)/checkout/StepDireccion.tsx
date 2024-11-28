@@ -643,35 +643,51 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AddressForm Component - Top Left */}
           { (
-            <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
-              <AddressFormParent
-                nombre={nombre}
-                numeroDni={numeroDni}
-                numeroRuc={numeroRuc} // Pasar el estado de RUC
-                ciudad={ciudadNombre}
-                telefono={telefono}
-                calle={calle}
-                setCalle={setCalle}
-                numeroInterior={numeroInterior}
-                referencia={referencia}
-                handleNombreChange={handleNombreChange}
-                handleDniChange={handleDniChange}
-                handleRucChange={handleRucChange} // Pasar el manejador de RUC
-                handleTelefonoChange={handleTelefonoChange}
-                handleCiudadChange={handleCiudadChange}
-                handleCalleChange={handleCalleChange}
-                handleNroInteriorChange={handleNroInteriorChange}
-                handleReferenciaChange={handleReferenciaChange}
-                handleClickMapa={() => setShowMapModal(true)}
-                status={status}
-                handleSubmitPadre={handleSubmitPadre}
-                dniError={dniError}
-                locationError={locationError}
-                telefonoError={telefonoError}
-                onComprobanteChange={handleComprobanteChange}
-                comprobantePassed={comprobante}
-                
-              />
+            <div className="lg:col-span-2 space-y-5">
+              <div className="lg:max-h-[800px] overflow-auto">
+                <AddressFormParent
+                  nombre={nombre}
+                  numeroDni={numeroDni}
+                  numeroRuc={numeroRuc} // Pasar el estado de RUC
+                  ciudad={ciudadNombre}
+                  telefono={telefono}
+                  calle={calle}
+                  setCalle={setCalle}
+                  numeroInterior={numeroInterior}
+                  referencia={referencia}
+                  handleNombreChange={handleNombreChange}
+                  handleDniChange={handleDniChange}
+                  handleRucChange={handleRucChange} // Pasar el manejador de RUC
+                  handleTelefonoChange={handleTelefonoChange}
+                  handleCiudadChange={handleCiudadChange}
+                  handleCalleChange={handleCalleChange}
+                  handleNroInteriorChange={handleNroInteriorChange}
+                  handleReferenciaChange={handleReferenciaChange}
+                  handleClickMapa={() => setShowMapModal(true)}
+                  status={status}
+                  handleSubmitPadre={handleSubmitPadre}
+                  dniError={dniError}
+                  locationError={locationError}
+                  telefonoError={telefonoError}
+                  onComprobanteChange={handleComprobanteChange}
+                  comprobantePassed={comprobante}
+                  
+                />
+                </div>
+
+                {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
+                {session?.user?.id && (
+                  <div className="lg:max-h-[400px] overflow-auto">
+                    <LoggedInAddresses
+                      userId={session.user.id}
+                      ciudadId={ciudadId}
+                      ciudadNombre={ciudadNombre}
+                      toggleAllowed={true}
+                      onToggleAddress={handleToggleAddress}
+                      selectedAddressIdPassed={selectedAddressId}
+                    />
+                  </div>
+                )}
             </div>
           )}
 
@@ -692,19 +708,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
             )}
           </div>
 
-          {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
-          {session?.user?.id && (
-            <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
-              <LoggedInAddresses
-                userId={session.user.id}
-                ciudadId={ciudadId}
-                ciudadNombre={ciudadNombre}
-                toggleAllowed={true}
-                onToggleAddress={handleToggleAddress}
-                selectedAddressIdPassed={selectedAddressId}
-              />
-            </div>
-          )}
+          
         </div>
 
         {/* Map modal */}
