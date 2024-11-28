@@ -38,7 +38,7 @@ export interface Ciudad extends EntidadBase { // Placeholder, replace if necessa
 export interface Ubicacion extends EntidadBase { // Placeholder, replace if necessary
     latitud: number;
     longitud: number;
-    direcciones?: Direccion[]; // One-to-many relationship
+    
 }
 
 export interface InventarioMotorizado extends EntidadBase {

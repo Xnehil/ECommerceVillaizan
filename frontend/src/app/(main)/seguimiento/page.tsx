@@ -310,7 +310,7 @@ const TrackingPage: React.FC = () => {
               // De momento lo enviamos a la página de inicio
               setShowPopup(true); // Show the error popup
               setMensajePopup(
-                "🍦 Paletas Villaizan 🍦<br><br>¡Felicidades!<br>Tu pedido ha sido entregado con éxito. 🎉<br><br>Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega:<br><a href='https://bit.ly/4fLaj5h' target='_blank' rel='noopener noreferrer'>Encuesta de Satisfacción</a>"
+                "🍦 Paletas Villaizan 🍦<br><br>¡Felicidades!<br>Tu pedido ha sido entregado con éxito. 🎉<br><br>Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega:<br><a href='https://bit.ly/4fLaj5h' target='_blank' rel='noopener noreferrer'><b>Encuesta de Satisfacción</b></a>"
               );
               //window.location.href = "/"
             }
@@ -335,6 +335,12 @@ const TrackingPage: React.FC = () => {
     }
     
   }
+
+  useEffect(() => {
+    if (pedido) {
+      console.log("Pedido direccion:", pedido.direccion);
+    }
+  }, [pedido]);
 
   useEffect(() => {
     // const sendMessage = async (codigoSeguimiento: string) => {

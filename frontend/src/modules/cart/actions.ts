@@ -178,7 +178,7 @@ export async function retrievePedido(productos: boolean = false, codigoSeguimien
   console.log("Pedido ID: ", cartId)
   if (productos) {
     try {
-      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}/conDetalle?pedido=true`)
+      const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`)
       return response.data.pedido
     } catch (e) {
       console.log(e)

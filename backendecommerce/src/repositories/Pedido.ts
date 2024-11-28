@@ -63,6 +63,8 @@ export const PedidoRepository = dataSource
         .leftJoinAndSelect("direccion.ubicacion", "ubicacion")
         .leftJoinAndSelect("pedido.motorizado", "motorizado")
         .leftJoinAndSelect("pedido.usuario", "usuario")
+        .leftJoinAndSelect("pedido.pedidosXMetodoPago", "pedidosXMetodoPago")
+        .leftJoinAndSelect("pedidosXMetodoPago.metodoPago", "metodoPago")
         .where("pedido.codigoSeguimiento = :codigoSeguimiento", { codigoSeguimiento })
         .getOne();
     },

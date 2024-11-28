@@ -16,7 +16,16 @@ const MapaTracking: React.FC<MapaTrackingProps> = ({ pedido, driverPosition }) =
     if (!pedido) {
         return null;
     }
-    const posicionDestino = (pedido.direccion?.ubicacion?.latitud && pedido.direccion?.ubicacion?.longitud ? [pedido.direccion?.ubicacion?.latitud, pedido.direccion?.ubicacion?.longitud] : [-6.484, -76.364]) as LatLngExpression;
+    const latitud = pedido.direccion?.ubicacion?.latitud;
+    const longitud = pedido.direccion?.ubicacion?.longitud;
+
+    console.log('Latitud:', latitud); // Log latitud
+    console.log('Longitud:', longitud); // Log longitud
+
+    const posicionDestino = (latitud && longitud ? [latitud, longitud] : [-6.484, -76.364]) as LatLngExpression;
+
+    console.log('PosicionDestino:', posicionDestino); // Log final position
+    
     let latLngDriver = driverPosition as LatLngExpression;
     const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
