@@ -26,10 +26,12 @@ import {
   Venta,
 } from "@/interfaces/interfaces";
 import { Link, router } from "expo-router";
-import { getCurrentDelivery, storeCurrentDelivery } from "@/functions/storage";
+import { getCurrentDelivery, getUserData, storeCurrentDelivery } from "@/functions/storage";
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import { useRef } from "react";
 import { Picker } from "@react-native-picker/picker";
+import * as Linking from 'expo-linking';
+import { Platform } from 'react-native';
 
 const EntregarPedido = () => {
   const route = useRoute();
@@ -57,6 +59,44 @@ const EntregarPedido = () => {
     PedidoXMetodoPago[]
   >(pedidoCompleto?.pedidosXMetodoPago || []);
   const [resolveCallback, setResolveCallback] = useState<null | Function>(null);
+
+  const makeCall = async () => {
+    console.log('Haciendo llamada');
+    const usuario = await getUserData(); 
+    const response = mostrarMensaje('Seguro que desea llamar al usuario?','si/no');
+    if (await response){
+      if (usuario == null) {
+        console.log('Sin usuario');
+  
+        mostrarMensaje('Error al cargar su numero de telefono');
+      }
+      else{
+        console.log('Usuario cargado');
+  
+        const phoneNumber = usuario.numeroTelefono;
+        const url = `tel:${phoneNumber}`;
+        
+        if (Platform.OS === 'web') {
+          mostrarMensaje('No compatible Realizar llamadas no está disponible en navegadores.');
+          console.log('Llamada no está disponible');
+  
+          return;
+        }
+    
+        Linking.canOpenURL(url)
+          .then((supported) => {
+            if (!supported) {
+              Alert.alert('Error', 'Tu dispositivo no puede realizar llamadas.');
+            } else {
+              return Linking.openURL(url);
+            }
+          })
+          .catch((err) => console.error('Error al intentar realizar la llamada:', err));
+      }
+      
+    }
+    
+  };
 
   const metodoPagoVacio = {
     id: "",
@@ -878,7 +918,7 @@ const EntregarPedido = () => {
               {pedidoCompleto?.usuario?.nombre || "Nombre no disponible"}
             </Text>
             <View style={styles.iconosCliente}>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={makeCall}>
                 <TabBarIcon
                   IconComponent={AntDesign}
                   name="phone"
@@ -887,14 +927,7 @@ const EntregarPedido = () => {
                   style={{ marginRight: 10 }}
                 />
               </TouchableOpacity>
-              <TouchableOpacity>
-                <TabBarIcon
-                  IconComponent={FontAwesome}
-                  name="whatsapp"
-                  color="green"
-                  size={30}
-                  />
-              </TouchableOpacity>
+              
             </View>
           </View>
         </View>

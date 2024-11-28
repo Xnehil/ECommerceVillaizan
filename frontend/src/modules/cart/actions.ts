@@ -145,7 +145,7 @@ export async function retrieveCart(productos: boolean = false) {
   }
 }
 
-export async function retrievePedido(productos: boolean = false, codigoSeguimiento: string | null = null) {
+export async function retrievePedido(productos: boolean = false, codigoSeguimiento: string | null = null, isAuthenticated: boolean = false, userId : string | null = null) {
   const cookieValues = cookies()
   let cartId = cookieValues.get("_medusa_pedido_id")?.value
   // console.log("En retrievePedido")
@@ -155,13 +155,19 @@ export async function retrievePedido(productos: boolean = false, codigoSeguimien
     return null
   }
 
-  if (codigoSeguimiento && !cartId) {
+  if (codigoSeguimiento) {
     try {
       // console.log("Haciendno post a" , `${baseUrl}/admin/pedido/codigoSeguimiento`, " con body ", {codigoSeguimiento: codigoSeguimiento})
       const response = await axios.post(`${baseUrl}/admin/pedido/codigoSeguimiento`,
         {
           codigoSeguimiento: codigoSeguimiento
         })
+      const pedido = response.data.pedido
+      if(isAuthenticated && userId){
+        if(pedido.usuario.id != userId){
+          return null
+        }
+      }
       cartId = response.data.pedido.id
       // console.log("Pedido encontrado con id ", cartId)
     } catch (e) {

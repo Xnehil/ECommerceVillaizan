@@ -72,7 +72,7 @@ interface OrderDetailsProps {
             <ul className="list-none p-0 m-0">
                 {pedido.pedidosXMetodoPago?.map((pedidoXmetodo) => (
                     <li key={pedidoXmetodo.id} className="text-gray-600 mb-1">
-                        {pedidoXmetodo.metodoPago.nombre}
+                        {pedidoXmetodo.metodoPago.nombre} (S/ {pedidoXmetodo.monto}) 
                     </li>
                 ))}
             </ul>
