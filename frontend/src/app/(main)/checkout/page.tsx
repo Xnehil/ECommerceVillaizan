@@ -17,68 +17,32 @@ export const metadata: Metadata = {
 }
 
 const fetchCart = async () => {
-  try{
+  try {
     const respuesta = await getOrSetCart();
-    if (!respuesta){
+    if (!respuesta) {
       return null
     }
-    let cart:Pedido= respuesta?.cart;
+    const cart: Pedido = respuesta.cart;
 
-    if(cart.estado !== "carrito"){
+    if (cart.estado !== "carrito") {
       return null; // Retorna null si el carrito no está en estado "carrito"
     }
 
-    let cookieValue = respuesta?.cookie;
-    let aux = cart.detalles;
-
     const enrichedItems = await enrichLineItems(cart.detalles);
-    // console.log("Detalles enriquecidos:", enrichedItems);
-    cart.detalles = enrichedItems;
-    cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
+    cart.detalles = enrichedItems.filter(item => item.estaActivo); // Filtra los items inactivos
 
-
-    let state ="carrito"
-    if (cart.direccion === null){
-      state = "direccion"
-    }
-    return cart
+    return cart;
+  } catch (e) {
+    console.log("Error al cargar el carrito", e);
+    return null;
   }
-  catch(e){
-    console.log("Error al cargar el carrito", e)
-    return null
-  }
-  
 }
 
 export default async function MetodoPago() {
   const cart = await fetchCart();
-  // console.log("Carrito:", cart);
-
   if (!cart) {
-    return (
-      <ErrorPopup mensaje={"No se detectó el pedido. Intente nuevamente."}/>
-    );
+    notFound(); // Trigger a 404 page if the cart isn't found
+    return null;
   }
-
-  return (
-    <Checkout pedido={cart} /* usuario={usuario} direccion={direccion} */ />
-  );
+  return <Checkout pedido={cart} />;
 }
-
-const styles = {
-  confirmButton: {
-    padding: '10px 20px',
-    borderRadius: '5px',
-    border: 'none',
-    cursor: 'pointer',
-    backgroundColor: 'black',
-    color: 'white',
-  },
-  cancelButton: {
-    padding: '10px 20px',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    backgroundColor: 'white',
-    color: 'red',
-  },
-};
