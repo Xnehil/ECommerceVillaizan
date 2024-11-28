@@ -185,7 +185,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         if (status === "OK" && results) {
           if (results[0]) {
             const address = results[0].formatted_address
+            console.log("Dirección seleccionada a cargar en calle:", address)
             setCalle(address)
+            localStorage.setItem("calle", CryptoJS.AES.encrypt(address, encryptionKey).toString());
           } else {
             console.error("No se encontraron resultados.")
           }
@@ -193,6 +195,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
           console.error("Geocoder falló debido a:", status)
         }
       })
+    }
+    else{
+      console.log("Google Maps no está cargado")
     }
   }
   
