@@ -60,7 +60,7 @@ export interface Producto {
 
 export interface Pedido {
   id: string;
-  
+  creadoEn:Date|null;
   estaActivo: boolean;
   estado: string;
   prioridadEntrega: string | null;
