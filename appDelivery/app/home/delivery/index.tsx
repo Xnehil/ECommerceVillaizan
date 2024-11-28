@@ -206,7 +206,7 @@ export default function Entregas() {
     return (
       <View style={styles.pedidoContainer2}>
         <Text style={styles.fechaCreacion}>
-          Fecha de creación: {pedido.creadoEn}
+          Fecha de creación: {pedido.creadoEn ? pedido.creadoEn.toLocaleDateString() : 'Fecha no disponible'}
         </Text>
         <Text style={styles.estado}>Estado: {pedido.estado}</Text>
         <Text style={styles.total}>Total: S/ {pedido.total}</Text>
@@ -291,7 +291,13 @@ export default function Entregas() {
 
       {!verHistorial && (
         <View style={styles.containerMitad}>
-          
+          <Mapa
+            //location={location}
+            location={stableLocation}
+            pedidoSeleccionado={pedidoSeleccionado}
+            pedidos={pedidosAceptados}
+            mode={modoMultiple}
+          />
         </View>
       )}
 

@@ -11,6 +11,7 @@ import {
   TextInput,
   Alert,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import SwipeButton from "rn-swipe-button";
@@ -51,7 +52,8 @@ const EntregarPedido = () => {
 
   const route = useRoute();
   const { pedido } = (route.params as { pedido?: string }) || { pedido: null };
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadingMessage, isLoadingMessage] = useState<string | null>("Cargando");
   const parsedPedido = pedido ? JSON.parse(decodeURIComponent(pedido)) : {};
 
   const [pedidoCompleto, setPedidoCompleto] = useState<Pedido | null>(null);
@@ -170,20 +172,10 @@ const EntregarPedido = () => {
 
     const metodoDePago: PedidoXMetodoPago = {
       id: nuevoMetodoPago.id,
-      creadoEn: new Date().toISOString(),
-      actualizadoEn: new Date().toISOString(),
-      desactivadoEn: null,
-      usuarioCreacion: "sistema",
-      usuarioActualizacion: null,
       estaActivo: true,
       monto: nuevoMetodoPago.monto,
       metodoPago: {
         id: nuevoMetodoPago.metodoPago.id,
-        creadoEn: "",
-        actualizadoEn: "",
-        desactivadoEn: null,
-        usuarioCreacion: "",
-        usuarioActualizacion: null,
         estaActivo: true,
         nombre: nuevoMetodoPago.metodoPago.nombre,
       },
@@ -539,6 +531,7 @@ const EntregarPedido = () => {
         mostrarMensaje("Falta foto todos los metodos de pago");
         return;
       }
+      setIsLoading(true);
       const urlPedido = await enviarImagen(parsedPedido.id, "pedido");
       const urlPago = await enviarImagen(parsedPedido.id, "pago");
       if (urlPago === undefined || urlPago === null) {
@@ -566,6 +559,8 @@ const EntregarPedido = () => {
             );
         } catch (error) {
           console.error("Error calculating totalPaletas:", error);
+          setIsLoading(false);
+
         }
 
         try {
@@ -580,6 +575,8 @@ const EntregarPedido = () => {
             );
         } catch (error) {
           console.error("Error calculating totalMafaletas:", error);
+          setIsLoading(false);
+
         }
 
         const venta: Venta = {
@@ -614,11 +611,6 @@ const EntregarPedido = () => {
             banco: null,
             pedido: pedidoCompleto,
             id: "",
-            creadoEn: "",
-            actualizadoEn: "",
-            desactivadoEn: null,
-            usuarioCreacion: "",
-            usuarioActualizacion: null,
             estaActivo: true,
           };
 
@@ -664,6 +656,8 @@ const EntregarPedido = () => {
                 `Error al enlazar el pago ${pagoActualizado.id} con pedidosXMetodoPago ${metodoPago.id}:`,
                 error
               );
+              setIsLoading(false);
+
             }
             if (error_pxm) {
               throw error_pxm;
@@ -671,6 +665,8 @@ const EntregarPedido = () => {
           }
         } catch (error) {
           console.error("Ocurrió un error al procesar los pagos:", error);
+          setIsLoading(false);
+
         }
 
         await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
@@ -686,7 +682,11 @@ const EntregarPedido = () => {
     } catch (error) {
       console.error("Error updating pedido:", error);
       mostrarMensaje("Error al confirmar la entrega", "confirmacion");
+      setIsLoading(false);
+
     }
+    setIsLoading(false);
+
   };
 
   const handleConfirmarEntrega = async () => {
@@ -710,31 +710,17 @@ const EntregarPedido = () => {
       {
         id: "mp_01J99CS1H128G2P7486ZB5YACH",
         nombre: "Pago en Efectivo",
-        creadoEn: "",
-        actualizadoEn: "",
-        desactivadoEn: null,
-        usuarioCreacion: "",
-        usuarioActualizacion: null,
         estaActivo: false,
       },
       {
         id: "mp_01JBDQD78HBD6A0V1DVMEQAFKV",
         nombre: "Yape",
-        creadoEn: "",
-        actualizadoEn: "",
-        desactivadoEn: null,
-        usuarioCreacion: "",
-        usuarioActualizacion: null,
+        
         estaActivo: false,
       },
       {
         id: "mp_01JBDQDH47XDE75XCGSS739E6G",
         nombre: "Plin",
-        creadoEn: "",
-        actualizadoEn: "",
-        desactivadoEn: null,
-        usuarioCreacion: "",
-        usuarioActualizacion: null,
         estaActivo: false,
       },
     ];
@@ -1125,21 +1111,7 @@ const EntregarPedido = () => {
                                 nombre:
                                   devMetodos.find((m) => m.id === itemValue)
                                     ?.nombre || "",
-                                creadoEn:
-                                  devMetodos.find((m) => m.id === itemValue)
-                                    ?.creadoEn || "",
-                                actualizadoEn:
-                                  devMetodos.find((m) => m.id === itemValue)
-                                    ?.actualizadoEn || "",
-                                desactivadoEn:
-                                  devMetodos.find((m) => m.id === itemValue)
-                                    ?.desactivadoEn || null,
-                                usuarioCreacion:
-                                  devMetodos.find((m) => m.id === itemValue)
-                                    ?.usuarioCreacion || "",
-                                usuarioActualizacion:
-                                  devMetodos.find((m) => m.id === itemValue)
-                                    ?.usuarioActualizacion || null,
+                                
                                 estaActivo:
                                   devMetodos.find((m) => m.id === itemValue)
                                     ?.estaActivo || true,
@@ -1208,12 +1180,7 @@ const EntregarPedido = () => {
                     ...prev,
                     metodoPago: {
                       id: selectedMetodo?.id || "-1",
-                      creadoEn: selectedMetodo?.creadoEn || "",
-                      actualizadoEn: selectedMetodo?.actualizadoEn || "",
-                      desactivadoEn: selectedMetodo?.desactivadoEn || null,
-                      usuarioCreacion: selectedMetodo?.usuarioCreacion || "",
-                      usuarioActualizacion:
-                        selectedMetodo?.usuarioActualizacion || null,
+                      
                       estaActivo: selectedMetodo?.estaActivo || true,
                       nombre: selectedMetodo?.nombre || "",
                     },
@@ -1275,6 +1242,19 @@ const EntregarPedido = () => {
           </View>
         </View>
       </Modal>
+      <Modal
+        visible={isLoading}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsLoading(false)}
+      >
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#fff" />
+            <Text style={styles.loadingText}>{loadingMessage}</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -1305,6 +1285,23 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     flexWrap: "wrap",
     flexDirection: "column",
+  },
+  loadingOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Oscurece el fondo
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingContainer: {
+    backgroundColor: "#333",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  loadingText: {
+    color: "#fff",
+    marginTop: 10,
+    fontSize: 16,
   },
   nuevoMetodoPago: {
     flexDirection: "row",

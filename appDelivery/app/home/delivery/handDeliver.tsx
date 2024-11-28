@@ -11,6 +11,7 @@ import {
   TextInput,
   Alert,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import SwipeButton from "rn-swipe-button";
@@ -40,7 +41,8 @@ import { Platform } from "react-native";
 const EntregarPedido = () => {
   const route = useRoute();
   const { pedido } = (route.params as { pedido?: string }) || { pedido: null };
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadingMessage, isLoadingMessage] = useState<string | null>("Cargando");
   const parsedPedido = pedido ? JSON.parse(decodeURIComponent(pedido)) : {};
 
   const [pedidoCompleto, setPedidoCompleto] = useState<Pedido | null>(null);
@@ -544,7 +546,7 @@ const EntregarPedido = () => {
         if (!fotoPedido) throw new Error("No hay imagen de pedido disponible.");
 
         const fileUrl = await uploadImage(fotoPedido, `${tipo}-${id}`);
-        mostrarMensaje("Imagen de pedido enviada con éxito");
+        //mostrarMensaje("Imagen de pedido enviada con éxito");
         return { [id]: fileUrl }; // Retorna un objeto con la URL de la imagen del pedido
       } else if (tipo === "pago") {
         // Manejar imágenes de pago
@@ -563,7 +565,7 @@ const EntregarPedido = () => {
           }
         }
 
-        mostrarMensaje("Imágenes de métodos de pago enviadas con éxito");
+        //mostrarMensaje("Imágenes de métodos de pago enviadas con éxito");
         return urls; // Retorna un objeto con las URLs generadas para cada método de pago
       }
     } catch (error) {
@@ -628,6 +630,7 @@ const EntregarPedido = () => {
   };
 
   const confirmarEntrega = async () => {
+
     try {
       const fotosPagoNecesarias = pedidoCompleto?.pedidosXMetodoPago?.length;
       if (fotoPedido === null || fotoPedido === undefined) {
@@ -640,6 +643,8 @@ const EntregarPedido = () => {
         mostrarMensaje("Falta foto todos los metodos de pago");
         return;
       }
+      setIsLoading(true);
+
       const urlPedido = await enviarImagen(parsedPedido.id, "pedido");
       const urlPago = await enviarImagen(parsedPedido.id, "pago");
       if (urlPago === undefined || urlPago === null) {
@@ -774,6 +779,8 @@ const EntregarPedido = () => {
                 `Error al enlazar el pago ${pagoActualizado.id} con pedidosXMetodoPago ${metodoPago.id}:`,
                 error
               );
+              setIsLoading(false);
+
             }
             if (error_pxm) {
               throw error_pxm;
@@ -781,6 +788,8 @@ const EntregarPedido = () => {
           }
         } catch (error) {
           console.error("Ocurrió un error al procesar los pagos:", error);
+          setIsLoading(false);
+
           error_pxm = error;
         }
         if (error_pxm) {
@@ -790,6 +799,7 @@ const EntregarPedido = () => {
           estado: "entregado",
           urlEvidencia: urlPedido,
         });
+        setIsLoading(false);
 
         router.replace({
           pathname: "/home/delivery/confirmada",
@@ -799,7 +809,10 @@ const EntregarPedido = () => {
     } catch (error) {
       console.error("Error updating pedido:", error);
       mostrarMensaje("Error al confirmar la entrega", "confirmacion");
+      setIsLoading(false);
+
     }
+
   };
 
   const handleConfirmarEntrega = async () => {
@@ -1354,6 +1367,19 @@ const EntregarPedido = () => {
           </View>
         </View>
       </Modal>
+      <Modal
+        visible={isLoading}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsLoading(false)}
+      >
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#fff" />
+            <Text style={styles.loadingText}>{loadingMessage}</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -1384,6 +1410,23 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     flexWrap: "wrap",
     flexDirection: "column",
+  },
+  loadingOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Oscurece el fondo
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingContainer: {
+    backgroundColor: "#333",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  loadingText: {
+    color: "#fff",
+    marginTop: 10,
+    fontSize: 16,
   },
   nuevoMetodoPago: {
     flexDirection: "row",
