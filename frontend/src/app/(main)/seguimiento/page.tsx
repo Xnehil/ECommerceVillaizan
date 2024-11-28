@@ -209,17 +209,17 @@ const TrackingPage: React.FC = () => {
       setEnRuta("cancelado");
       setShowConfirmModal(false);
       //alert("Tu pedido ha sido cancelado exitosamente.");
-      setModalMessage("Tu pedido ha sido cancelado exitosamente.");
+      //setModalMessage("Tu pedido ha sido cancelado exitosamente.");
       //window.location.href = "/";
     } catch (error) {
       console.error("Error al intentar cancelar el pedido:", error);
       setShowConfirmModal(false);
-      setModalMessage("Ocurrió un error al cancelar el pedido. Por favor, intenta nuevamente.");
+      //setModalMessage("Ocurrió un error al cancelar el pedido. Por favor, intenta nuevamente.");
       //alert("Ocurrió un error al cancelar el pedido. Por favor, intenta nuevamente.");
     }
     finally{
       if (typeof window !== 'undefined') {
-        window.location.href = window.location.href;
+        window.location.href = "/";
       }
     }
   };
@@ -541,7 +541,12 @@ const TrackingPage: React.FC = () => {
                   isOpen={showConfirmModal}
                   onConfirm={cancelarPedido}
                   onClose={() => setShowConfirmModal(false)}
-                  message="¿Estás seguro de que deseas cancelar el pedido?"
+                  message={
+                    <>
+                      ¿Estás seguro de que deseas cancelar el pedido? <br />
+                      Se te redirigirá a la página principal.
+                    </>
+                  }
                 />
               </>
             )}
