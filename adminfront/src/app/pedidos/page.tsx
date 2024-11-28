@@ -68,14 +68,10 @@ const PedidosPage: React.FC = () => {
               pedActivos.current.push(pedido);
               break;
             case "entregado":
+              console.log(pedido);
               if(pedido.pedidosXMetodoPago && pedido.pedidosXMetodoPago.length > 0) {
                 //detecta si el pedido fue pagado con yape o plin (total o parcialmente)
-                const yapeOrPlin = pedido.pedidosXMetodoPago.some(
-                  (metodo) =>
-                    metodo.metodoPago?.nombre === "yape" ||
-                    metodo.metodoPago?.nombre === "plin"
-                );
-                if (!pedido.pagado && yapeOrPlin) {
+                if (!pedido.pagado) {
                   pedRevision.current.push(pedido);
                 } else {
                   pedHistorial.current.push(pedido);
@@ -132,7 +128,7 @@ const PedidosPage: React.FC = () => {
           defaultChecked={true}
           className="w-full"
         >
-          <TabsList className="grid w-3/5 grid-cols-4">
+          <TabsList className="grid w-4/5 grid-cols-5">
             <TabsTrigger value="pendientes">Pendientes</TabsTrigger>
             <TabsTrigger value="activos">Activos</TabsTrigger>
             <TabsTrigger value="revision">Pago por confirmar</TabsTrigger>
