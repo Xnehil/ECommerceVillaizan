@@ -579,7 +579,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     const savedReferencia = decryptData(localStorage.getItem("referencia"));
     const savedComprobante = decryptData(localStorage.getItem("comprobante"));
     const savedAddressId = decryptData(localStorage.getItem("selectedAddressId"));
+    const savedRuc = decryptData(localStorage.getItem("ruc"));
 
+    if(savedRuc) setNumeroRuc(savedRuc)
     if (savedNombre) setNombre(savedNombre)
     if (savedTelefono) setTelefono(savedTelefono)
     if (savedDni) setNumeroDni(savedDni)
