@@ -15,6 +15,10 @@ const fetchCart = async (): Promise<Pedido | null> => {
 
   const cart: Pedido = result.cart;
 
+  if(cart.estado !== "carrito"){
+    return null; // Retorna null si el carrito no está en estado "carrito"
+  }
+
   if (cart.detalles && cart.detalles.length > 0) {
     const enrichedItems = await enrichLineItems(cart.detalles);
     cart.detalles = enrichedItems as DetallePedido[];

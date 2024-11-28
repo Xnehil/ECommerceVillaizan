@@ -22,9 +22,14 @@ const fetchCart = async () => {
       return null; // Retorna null si el carrito está vacío o no tiene detalles
     }
 
+    if(cart.estado !== "carrito"){
+      return null; // Retorna null si el carrito no está en estado "carrito"
+    }
+
     const enrichedItems = await enrichLineItems(cart.detalles);
     cart.detalles = enrichedItems;
     cart.detalles = cart.detalles.filter((item) => item.estaActivo); // Filtra los items inactivos
+    
 
     return cart;
   }

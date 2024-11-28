@@ -23,6 +23,11 @@ const fetchCart = async () => {
       return null
     }
     let cart:Pedido= respuesta?.cart;
+
+    if(cart.estado !== "carrito"){
+      return null; // Retorna null si el carrito no está en estado "carrito"
+    }
+
     let cookieValue = respuesta?.cookie;
     let aux = cart.detalles;
 

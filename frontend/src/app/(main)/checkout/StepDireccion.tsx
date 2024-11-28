@@ -163,9 +163,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   }
 
   const handleToggleAddress = (addressId: string | null) => {
-    setSelectedAddressId(addressId)
-    localStorage.addItem("selectedAddressId", addressId)
-    console.log("Selected Address ID:", addressId)
+    if(addressId){
+      setSelectedAddressId(addressId)
+    
+      localStorage.setItem("selectedAddressId", CryptoJS.AES.encrypt(addressId, encryptionKey).toString());
+      
+      console.log("Selected Address ID:", addressId)
+    }
+    
   }
 
   const handleMapSelect = (lat: number, lng: number) => {
@@ -205,6 +210,10 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
     try {
       const respuesta = await getOrSetCart()
       let cart: Pedido = respuesta?.cart
+
+      if(cart.estado !== "carrito"){
+        throw new Error("El carrito no está en estado 'carrito'")
+      }
 
       const city = getCityCookie()
       setCiudadNombre(city.nombre)
@@ -525,9 +534,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
             localStorage.removeItem('nroInterior');
             localStorage.removeItem('referencia');
             localStorage.removeItem('telefono');
-            localStorage.removeItem('comprobante');
+            //localStorage.removeItem('comprobante');
             localStorage.removeItem('ruc');
-            localStorage.removeItem('selectedAddressId');
+            //localStorage.removeItem('selectedAddressId');
             localStorage.removeItem('selectedLocation');
 
             const response = await axios.get(
@@ -549,10 +558,14 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
               if (user.persona && user.persona.numeroDocumento !== null && user.persona.tipoDocumento ==="DNI") {
                 setNumeroDni(user.persona.numeroDocumento)
                 localStorage.setItem("dni", CryptoJS.AES.encrypt(user.persona.numeroDocumento, encryptionKey).toString());
+                //localStorage.setItem("comprobante", CryptoJS.AES.encrypt("boleta", encryptionKey).toString());
+                //setComprobante("boleta")
               }
               else if(user.persona && user.persona.numeroDocumento !== null && user.persona.tipoDocumento ==="RUC") {
                 setNumeroRuc(user.persona.numeroDocumento)
                 localStorage.setItem("ruc", CryptoJS.AES.encrypt(user.persona.numeroDocumento, encryptionKey).toString());
+                //localStorage.setItem("comprobante", CryptoJS.AES.encrypt("factura", encryptionKey).toString());
+                //setComprobante("factura")
               }
 
               // Set localStorage with user data
@@ -580,27 +593,33 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   }, [session, status])
 
   useEffect(() => {
-    const savedNombre = decryptData(localStorage.getItem("nombre"));
-    const savedTelefono = decryptData(localStorage.getItem("telefono"));
-    const savedDni = decryptData(localStorage.getItem("dni"));
-    const savedCalle = decryptData(localStorage.getItem("calle"));
-    const savedNroInterior = decryptData(localStorage.getItem("nroInterior"));
-    const savedReferencia = decryptData(localStorage.getItem("referencia"));
-    const savedComprobante = decryptData(localStorage.getItem("comprobante"));
-    const savedAddressId = decryptData(localStorage.getItem("selectedAddressId"));
-    const savedRuc = decryptData(localStorage.getItem("ruc"));
+    try{
+      const savedNombre = decryptData(localStorage.getItem("nombre"));
+      const savedTelefono = decryptData(localStorage.getItem("telefono"));
+      const savedDni = decryptData(localStorage.getItem("dni"));
+      const savedCalle = decryptData(localStorage.getItem("calle"));
+      const savedNroInterior = decryptData(localStorage.getItem("nroInterior"));
+      const savedReferencia = decryptData(localStorage.getItem("referencia"));
+      const savedComprobante = decryptData(localStorage.getItem("comprobante"));
+      const savedAddressId = decryptData(localStorage.getItem("selectedAddressId"));
+      const savedRuc = decryptData(localStorage.getItem("ruc"));
 
-    if(savedRuc) setNumeroRuc(savedRuc)
-    if (savedNombre) setNombre(savedNombre)
-    if (savedTelefono) setTelefono(savedTelefono)
-    if (savedDni) setNumeroDni(savedDni)
-    if (savedNroInterior) setNumeroInterior(savedNroInterior)
-    if (savedCalle) setCalle(savedCalle)
-    if (savedReferencia) setReferencia(savedReferencia)
-    if(savedComprobante) setComprobante(savedComprobante)
-    if(savedAddressId) setSelectedAddressId(savedAddressId)
-    fetchCart()
-    loadGoogleMapsScript()
+      if(savedRuc) setNumeroRuc(savedRuc)
+      if (savedNombre) setNombre(savedNombre)
+      if (savedTelefono) setTelefono(savedTelefono)
+      if (savedDni) setNumeroDni(savedDni)
+      if (savedNroInterior) setNumeroInterior(savedNroInterior)
+      if (savedCalle) setCalle(savedCalle)
+      if (savedReferencia) setReferencia(savedReferencia)
+      if(savedComprobante) setComprobante(savedComprobante)
+      if(savedAddressId) setSelectedAddressId(savedAddressId)
+      fetchCart()
+      loadGoogleMapsScript()
+    }
+    catch(error) {
+      console.error("Error al cargar los datos:", error)
+    }
+    
   }, [])
 
   return (
@@ -624,34 +643,51 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* AddressForm Component - Top Left */}
           { (
-            <div className="lg:col-span-2 lg:max-h-[800px] overflow-auto">
-              <AddressFormParent
-                nombre={nombre}
-                numeroDni={numeroDni}
-                numeroRuc={numeroRuc} // Pasar el estado de RUC
-                ciudad={ciudadNombre}
-                telefono={telefono}
-                calle={calle}
-                setCalle={setCalle}
-                numeroInterior={numeroInterior}
-                referencia={referencia}
-                handleNombreChange={handleNombreChange}
-                handleDniChange={handleDniChange}
-                handleRucChange={handleRucChange} // Pasar el manejador de RUC
-                handleTelefonoChange={handleTelefonoChange}
-                handleCiudadChange={handleCiudadChange}
-                handleCalleChange={handleCalleChange}
-                handleNroInteriorChange={handleNroInteriorChange}
-                handleReferenciaChange={handleReferenciaChange}
-                handleClickMapa={() => setShowMapModal(true)}
-                status={status}
-                handleSubmitPadre={handleSubmitPadre}
-                dniError={dniError}
-                locationError={locationError}
-                telefonoError={telefonoError}
-                onComprobanteChange={handleComprobanteChange}
-                comprobantePassed={comprobante}
-              />
+            <div className="lg:col-span-2 space-y-5">
+              <div className="lg:max-h-[800px] overflow-auto">
+                <AddressFormParent
+                  nombre={nombre}
+                  numeroDni={numeroDni}
+                  numeroRuc={numeroRuc} // Pasar el estado de RUC
+                  ciudad={ciudadNombre}
+                  telefono={telefono}
+                  calle={calle}
+                  setCalle={setCalle}
+                  numeroInterior={numeroInterior}
+                  referencia={referencia}
+                  handleNombreChange={handleNombreChange}
+                  handleDniChange={handleDniChange}
+                  handleRucChange={handleRucChange} // Pasar el manejador de RUC
+                  handleTelefonoChange={handleTelefonoChange}
+                  handleCiudadChange={handleCiudadChange}
+                  handleCalleChange={handleCalleChange}
+                  handleNroInteriorChange={handleNroInteriorChange}
+                  handleReferenciaChange={handleReferenciaChange}
+                  handleClickMapa={() => setShowMapModal(true)}
+                  status={status}
+                  handleSubmitPadre={handleSubmitPadre}
+                  dniError={dniError}
+                  locationError={locationError}
+                  telefonoError={telefonoError}
+                  onComprobanteChange={handleComprobanteChange}
+                  comprobantePassed={comprobante}
+                  
+                />
+                </div>
+
+                {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
+                {session?.user?.id && (
+                  <div className="lg:max-h-[400px] overflow-auto">
+                    <LoggedInAddresses
+                      userId={session.user.id}
+                      ciudadId={ciudadId}
+                      ciudadNombre={ciudadNombre}
+                      toggleAllowed={true}
+                      onToggleAddress={handleToggleAddress}
+                      selectedAddressIdPassed={selectedAddressId}
+                    />
+                  </div>
+                )}
             </div>
           )}
 
@@ -672,18 +708,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
             )}
           </div>
 
-          {/* Conditional rendering of LoggedInAddresses - Bottom Left */}
-          {session?.user?.id && (
-            <div className="lg:col-span-2 lg:max-h-[400px] overflow-auto">
-              <LoggedInAddresses
-                userId={session.user.id}
-                ciudadId={ciudadId}
-                ciudadNombre={ciudadNombre}
-                toggleAllowed={true}
-                onToggleAddress={handleToggleAddress}
-              />
-            </div>
-          )}
+          
         </div>
 
         {/* Map modal */}

@@ -16,9 +16,24 @@ interface LoggedInAddressesProps {
   ciudadNombre: string;
   toggleAllowed: boolean;
   onToggleAddress: (addressId: string | null) => void;
+  selectedAddressIdPassed: string | null;
 }
 
-const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId, ciudadNombre, toggleAllowed, onToggleAddress }) => {
+const encryptionKey = process.env.NEXT_PUBLIC_ENCRYPTION_KEY || "default_key";
+// Function to decrypt data
+const decryptData = (data: string | null): string | null => {
+  if (data) {
+      try {
+          return CryptoJS.AES.decrypt(data, encryptionKey).toString(CryptoJS.enc.Utf8);
+      } catch (error) {
+          console.error("Decryption failed:", error);
+          return null;
+      }
+  }
+  return null;
+};
+
+const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId, ciudadNombre, toggleAllowed, onToggleAddress,selectedAddressIdPassed }) => {
 
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,6 +49,8 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
   const [isErrorPopupVisible, setIsErrorPopupVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
+
+
   useEffect(() => {
     const fetchAddresses = async () => {
       try {
@@ -45,6 +62,22 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
           setDirecciones(filteredAddresses);
           setCiudadNombreInternal(ciudadNombre);
           setCiudadIdInternal(ciudadId);
+          if(selectedAddressIdPassed){
+            setSelectedAddressId(selectedAddressIdPassed);
+          }
+          // Validate savedAddressId
+          /*
+          console.log("Validating savedAddressId");
+          const savedAddressId = decryptData(localStorage.getItem("selectedAddressId"));
+          console.log("Saved address ID:", savedAddressId);
+          if (savedAddressId && filteredAddresses.some((address : Direccion) => address.id === savedAddressId)) {
+            console.log("Setting selected address ID:", savedAddressId);
+            setSelectedAddressId(savedAddressId);
+          } else {
+            console.log("Removing saved address ID");
+            localStorage.removeItem("selectedAddressId");
+          }
+            */
         }
       } catch (error) {
         setErrorMessage('Error al cargar las direcciones. Intente de nuevo más tarde.');
@@ -54,9 +87,16 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
         setLoading(false);
       }
     };
-
+  
     fetchAddresses();
   }, [userId, ciudadNombre, ciudadId]);
+
+  /*
+  useEffect(() => {
+    if (selectedAddressIdPassed) {
+      setSelectedAddressId(selectedAddressIdPassed)
+    }
+  }, [selectedAddressIdPassed])*/
 
   const handleEdit = (address: Direccion) => {
     setCurrentAddress(address);

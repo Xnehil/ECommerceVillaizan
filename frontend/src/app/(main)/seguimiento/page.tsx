@@ -485,7 +485,7 @@ const TrackingPage: React.FC = () => {
                   ) : enRuta === "entregado" ? (
                     <PedidoEntregado pedidoId={pedido?.id ?? "Hola"} />
                   ) : enRuta === "cancelado" ? (
-                    <PedidoCancelado />
+                    <PedidoCancelado pedido={pedido}/>
                   ) : null}
                 </div>
                 {/* Botón para cancelar el pedido */}

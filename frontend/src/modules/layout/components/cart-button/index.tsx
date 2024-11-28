@@ -9,11 +9,21 @@ import { useEffect, useState } from "react";
 import Spinner from "@modules/common/icons/spinner";
 
 const fetchCart = async (): Promise<{ cart: Pedido; cookieValue?: string }> => {
-  const respuesta = await getOrSetCart();
-  let cart = respuesta?.cart;
-  let cookieValue = respuesta?.cookie;
-  let aux = cart.detalles;
-  return { cart, cookieValue };
+  try{
+    const respuesta = await getOrSetCart();
+    let cart = respuesta?.cart;
+    if(cart.estado !== "carrito"){
+      throw new Error("El carrito no está en estado 'carrito'");
+    }
+    let cookieValue = respuesta?.cookie;
+    let aux = cart.detalles;
+    return { cart, cookieValue };
+  }
+  catch(e){
+    console.log("Error al cargar el carrito", e);
+    throw e;
+  }
+  
 };
 
 interface CartButtonProps {
@@ -26,21 +36,23 @@ const CartButton: React.FC<CartButtonProps> = ({ carrito, setCarrito }) => {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    // Fetch the cart data when the component is mounted
+    let isMounted = true;
     const getCart = async () => {
-
-      const { cart } = await fetchCart();
-      const enrichedItems = await enrichLineItems(cart.detalles);
-      //iterate each detalles and if detalles.estaActivo false, then remove it from the array
-
-      // Filter out inactive items
-      cart.detalles = enrichedItems.filter(item => item.estaActivo);
-
-      cart.detalles = enrichedItems;
-      setCarrito(cart);
+        try {
+            const { cart } = await fetchCart();
+            if (isMounted) {
+                const enrichedItems = await enrichLineItems(cart.detalles);
+                cart.detalles = enrichedItems.filter(item => item.estaActivo);
+                setCarrito(cart);
+            }
+        } catch (e) {
+            console.error("Error al cargar el carrito:", e);
+            if (isMounted) window.location.href = "/";
+        }
     };
-    if(carrito == null) getCart();
-  }, []);
+    if (!carrito) getCart();
+    return () => { isMounted = false; };
+}, [carrito, setCarrito]);
 
   useEffect(() => {
     if (carrito && !done) {

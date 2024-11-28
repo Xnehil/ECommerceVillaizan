@@ -24,22 +24,42 @@ export default function ProductDetail() {
   const hasRunOnceAuth = useRef(false);
 
   const fetchCarrito = async (): Promise<{ cart: Pedido; cookieValue?: string }> => {
-    const respuesta = await getOrSetCart();
-    let cart = respuesta?.cart;
-    let cookieValue = respuesta?.cookie;
-    let aux = cart.detalles;
-    return { cart, cookieValue };
+    try{
+      const respuesta = await getOrSetCart();
+    
+      let cart = respuesta?.cart;
+      if(cart.estado !== "carrito"){
+        throw new Error("El carrito no está en estado 'carrito'");
+      }
+      let cookieValue = respuesta?.cookie;
+      let aux = cart.detalles;
+      return { cart, cookieValue };
+    }
+    catch(e){
+      console.log("Error al cargar el carrito", e);
+      throw e;
+    }
+    
   };
 
   useEffect(() => {
+    let isMounted = true;
     const getCart = async () => {
-      const { cart } = await fetchCarrito();
-      const enrichedItems = await enrichLineItems(cart.detalles);
-      cart.detalles = enrichedItems;
-      setCarrito(cart); // Aquí cambié 'carrito' por 'cart'
+        try {
+            const { cart } = await fetchCarrito();
+            if (isMounted) {
+                const enrichedItems = await enrichLineItems(cart.detalles);
+                cart.detalles = enrichedItems.filter(item => item.estaActivo);
+                setCarrito(cart);
+            }
+        } catch (e) {
+            console.error("Error al cargar el carrito:", e);
+            if (isMounted) window.location.href = "/";
+        }
     };
-    if (carrito == null) getCart();
-  }, [carrito]);
+    if (!carrito) getCart();
+    return () => { isMounted = false; };
+}, [carrito]);
 
   useEffect(() => {
     const fetchProduct = async () => {
