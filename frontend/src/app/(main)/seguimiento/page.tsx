@@ -14,6 +14,7 @@ import { enrichLineItems, retrievePedido } from "@modules/cart/actions";
 import { Pedido } from "types/PaquetePedido";
 import PedidoCancelado from "@components/PedidoCancelado";
 import ConfirmModal from "./confirmModal"; 
+import { useSession } from "next-auth/react";
 
 const MapaTracking = dynamic(() => import("@components/MapaTracking"), {
   ssr: false,
@@ -24,6 +25,8 @@ interface ExtendedWebSocket extends WebSocket {
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+
+
 
 // Función para crear y descargar el archivo XML en el cliente
 const downloadXMLFile = async (pedido: Pedido) => {
@@ -149,10 +152,15 @@ const fetchCart = async (
   enRuta: string,
   setMensajeEspera: (mensaje: string) => void,
   ws: React.MutableRefObject<ExtendedWebSocket | null>,
-  codigoSeguimiento?: string | null
+  codigoSeguimiento?: string | null,
+  isAuthenticated?: boolean,
+  userId?: string | null
 ): Promise<Pedido> => {
   // console.log("Fetching cart with code:", codigoSeguimiento);
-  const respuesta = await retrievePedido(true, codigoSeguimiento);
+  if(isAuthenticated){
+
+  }
+  const respuesta = await retrievePedido(true, codigoSeguimiento,isAuthenticated ?? false,userId?? null);
   console.log("Respuesta:", respuesta);
   let cart: Pedido = respuesta
   downloadXMLFile(cart); // paraPruebas
@@ -257,11 +265,29 @@ const TrackingPage: React.FC = () => {
   const [codigo, setCodigo] = useState<string | null>(
     search.get("codigo")
   );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { data: session, status } = useSession();
+  const hasRunOnceAuth = useRef(false);
   const wsRef = useRef<ExtendedWebSocket | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
    // Función para abrir el modal de confirmación
    const handleCancelClick = () => {
     setShowConfirmModal(true);
   };
+
+  useEffect(() => {
+    if(status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true;
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+        setUserId(session.user.id);
+      } else {
+        setIsAuthenticated(false);
+        setUserId(null);
+      }
+    }
+  }, [session, status]);
+
     // Función para cancelar el pedido
   // Función para cancelar el pedido al confirmar en el modal
   const cancelarPedido = async () => {
@@ -299,7 +325,7 @@ const TrackingPage: React.FC = () => {
     //   }
     // };
 
-    fetchCart(setDriverPosition, setEnRuta, enRuta, setMensajeEspera, wsRef, codigo).then((cart) => {
+    fetchCart(setDriverPosition, setEnRuta, enRuta, setMensajeEspera, wsRef, codigo,isAuthenticated,userId).then((cart) => {
       setPedido(cart);
       setLoading(false);
       // if (cart?.codigoSeguimiento && !mensajeEnviadoRef.current) { // Evita envío duplicado usando `ref`
