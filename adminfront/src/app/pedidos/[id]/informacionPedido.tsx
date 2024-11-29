@@ -149,7 +149,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                           detalle.metodoPago.nombre === "plin") &&
                           detalle.pago && (
                             <Popover>
-                              <PopoverTrigger>
+                              <PopoverTrigger asChild>
                                 <Button variant="outline">Evidencia</Button>
                               </PopoverTrigger>
                               <PopoverContent>
@@ -157,11 +157,11 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
                                   src={detalle.pago.urlEvidencia}
                                   alt="Evidencia de pago"
                                 />
-                                <a href={detalle.pago.urlEvidencia} download>
-                                  <Button variant="ghost" className="mt-2">
+                                {/* <a href={detalle.pago.urlEvidencia} download>
+                                  <Button className="mt-2">
                                     Descargar Evidencia
                                   </Button>
-                                </a>
+                                </a> */}
                               </PopoverContent>
                             </Popover>
                           )}
