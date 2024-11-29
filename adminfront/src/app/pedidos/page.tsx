@@ -69,25 +69,29 @@ const PedidosPage: React.FC = () => {
               break;
             case "entregado":
               // console.log(pedido);
-              if(pedido.pedidosXMetodoPago && pedido.pedidosXMetodoPago.length > 0) {
+              if (
+                pedido.pedidosXMetodoPago &&
+                pedido.pedidosXMetodoPago.length > 0
+              ) {
                 //detecta si el pedido fue pagado con yape o plin (total o parcialmente)
                 if (!pedido.pagado) {
                   pedRevision.current.push(pedido);
                 } else {
                   pedHistorial.current.push(pedido);
                 }
-              }
-              else{
+              } else {
                 if (!pedido.pagado) {
                   pedRevision.current.push(pedido);
                 } else {
                   pedHistorial.current.push(pedido);
                 }
               }
-              
-              
+
               break;
             case "cancelado":
+              pedHistorial.current.push(pedido);
+              break;
+            case "fraudulento":
               pedHistorial.current.push(pedido);
               break;
             case "manual":
