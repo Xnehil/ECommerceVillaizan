@@ -64,9 +64,7 @@ export default function Nav() {
   };
 
   useEffect(() => {
-  
     async function fetchUserName() {
-      // Function to get cookies
       const getCookie = (name: string) => {
         const value = `; ${document.cookie}`;
         const parts = value.split(`; ${name}=`);
@@ -80,7 +78,7 @@ export default function Nav() {
       };
   
       if (status !== "loading" && !hasRunOnce.current) {
-        hasRunOnce.current = true; // Set the flag to true to prevent re-execution
+        hasRunOnce.current = true;
   
         if (session?.user?.id) {
           console.log("User is authenticated");
@@ -145,24 +143,36 @@ export default function Nav() {
           console.log("User is not authenticated");
           const cartId = getCookie("_medusa_cart_id");
           if (cartId) {
-            const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
-            const pedido = response.data.pedido;
-            if (pedido) {
-              console.log("Pedido encontrado: ", pedido);
-              if (pedido.usuario && pedido.usuario.conCuenta) {
-                console.log("Pedido con usuario con cuenta");
-                document.cookie = `_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict`;
-                document.cookie = `_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict`;
-                window.location.href = "/";
+            try {
+              const response = await axios.get(`${baseUrl}/admin/pedido/${cartId}`);
+              const pedido = response.data.pedido;
+              if (pedido) {
+                console.log("Pedido encontrado: ", pedido);
+                if (pedido.usuario && pedido.usuario.conCuenta) {
+                  console.log("Pedido con usuario con cuenta");
+                  document.cookie = `_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict`;
+                  document.cookie = `_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict`;
+                  window.location.href = "/";
+                }
               }
+            } catch (error) {
+              console.error("Error handling unauthenticated cart logic:", error);
             }
           }
         }
       }
     }
   
-    fetchUserName();
+    // Use async/await to properly catch errors
+    (async () => {
+      try {
+        await fetchUserName();
+      } catch (error) {
+        console.error("Error executing fetchUserName:", error);
+      }
+    })();
   }, [status, session]);
+  
   
 
   return (
