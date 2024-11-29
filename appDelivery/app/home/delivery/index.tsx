@@ -298,7 +298,7 @@ export default function Entregas() {
   useEffect(()=>{
     const interval = setInterval(() =>{
       fetchPedidos();
-    },10000);
+    },20000);
     return () => clearInterval(interval);
   },[usuario]);
   const [location, setLocation] = useState<{

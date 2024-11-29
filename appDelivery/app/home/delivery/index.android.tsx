@@ -115,7 +115,7 @@ export default function Entregas() {
    useEffect(() => {
     const interval = setInterval(() => {
       fetchPedidos();
-    }, 10000); // 10 segundos
+    }, 20000); // 10 segundos
 
     // Limpiar el intervalo cuando el componente se desmonte
     return () => clearInterval(interval);

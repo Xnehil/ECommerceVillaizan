@@ -60,6 +60,12 @@ const MapComponent: React.FC<MapProps> = ({
     : { latitude: 37.78825, longitude: -122.4324 }
   );
 
+  useEffect(() => {
+    if (location) {
+      setCenter({ latitude: location.latitude, longitude: location.longitude });
+    }
+  },[location]);
+
   const [showRoutes, setShowRoutes] = useState(false);
 
   const [circleRadius, setCircleRadius] = useState(250);
