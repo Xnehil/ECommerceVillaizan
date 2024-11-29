@@ -183,8 +183,20 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
                           ?.monto.toString() || ""
                       }
                       onChange={(e) => {
-                        const value = parseFloat(e.target.value)
-                        onAmountChange && onAmountChange(image.id, value)
+                        let value = e.target.value;
+
+                        // Ensure only valid numbers with one decimal or empty input
+                        if (/^\d*\.?\d{0,1}$/.test(value)) {
+                          if (value === "") {
+                            // Handle empty input
+                            onAmountChange && onAmountChange(image.id, 0);
+                          } else {
+                            const numericValue = parseFloat(value);
+                            if (!isNaN(numericValue)) {
+                              onAmountChange && onAmountChange(image.id, numericValue);
+                            }
+                          }
+                        }
                       }}
                     />
                   </>

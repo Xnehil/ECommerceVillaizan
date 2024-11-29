@@ -237,7 +237,7 @@ export default function TabOneScreen() {
       try {
         const promises = pedidos.map((pedido) =>
           axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
-            estado: "reasignar",
+            estado: "manual",
             motivoCancelacion:
               motivoCancelacion === "Otro" ? otroMotivo : motivoCancelacion,
           })

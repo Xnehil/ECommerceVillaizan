@@ -12,6 +12,8 @@ import Activos from "@/app/pedidos/activos/activos";
 import Historial from "@/app/pedidos/historial/historial";
 import Revision from "@/app/pedidos/revision/revision";
 import Manual from "@/app/pedidos/manuales/manuales";
+import { RefreshCcw } from "lucide-react";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 const PedidosPage: React.FC = () => {
   const pedPendientes = useRef<Pedido[]>([]);
@@ -19,6 +21,8 @@ const PedidosPage: React.FC = () => {
   const pedHistorial = useRef<Pedido[]>([]);
   const pedRevision = useRef<Pedido[]>([]);
   const pedManuales = useRef<Pedido[]>([]);
+  const [refresh, setRefresh] = useState(false);
+  const {refreshOrders, setRefreshOrders} = useSidebar();
 
   const [isLoading, setIsLoading] = useState(false);
   const a = useRef(0);
@@ -27,13 +31,14 @@ const PedidosPage: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
+    // console.log("a refresh", a.current);
     const fetchPedidos = async () => {
-      if (
-        pedPendientes.current.length > 0 ||
-        pedActivos.current.length > 0 ||
-        pedHistorial.current.length > 0
-      )
-        return;
+      // if (
+      //   pedPendientes.current.length > 0 ||
+      //   pedActivos.current.length > 0 ||
+      //   pedHistorial.current.length > 0
+      // )
+      //   return;
 
       try {
         a.current = a.current + 1;
@@ -46,7 +51,7 @@ const PedidosPage: React.FC = () => {
         if (!response) {
           throw new Error("Failed to fetch pedidos");
         }
-        const data = await response.data;
+        const data = response.data;
         console.log("Pedidos fetched:", data);
 
         const pedidosData: Pedido[] = data.pedidos.sort(
@@ -57,6 +62,13 @@ const PedidosPage: React.FC = () => {
             );
           }
         );
+
+        pedPendientes.current = [];
+        pedActivos.current = [];
+        pedHistorial.current = [];
+        pedRevision.current = [];
+        pedManuales.current = [];
+          
 
         pedidosData.forEach((pedido) => {
           switch (pedido.estado.toLowerCase()) {
@@ -118,13 +130,31 @@ const PedidosPage: React.FC = () => {
     if (a.current === 0) {
       fetchPedidos();
     }
-  }, []);
+  }, [refresh]);
 
   return (
     <>
       <div className="content-container">
         {isLoading && <Loading />}
-        <h4>Pedidos</h4>
+        <div className="flex items-center justify-between mb-4">
+        <h4 className="text-lg font-semibold pr-3">Pedidos</h4>
+        <button
+          onClick={() => {
+            a.current = 0;
+            setRefresh(!refresh);
+            setRefreshOrders(false);
+          }}
+          className={`flex items-center justify-center p-2 rounded ${
+            refreshOrders
+              ? 'bg-blue-500 hover:bg-blue-200 text-white'
+              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+          }`}
+          aria-label="Refresh Pedidos"
+          title="Actualizar Pedidos"
+        >
+         <RefreshCcw size={16} />
+        </button>
+      </div>
         <p>Administra los pedidos realizados en el ecommerce.</p>
 
         <Tabs

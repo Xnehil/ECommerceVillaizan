@@ -1,6 +1,6 @@
 import "@/styles/sidebar.css";
 import NavButton from "./navButton";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react"; // Import signOut for logout functionality
@@ -21,7 +21,9 @@ const Sidebar = () => {
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   const {pendingOrders, setPendingOrders} = useSidebar();
-  const {unreadNotifications, setUnreadNotifications} = useSidebar();
+  const {unreadNotifications, setUnreadNotifications, setRefreshOrders} = useSidebar();
+
+  const primerRender=useRef(true);
 
   const fetchCounts = async () => {
     try {
@@ -32,6 +34,11 @@ const Sidebar = () => {
       // Fetch pending orders count
       const ordersResponse = await axios.get(baseUrl + "pedido?estado=solicitado&cantidad=true");
       setPendingOrders(ordersResponse.data.cantidad);
+      console.log("Pending orders:", ordersResponse.data.cantidad);
+      if (ordersResponse.data.cantidad !== pendingOrders && !primerRender.current) {
+        setRefreshOrders(true);
+      }
+      primerRender.current = false;
     } catch (error) {
       console.error("Error fetching counts:", error);
     }

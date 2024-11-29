@@ -21,10 +21,10 @@ const ConfiguracionPage: React.FC = () => {
         <Separator />
 
         <Tabs defaultValue="general" defaultChecked={true} className="w-full">
-          <TabsList className="grid w-2/5 grid-cols-3">
+          <TabsList className="grid w-2/5 grid-cols-2">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="productos">Productos</TabsTrigger>
-            <TabsTrigger value="plantilla">Plantilla de stock</TabsTrigger>
+            {/* <TabsTrigger value="plantilla">Plantilla de stock</TabsTrigger> */}
           </TabsList>
           <TabsContent className="w-full" value="general">
             <div className="information-container">
@@ -38,11 +38,11 @@ const ConfiguracionPage: React.FC = () => {
               <Subcategorias />
             </div>
           </TabsContent>
-          <TabsContent value="plantilla">
+          {/* <TabsContent value="plantilla">
             <div className="information-container">
               <PlantillaPg />
             </div>
-          </TabsContent>
+          </TabsContent> */}
         </Tabs>
       </div>
     </>

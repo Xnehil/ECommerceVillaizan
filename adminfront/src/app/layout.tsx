@@ -167,6 +167,44 @@ export default function RootLayout({
   const ws = useRef<WebSocket | null>(null);
   const url = process.env.NEXT_PUBLIC_WS_URL as string;
   const router = useRouter();
+  const [notificationCount, setNotificationCount] = useState<number>(0);
+  const [isTabFocused, setIsTabFocused] = useState<boolean>(true);
+
+  const playNotificationSound = () => {
+    const audio = new Audio('/notificacion.mp3');
+    audio.play().catch((error) => {
+      console.error('Error playing notification sound:', error);
+    });
+  };
+
+  useEffect(() => {
+    if (notificationCount > 0 && !isTabFocused) {
+      document.title = `🔔 Administrador Villaizan`; 
+    } else {
+      document.title = "Administrador Villaizan";
+    }
+  }, [notificationCount, isTabFocused]);
+
+  // Reset notification count when the tab gains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      setIsTabFocused(true);
+      setNotificationCount(0);
+      document.title = "Administrador Villaizan";
+    };
+
+    const handleBlur = () => {
+      setIsTabFocused(false);
+    };
+
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   useEffect(() => {
     // Initialize WebSocket connection
@@ -198,7 +236,11 @@ export default function RootLayout({
               </div>
             ),
           });
+          setNotificationCount((prev) => prev + 1);
+          playNotificationSound();
         } else if (data.type && data.data) {
+          setNotificationCount((prev) => prev + 1);
+          playNotificationSound();
           mapearMensaje(data.type, router, data.data);
         } else {
           console.error("Message property not found in WebSocket data:", data);

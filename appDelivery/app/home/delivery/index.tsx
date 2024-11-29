@@ -381,7 +381,7 @@ export default function Entregas() {
           onPress={() => setVerHistorial(!verHistorial)}
         >
           <Text style={styles.toggleButtonText}>
-            {verHistorial ? "Ver Pedidos Actuales" : "Ver Historial de Pedidos"}
+            {verHistorial ? "Ver Pedidos Actuales" : "Ver Historial"}
           </Text>
         </TouchableOpacity>
       </View>
