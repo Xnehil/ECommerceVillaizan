@@ -28,7 +28,8 @@ const CartTemplate = ({
   
   const handleBackClick = () => {
     //Enviar a /comprar
-    window.history.back()
+    window.location.href ="/comprar"
+    // window.history.back()
   }
 
   useEffect(() => {
