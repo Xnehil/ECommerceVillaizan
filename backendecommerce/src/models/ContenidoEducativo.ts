@@ -13,7 +13,7 @@ export class ContenidoEducativo extends EntidadBase {
     titulo: string;
 
     @Column("text", { nullable: true })
-    descripcion: string;
+    contenidoinformacion: string;
 
     @Column({ type: "varchar", length: 100, name: "tipocontenido" })
     tipoContenido: string;

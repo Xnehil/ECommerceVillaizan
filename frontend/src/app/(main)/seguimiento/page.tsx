@@ -307,6 +307,10 @@ const TrackingPage: React.FC = () => {
               // El motorizado está atendiendo otros pedidos
               setEnRuta("espera")
               setMensajeEspera("Tu pedido ha sido verificado. El repartidor está atendiendo otros pedidos.\n Por favor, espera un momento.")
+            } else if (data.type === "manualResponse") {
+              // El motorizado está atendiendo otros pedidos
+              setEnRuta("espera")
+              setMensajeEspera("Tu repartidor ha tenido problemas. Un administrador se comunicará contigo para que puedas disfrutar de tus paletas.")
             } else if (data.type === "entregadoResponse") {
               // El pedido ha sido entregado
               //downloadXMLFile(cart); // paraPRD
