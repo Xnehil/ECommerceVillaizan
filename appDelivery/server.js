@@ -1,33 +1,46 @@
-// server.js
+const WebSocket = require("ws");
 
-const WebSocket = require('ws');
+// Puerto del servidor WebSocket
+const PORT = 9002;
 
-// Crear el servidor WebSocket en el puerto 8080
-const wss = new WebSocket.Server({ port: 8080 });
+// Crear una instancia del servidor WebSocket
+const wss = new WebSocket.Server({ port: PORT }, () => {
+  console.log(`Servidor WebSocket iniciado en ws://localhost:${PORT}`);
+});
 
-// Función que se ejecuta cuando un cliente se conecta al servidor
-wss.on('connection', (ws) => {
-  console.log('Cliente conectado');
+// Función para enviar un mensaje de "nuevoPedido" a todos los clientes conectados
+const sendNuevoPedido = () => {
+  const message = {
+    type: "nuevoPedido",
+    data: {
+      pedidoId: Math.random().toString(36).substr(2, 9), // Generar un ID aleatorio para el pedido
+      timestamp: new Date().toISOString(),
+    },
+  };
+  console.log("Mensaje enviado");
+  // Enviar el mensaje a todos los clientes conectados
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message));
+      console.log("Mensaje enviado:", message);
+    }
+  });
+};
 
-  // Función que se ejecuta cuando el servidor recibe un mensaje de un cliente
-  ws.on('message', (message) => {
-    console.log(`Mensaje recibido del cliente: ${message}`);
+// Manejar la conexión de nuevos clientes
+wss.on("connection", (ws) => {
+  console.log("Nuevo cliente conectado");
 
-    // Enviar un mensaje de vuelta al cliente
-    ws.send(`Echo: ${message}`);
-    
-    // Enviar el mensaje a todos los clientes conectados (broadcast)
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(`Broadcast: ${message}`);
-      }
-    });
+  // Escuchar mensajes entrantes del cliente (si es necesario)
+  ws.on("message", (message) => {
+    console.log("Mensaje recibido del cliente:", message);
   });
 
-  // Función que se ejecuta cuando el cliente se desconecta
-  ws.on('close', () => {
-    console.log('Cliente desconectado');
+  // Manejar la desconexión de clientes
+  ws.on("close", () => {
+    console.log("Cliente desconectado");
   });
 });
 
-console.log('Servidor WebSocket corriendo en ws://localhost:8080');
+// Enviar mensajes cada 10 segundos
+setInterval(sendNuevoPedido, 10000);

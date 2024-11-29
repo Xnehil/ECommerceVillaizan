@@ -93,11 +93,6 @@ const createNotification = async (error: string): Promise<Notificacion | null> =
   if (user) {
   return {
     id: "", 
-    creadoEn: new Date().toISOString(),
-    actualizadoEn: new Date().toISOString(),
-    desactivadoEn: null,
-    usuarioCreacion: "", 
-    usuarioActualizacion: null,
     estaActivo: true,
     asunto: "WebSocket Connection Error",
     descripcion: error,
