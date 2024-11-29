@@ -495,7 +495,7 @@ const TrackingPage: React.FC = () => {
                   {enRuta === "ruta" ? (
                     <MapaTracking
                       pedido={pedido}
-                      driverPosition={driverPosition ?? [-6.476, -76.361]}
+                      driverPosition={driverPosition ?? [-6.4893154, -76.3622014]}
                     />
                   ) : enRuta === "espera" ? (
                     <EnEsperaTracking
