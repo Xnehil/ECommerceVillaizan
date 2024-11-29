@@ -362,7 +362,7 @@ export default function MetodoPagoClient({
     }
 
     if (id === "pagoEfec" && amount - calcularRestante(idMetodo) > 100) {
-      setErrorMessage("El vuelto no puede ser mayor a 100")
+      setErrorMessage("El vuelto no puede ser mayor a 100 soles")
       setTimeout(() => {
         setErrorMessage("")
       }, 5000)
