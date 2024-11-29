@@ -174,8 +174,8 @@ export default function SeleccionarProductos({ navigation }: any) {
         }
       );
 
-      const detalles = await Promise.all(detallePedidosPromises);
-
+      const detalles : DetallePedido[] = await Promise.all(detallePedidosPromises);
+      console.log("detalles");
       const motorizado = await getMotorizadoData();
 
       const pedidoCompleto: Pedido = {
@@ -190,20 +190,20 @@ export default function SeleccionarProductos({ navigation }: any) {
         direccion: null,
         usuario: { id: GENERIC_USER } as Usuario,
         urlEvidencia: null,
-        detalles,
+        detalles: detalles,
         pagado: false,
-        codigoSeguimiento: "Venta directa",
         pedidosXMetodoPago: null,
         estaActivo: true,
         pagos: null,
         creadoEn: new Date()
       };
+      console.log(pedidoCompleto);
       const pedidoResponse = await axios.post(
         `${BASE_URL}/pedido`,
         pedidoCompleto
       );
       const pedidoId = pedidoResponse.data.pedido.id;
-      console.log(pedidoResponse);
+      console.log("pedido");
 
       //Guardar pedidoXMetodoPago
       const pedidoXMetodoPagoPromises = metodosPagoSeleccionados.map(
@@ -226,7 +226,7 @@ export default function SeleccionarProductos({ navigation }: any) {
           return response.data.pedidoXMetodoPago;
         }
       );
-      const pedidoXMetodoPago = await Promise.all(pedidoXMetodoPagoPromises);
+      const pedidoXMetodoPago : PedidoXMetodoPago[] = await Promise.all(pedidoXMetodoPagoPromises);
 
       //Actualiar pedido
       const pedidoActualizado = await axios.put(
@@ -236,6 +236,7 @@ export default function SeleccionarProductos({ navigation }: any) {
           pedidosXMetodoPago: pedidoXMetodoPago,
         }
       );
+      console.log("pedido");
       // Crear la Venta con el Pedido
       const venta: Venta = {
         id: "",
@@ -256,14 +257,13 @@ export default function SeleccionarProductos({ navigation }: any) {
         pedido: pedidoId,
         ordenSerie: null,
       };
-      console.log(venta);
       const ventaResponse = await axios.post(`${BASE_URL}/venta`, venta);
-      console.log(ventaResponse);
       const ventaId = ventaResponse.data.id;
+      console.log("venta");
 
       // Crear los Pagos por cada pedidoXMetodoPago
       const pagoPromises = pedidoXMetodoPago.map((pedidoXMetodoPago) => {
-        const pago = {
+        const pago: Pago = {
           esTransferencia: true,
           montoCobrado: pedidoXMetodoPago.monto,
           numeroOperacion: null,
@@ -273,12 +273,9 @@ export default function SeleccionarProductos({ navigation }: any) {
           banco: null,
           pedido: pedidoId,
           id: "",
-          creadoEn: "",
-          actualizadoEn: "",
-          desactivadoEn: null,
-          usuarioCreacion: "",
-          usuarioActualizacion: null,
           estaActivo: false,
+          metodoPago: pedidoXMetodoPago.metodoPago,
+          
         };
         return axios.post(`${BASE_URL}/pago`, pago);
       });
@@ -336,7 +333,11 @@ export default function SeleccionarProductos({ navigation }: any) {
       );
 
       const inventarioValido = inventarioResponse.inventarios.filter(
-        (item: InventarioMotorizado) => !item.esMerma
+        (item: InventarioMotorizado) =>
+          !item.esMerma &&
+          item.stock > 0 &&
+          item.producto.precioA &&
+          parseFloat(item.producto.precioA) > 0
       );
 
       setInventario(inventarioValido);
