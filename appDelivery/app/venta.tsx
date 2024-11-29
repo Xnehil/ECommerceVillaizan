@@ -196,6 +196,7 @@ export default function SeleccionarProductos({ navigation }: any) {
         pedidosXMetodoPago: null,
         estaActivo: true,
         pagos: null,
+        creadoEn: new Date()
       };
       const pedidoResponse = await axios.post(
         `${BASE_URL}/pedido`,
