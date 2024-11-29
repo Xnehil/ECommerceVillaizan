@@ -62,6 +62,7 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [openSelect, setOpenSelect] = useState(false);
+  const [idAEliminar, setIdAEliminar] = useState("");
 
   const products = useRef<Producto[]>([]);
 
@@ -73,6 +74,10 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
 
   useEffect(() => {
     const fetchInventario = async () => {
+      if (a.current > 0) return;
+      if (products.current.length > 0) {
+        return;
+      }
       try {
         console.log(a.current);
         console.log("Fetching products");
@@ -89,6 +94,8 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
         console.log("Fetching inventario");
         console.log("inventario.current", inventario.current);
 
+        products.current = [];
+
         // check if any product is not in inventario, add it
         productsData.forEach((product) => {
           const found = inventario.current.find(
@@ -98,6 +105,8 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
             products.current.push(product);
           }
         });
+
+        console.log("Products to add:", products.current);
 
         setIsLoading(false);
 
@@ -169,12 +178,16 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
           event: React.ChangeEvent<HTMLInputElement>
         ) => {
           const value = event.target.value;
+          if (value.includes("-")) {
+            return;
+          }
           // Ensure the value is numeric
-          if (/^\d*$/.test(value)) {
+          if (/^\d*$/.test(value) && Number(value) >= 0) {
             setStock(value);
             row.original.stock = Number(value);
           } else {
-            setStock("");
+            // Prevent the user from entering invalid values
+            setStock((prev) => prev.replace(/[^0-9]/g, ""));
             row.original.stock = 0;
           }
         };
@@ -213,7 +226,12 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 <AlertDialogTrigger asChild>
-                  <DropdownMenuItem className="text-red-600">
+                  <DropdownMenuItem
+                    className="text-red-600"
+                    onClick={() => {
+                      setIdAEliminar(row.original.producto.id);
+                    }}
+                  >
                     Eliminar
                   </DropdownMenuItem>
                 </AlertDialogTrigger>
@@ -238,7 +256,7 @@ const Inventario: React.FC<InformacionAdicionalProps> = ({
                 </AlertDialogCancel>
                 <Button
                   variant="destructive"
-                  onClick={() => handleDelete(row.original.producto?.id)}
+                  onClick={() => handleDelete(idAEliminar)}
                 >
                   Eliminar
                 </Button>
