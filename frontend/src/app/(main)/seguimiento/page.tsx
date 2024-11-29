@@ -172,7 +172,7 @@ const TrackingPage: React.FC = () => {
   );
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { data: session, status } = useSession();
-  const hasRunOnceAuth = useRef(false);
+  //const hasRunOnceAuth = useRef(false);
   const wsRef = useRef<ExtendedWebSocket | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -186,8 +186,8 @@ const TrackingPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if(status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true;
+    if(status !== "loading"/* && !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true;
       if (session?.user?.id) {
         setIsAuthenticated(true);
         setUserId(session.user.id);
