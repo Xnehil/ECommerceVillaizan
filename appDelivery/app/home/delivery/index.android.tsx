@@ -28,6 +28,11 @@ import { geneticAlgorithm } from "@/functions/optimalRouteGenetic";
 import { findOptimalRouteForPedidos } from "@/functions/tspAlg";
 import { Platform } from "react-native";
 
+
+console.log = () => {};
+console.warn = () => {};
+console.error = () => {};
+
 let BASE_URL = "";
 if (Platform.OS === "web") {
   BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || "";

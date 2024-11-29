@@ -26,6 +26,7 @@ import { useRouter } from "expo-router";
 import { getUserData, storeMotorizadoData } from "@/functions/storage";
 import { Platform } from "react-native";
 
+
 let BASE_URL = '';
 if (Platform.OS === "web") {
   BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
