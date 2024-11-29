@@ -41,7 +41,7 @@ export default function LoginScreen() {
 
   async function credentialLogIn() {
     setLoading(true);
-    if (password != '') {
+    if (password == '') {
       alert("Usuario o contraseña incorrecta");
       return;
     }
