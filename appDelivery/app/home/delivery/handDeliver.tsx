@@ -807,7 +807,7 @@ const EntregarPedido = () => {
         await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
           estado: "entregado",
           urlEvidencia: urlPedido,
-          pagado: pedidoCompleto.pedidosXMetodoPago.length == 1 && pedidoCompleto.pedidosXMetodoPago[0].metodoPago.nombre == "Pago en Efectivo" ? true : false,
+          pagado: false,
         });
         setIsLoading(false);
 
