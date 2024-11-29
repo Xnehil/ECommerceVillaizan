@@ -103,7 +103,7 @@ const MapComponent: React.FC<MapProps> = ({
             origin: `${origin.lat},${origin.lng}`,
             destination: `${destination.lat},${destination.lng}`,
             mode: 'driving',
-            key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY, // Add your API key here
+            key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
           },
         });
 

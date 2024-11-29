@@ -220,7 +220,7 @@ export default function Entregas() {
     return (
       <View style={styles.pedidoContainer2}>
         <Text style={styles.fechaCreacion}>
-          Fecha de creación: {pedido.creadoEn ? pedido.creadoEn.toLocaleDateString() : 'Fecha no disponible'}
+          Fecha de creación: {pedido.creadoEn ? new Date(pedido.creadoEn).toLocaleDateString('es-ES') : 'Fecha no disponible'}
         </Text>
         <Text style={styles.estado}>Estado: {pedido.estado}</Text>
         <Text style={styles.total}>Total: S/ {pedido.total}</Text>
