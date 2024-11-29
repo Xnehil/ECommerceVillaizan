@@ -23,6 +23,8 @@ import { Pedido } from "@/types/PaquetePedido";
 import InformacionCliente from "@/app/pedidos/[id]/informacionCliente";
 import InformacionDireccion from "@/app/pedidos/[id]/informacionDireccion";
 import InformacionPedido from "@/app/pedidos/[id]/informacionPedido";
+import InputWithLabel from "@/components/forms/inputWithLabel";
+import TextAreaWithLabel from "@/components/forms/textAreaWithLabel";
 
 interface PedidoPageProps {
   params: {
@@ -37,6 +39,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
   );
   const [isLoading, setIsLoading] = useState(true);
   const pedido = useRef<Pedido>({} as Pedido);
+  const [error, setError] = useState<string>("");
   const a = useRef(0);
 
   const { toast } = useToast();
@@ -209,11 +212,17 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
     // console.log("Marcando como cancelado");
     try {
       // await new Promise((resolve) => setTimeout(resolve, 3000));
+      // if (!pedido.current.motivoCancelacion) {
+      //   setError("Debes ingresar un motivo de cancelación.");
+      //   setIsLoading(false);
+      //   return;
+      // }
 
       const responseCancelado = await axios.put(
         `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
         {
           ...pedido.current,
+          motivoCancelacion: pedido.current.motivoCancelacion,
           estado: "cancelado",
         }
       );
@@ -276,6 +285,15 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
     }
   };
 
+  const handleMotivoCancelacionChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const value = event.target.value;
+    if (value.length <= 300) {
+      pedido.current.motivoCancelacion = value;
+    }
+  };
+
   return (
     <div className="content-container">
       {isLoading && <Loading />}
@@ -293,6 +311,36 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
             {pedido.current.estado === "solicitado" && (
               <div className="lower-buttons-container">
                 <>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">Cancelado</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          ¿Estás seguro de marcar como cancelado este pedido?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          El pedido será marcado como cancelado. Esta acción no
+                          se puede deshacer.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <TextAreaWithLabel
+                          label="Motivo de cancelación"
+                          value={pedido.current.motivoCancelacion}
+                          onChange={handleMotivoCancelacionChange}
+                          placeholder="Escribe el motivo de cancelación"
+                        />
+                      </div>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Regresar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmCancelado}>
+                          Marcar como cancelado
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="default">Confirmar Pedido</Button>
@@ -388,6 +436,14 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
                           El pedido será marcado como cancelado. Esta acción no
                           se puede deshacer.
                         </AlertDialogDescription>
+                        <div className="grid gap-4 py-4">
+                          <TextAreaWithLabel
+                            label="Motivo de cancelación"
+                            value={pedido.current.motivoCancelacion}
+                            onChange={handleMotivoCancelacionChange}
+                            placeholder="Escribe el motivo de cancelación"
+                          />
+                        </div>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Regresar</AlertDialogCancel>
