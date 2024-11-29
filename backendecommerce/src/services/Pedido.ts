@@ -252,6 +252,9 @@ class PedidoService extends TransactionBaseService {
                 if (data.estado === "enProgreso") {
                     estadoPedidos.set(id, "enProgreso");
                 }
+                if (data.estado === "cancelado") {
+                    estadoPedidos.set(id, "cancelado");
+                }
             }
             if (data.pagado) {
                 data.pagadoEn = new Date();

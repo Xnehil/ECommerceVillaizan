@@ -130,7 +130,7 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
                 onMouseEnter={() => handleMouseEnter(index)}
                 onMouseLeave={handleMouseLeave}
                 onClick={() => {
-                  onImageClick(image.id);
+                  onImageClick(image.id)
                 }}
               >
                 <img
@@ -175,27 +175,21 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
                       }}
                       placeholder="Monto"
                       value={
-                        metodosPago.find(
-                          (metodo) => metodo.metodoPago.id === getMetodoPagoId(image.id)
-                        )?.monto.toString() || ""
+                        metodosPago
+                          .find(
+                            (metodo) =>
+                              metodo.metodoPago.id === getMetodoPagoId(image.id)
+                          )
+                          ?.monto.toString() || ""
                       }
                       onChange={(e) => {
-                        let value = e.target.value;
-
-                        // Ensure only valid numbers with one decimal
-                        if (/^\d*\.?\d{0,1}$/.test(value)) {
-                          const numericValue = parseFloat(value);
-                          if (!isNaN(numericValue)) {
-                            onAmountChange && onAmountChange(image.id, numericValue);
-                          }
-                        }
+                        const value = parseFloat(e.target.value)
+                        onAmountChange && onAmountChange(image.id, value)
                       }}
                     />
                   </>
                 )}
             </div>
-          
-          
           ))}
         </div>
       </div>

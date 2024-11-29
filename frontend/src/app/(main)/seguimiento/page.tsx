@@ -129,7 +129,7 @@ const downloadXMLFile = async (pedido: Pedido) => {
       formData
     );
     
-    console.log("Archivo XML guardado en el servicio:", responseImagen.data);
+    // console.log("Archivo XML guardado en el servicio:", responseImagen.data);
   } catch (error) {
     console.error("Error al subir el archivo XML:", error);
   }
@@ -137,11 +137,11 @@ const downloadXMLFile = async (pedido: Pedido) => {
 
 const sendMessageConfirmation = async () => {
   try {
-    await axios.post("http://localhost:9000/admin/whatsApp", {
+    await axios.post(baseUrl+"/admin/whatsApp", {
       mensaje: `🍦 *Paletas Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉 Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega: bit.ly/4fLaj5h`,
       numero: "959183082",
     });
-    console.log("Mensaje de confirmación enviado a WhatsApp.");
+    // console.log("Mensaje de confirmación enviado a WhatsApp.");
   } catch (error) {
     console.error("Error al enviar mensaje de WhatsApp:", error);
   }
@@ -242,7 +242,7 @@ const TrackingPage: React.FC = () => {
       // console.log("Fetching cart with code:", codigoSeguimiento);
       setShowPopup(false);
       const respuesta = await retrievePedido(true, codigoSeguimiento,isAuthenticated ?? false,userId?? null);
-      console.log("Respuesta:", respuesta);
+      // console.log("Respuesta:", respuesta);
       let cart: Pedido = respuesta
       if (!cart) {
         console.error("Cart is null or undefined")
@@ -252,7 +252,7 @@ const TrackingPage: React.FC = () => {
       downloadXMLFile(cart); // paraPruebas
       
     
-      if(cart.estado === "cancelado") {
+      if(cart.estado === "cancelado" || cart.estado === "fraudulento") {
         setEnRuta("cancelado")
         return cart
       } else if(cart.estado === "entregado") {
@@ -277,7 +277,7 @@ const TrackingPage: React.FC = () => {
           cart.id, // idPedido
           cart.estado, // estado
           (data) => {
-            console.log(data);
+            // console.log(data);
             if (enRuta === "entregado") {
               return
             }
@@ -342,7 +342,7 @@ const TrackingPage: React.FC = () => {
 
   useEffect(() => {
     if (pedido) {
-      console.log("Pedido direccion:", pedido.direccion);
+      // console.log("Pedido direccion:", pedido.direccion);
     }
   }, [pedido]);
 
@@ -399,7 +399,7 @@ const TrackingPage: React.FC = () => {
           mensaje: `🍦 *Paletas Villaizan* 🍦\n\n¡Hola!\nTu pedido ha sido confirmado y está en camino. 🎉\n\n📦 *Código de seguimiento:* ${codigoSeguimiento}\n\nPara conocer el estado de tu pedido en tiempo real, ingresa al siguiente enlace: ${process.env.NEXT_PUBLIC_BASE_URL}/seguimiento?codigo=${codigoSeguimiento} o visita nuestro sitio web y usa tu código en la sección 'Rastrea tu pedido'.\n\nSi tienes alguna consulta, ¡estamos aquí para ayudarte! 😊`,
           numero: "959183082"
         });
-        console.log("Mensaje enviado a WhatsApp.");
+        // console.log("Mensaje enviado a WhatsApp.");
         setMensajeEnviado(true); // Marcar como enviado para evitar duplicados
         setError(null); // Limpiar el error si el mensaje se envía correctamente
       } catch (error) {
