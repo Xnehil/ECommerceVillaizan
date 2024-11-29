@@ -72,7 +72,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [userApellido, setUserApellido] = useState("")
   const [userCorreo, setUserCorreo] = useState("")
   const [userTelefono, setUserTelefono] = useState("")
-  const [userId, setUserId] = useState("")
+  const [userId, setUserId] = useState<string | null>(null)
   const [userConCuenta, setUserConCuenta] = useState(false)
   const [userNroDoc, setUserNroDoc] = useState("")
   const [userPersonaId, setUserPersonaId] = useState("")
@@ -86,6 +86,18 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [mensajeErrorValidacion, setMensajeErrorValidacion] = useState("")
   const [showErrorValidacion, setShowErrorValidacion] = useState(false)
   const [formValidity, setFormValidity] = useState<boolean>(false);
+
+  useEffect(() => {
+    if(status !== "loading") {
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+        setUserId(session.user.id);
+      } else {
+        setIsAuthenticated(false);
+        setUserId(null);
+      }
+    }
+  }, [session, status]);
 
   useEffect(() => {
     const encryptedLocation = localStorage.getItem("selectedLocation");
