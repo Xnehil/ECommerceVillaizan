@@ -686,7 +686,7 @@ const EntregarPedido = () => {
           await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
             estado: "entregado",
             urlEvidencia: urlPedido,
-            pagado: true,
+            pagado: false,
           });
         } catch (error) {
           console.error("Error al actualizar el pedido:", error);
