@@ -186,7 +186,7 @@ const InformacionPedido: React.FC<InformacionPedidoProps> = ({ pedido }) => {
             : "Fecha no disponible"
         }
       />
-      {pedido.current.estado !== "pendiente" && (
+      {pedido.current.estado !== "solicitado" && (
         <>
           <InputWithLabel
             label="Fecha y hora de verificación"

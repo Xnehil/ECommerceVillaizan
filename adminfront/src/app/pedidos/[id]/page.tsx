@@ -23,6 +23,9 @@ import { Pedido } from "@/types/PaquetePedido";
 import InformacionCliente from "@/app/pedidos/[id]/informacionCliente";
 import InformacionDireccion from "@/app/pedidos/[id]/informacionDireccion";
 import InformacionPedido from "@/app/pedidos/[id]/informacionPedido";
+import InputWithLabel from "@/components/forms/inputWithLabel";
+import TextAreaWithLabel from "@/components/forms/textAreaWithLabel";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface PedidoPageProps {
   params: {
@@ -37,9 +40,11 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
   );
   const [isLoading, setIsLoading] = useState(true);
   const pedido = useRef<Pedido>({} as Pedido);
+  const [error, setError] = useState<string>("");
   const a = useRef(0);
 
   const { toast } = useToast();
+  const {decrementPendingOrders} = useSidebar();
 
   useEffect(() => {
     const fetchProductByNombre = async () => {
@@ -96,6 +101,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         throw new Error("Error al actualizar el pedido");
       }
       console.log("Pedido saved", response.data);
+      decrementPendingOrders();
       pedido.current.estado = "verificado";
 
       try {
@@ -206,14 +212,20 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
 
   const handleConfirmCancelado = async () => {
     setIsLoading(true);
-    console.log("Marcando como cancelado");
+    // console.log("Marcando como cancelado");
     try {
       // await new Promise((resolve) => setTimeout(resolve, 3000));
+      // if (!pedido.current.motivoCancelacion) {
+      //   setError("Debes ingresar un motivo de cancelación.");
+      //   setIsLoading(false);
+      //   return;
+      // }
 
       const responseCancelado = await axios.put(
         `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
         {
           ...pedido.current,
+          motivoCancelacion: pedido.current.motivoCancelacion,
           estado: "cancelado",
         }
       );
@@ -240,6 +252,51 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
     }
   };
 
+  const handleConfirmFraudulento = async () => {
+    setIsLoading(true);
+    // console.log("Marcando como cancelado");
+    try {
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      const responseCancelado = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
+        {
+          ...pedido.current,
+          estado: "fraudulento",
+        }
+      );
+
+      if (responseCancelado.status !== 200) {
+        throw new Error("Error al marcar como fraudulento");
+      }
+
+      console.log("Pedido saved", responseCancelado.data);
+      pedido.current.estado = "fraudulento";
+
+      setIsLoading(false);
+      toast({
+        description: "Se marcó como fraudulento correctamente.",
+      });
+    } catch (error: any) {
+      console.error("Error saving product", error);
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ocurrió un error al marcar como fraudulento.",
+      });
+    }
+  };
+
+  const handleMotivoCancelacionChange = (
+    event: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const value = event.target.value;
+    if (value.length <= 300) {
+      pedido.current.motivoCancelacion = value;
+    }
+  };
+
   return (
     <div className="content-container">
       {isLoading && <Loading />}
@@ -257,6 +314,36 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
             {pedido.current.estado === "solicitado" && (
               <div className="lower-buttons-container">
                 <>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">Cancelado</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          ¿Estás seguro de marcar como cancelado este pedido?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          El pedido será marcado como cancelado. Esta acción no
+                          se puede deshacer.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <TextAreaWithLabel
+                          label="Motivo de cancelación"
+                          value={pedido.current.motivoCancelacion}
+                          onChange={handleMotivoCancelacionChange}
+                          placeholder="Escribe el motivo de cancelación"
+                        />
+                      </div>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Regresar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmCancelado}>
+                          Marcar como cancelado
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="default">Confirmar Pedido</Button>
@@ -283,14 +370,34 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
               </div>
             )}
             {pedido.current.estado === "entregado" &&
-              !pedido.current.pagado &&
-              pedido.current.pedidosXMetodoPago?.some(
-                (metodo) =>
-                  metodo.metodoPago.nombre === "yape" ||
-                  metodo.metodoPago.nombre === "plin"
-              ) && (
+              !pedido.current.pagado && (
                 <div className="lower-buttons-container">
                   <>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                          Marcar como fraudulento
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            ¿Estás seguro de marcar como fraudulento este
+                            pedido?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            El pedido será marcado como fraudulento. Esta acción
+                            no se puede deshacer.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Regresar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleConfirmFraudulento}>
+                            Marcar como fraudulento
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="default">Confirmar Pago</Button>
@@ -332,6 +439,14 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
                           El pedido será marcado como cancelado. Esta acción no
                           se puede deshacer.
                         </AlertDialogDescription>
+                        <div className="grid gap-4 py-4">
+                          <TextAreaWithLabel
+                            label="Motivo de cancelación"
+                            value={pedido.current.motivoCancelacion}
+                            onChange={handleMotivoCancelacionChange}
+                            placeholder="Escribe el motivo de cancelación"
+                          />
+                        </div>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Regresar</AlertDialogCancel>

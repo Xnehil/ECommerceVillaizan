@@ -10,6 +10,7 @@ import { SessionProvider, useSession } from "next-auth/react";
 import axios from "axios";
 import { toast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { SidebarProvider } from "../contexts/SidebarContext";
 
 // Component to wrap the authentication and authorization logic
 function AuthWrapper({ children }: { children: React.ReactNode }) {
@@ -226,12 +227,14 @@ export default function RootLayout({
 
   return (
     <SessionProvider>
-      <html lang="es">
-        <body className="min-h-screen max-h-screen flex overflow-hidden">
-          <AuthWrapper>{children}</AuthWrapper>
-          <Toaster />
-        </body>
-      </html>
+        <SidebarProvider>
+          <html lang="es">
+            <body className="min-h-screen max-h-screen flex overflow-hidden">
+              <AuthWrapper>{children}</AuthWrapper>
+              <Toaster />
+            </body>
+          </html>
+       </SidebarProvider>
     </SessionProvider>
   );
 }

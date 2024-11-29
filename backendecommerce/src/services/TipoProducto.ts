@@ -101,6 +101,7 @@ class TipoProductoService extends TransactionBaseService {
     
       async eliminar(id: string): Promise<void> {
         return await this.atomicPhase_(async (manager) => {
+            console.log("Eliminando tipo de producto con id: ", id);
             const tipoProductoRepo = manager.withRepository(this.tipoProductoRepository_);
             const productos = await manager.query(
               'SELECT * FROM vi_producto WHERE id_tipoproducto = $1',

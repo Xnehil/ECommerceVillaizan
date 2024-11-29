@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react"; // Import signOut for logout functionality
+import { useSidebar } from "@/contexts/SidebarContext";
 
 const Sidebar = () => {
   const currentPath = usePathname();
@@ -19,8 +20,8 @@ const Sidebar = () => {
   ];
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [pendingOrders, setPendingOrders] = useState(0);
+  const {pendingOrders, setPendingOrders} = useSidebar();
+  const {unreadNotifications, setUnreadNotifications} = useSidebar();
 
   const fetchCounts = async () => {
     try {

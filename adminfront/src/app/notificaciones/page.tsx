@@ -10,6 +10,7 @@ import { Notificacion } from "@/types/PaqueteAjustes";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 const NotificacionesPage: React.FC = () => {
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]); // Initialize notificaciones
@@ -20,6 +21,8 @@ const NotificacionesPage: React.FC = () => {
   const [filterTipo, setFilterTipo] = useState<string | null>(null);
   const [filterLeido, setFilterLeido] = useState<boolean | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const {incrementNotificaciones, decrementNotificaciones} = useSidebar();
 
   useEffect(() => {
     const fetchNotificaciones = async () => {
@@ -84,7 +87,7 @@ const NotificacionesPage: React.FC = () => {
           notificacion.id === id ? { ...notificacion, leido: true } : notificacion
         )
       );
-
+      decrementNotificaciones();
     } catch (error) {
       console.error(`Failed to mark notification ${id} as read`, error);
     }
@@ -102,6 +105,7 @@ const NotificacionesPage: React.FC = () => {
           notificacion.id === id ? { ...notificacion, leido: false } : notificacion
         )
       );
+      incrementNotificaciones();
     } catch (error) {
       console.error(`Failed to mark notification ${id} as unread`, error);
     }

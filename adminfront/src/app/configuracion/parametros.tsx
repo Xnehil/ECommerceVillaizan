@@ -49,6 +49,10 @@ const Parametros: React.FC<ParametrosProps> = () => {
   const [cancelarPedido, setCancelarPedido] = useState(false);
   const [tiempoConfirmacion, setTiempoConfirmacion] = useState("");
   const [telefonoContacto, setTelefonoContacto] = useState("");
+  const [enviarWhatsapp, setEnviarWhatsapp] = useState(false);
+
+  const [mensajePopup, setMensajePopup] = useState("");
+  const [onClickPopup, setOnClickPopup] = useState(() => () => {});
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -85,6 +89,9 @@ const Parametros: React.FC<ParametrosProps> = () => {
           );
           console.log("Telefono", tel?.valor);
           setTelefonoContacto(tel?.valor || "");
+
+          const ew = ajustes.find((a) => a.llave === "enviar_whatsapp");
+          setEnviarWhatsapp(ew?.valor === "true");
 
           console.log("Parameters", parametros.current);
 
@@ -129,6 +136,10 @@ const Parametros: React.FC<ParametrosProps> = () => {
       (a) => a.llave === "nro_telefono_contacto_reclamo"
     );
     setTelefonoContacto(tel?.valor || "");
+
+    const ew = parametros.current.find((a) => a.llave === "enviar_whatsapp");
+    setEnviarWhatsapp(ew?.valor === "true");
+
     setIsEditing(false);
   };
 
@@ -161,6 +172,24 @@ const Parametros: React.FC<ParametrosProps> = () => {
       );
 
       console.log("Tiempo response", responseTiempo);
+
+      const responseTelefono = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}ajuste/nro_telefono_contacto_reclamo`,
+        {
+          valor: telefonoContacto,
+        }
+      );
+
+      console.log("Telefono response", responseTelefono);
+
+      const responseWhatsapp = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}ajuste/enviar_whatsapp`,
+        {
+          valor: enviarWhatsapp ? "true" : "false",
+        }
+      );
+
+      console.log("Whatsapp response", responseWhatsapp);
 
       toast({
         description: "Los parámetros se guardaron correctamente.",
@@ -288,10 +317,31 @@ const Parametros: React.FC<ParametrosProps> = () => {
 
   const handleCancelarPedidoChange = (checked: boolean) => {
     setIsDialogOpen(true);
+    setMensajePopup(
+      checked
+        ? "¿Estás seguro de permitir que se cancelen pedidos?"
+        : "¿Estás seguro de desactivar la opción de cancelar pedidos?"
+    );
+    setOnClickPopup(() => handleConfirmCancelarPedido);
   };
 
   const handleConfirmCancelarPedido = () => {
     setCancelarPedido(!cancelarPedido);
+    setIsDialogOpen(false);
+  };
+
+  const handleEnviarWhatsappChange = (checked: boolean) => {
+    setIsDialogOpen(true);
+    setMensajePopup(
+      checked
+        ? "¿Estás seguro de permitir enviar mensajes por WhatsApp?"
+        : "¿Estás seguro de desactivar la opción de enviar mensajes por WhatsApp?"
+    );
+    setOnClickPopup(() => handleConfirmEnviarWhatsapp);
+  };
+
+  const handleConfirmEnviarWhatsapp = () => {
+    setEnviarWhatsapp(!enviarWhatsapp);
     setIsDialogOpen(false);
   };
 
@@ -300,6 +350,10 @@ const Parametros: React.FC<ParametrosProps> = () => {
       <h5>General</h5>
       {isLoading && (
         <div className="flex flex-col space-y-4">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-[250px]" />
+            <Skeleton className="h-4 w-[200px]" />
+          </div>
           <div className="space-y-2">
             <Skeleton className="h-4 w-[250px]" />
             <Skeleton className="h-4 w-[200px]" />
@@ -390,6 +444,32 @@ const Parametros: React.FC<ParametrosProps> = () => {
               />
             </div>
           </div>
+          <div className="flex space-x-2">
+            <div className="h-full items-center">
+              <Label>Enviar mensajes por WhatsApp</Label>
+            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
+                  i
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="w-full break-words">
+                    Si esta opción está activada, se enviarán mensajes por WhatsApp a los clientes.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex">
+            <CheckboxWithLabel
+              id="whatsapp"
+              label="Permitir enviar mensajes por WhatsApp"
+              disabled={!isEditing}
+              checked={enviarWhatsapp}
+              onChange={handleEnviarWhatsappChange}
+            />
+          </div>
           <div className="lower-buttons-container mt-8">
             {isEditing ? (
               <>
@@ -446,8 +526,7 @@ const Parametros: React.FC<ParametrosProps> = () => {
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Esta opción controla las cancelaciones de los usuarios en el
-                  ecommerce.
+                  {mensajePopup}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -458,7 +537,7 @@ const Parametros: React.FC<ParametrosProps> = () => {
                   >
                     Cancelar
                   </Button>
-                  <Button onClick={handleConfirmCancelarPedido}>
+                  <Button onClick={onClickPopup}>
                     Confirmar
                   </Button>
                 </div>
