@@ -705,7 +705,6 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
                 checkFormValidity={isFormValid}
                 showErrorValidacion={showErrorValidacion}
                 mensajeErrorValidacion={mensajeErrorValidacion}
-                href="/checkout?step=pago"
               />
             ) : (
               <p>Cargando carrito...</p>
