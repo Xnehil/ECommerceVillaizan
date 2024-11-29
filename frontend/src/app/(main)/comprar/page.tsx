@@ -38,7 +38,7 @@ export default function StorePage({ searchParams, params }: Params) {
   const { sortBy, page } = searchParams;
   const { data: session, status } = useSession();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const hasRunOnceAuth = useRef(false);
+  //const hasRunOnceAuth = useRef(false);
   const currentDay = getCurrentDay()
   const [isLoadingResponse, setIsLoadingResponse] = useState(true)
   const hasRunOnce = useRef(false)
@@ -50,8 +50,8 @@ export default function StorePage({ searchParams, params }: Params) {
 
 
   useEffect(() => {
-    if(status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true;
+    if(status !== "loading" /*&& !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true;
       if (session?.user?.id) {
         setIsAuthenticated(true);
       } else {

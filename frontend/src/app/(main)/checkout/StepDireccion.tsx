@@ -72,7 +72,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   const [userApellido, setUserApellido] = useState("")
   const [userCorreo, setUserCorreo] = useState("")
   const [userTelefono, setUserTelefono] = useState("")
-  const [userId, setUserId] = useState("")
+  const [userId, setUserId] = useState<string | null>(null)
   const [userConCuenta, setUserConCuenta] = useState(false)
   const [userNroDoc, setUserNroDoc] = useState("")
   const [userPersonaId, setUserPersonaId] = useState("")
@@ -82,10 +82,22 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
   const [googleLoaded, setGoogleLoaded] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const hasRunOnceAuth = useRef(false)
+  //const hasRunOnceAuth = useRef(false)
   const [mensajeErrorValidacion, setMensajeErrorValidacion] = useState("")
   const [showErrorValidacion, setShowErrorValidacion] = useState(false)
   const [formValidity, setFormValidity] = useState<boolean>(false);
+
+  useEffect(() => {
+    if(status !== "loading") {
+      if (session?.user?.id) {
+        setIsAuthenticated(true);
+        setUserId(session.user.id);
+      } else {
+        setIsAuthenticated(false);
+        setUserId(null);
+      }
+    }
+  }, [session, status]);
 
   useEffect(() => {
     const encryptedLocation = localStorage.getItem("selectedLocation");
@@ -108,8 +120,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   }, [nombre, numeroDni, telefono, calle, referencia, selectedLocation, numeroRuc, selectedAddressId, comprobante]); // Add dependencies as needed
 
   useEffect(() => {
-    if (status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true
+    if (status !== "loading" /*&& !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true
       if (session?.user?.id) {
         setIsAuthenticated(true)
       } else {
@@ -169,6 +181,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
       localStorage.setItem("selectedAddressId", CryptoJS.AES.encrypt(addressId, encryptionKey).toString());
       
       console.log("Selected Address ID:", addressId)
+    }
+    else{
+      setSelectedAddressId(null)
     }
     
   }
@@ -370,7 +385,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         mensajesError.push("RUC inválido")
         console.log("Error ruc")
       }
-      let checkSelectedAddressId = selectedAddressId !== null || !isAuthenticated
+      let checkSelectedAddressId = (selectedAddressId !== null && isAuthenticated) || !isAuthenticated
       if(!checkSelectedAddressId) {
         mensajesError.push("Dirección inválida")
         console.log("Error dirección")

@@ -24,16 +24,17 @@ const CartTemplate = ({
   const [carritoState, setCarritoState] = useState<Pedido>(cart)
   const { data: session, status } = useSession();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const hasRunOnce = useRef(false);
+  //const hasRunOnce = useRef(false);
   
   const handleBackClick = () => {
     //Enviar a /comprar
-    window.history.back()
+    window.location.href ="/comprar"
+    // window.history.back()
   }
 
   useEffect(() => {
-    if(status !== "loading" && !hasRunOnce.current) {
-      hasRunOnce.current = true;
+    if(status !== "loading"/* && !hasRunOnce.current*/) {
+      //hasRunOnce.current = true;
       if (session?.user?.id) {
         setIsAuthenticated(true);
       } else {

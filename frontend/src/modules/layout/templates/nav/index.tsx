@@ -42,13 +42,13 @@ export default function Nav() {
   const loginUrl = `${urlLogin}/login?callbackUrl=${currentUrl}`;
   const [finishedLoadingName, setFinishedLoadingName] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const hasRunOnce = useRef(false);
-  const hasRunOnceAuth = useRef(false);
+  //const hasRunOnce = useRef(false);
+  //const hasRunOnceAuth = useRef(false);
   
   
   useEffect(() => {
-    if(status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true;
+    if(status !== "loading"/* && !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true;
       if (session?.user?.id) {
         setIsAuthenticated(true);
       } else {
@@ -77,8 +77,8 @@ export default function Nav() {
         return null;
       };
   
-      if (status !== "loading" && !hasRunOnce.current) {
-        hasRunOnce.current = true;
+      if (status !== "loading" /*&& !hasRunOnce.current*/) {
+        //hasRunOnce.current = true;
   
         if (session?.user?.id) {
           console.log("User is authenticated");
@@ -102,8 +102,8 @@ export default function Nav() {
               const pedido = response.data.pedido;
               if (pedido) {
                 if (!pedido.usuario || pedido.usuario.id !== session.user.id) {
-                  document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
-                  document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
+                  // document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
+                  // document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
                 }
               }
             } else {

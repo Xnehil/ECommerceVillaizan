@@ -74,6 +74,8 @@ class ProductoService extends TransactionBaseService {
       ): Promise<Producto[]> {
         // console.log("Listar con paginación llegó con soloEcommerce: ", soloEcommerce);
         const [productos] = await this.listarYContar(selector, config, soloEcommerce);
+        //filter productos that have estaActivo, filter all
+        productos.filter(producto => producto.estaActivo === true);
         return productos;
       }
     

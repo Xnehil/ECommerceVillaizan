@@ -138,7 +138,7 @@ const downloadXMLFile = async (pedido: Pedido) => {
 const sendMessageConfirmation = async () => {
   try {
     await axios.post(baseUrl+"/admin/whatsApp", {
-      mensaje: `🍦 *Paletas Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉 Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega: bit.ly/4fLaj5h`,
+      mensaje: `🍦 *Paletas Villaizan* 🍦\n\n¡Felicidades!\nTu pedido ha sido entregado con éxito. 🎉 Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega: https://helado-villaizan.vercel.app/encuestas?id=7669fcfe-576b-4e4c-8af1-143f882f287e`,
       numero: "959183082",
     });
     // console.log("Mensaje de confirmación enviado a WhatsApp.");
@@ -172,7 +172,7 @@ const TrackingPage: React.FC = () => {
   );
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { data: session, status } = useSession();
-  const hasRunOnceAuth = useRef(false);
+  //const hasRunOnceAuth = useRef(false);
   const wsRef = useRef<ExtendedWebSocket | null>(null);
   const [showPopup, setShowPopup] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -186,8 +186,8 @@ const TrackingPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if(status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true;
+    if(status !== "loading"/* && !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true;
       if (session?.user?.id) {
         setIsAuthenticated(true);
         setUserId(session.user.id);
@@ -344,7 +344,7 @@ const TrackingPage: React.FC = () => {
               // De momento lo enviamos a la página de inicio
               setShowPopup(true); // Show the error popup
               setMensajePopup(
-                "🍦 Paletas Villaizan 🍦<br><br>¡Felicidades!<br>Tu pedido ha sido entregado con éxito. 🎉<br><br>Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega:<br><a href='https://bit.ly/4fLaj5h' target='_blank' rel='noopener noreferrer'><b>Encuesta de Satisfacción</b></a>"
+                "🍦 Paletas Villaizan 🍦<br><br>¡Felicidades!<br>Tu pedido ha sido entregado con éxito. 🎉<br><br>Por favor llena esta encuesta de satisfacción para mejorar en tu siguiente entrega:<br><a href='https://helado-villaizan.vercel.app/encuestas?id=7669fcfe-576b-4e4c-8af1-143f882f287e' target='_blank' rel='noopener noreferrer'><b>Encuesta de Satisfacción</b></a>"
               );
               //window.location.href = "/"
             }

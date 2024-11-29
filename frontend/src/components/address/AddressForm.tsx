@@ -320,6 +320,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
   }
 
   const numeroExteriorBlur = () => {
+    /*
     if (numeroExterior.trim() === '') {
       setErrorValidationNumeroExterior('El número exterior no puede estar vacío');
     } else {
@@ -330,9 +331,17 @@ const AddressForm: React.FC<AddressFormProps> = ({
         setErrorValidationNumeroExterior(null);
       }
     }
+      */
+    if(countWords(numeroExterior) > 20){
+      setErrorValidationNumeroExterior('El número exterior no puede superar las 20 palabras');
+    }
+    else {
+      setErrorValidationNumeroExterior(null);
+    }
   }
 
   const numeroInteriorBlur = () => {
+    /*
     if (numeroInterior.trim() === '') {
       setErrorValidationNumeroInterior('El número interior no puede estar vacío');
     } else {
@@ -342,6 +351,13 @@ const AddressForm: React.FC<AddressFormProps> = ({
       else {
         setErrorValidationNumeroInterior(null);
       }
+    }
+      */
+    if(countWords(numeroInterior) > 20){
+      setErrorValidationNumeroInterior('El número interior no puede superar las 20 palabras');
+    }
+    else {
+      setErrorValidationNumeroInterior(null);
     }
   }
 
