@@ -255,6 +255,12 @@ class PedidoService extends TransactionBaseService {
                 if (data.estado === "cancelado") {
                     estadoPedidos.set(id, "cancelado");
                 }
+                if (data.estado === "manual") {
+                    estadoPedidos.set(id, "manual");
+                }
+                if (data.estado === "fraudulento") {
+                    estadoPedidos.set(id, "fraudulento");
+                }
             }
             if (data.pagado) {
                 data.pagadoEn = new Date();
@@ -335,7 +341,7 @@ class PedidoService extends TransactionBaseService {
                 enviarMensajeAdmins("nuevoPedido", id);
                 let nuevaNoti = new Notificacion();
                 nuevaNoti.asunto = "Nuevo pedido";
-                nuevaNoti.descripcion = "El pedido " + id + " está pendiente de confirmación";
+                nuevaNoti.descripcion = "El pedido " + data.codigoSeguimiento + " está pendiente de confirmación";
                 nuevaNoti.tipoNotificacion = "pedido";
                 nuevaNoti.sistema = "ecommerceAdmin";
                 nuevaNoti.leido = false;

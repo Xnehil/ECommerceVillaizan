@@ -17,9 +17,12 @@ class ContenidoEducativoService extends TransactionBaseService {
         return "Hello from ContenidoEducativoService";
       }
 
-      async listar(): Promise<ContenidoEducativo[]> {
+      async listar( selector: Selector<ContenidoEducativo> ={},
+        config: FindConfig<ContenidoEducativo> = {}
+      ): Promise<ContenidoEducativo[]> {
         const contenidoEducativoRepo = this.activeManager_.withRepository(this.contenidoEducativoRepository_);
-        return contenidoEducativoRepo.find();
+        const query = buildQuery(selector, config);
+        return contenidoEducativoRepo.find(query);
       }
     
       async listarYContar(
