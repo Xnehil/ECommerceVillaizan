@@ -208,6 +208,10 @@ const TrackingPage: React.FC = () => {
       });
       setEnRuta("cancelado");
       setShowConfirmModal(false);
+      //delete cookie
+      document.cookie = "_medusa_pedido_id=;max-age=-1;path=/";
+      document.cookie = "_medusa_cart_id=;max-age=-1;path=/";
+      
       //alert("Tu pedido ha sido cancelado exitosamente.");
       //setModalMessage("Tu pedido ha sido cancelado exitosamente.");
       //window.location.href = "/";
