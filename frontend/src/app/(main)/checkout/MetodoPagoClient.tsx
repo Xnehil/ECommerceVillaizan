@@ -349,7 +349,7 @@ export default function MetodoPagoClient({
     }
 
     // don't allow more than 2 decimal places
-    if (amount.toString().split(".")[1]?.length > 2) {
+    if (amount.toString().split(".")[1]?.length > 1) {
       return
     }
 
