@@ -6,7 +6,18 @@ import { Link, router } from "expo-router";
 import { DetallePedido, Pedido } from "@/interfaces/interfaces";
 import { getCurrentDelivery } from "@/functions/storage";
 import axios from "axios";
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+import { Platform } from "react-native";
+
+let BASE_URL = '';
+if (Platform.OS === "web") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else if(Platform.OS === "android") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL || process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
 
 const DetallesPedido = () => {
   const route = useRoute();

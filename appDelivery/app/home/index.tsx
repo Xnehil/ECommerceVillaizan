@@ -24,7 +24,18 @@ import {
 } from "@/interfaces/interfaces";
 import { useRouter } from "expo-router";
 import { getUserData, storeMotorizadoData } from "@/functions/storage";
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+import { Platform } from "react-native";
+
+let BASE_URL = '';
+if (Platform.OS === "web") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else if(Platform.OS === "android") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL || process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
 
 function Icon(props: {
   name: React.ComponentProps<typeof Ionicons>["name"];

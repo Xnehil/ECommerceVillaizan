@@ -60,6 +60,12 @@ const MapComponent: React.FC<MapProps> = ({
     : { latitude: 37.78825, longitude: -122.4324 }
   );
 
+  useEffect(() => {
+    if (location) {
+      setCenter({ latitude: location.latitude, longitude: location.longitude });
+    }
+  },[location]);
+
   const [showRoutes, setShowRoutes] = useState(false);
 
   const [circleRadius, setCircleRadius] = useState(250);
@@ -97,11 +103,12 @@ const MapComponent: React.FC<MapProps> = ({
             origin: `${origin.lat},${origin.lng}`,
             destination: `${destination.lat},${destination.lng}`,
             mode: 'driving',
-            key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, // Add your API key here
+            key: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
           },
         });
 
         const result = response.data;
+        console.log("Result", result);
 
         if (result && result.routes && result.routes.length > 0) {
           const route = result.routes[0].overview_polyline.points;
@@ -137,11 +144,12 @@ const MapComponent: React.FC<MapProps> = ({
         origin: `${origin.lat},${origin.lng}`,
         destination: `${destination.lat},${destination.lng}`,
         mode: 'driving',
-        key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, // Add your API key here
+        key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, 
       },
     });
   
     const result = response.data;
+    console.log("Result", result);
   
     if (result && result.routes && result.routes.length > 0) {
       const route = result.routes[0].overview_polyline.points;
@@ -271,7 +279,6 @@ const MapComponent: React.FC<MapProps> = ({
         }}
         onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {/* Your MapView children */}
         {location && (
           <Circle
             center={center}
@@ -314,14 +321,16 @@ const MapComponent: React.FC<MapProps> = ({
             }
             return true;
           })
-          .map((loc) => (
+          .map((loc, index) => (
             <Marker
               key={loc.id}
               coordinate={{ latitude: loc.lat, longitude: loc.lng }}
               image={
-                mode && pedidoSeleccionado?.id === loc.id
-                  ? require('../../assets/images/blue-dot.png')
-                  : require('../../assets/images/red-dot.png')
+          index === 0
+            ? require('@/assets/images/blue-dot.png') // Azul para el primer pedido
+            : pedidoSeleccionado?.id === loc.id
+            ? require('@/assets/images/red-dot.png') // Rojo para el seleccionado
+            : require('@/assets/images/green-dot.png') // Verde para otros
               }
             />
           ))}

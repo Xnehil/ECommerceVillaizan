@@ -20,13 +20,26 @@ import {
   Coordinate,
 } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import Mapa from "@/components/Entregas/Mapa";
 import StyledIcon from "@/components/StyledIcon";
 import TabBarIcon from "@/components/StyledIcon";
 import { useWebSocketContext } from "@/components/sockets/WebSocketContext";
 import { geneticAlgorithm } from "@/functions/optimalRouteGenetic";
 import { findOptimalRouteForPedidos } from "@/functions/tspAlg";
+
+import { Platform } from "react-native";
+
+let BASE_URL = '';
+if (Platform.OS === "web") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else if(Platform.OS === "android") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL || process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+
 
 export default function Entregas() {
   const [pedidosAceptados, setPedidosAceptados] = useState<Pedido[]>([]);
@@ -207,7 +220,7 @@ export default function Entregas() {
     return (
       <View style={styles.pedidoContainer2}>
         <Text style={styles.fechaCreacion}>
-          Fecha de creación: {pedido.creadoEn ? pedido.creadoEn.toLocaleDateString() : 'Fecha no disponible'}
+          Fecha de creación: {pedido.creadoEn ? new Date(pedido.creadoEn).toLocaleDateString('es-ES') : 'Fecha no disponible'}
         </Text>
         <Text style={styles.estado}>Estado: {pedido.estado}</Text>
         <Text style={styles.total}>Total: S/ {pedido.total}</Text>
@@ -220,12 +233,17 @@ export default function Entregas() {
     );
   };
 
-  const PedidoAceptado: React.FC<{ pedido: Pedido }> = ({ pedido }) => {
+  const PedidoAceptado: React.FC<{ pedido: Pedido; index: number }> = ({ pedido, index }) => {
+    const isFirstPedido = index === 0;
+    const isSelected = pedidoSeleccionado?.id === pedido.id;
+  
     return (
       <View
         style={[
           styles.pedidoAceptadoContainer,
-          pedidoSeleccionado?.id === pedido.id ? styles.selectedPedido : {},
+          isFirstPedido && !isSelected ? styles.firstPedido : {},
+          isFirstPedido && isSelected ? styles.firstPedidoSelected : {},
+          isSelected && !isFirstPedido ? styles.selectedPedido : {},
         ]}
       >
         <Text style={styles.address}>
@@ -265,6 +283,7 @@ export default function Entregas() {
       </View>
     );
   };
+  
 
   const { onMessage } = useWebSocketContext();
   useEffect(() => {
@@ -279,7 +298,7 @@ export default function Entregas() {
   useEffect(()=>{
     const interval = setInterval(() =>{
       fetchPedidos();
-    },10000);
+    },20000);
     return () => clearInterval(interval);
   },[usuario]);
   const [location, setLocation] = useState<{
@@ -375,8 +394,8 @@ export default function Entregas() {
               </Text>
             )
           ) : pedidosAceptados.length > 0 ? (
-            pedidosAceptados.map((pedido) => (
-              <PedidoAceptado key={pedido.id} pedido={pedido} />
+            pedidosAceptados.map((pedido,index) => (
+              <PedidoAceptado key={pedido.id} pedido={pedido} index={index} />
             ))
           ) : (
             <Text style={styles.noEntregasText}>
@@ -653,5 +672,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#ff4d4d",
     marginTop: 5,
+  },
+
+  firstPedido: {
+    borderColor: "#3B5998", 
+    backgroundColor: "#5A9BD4", 
+    borderWidth: 2,
+  },
+  firstPedidoSelected: {
+    backgroundColor: "#5A9BD4", // Azul más suave
+    borderColor: "red",
+    borderWidth: 5,
   },
 });
