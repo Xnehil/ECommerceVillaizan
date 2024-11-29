@@ -41,6 +41,11 @@ export default function LoginScreen() {
 
   async function credentialLogIn() {
     setLoading(true);
+    if (password == '') {
+      alert("Usuario o contraseña incorrecta");
+      setLoading(false);
+      return;
+    }
     try {
       const response = await axios.get<UsuarioResponse>(
         `${BASE_URL}/usuario/${username}?esCorreo=true`
@@ -50,6 +55,7 @@ export default function LoginScreen() {
       const usuario = response.data.usuario;
 
       if (username === usuario.correo) {
+        
         const response = await axios.get<UsuarioResponse>(
           `${BASE_URL}/usuario/${username}?esCorreo=true`,
           {
@@ -60,12 +66,14 @@ export default function LoginScreen() {
         );
         if (response.status === 401) {
           alert("Usuario o contraseña incorrecta");
+          setLoading(false);
+
           return;
         } else if (response.status === 200) {
+          console.log("Correcto:", response);
           setUsername("");
           setPassword("");
           storeUserData(usuario);
-          // console.log("Usuario encontrado:", repartidor);
           router.push({
             pathname: "/configurar",
           });
@@ -74,6 +82,8 @@ export default function LoginScreen() {
     } catch (error) {
       console.error("Error al intentar login:", error);
       alert("Ocurrió un error al intentar iniciar sesión");
+      setLoading(false);
+
     } finally {
       setLoading(false);
     }
@@ -101,15 +111,7 @@ export default function LoginScreen() {
           <View style={styles.buttonContainer}>
             <Button title="Iniciar Sesión" onPress={credentialLogIn} />
           </View>
-          <View style={styles.buttonContainer}>
-            <Button
-              title="Iniciar Sesión con Google"
-              disabled={!request}
-              onPress={() => {
-                promptAsync();
-              }}
-            />
-          </View>
+         
         </>
       )}
     </View>
