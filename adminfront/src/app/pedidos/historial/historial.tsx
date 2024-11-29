@@ -20,7 +20,7 @@ const Historial: React.FC<HistorialProps> = ({ historial }) => {
         sbPlaceholder="Buscar por código de seguimiento"
         dd={true}
         ddColumn="estado"
-        ddValues={["Entregado", "Cancelado"]}
+        ddValues={["Entregado", "Cancelado", "Fraudulento"]}
       />
     </div>
   );
