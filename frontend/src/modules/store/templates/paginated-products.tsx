@@ -1,26 +1,30 @@
-"use client";
+"use client"
 
-import { useEffect, useState } from "react";
-import ProductPreview from "@modules/products/components/product-preview";
-import { Pagination } from "@modules/store/components/pagination";
-import axios from "axios";
-import CartButton from "@modules/layout/components/cart-button";
-import { Producto } from "types/PaqueteProducto";
-import { Pedido } from "types/PaquetePedido";
-import { CityCookie } from "types/global";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowUp, faArrowDown, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { useEffect, useState } from "react"
+import ProductPreview from "@modules/products/components/product-preview"
+import { Pagination } from "@modules/store/components/pagination"
+import axios from "axios"
+import CartButton from "@modules/layout/components/cart-button"
+import { Producto } from "types/PaqueteProducto"
+import { Pedido } from "types/PaquetePedido"
+import { CityCookie } from "types/global"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import {
+  faArrowUp,
+  faArrowDown,
+  faFilter,
+} from "@fortawesome/free-solid-svg-icons"
 
 interface Filters {
-  selectedCategory?: string;
-  selectedProductType?: string;
-  searchText?: string;
-  isSortedByPrice?: boolean | null;
+  selectedCategory?: string
+  selectedProductType?: string
+  searchText?: string
+  isSortedByPrice?: boolean | null
 }
 
-const FILTERS_KEY = "product_filters";
-const PRODUCT_LIMIT = 12;
-const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+const FILTERS_KEY = "product_filters"
+const PRODUCT_LIMIT = 12
+const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
 export default function PaginatedProducts({
   sortBy,
@@ -31,35 +35,41 @@ export default function PaginatedProducts({
   city,
   isAuthenticated,
 }: {
-  sortBy?: string;
-  page: number;
-  countryCode: string;
-  carrito: Pedido | null;
-  setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>;
-  city?: CityCookie | null;
-  isAuthenticated: boolean;
+  sortBy?: string
+  page: number
+  countryCode: string
+  carrito: Pedido | null
+  setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>
+  city?: CityCookie | null
+  isAuthenticated: boolean
 }) {
-  let initialFilters: Filters = {};
+  let initialFilters: Filters = {}
 
-  if (typeof localStorage !== 'undefined') {
-    const storedFilters = localStorage.getItem(FILTERS_KEY);
-    initialFilters = storedFilters ? JSON.parse(storedFilters) : {};
+  if (typeof localStorage !== "undefined") {
+    const storedFilters = localStorage.getItem(FILTERS_KEY)
+    initialFilters = storedFilters ? JSON.parse(storedFilters) : {}
   }
 
-  const [products, setProducts] = useState<Producto[]>([]);
-  const [originalProducts, setOriginalProducts] = useState<Producto[]>([]); // Guardar el estado original
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [warning, setWarning] = useState<string | null>(null); // Estado para el mensaje de advertencia por tiempo de espera
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialFilters.selectedCategory || "");
-  const [categories, setCategories] = useState<string[]>([]);
-  const [productTypes, setProductTypes] = useState<string[]>([]);
-  const [selectedProductType, setSelectedProductType] = useState(initialFilters.selectedProductType || "");
-  const [searchText, setSearchText] = useState(initialFilters.searchText || "");
-  const [isSortedByPrice, setIsSortedByPrice] = useState<boolean | null>(initialFilters.isSortedByPrice ?? null);
-  const [sortError, setSortError] = useState<string | null>(null); // Estado para el error de ordenación
-
+  const [products, setProducts] = useState<Producto[]>([])
+  const [originalProducts, setOriginalProducts] = useState<Producto[]>([]) // Guardar el estado original
+  const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null) // Estado para el mensaje de advertencia por tiempo de espera
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    initialFilters.selectedCategory || ""
+  )
+  const [categories, setCategories] = useState<string[]>([])
+  const [productTypes, setProductTypes] = useState<string[]>([])
+  const [selectedProductType, setSelectedProductType] = useState(
+    initialFilters.selectedProductType || ""
+  )
+  const [searchText, setSearchText] = useState(initialFilters.searchText || "")
+  const [isSortedByPrice, setIsSortedByPrice] = useState<boolean | null>(
+    initialFilters.isSortedByPrice ?? null
+  )
+  const [sortError, setSortError] = useState<string | null>(null) // Estado para el error de ordenación
+  const [outOfSchedule, setOutOfSchedule] = useState<boolean>(false)
 
   const saveFilters = () => {
     const filters = {
@@ -67,82 +77,133 @@ export default function PaginatedProducts({
       selectedCategory,
       selectedProductType,
       isSortedByPrice,
-    };
-    localStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
-  };
+    }
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(filters))
+  }
+
+  function getCurrentDay(): string {
+    const daysInSpanish = [
+      "domingo",
+      "lunes",
+      "martes",
+      "miercoles",
+      "jueves",
+      "viernes",
+      "sabado",
+    ]
+    const today = new Date().getDay()
+    return daysInSpanish[today]
+  }
 
   useEffect(() => {
-    saveFilters();
-  }, [searchText, selectedCategory, selectedProductType, isSortedByPrice]);
+    saveFilters()
+  }, [searchText, selectedCategory, selectedProductType, isSortedByPrice])
 
   useEffect(() => {
     const fetchProducts = async () => {
-      if (!city || city.id === "none") return;
+      if (!city || city.id === "none") return
 
-      setLoading(true);
-      setError(null);
-      setWarning(null); // Restablecer la advertencia antes de la nueva solicitud
+      setLoading(true)
+      setError(null)
+      setWarning(null) // Restablecer la advertencia antes de la nueva solicitud
 
       const timeout = setTimeout(() => {
-        setWarning("Parece que la conexión está lenta. Inténtalo más tarde.");
-      }, 10000); // 10 segundos de tiempo de espera para mostrar la advertencia
+        setWarning("Parece que la conexión está lenta. Inténtalo más tarde.")
+      }, 10000) // 10 segundos de tiempo de espera para mostrar la advertencia
 
       try {
-        const cityParam = { id_ciudad: city.id };
-        const response = await axios.post(
-          `${baseUrl}/admin/producto/ciudad`,
-          cityParam
-        );
+        // revisar horario de atención
+        const now = new Date()
+        console.log("NOW", now)
 
-        console.log("RESPONSE", response); // Logs the response object
+        const currentDay = getCurrentDay()
+        // Fetch the operating hours for the current day
+        const hoursResponse = await axios.get(
+          `${baseUrl}/admin/ajuste/horario_${currentDay}`
+        )
+        const ajusteHoras = hoursResponse.data.ajuste
+        const [start, end] = ajusteHoras.valor.split("-")
+        console.log("HORARIO", start, end)
 
-        if (!response || !response.data || !response.data.productos) {
-          throw new Error("Invalid response structure");
+        // Check if the current time is within the operating hours
+        const [startHour, startMinute] = start.split(":").map(Number)
+        const [endHour, endMinute] = end.split(":").map(Number)
+
+        const isOutOfSchedule =
+          now.getHours() < startHour ||
+          now.getHours() > endHour ||
+          (now.getHours() === startHour && now.getMinutes() < startMinute) ||
+          (now.getHours() === endHour && now.getMinutes() > endMinute)
+
+        setOutOfSchedule(isOutOfSchedule)
+
+        let products
+
+        if (isOutOfSchedule) {
+          const response = await axios.get(
+            `${baseUrl}/admin/producto?enriquecido=true&ecommerce=true`
+          )
+          if (!response || !response.data || !response.data.productos) {
+            throw new Error("Invalid response structure")
+          }
+          products = response.data.productos
+        } else {
+          const cityParam = { id_ciudad: city.id }
+          const response = await axios.post(
+            `${baseUrl}/admin/producto/ciudad`,
+            cityParam
+          )
+
+          console.log("RESPONSE", response) // Logs the response object
+
+          if (!response || !response.data || !response.data.productos) {
+            throw new Error("Invalid response structure")
+          }
+
+          products = response.data.productos
         }
-
-        const products = response.data.productos;
-        setProducts(products);
+        setProducts(products)
         //console.log("PRODUCTOS", products); // Logs the products array
-        setOriginalProducts(products); // Guardar el estado original de los productos
-        const count = products.length;
-        setTotalPages(Math.ceil(count / PRODUCT_LIMIT));
+        setOriginalProducts(products) // Guardar el estado original de los productos
+        const count = products.length
+        setTotalPages(Math.ceil(count / PRODUCT_LIMIT))
 
         const allCategories = products
           .flatMap((product: Producto) =>
             product.subcategorias?.map((sub) => sub.nombre)
           )
-          .filter(Boolean);
+          .filter(Boolean)
 
-        setCategories([...new Set<string>(allCategories)]);
+        setCategories([...new Set<string>(allCategories)])
 
         const allProductTypes = products
           .map((product: Producto) => product.tipoProducto?.nombre)
-          .filter(Boolean);
+          .filter(Boolean)
 
-        setProductTypes([...new Set<string>(allProductTypes)]);
-        
-        clearTimeout(timeout); // Limpiar el timeout si la respuesta llega antes de los 10 segundos
+        setProductTypes([...new Set<string>(allProductTypes)])
+
+        clearTimeout(timeout) // Limpiar el timeout si la respuesta llega antes de los 10 segundos
       } catch (error: unknown) {
         setError(
           "Los productos no se encuentran disponibles en este momento. Por favor, inténtalo de nuevo."
-        );
-        clearTimeout(timeout); // Limpiar el timeout en caso de error
+        )
+        clearTimeout(timeout) // Limpiar el timeout en caso de error
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProducts();
+    fetchProducts()
     // Polling
-    const intervalId = setInterval(fetchProducts, 1200000); // Re-fetch cada dos minutos
+    const intervalId = setInterval(fetchProducts, 1200000) // Re-fetch cada dos minutos
 
     // Limpiar intervalo cuando se desmonta un componente
-    return () => clearInterval(intervalId);
-  }, [page, sortBy, city]);
+    return () => clearInterval(intervalId)
+  }, [page, sortBy, city])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchText(e.target.value.toLowerCase());
-  };
+    setSearchText(e.target.value.toLowerCase())
+  }
 
   // Nueva función para ordenar por precio
   const handleSortByPrice = () => {
@@ -150,43 +211,47 @@ export default function PaginatedProducts({
       // Create a shallow copy of the products array to prevent direct mutation
       const sortedProducts = [...products].sort((a, b) => {
         // Calculate effective price considering promotion
-        const priceA = a.promocion 
-          ? a.precioEcommerce - (a.precioEcommerce * a.promocion.porcentajeDescuento) / 100
-          : a.precioEcommerce;
-      
-        const priceB = b.promocion 
-          ? b.precioEcommerce - (b.precioEcommerce * b.promocion.porcentajeDescuento) / 100
-          : b.precioEcommerce;
-      
+        const priceA = a.promocion
+          ? a.precioEcommerce -
+            (a.precioEcommerce * a.promocion.porcentajeDescuento) / 100
+          : a.precioEcommerce
+
+        const priceB = b.promocion
+          ? b.precioEcommerce -
+            (b.precioEcommerce * b.promocion.porcentajeDescuento) / 100
+          : b.precioEcommerce
+
         // Sort based on isSortedByPrice flag
-        return isSortedByPrice ? priceA - priceB : priceB - priceA;
-      });
-      setProducts(sortedProducts);
-      setIsSortedByPrice(isSortedByPrice === null ? true : !isSortedByPrice);
-      setSortError(null);
+        return isSortedByPrice ? priceA - priceB : priceB - priceA
+      })
+      setProducts(sortedProducts)
+      setIsSortedByPrice(isSortedByPrice === null ? true : !isSortedByPrice)
+      setSortError(null)
     } catch (error) {
       // In case of an error, revert to original products and set an error message
-      setProducts(originalProducts);
-      setSortError("Lo sentimos. No se puede ordenar en este momento. Por favor, intenta de nuevo.");
+      setProducts(originalProducts)
+      setSortError(
+        "Lo sentimos. No se puede ordenar en este momento. Por favor, intenta de nuevo."
+      )
     }
-  };
+  }
 
   const filteredProducts = products.filter((p) => {
     // Normalize the search text to lowercase for case-insensitive matching
-    const matchesSearchText = p.nombre.toLowerCase().includes(searchText);
-  
+    const matchesSearchText = p.nombre.toLowerCase().includes(searchText)
+
     // Check category match
     const categoryMatch = selectedCategory
       ? p.subcategorias?.some((sub) => sub.nombre === selectedCategory)
-      : true;
-  
+      : true
+
     // Check product type match
     const productTypeMatch = selectedProductType
       ? p.tipoProducto?.nombre === selectedProductType
-      : true;
-  
-    return matchesSearchText && categoryMatch && productTypeMatch;
-  });
+      : true
+
+    return matchesSearchText && categoryMatch && productTypeMatch
+  })
 
   return (
     <>
@@ -248,21 +313,25 @@ export default function PaginatedProducts({
 
         {/* Mostrar el mensaje de advertencia si la conexión es lenta */}
         {warning && (
-          <div className="text-yellow-500 text-center my-4">
-            {warning}
-          </div>
+          <div className="text-yellow-500 text-center my-4">{warning}</div>
         )}
 
         {/* Mostrar el mensaje de error si ocurre un fallo en la ordenación */}
         {sortError && (
+          <div className="text-red-500 text-center my-4">{sortError}</div>
+        )}
+        {outOfSchedule && (
           <div className="text-red-500 text-center my-4">
-            {sortError}
+            Lo sentimos, estamos fuera de horario. Puedes seguir viendo los
+            productos, pero no podrás realizar compras en este momento.
           </div>
         )}
 
-        <div className="relative z-10 mb-4">
-          <CartButton carrito={carrito} setCarrito={setCarrito} />
-        </div>
+        {!outOfSchedule && (
+          <div className="relative z-10 mb-4">
+            <CartButton carrito={carrito} setCarrito={setCarrito} />
+          </div>
+        )}
       </div>
 
       {filteredProducts.length === 0 && searchText ? (
@@ -288,9 +357,10 @@ export default function PaginatedProducts({
                   carrito={carrito}
                   setCarrito={setCarrito}
                   isAuthenticated={isAuthenticated}
+                  outOfSchedule={outOfSchedule}
                 />
               </li>
-            );
+            )
           })}
         </ul>
       )}
@@ -302,5 +372,5 @@ export default function PaginatedProducts({
         />
       )}
     </>
-  );
+  )
 }
