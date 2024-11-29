@@ -102,8 +102,8 @@ export default function Nav() {
               const pedido = response.data.pedido;
               if (pedido) {
                 if (!pedido.usuario || pedido.usuario.id !== session.user.id) {
-                  document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
-                  document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
+                  // document.cookie = "_medusa_cart_id=; max-age=0; path=/; secure; samesite=strict";
+                  // document.cookie = "_medusa_pedido_id=; max-age=0; path=/; secure; samesite=strict";
                 }
               }
             } else {
