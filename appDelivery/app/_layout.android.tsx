@@ -59,14 +59,6 @@ function RootLayoutNav() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="home" options={{ headerShown: false }} />
 
-          <Stack.Screen
-            name="inventory"
-            options={{
-              presentation: "card",
-              title: "Actualizar Inventario",
-              headerBackVisible: true,
-            }}
-          />
 
           <Stack.Screen
             name="venta"

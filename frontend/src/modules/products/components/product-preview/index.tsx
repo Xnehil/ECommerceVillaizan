@@ -4,22 +4,22 @@ import Thumbnail from "../thumbnail"
 import { Producto } from "types/PaqueteProducto"
 import { addItem, updateLineItem } from "@modules/cart/actions"
 import { DetallePedido, Pedido } from "types/PaquetePedido"
-import Link from 'next/link'
+import Link from "next/link"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@components/tooltip";
+} from "@components/tooltip"
 
-import InputWithLabel from "@components/inputWithLabel";
-import React, { useEffect, useRef, useState } from "react";
+import InputWithLabel from "@components/inputWithLabel"
+import React, { useEffect, useRef, useState } from "react"
 //ACAA
 //import "@/styles/general.css";
-import { Label } from "@components/label";
-import { Button } from "@components/Button";
-import { Skeleton } from "@components/ui/skeleton";
-import axios from "axios";
+import { Label } from "@components/label"
+import { Button } from "@components/Button"
+import { Skeleton } from "@components/ui/skeleton"
+import axios from "axios"
 import {
   Dialog,
   DialogContent,
@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@components/ui/dialog";
+} from "@components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,8 +39,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@components/ui/alert-dialog";
-
+} from "@components/ui/alert-dialog"
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 
@@ -63,7 +62,9 @@ export default function ProductPreview({
   const [error, setError] = useState<string | null>(null)
   const [existeDescuento, setExisteDescuento] = useState(false)
   const [estaAutenticado, setEstaAutenticado] = useState(false)
-  const [cheapestPriceMostrar, setCheapestPriceMostrar] = useState(productPreview.precioEcommerce)
+  const [cheapestPriceMostrar, setCheapestPriceMostrar] = useState(
+    productPreview.precioEcommerce
+  )
 
   const precioNormal = productPreview.precioEcommerce
   const detalleAnterior = carrito?.detalles.find(
@@ -75,22 +76,25 @@ export default function ProductPreview({
     if (isAuthenticated) {
       setEstaAutenticado(true)
       //if productPreview tiene promocion, calcular el precio más barato
-      if (productPreview.promocion && productPreview.promocion.esValido && productPreview.promocion.porcentajeDescuento) {
+      if (
+        productPreview.promocion &&
+        productPreview.promocion.esValido &&
+        productPreview.promocion.porcentajeDescuento
+      ) {
         const porcentaje = productPreview.promocion.porcentajeDescuento
         const precioDescuento = precioNormal - (precioNormal * porcentaje) / 100
         setCheapestPriceMostrar(precioDescuento)
         setExisteDescuento(true)
-      }
-      else{
+      } else {
         setExisteDescuento(false)
       }
-    } 
-  }, [isAuthenticated, productPreview]);
-
-    // Verificar si el producto tiene stock
-    if (productPreview.inventarios[0].stock === 0) {
-      return null
     }
+  }, [isAuthenticated, productPreview])
+
+  // Verificar si el producto tiene stock
+  if (productPreview.inventarios[0].stock === 0) {
+    return null
+  }
 
   const handleAddToCart = async () => {
     if (!productPreview?.id) return null
@@ -100,7 +104,12 @@ export default function ProductPreview({
       return
     }
 
-    if(productPreview.promocion && productPreview.promocion.esValido && productPreview.promocion.limiteStock && productPreview.promocion.limiteStock === 1) {
+    if (
+      productPreview.promocion &&
+      productPreview.promocion.esValido &&
+      productPreview.promocion.limiteStock &&
+      productPreview.promocion.limiteStock === 1
+    ) {
       setError("Se nos acabaron estas paletas. ¡Prueba otras!")
       return
     }
@@ -109,34 +118,49 @@ export default function ProductPreview({
     setError(null)
 
     try {
-
-      if(estaAutenticado && productPreview.promocion && productPreview.promocion.esValido && productPreview.promocion.limiteStock && productPreview.promocion.limiteStock >0) {
-        const responseGet = await axios.get(`${baseUrl}/admin/promocion/${productPreview.promocion.id}`);
-        if(responseGet.data.error) {
+      if (
+        estaAutenticado &&
+        productPreview.promocion &&
+        productPreview.promocion.esValido &&
+        productPreview.promocion.limiteStock &&
+        productPreview.promocion.limiteStock > 0
+      ) {
+        const responseGet = await axios.get(
+          `${baseUrl}/admin/promocion/${productPreview.promocion.id}`
+        )
+        if (responseGet.data.error) {
           throw new Error(responseGet.data.error)
         }
-        const promoResponse = responseGet.data.promocion;
+        const promoResponse = responseGet.data.promocion
         //console.log("The body of the response is:", promoResponse)
         //console.log("The body that is being sent is:", {limiteStock: promoResponse.limiteStock - 1})
-        const responseUpdate = await axios.put(`${baseUrl}/admin/promocion/${productPreview.promocion.id}`, {limiteStock: promoResponse.limiteStock - 1});
-        
-        if(responseUpdate.data.error) {
+        const responseUpdate = await axios.put(
+          `${baseUrl}/admin/promocion/${productPreview.promocion.id}`,
+          { limiteStock: promoResponse.limiteStock - 1 }
+        )
+
+        if (responseUpdate.data.error) {
           throw new Error(responseUpdate.data.error)
         }
-        productPreview.promocion.limiteStock = promoResponse.limiteStock - 1;
-        if(productPreview.promocion.limiteStock === 0) {
-          const responseUpdate = await axios.put(`${baseUrl}/admin/promocion/${productPreview.promocion.id}`, {esValido: false});
-          if(responseUpdate.data.error) {
+        productPreview.promocion.limiteStock = promoResponse.limiteStock - 1
+        if (productPreview.promocion.limiteStock === 0) {
+          const responseUpdate = await axios.put(
+            `${baseUrl}/admin/promocion/${productPreview.promocion.id}`,
+            { esValido: false }
+          )
+          if (responseUpdate.data.error) {
             throw new Error(responseUpdate.data.error)
           }
-          productPreview.promocion.esValido = false;
+          productPreview.promocion.esValido = false
         }
       }
 
-
       let precioProducto = productPreview.precioEcommerce
-      if(isAuthenticated){
-        if (productPreview.promocion && productPreview.promocion.porcentajeDescuento) {
+      if (isAuthenticated) {
+        if (
+          productPreview.promocion &&
+          productPreview.promocion.porcentajeDescuento
+        ) {
           const porcentaje = productPreview.promocion.porcentajeDescuento
           precioProducto = precioNormal - (precioNormal * porcentaje) / 100
         }
@@ -171,7 +195,12 @@ export default function ProductPreview({
           //precio: productPreview.precioEcommerce,
           precio: precioProducto,
           idPedido: carrito?.id || "",
-          promocion: (isAuthenticated && productPreview.promocion?.esValido && productPreview.promocion?.estaActivo) ? productPreview.promocion : undefined,
+          promocion:
+            isAuthenticated &&
+            productPreview.promocion?.esValido &&
+            productPreview.promocion?.estaActivo
+              ? productPreview.promocion
+              : undefined,
         })
         if (
           response &&
@@ -228,12 +257,22 @@ export default function ProductPreview({
       const detalleAnterior = carrito?.detalles.find(
         (detalle) => detalle.producto.id === productPreview.id
       )
-      if(estaAutenticado && productPreview.promocion && productPreview.promocion.esValido && productPreview.promocion.limiteStock && productPreview.promocion.limiteStock >0) {
-        const response = await axios.patch(`${baseUrl}/admin/promocion/${productPreview.promocion.id}`, {cantidad: 1, operacion: "+"});
-        if(response.data.error) {
+      if (
+        estaAutenticado &&
+        productPreview.promocion &&
+        productPreview.promocion.esValido &&
+        productPreview.promocion.limiteStock &&
+        productPreview.promocion.limiteStock > 0
+      ) {
+        const response = await axios.patch(
+          `${baseUrl}/admin/promocion/${productPreview.promocion.id}`,
+          { cantidad: 1, operacion: "+" }
+        )
+        if (response.data.error) {
           throw new Error(response.data.error)
         }
-        productPreview.promocion.limiteStock = productPreview.promocion.limiteStock + 1;
+        productPreview.promocion.limiteStock =
+          productPreview.promocion.limiteStock + 1
       }
       if (detalleAnterior && detalleAnterior.cantidad > 1) {
         const cantidad = detalleAnterior.cantidad - 1
@@ -300,8 +339,8 @@ export default function ProductPreview({
         size="full"
         isFeatured={isFeatured}
       />
-        {/* Ícono de Información en la esquina superior derecha */}
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+      {/* Ícono de Información en la esquina superior derecha */}
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <Link href={`/producto/${productPreview.id}`}>
           {/*<button className="bg-white p-1 rounded-full shadow-md hover:bg-gray-100 transition" aria-label="Más información">
             <img src="/images/boton-de-informacion.png" alt="Información" className="w-5 h-5" />
@@ -315,7 +354,9 @@ export default function ProductPreview({
                 </TooltipTrigger>
                 <TooltipContent className="w-48 h-auto p-2">
                   <p className="w-full break-words">
-                    Con la compra de este producto, consigues <strong>{`${productPreview.cantidadPuntos}`}</strong> Puntos Canjeables
+                    Con la compra de este producto, consigues{" "}
+                    <strong>{`${productPreview.cantidadPuntos}`}</strong> Puntos
+                    Canjeables
                   </p>
                   <p className="w-full break-words font-bold">Ver Detalles</p>
                 </TooltipContent>
@@ -333,7 +374,6 @@ export default function ProductPreview({
               </Tooltip>
             </TooltipProvider>
           )}
-
         </Link>
       </div>
       {/* Botón Agregar, Cantidad, y Remover */}
@@ -351,7 +391,9 @@ export default function ProductPreview({
           <button
             onClick={handleAddToCart}
             disabled={isAdding}
-            className={`bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-colors duration-200 ${isAdding ? "opacity-50" : ""}`}
+            className={`bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-full shadow-lg transition-colors duration-200 ${
+              isAdding ? "opacity-50" : ""
+            }`}
           >
             {isAdding ? "Añadiendo..." : "+"}
           </button>
@@ -367,7 +409,7 @@ export default function ProductPreview({
           </button>
         )
       )}
-  
+
       {/* Mensaje de error */}
       {error && (
         <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2 flex items-center">
@@ -375,20 +417,21 @@ export default function ProductPreview({
           <span className="ml-2">{error}</span>
         </div>
       )}
-  
+
       {/* Stock limitado */}
-      {!productPreview.inventarios[0].stock ? (
+      {productPreview.inventarios[0].stock < 0 ? (
         <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2">
           Este producto no está disponible en tu ciudad
         </div>
       ) : (
-        productPreview.inventarios[0].stock <= productPreview.inventarios[0].stockMinimo && (
+        productPreview.inventarios[0].stock <=
+          productPreview.inventarios[0].stockMinimo && (
           <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2">
             Stock limitado: quedan pocas unidades disponibles en tu ciudad
           </div>
         )
       )}
-  
+
       {/* Información del producto */}
       <div className="p-4">
         <div className="flex items-center justify-between">
@@ -400,20 +443,24 @@ export default function ProductPreview({
           </Text>
           <div className="flex items-center gap-x-2">
             {cheapestPriceMostrar && (
-              <span className="text-lg font-bold text-yellow-600" style={{ whiteSpace: 'nowrap' }}>
+              <span
+                className="text-lg font-bold text-yellow-600"
+                style={{ whiteSpace: "nowrap" }}
+              >
                 {`S/ ${Number(cheapestPriceMostrar).toFixed(2)}`}
               </span>
             )}
             {existeDescuento && precioNormal && (
-              <span className="text-lg text-gray-500 line-through" style={{ whiteSpace: 'nowrap' }}>
+              <span
+                className="text-lg text-gray-500 line-through"
+                style={{ whiteSpace: "nowrap" }}
+              >
                 {`S/ ${Number(precioNormal).toFixed(2)}`}
               </span>
             )}
           </div>
         </div>
       </div>
-
     </div>
   )
-  
 }

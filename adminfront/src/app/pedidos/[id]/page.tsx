@@ -206,7 +206,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
 
   const handleConfirmCancelado = async () => {
     setIsLoading(true);
-    console.log("Marcando como cancelado");
+    // console.log("Marcando como cancelado");
     try {
       // await new Promise((resolve) => setTimeout(resolve, 3000));
 
@@ -236,6 +236,42 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         variant: "destructive",
         title: "Error",
         description: "Ocurrió un error al marcar como cancelado.",
+      });
+    }
+  };
+
+  const handleConfirmFraudulento = async () => {
+    setIsLoading(true);
+    // console.log("Marcando como cancelado");
+    try {
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      const responseCancelado = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}pedido/${pedido.current.id}`,
+        {
+          ...pedido.current,
+          estado: "fraudulento",
+        }
+      );
+
+      if (responseCancelado.status !== 200) {
+        throw new Error("Error al marcar como fraudulento");
+      }
+
+      console.log("Pedido saved", responseCancelado.data);
+      pedido.current.estado = "fraudulento";
+
+      setIsLoading(false);
+      toast({
+        description: "Se marcó como fraudulento correctamente.",
+      });
+    } catch (error: any) {
+      console.error("Error saving product", error);
+      setIsLoading(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ocurrió un error al marcar como fraudulento.",
       });
     }
   };
@@ -283,14 +319,34 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
               </div>
             )}
             {pedido.current.estado === "entregado" &&
-              !pedido.current.pagado &&
-              pedido.current.pedidosXMetodoPago?.some(
-                (metodo) =>
-                  metodo.metodoPago.nombre === "yape" ||
-                  metodo.metodoPago.nombre === "plin"
-              ) && (
+              !pedido.current.pagado && (
                 <div className="lower-buttons-container">
                   <>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                          Marcar como fraudulento
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            ¿Estás seguro de marcar como fraudulento este
+                            pedido?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            El pedido será marcado como fraudulento. Esta acción
+                            no se puede deshacer.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Regresar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleConfirmFraudulento}>
+                            Marcar como fraudulento
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="default">Confirmar Pago</Button>

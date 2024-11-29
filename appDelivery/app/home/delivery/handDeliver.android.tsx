@@ -12,6 +12,7 @@ import {
   Alert,
   FlatList,
   ActivityIndicator,
+  Button,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import SwipeButton from "rn-swipe-button";
@@ -37,23 +38,26 @@ import { useRef } from "react";
 import { Picker } from "@react-native-picker/picker";
 import * as Linking from "expo-linking";
 import { Platform } from "react-native";
-import { Camera } from "expo-camera";
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import {
+  Camera,
+  CameraView,
+  CameraType,
+  useCameraPermissions,
+} from "expo-camera";
 
 const EntregarPedido = () => {
-
-  const [facing, setFacing] = useState<CameraType>('back');
+  const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
+  const [photo, setPhoto] = useState();
 
- 
-    const [isCameraActive, setIsCameraActive] = useState(false); // Para controlar la visibilidad de la cámara
-
-
+  const [isCameraActive, setIsCameraActive] = useState(false); // Para controlar la visibilidad de la cámara
 
   const route = useRoute();
   const { pedido } = (route.params as { pedido?: string }) || { pedido: null };
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [loadingMessage, isLoadingMessage] = useState<string | null>("Cargando");
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(
+    "Cargando"
+  );
   const parsedPedido = pedido ? JSON.parse(decodeURIComponent(pedido)) : {};
 
   const [pedidoCompleto, setPedidoCompleto] = useState<Pedido | null>(null);
@@ -79,7 +83,25 @@ const EntregarPedido = () => {
     PedidoXMetodoPago[]
   >(pedidoCompleto?.pedidosXMetodoPago || []);
   const [resolveCallback, setResolveCallback] = useState<null | Function>(null);
+  const cameraRef = useRef(null);
 
+  const takePhoto = async () => {
+    if (cameraRef.current) {
+      const photo = await cameraRef.current.takePictureAsync();
+      if (currentImageType == "pedido"){
+        setFotoPedido(photo);
+        setCurrentImageId(pedidoCompleto?.id ?? null);
+      }
+      else if (currentImageType == "pago"){
+        setFotosPago((prev) => ({ ...prev, [pedidoCompleto?.id ??
+          ""]: photo }));
+        }
+      setIsCameraActive(false);
+      
+    } else {
+      Alert.alert("Error", "No se pudo capturar la foto");
+    }
+  };
   const makeCall = async () => {
     console.log("Haciendo llamada");
     const usuario = await getUserData();
@@ -301,7 +323,7 @@ const EntregarPedido = () => {
     setEditPagoModalVisible(false);
   };
   function toggleCameraFacing() {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
+    setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
   const mostrarMensaje = (
@@ -350,24 +372,58 @@ const EntregarPedido = () => {
         onRequestClose={() => setImageOptionsVisible(false)}
       >
         <>
-        <View style={styles.optionButton}>
-          <TouchableOpacity onPress={() => setIsCameraActive(!isCameraActive)}>
-            <Text style={styles.optionButtonText}>
-              {isCameraActive ? "Desactivar Cámara" : "Activar Cámara"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        {isCameraActive && (
-          <CameraView style={styles.camera} facing={facing}>
-          <View style={styles.buttonContainer2}>
-            <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
-              <Text style={styles.text}>Flip Camera</Text>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
+
+            {isCameraActive ? (
+              <CameraView
+                style={styles.camera}
+                facing={facing}
+                ref={cameraRef}
+              >
+                <View style={styles.buttonContainer2}>
+                  <TouchableOpacity
+                    style={styles.camerabutton}
+                    onPress={toggleCameraFacing}
+                  >
+                    <Text style={styles.text}>Voltear Camara</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.camerabutton}
+                    onPress={takePhoto}
+                  >
+                    <Text style={styles.text}>Tomar foto</Text>
+                  </TouchableOpacity>
+                </View>
+              </CameraView>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.optionButton}
+                  onPress={() => {
+                    requestPermission();
+                    if (permission && permission.granted) {
+                      setIsCameraActive(true);
+                    }
+                  }}
+                >
+                  <Text style={styles.optionButtonText}>Tomar Foto</Text>
+                </TouchableOpacity>
+                
+              </>
+            )}
+
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                setIsCameraActive(false);
+                setImageOptionsVisible(false);
+              }}
+            >
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
-        </CameraView> 
-        )}
         </>
-        
       </Modal>
     );
   };
@@ -421,8 +477,6 @@ const EntregarPedido = () => {
     input.click();
     setImageOptionsVisible(false); // Cierra el modal
   };
-
-
 
   const closeCamera = () => {
     setIsCameraActive(false);
@@ -560,7 +614,6 @@ const EntregarPedido = () => {
         } catch (error) {
           console.error("Error calculating totalPaletas:", error);
           setIsLoading(false);
-
         }
 
         try {
@@ -576,7 +629,6 @@ const EntregarPedido = () => {
         } catch (error) {
           console.error("Error calculating totalMafaletas:", error);
           setIsLoading(false);
-
         }
 
         const venta: Venta = {
@@ -657,7 +709,6 @@ const EntregarPedido = () => {
                 error
               );
               setIsLoading(false);
-
             }
             if (error_pxm) {
               throw error_pxm;
@@ -666,12 +717,12 @@ const EntregarPedido = () => {
         } catch (error) {
           console.error("Ocurrió un error al procesar los pagos:", error);
           setIsLoading(false);
-
         }
 
         await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
           estado: "entregado",
           urlEvidencia: urlPedido,
+          pagado: pedidoCompleto.pedidosXMetodoPago.length == 1 && pedidoCompleto.pedidosXMetodoPago[0].metodoPago.nombre == "Pago en Efectivo" ? true : false,
         });
 
         router.replace({
@@ -683,10 +734,8 @@ const EntregarPedido = () => {
       console.error("Error updating pedido:", error);
       mostrarMensaje("Error al confirmar la entrega", "confirmacion");
       setIsLoading(false);
-
     }
     setIsLoading(false);
-
   };
 
   const handleConfirmarEntrega = async () => {
@@ -715,7 +764,7 @@ const EntregarPedido = () => {
       {
         id: "mp_01JBDQD78HBD6A0V1DVMEQAFKV",
         nombre: "Yape",
-        
+
         estaActivo: false,
       },
       {
@@ -1111,7 +1160,7 @@ const EntregarPedido = () => {
                                 nombre:
                                   devMetodos.find((m) => m.id === itemValue)
                                     ?.nombre || "",
-                                
+
                                 estaActivo:
                                   devMetodos.find((m) => m.id === itemValue)
                                     ?.estaActivo || true,
@@ -1180,7 +1229,7 @@ const EntregarPedido = () => {
                     ...prev,
                     metodoPago: {
                       id: selectedMetodo?.id || "-1",
-                      
+
                       estaActivo: selectedMetodo?.estaActivo || true,
                       nombre: selectedMetodo?.nombre || "",
                     },
@@ -1503,7 +1552,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   confirmButtonText: {
-    fontSize: 18,
+    fontSize: 14,
     color: "#FFF",
     fontWeight: "bold",
   },
@@ -1520,19 +1569,21 @@ const styles = StyleSheet.create({
   swipeButtonContainer: {
     marginTop: 30,
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    backgroundColor: "white",
-    padding: 20,
-    marginHorizontal: 20,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
+    modalContainer: {
+      flex: 1,
+      justifyContent: "center",
+      backgroundColor: "white",
+      alignContent: "center",
+      alignItems: "center",
+      padding: 10,
+      marginHorizontal: 10,
+      borderRadius: 10,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+    },
   modalTitle: {
     fontSize: 24,
     fontWeight: "bold",
@@ -1687,28 +1738,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-
-
-
-
   camera: {
-    flex: 1,
+    height: "80%",
+    width: "80%",
   },
   buttonContainer2: {
     flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-    margin: 64,
+    flexDirection: "column",
+    backgroundColor: "transparent",
+    justifyContent: "flex-end",
+    alignContent: "flex-end",
   },
   button: {
     flex: 1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
+    alignSelf: "flex-end",
+    alignItems: "center",
+  },
+  camerabutton: {
+    alignItems: "center",
+    padding: 10,
   },
   text: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
 });
 

@@ -163,41 +163,6 @@ export default function Entregas() {
         return;
       }
 
-      // Coordenada inicial
-      const corrdinate: Coordinate = {
-        lat: stableLocation.latitude,
-        lng: stableLocation.longitude,
-      };
-
-      console.log("Iniciando algoritmo...");
-      const directionsService = new google.maps.DirectionsService();
-      const startLocation = { lat: stableLocation.latitude, lng: stableLocation.longitude }
-      /*geneticAlgorithm(directionsService, corrdinate, pedidosValidos)
-        .then((pedidosOrdenados) => {
-          
-          console.log("Pedidos reordenados:");
-          console.log(pedidosOrdenados);
-
-          setPedidosAceptados(pedidosOrdenados);
-
-          // Llamar a handlePrimerPedido si hay pedidos reordenados
-          if (pedidosOrdenados[0]) {
-            handlePrimerPedido(pedidosOrdenados [0].id,pedidosOrdenados);
-          }
-        })
-        .catch((error) => {
-          console.error("Error al ejecutar el algoritmo genético:", error);
-        });*/
-      const pedidosOrdenados = findOptimalRouteForPedidos(startLocation, pedidosValidos);
-      console.log("Pedidos reordenados:");
-          console.log(pedidosOrdenados.route);
-
-          setPedidosAceptados(pedidosOrdenados.route);
-
-          // Llamar a handlePrimerPedido si hay pedidos reordenados
-          if (pedidosOrdenados.route[0]) {
-            handlePrimerPedido(pedidosOrdenados.route [0].id,pedidosOrdenados.route);
-          }
     } catch (error) {
       console.error("Error al obtener los pedidos:", error);
     }
@@ -323,7 +288,7 @@ export default function Entregas() {
           onPress={() => setVerHistorial(!verHistorial)}
         >
           <Text style={styles.toggleButtonText}>
-            {verHistorial ? "Ver Pedidos Actuales" : "Ver Historial de Pedidos"}
+            {verHistorial ? "Ver Pedidos Actuales" : "Ver Historial"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -424,7 +389,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   Titulo: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: "bold",
     marginVertical: 10,
   },

@@ -42,6 +42,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
   const [nombre, setNombre] = useState("");
 
   const [isOpen, setIsOpen] = useState(false);
+  const [idAEliminar, setIdAEliminar] = useState<string | null>(null);
 
   const { toast } = useToast();
 
@@ -120,7 +121,10 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
                 </DropdownMenuItem>
 
                 <AlertDialogTrigger asChild>
-                  <DropdownMenuItem className="text-red-600">
+                  <DropdownMenuItem className="text-red-600" 
+                    onClick={() => {
+                      setIdAEliminar(row.original.id);
+                    }}>
                     Eliminar
                   </DropdownMenuItem>
                 </AlertDialogTrigger>
@@ -145,7 +149,7 @@ const Subcategorias: React.FC<SubcategoriasProps> = () => {
                 </AlertDialogCancel>
                 <Button
                   variant="destructive"
-                  onClick={() => handleDelete(row.original.id)}
+                  onClick={() => handleDelete(idAEliminar as string)}
                 >
                   Eliminar
                 </Button>

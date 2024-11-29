@@ -43,6 +43,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
   const [nombre, setNombre] = useState("");
 
   const [isOpen, setIsOpen] = useState(false);
+  const [idAEliminar, setIdAEliminar] = useState("");
 
   const { toast } = useToast();
 
@@ -101,6 +102,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
         const handleCancelDialog = () => {
           setIsOpen(false);
         };
+        // console.log("row", row);
         return (
           <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
             <DropdownMenu>
@@ -120,7 +122,11 @@ const Categorias: React.FC<CategoriasProps> = () => {
                 </DropdownMenuItem>
 
                 <AlertDialogTrigger asChild>
-                  <DropdownMenuItem className="text-red-600">
+                  <DropdownMenuItem className="text-red-600"
+                  onClick={() => {
+                    setIdAEliminar(row.original.id);
+                  }}
+                  >
                     Eliminar
                   </DropdownMenuItem>
                 </AlertDialogTrigger>
@@ -145,7 +151,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
                 </AlertDialogCancel>
                 <Button
                   variant="destructive"
-                  onClick={() => handleDelete(row.original.id)}
+                  onClick={() => handleDelete(idAEliminar)}
                 >
                   Eliminar
                 </Button>
@@ -310,15 +316,16 @@ const Categorias: React.FC<CategoriasProps> = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (idAEliminar: string) => {
     setIsLoading(true);
     // Make DELETE request to delete category
 
     setIsOpen(false);
 
     try {
+      console.log("Deleting category with id:", idAEliminar);
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto/${id}`
+        `${process.env.NEXT_PUBLIC_BASE_URL}tipoProducto/${idAEliminar}`
       );
 
       if (response.status !== 200) {
@@ -327,7 +334,7 @@ const Categorias: React.FC<CategoriasProps> = () => {
 
       // Remove category from the list of categories
       categories.current = categories.current.filter(
-        (category) => category.id !== id
+        (category) => category.id !== idAEliminar
       );
 
       toast({

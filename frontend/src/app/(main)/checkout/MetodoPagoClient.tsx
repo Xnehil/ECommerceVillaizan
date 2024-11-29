@@ -10,6 +10,7 @@ import { Usuario } from "types/PaqueteUsuario"
 import { Direccion } from "types/PaqueteEnvio"
 import axios from "axios"
 import PagosParciales from "@components/PagosParciales"
+import { set } from "lodash"
 
 type MetodoPagoClientProps = {
   pedidoInput: Pedido
@@ -70,6 +71,7 @@ export default function MetodoPagoClient({
   const [pedido, setPedido] = useState<Pedido | null>(null) // State to hold the fetched pedido
   const [metodosPago, setMetodosPago] = useState<PedidoXMetodoPago[]>([]) // State to hold the selected payment methods
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
+  const [errorMessage, setErrorMessage] = useState("")
 
   const hayDescuento = true
   const costoEnvio = 5
@@ -110,50 +112,59 @@ export default function MetodoPagoClient({
           ? parseFloat(metodo.monto)
           : metodo.monto,
     }))
+    // if (
+    //   pedidoInput.pedidosXMetodoPago &&
+    //   pedidoInput.pedidosXMetodoPago.length === 1
+    // ) {
+    //   const metodoId = pedidoInput.pedidosXMetodoPago[0].metodoPago.id
+    //   const imageId =
+    //     metodoId === "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
+    //       ? "yape"
+    //       : metodoId === "mp_01JBDQDH47XDE75XCGSS739E6G"
+    //       ? "plin"
+    //       : "pagoEfec"
+    //   setSelectedImageId(imageId)
+    //   if (pedidoInput) {
+    //     console.log("Pedido input:", pedidoInput)
+    //     if (pedidoInput.pedidosXMetodoPago) {
+    //       console.log(
+    //         "Pedido input pedidosXMetodoPago:",
+    //         pedidoInput.pedidosXMetodoPago
+    //       )
+    //       if (pedidoInput.pedidosXMetodoPago[0]) {
+    //         console.log(
+    //           "Pedido input pedidosXMetodoPago[0]:",
+    //           pedidoInput.pedidosXMetodoPago[0]
+    //         )
+
+    //         const monto = pedidoInput.pedidosXMetodoPago[0].monto
+    //         console.log("Monto:", monto)
+
+    //         // Check if monto is a valid number
+    //         if (typeof monto === "number" && !isNaN(monto)) {
+    //           const montoValue = monto.toFixed(2)
+    //           setPaymentAmount(parseFloat(montoValue))
+    //         }
+    //         // Check if monto is a string that can be converted to a number
+    //         else if (typeof monto === "string" && !isNaN(parseFloat(monto))) {
+    //           const montoValue = parseFloat(monto).toFixed(2)
+    //           setPaymentAmount(parseFloat(montoValue))
+    //         }
+    //         // Handle cases where monto is neither a number nor a string that can be parsed to a number
+    //         else {
+    //           console.error(
+    //             "Monto is not a valid number or parsable string:",
+    //             monto
+    //           )
+    //           // Handle the error as appropriate
+    //         }
+    //       }
+    //     }
+    //   }
+    // } else
     if (
       pedidoInput.pedidosXMetodoPago &&
-      pedidoInput.pedidosXMetodoPago.length === 1
-    ) {
-      const metodoId = pedidoInput.pedidosXMetodoPago[0].metodoPago.id
-      const imageId =
-        metodoId === "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
-          ? "yape"
-          : metodoId === "mp_01JBDQDH47XDE75XCGSS739E6G"
-          ? "plin"
-          : "pagoEfec"
-      setSelectedImageId(imageId)
-      if (pedidoInput) {
-        console.log("Pedido input:", pedidoInput);
-        if (pedidoInput.pedidosXMetodoPago) {
-            console.log("Pedido input pedidosXMetodoPago:", pedidoInput.pedidosXMetodoPago);
-            if (pedidoInput.pedidosXMetodoPago[0]) {
-                console.log("Pedido input pedidosXMetodoPago[0]:", pedidoInput.pedidosXMetodoPago[0]);
-                
-                const monto = pedidoInput.pedidosXMetodoPago[0].monto;
-                console.log("Monto:", monto);
-                
-                // Check if monto is a valid number
-                if (typeof monto === 'number' && !isNaN(monto)) {
-                    const montoValue = monto.toFixed(2);
-                    setPaymentAmount(parseFloat(montoValue));
-                } 
-                // Check if monto is a string that can be converted to a number
-                else if (typeof monto === 'string' && !isNaN(parseFloat(monto))) {
-                    const montoValue = parseFloat(monto).toFixed(2);
-                    setPaymentAmount(parseFloat(montoValue));
-                }
-                // Handle cases where monto is neither a number nor a string that can be parsed to a number
-                else {
-                    console.error("Monto is not a valid number or parsable string:", monto);
-                    // Handle the error as appropriate
-                }
-            }
-        }
-      }
-      
-    } else if (
-      pedidoInput.pedidosXMetodoPago &&
-      pedidoInput.pedidosXMetodoPago.length > 1
+      pedidoInput.pedidosXMetodoPago.length > 0
     ) {
       const imageIds = pedidoInput.pedidosXMetodoPago.map((metodo) => {
         return metodo.metodoPago.id === "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
@@ -244,13 +255,44 @@ export default function MetodoPagoClient({
           (metodo) => metodo.metodoPago.id !== metodoId
         )
 
+        if (
+          newSelectedImageIds.length === 1 &&
+          newSelectedImageIds[0] !== "pagoEfec"
+        ) {
+          newMetodosPago[0].monto = total ? Number(total.toFixed(2)) : 0
+        }
+
         // console.log("New metodosPago:", newMetodosPago)
 
         setMetodosPago(newMetodosPago)
       } else {
-        if (selectedImageIds.length > 0 && calcularRestante(metodoId) <= 0) {
+        if (selectedImageIds.length === 0 && id !== "pagoEfec") {
+          const metodo = {
+            id:
+              id === "yape"
+                ? "mp_01JBDQD78HBD6A0V1DVMEQAFKV"
+                : id === "plin"
+                ? "mp_01JBDQDH47XDE75XCGSS739E6G"
+                : "mp_01J99CS1H128G2P7486ZB5YACH",
+
+            nombre:
+              id === "yape" ? "Yape" : id === "plin" ? "Plin" : "Efectivo",
+          } as MetodoPago
+
+          const newMetodosPago = [
+            {
+              monto: Number(total.toFixed(2)),
+              pedido: pedido.id,
+              metodoPago: metodo,
+            },
+          ]
+
+          console.log("New metodosPago:", newMetodosPago)
+          setMetodosPago(newMetodosPago as unknown as PedidoXMetodoPago[])
+          setSelectedImageIds([id])
           return
         }
+
         const metodo = {
           id:
             id === "yape"
@@ -306,24 +348,39 @@ export default function MetodoPagoClient({
       return
     }
 
-    if (amount >= calcularTotal()) {
+    // don't allow more than 2 decimal places
+    if (amount.toString().split(".")[1]?.length > 2) {
       return
     }
 
-    if (id !== "pagoEfec" && amount > calcularRestante(idMetodo)) {
+    if (id !== "pagoEfec" && amount > Number(total.toFixed(2))) {
+      setErrorMessage("No puede pagar más del monto total con este método")
+      setTimeout(() => {
+        setErrorMessage("")
+      }, 5000)
       return
     }
 
     if (id === "pagoEfec" && amount - calcularRestante(idMetodo) > 100) {
-      console.log("Monto máximo de vuelto excedido")
-      console.log(
-        "Monto máximo de vuelto:",
-        amount - calcularRestante(idMetodo)
-      )
+      setErrorMessage("El vuelto no puede ser mayor a 100")
+      setTimeout(() => {
+        setErrorMessage("")
+      }, 5000)
       return
     }
 
-    console.log("Amount changed:", amount)
+    if (
+      (id === "pagoEfec" && calcularRestante(idMetodo) <= 0) ||
+      (id !== "pagoEfec" && amount > calcularRestante(idMetodo, true))
+    ) {
+      setErrorMessage(
+        "Ya ha completado el monto total, modifique el monto con los otros métodos de pago"
+      )
+      setTimeout(() => {
+        setErrorMessage("")
+      }, 5000)
+      return
+    }
 
     const newMetodosPago = metodosPago.map((metodo) => {
       if (metodo.metodoPago.id === idMetodo) {
@@ -339,19 +396,37 @@ export default function MetodoPagoClient({
     setMetodosPago(newMetodosPago)
   }
 
-  const calcularRestante = (idMetodo: string) => {
+  const calcularRestante = (idMetodo: string, noEfectivo?: boolean) => {
     if (!pedido) {
       return 0
     }
 
-    const totalPagado = metodosPago.reduce((acc, metodo) => {
-      if (metodo.metodoPago.id !== idMetodo) {
-        return acc + metodo.monto
-      }
-      return acc
-    }, 0)
+    let totalPagado = 0
 
-    return calcularTotal() - totalPagado
+    if (!noEfectivo) {
+      totalPagado = metodosPago.reduce((acc, metodo) => {
+        if (metodo.metodoPago.id !== idMetodo) {
+          return acc + metodo.monto
+        }
+        return acc
+      }, 0)
+    } else {
+      totalPagado = metodosPago.reduce((acc, metodo) => {
+        if (
+          metodo.metodoPago.id !== idMetodo &&
+          metodo.metodoPago.nombre !== "Efectivo"
+        ) {
+          return acc + metodo.monto
+        }
+        return acc
+      }, 0)
+    }
+
+    // console.log("Total pagado:", totalPagado)
+
+    const restante = Number(calcularTotal().toFixed(2)) - totalPagado
+
+    return restante
   }
 
   const handlePaymentConfirm = (amount: number) => {
@@ -419,10 +494,11 @@ export default function MetodoPagoClient({
 
   const calcularVueltoParcial = () => {
     const totalPagado = metodosPago.reduce((acc, metodo) => {
-      return acc + metodo.monto
+      const monto = isNaN(metodo.monto) ? 0 : metodo.monto
+      return acc + monto
     }, 0)
 
-    return totalPagado - calcularTotal()
+    return totalPagado - Number(calcularTotal().toFixed(2))
   }
 
   const total = calcularTotal()
@@ -455,7 +531,11 @@ export default function MetodoPagoClient({
           paddingLeft: "60px",
         }}
       >
-        <BackButton onClick={ () => {window.location.href = '/checkout?step=direccion'}} />
+        <BackButton
+          onClick={() => {
+            window.location.href = "/checkout?step=direccion"
+          }}
+        />
       </div>
 
       <h1
@@ -486,7 +566,7 @@ export default function MetodoPagoClient({
             gap: "20px",
           }}
         >
-          <CustomRectangle
+          {/* <CustomRectangle
             text="Pago Contraentrega"
             images={[
               {
@@ -511,10 +591,10 @@ export default function MetodoPagoClient({
             selectedImageId={selectedImageId}
             setPaymentAmount={setPaymentAmount}
             hideCircle={true}
-          />
+          /> */}
 
           <PagosParciales
-            text="Pago Dividido (Contraentrega)"
+            text="Pago Contraentrega"
             images={[
               {
                 id: "pagoEfec",
@@ -541,6 +621,7 @@ export default function MetodoPagoClient({
             selectedImageIds={selectedImageIds}
             onAmountChange={handleAmountChange}
             hideCircle={true}
+            errorMessage={errorMessage}
           />
         </div>
 
@@ -571,6 +652,7 @@ export default function MetodoPagoClient({
               canjePuntos={totalPuntosCanje}
               selectedImageIds={selectedImageIds}
               metodosPago={metodosPago}
+              setErrorMessage={setErrorMessage}
             />
           </div>
         )}

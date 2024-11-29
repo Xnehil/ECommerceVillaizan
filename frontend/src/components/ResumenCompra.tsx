@@ -36,6 +36,7 @@ interface ResumenCompraProps {
   canjePuntos: number
   selectedImageIds: string[]
   metodosPago: PedidoXMetodoPago[]
+  setErrorMessage?: (message: string) => void
 }
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
@@ -43,7 +44,6 @@ const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 if (!baseUrl) {
   console.error("NEXT_PUBLIC_MEDUSA_BACKEND_URL is not defined")
 }
-
 
 const ResumenCompra: React.FC<ResumenCompraProps> = ({
   descuento,
@@ -60,14 +60,20 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   canjePuntos,
   selectedImageIds,
   metodosPago,
+  setErrorMessage,
 }) => {
   const [seleccionado, setSeleccionado] = useState(false) // Estado para manejar si está seleccionado
   const [showPopup, setShowPopup] = useState(false) // Estado para mostrar el popup de entrega
   const [showBuscandoPopup, setShowBuscandoPopup] = useState(false)
   const isButtonDisabled =
-    (!selectedImageId && metodosPago.length <= 1) ||
-    (metodosPago.length > 1 && vuelto < 0) ||
-    !seleccionado
+    metodosPago.length < 0 ||
+    vuelto < 0 ||
+    !seleccionado ||
+    (vuelto > 0 &&
+      metodosPago.some(
+        (mp) =>
+          mp.metodoPago.nombre === "Efectivo" && mp.monto == Number(vuelto)
+      )) // Deshabilitar el botón si no hay una imagen seleccionada
   // Deshabilitar el botón si no hay una imagen seleccionada
   const detalles: DetallePedido[] = pedido ? pedido.detalles : []
   const [tooltip, setTooltip] = useState<string | null>(null) // State for tooltip content
@@ -76,18 +82,39 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
   const mostrarCostoEnvio = false
   const { data: session, status } = useSession()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const hasRunOnceAuth = useRef(false);
+  const hasRunOnceAuth = useRef(false)
 
   useEffect(() => {
-    if(status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true;
+    if (status !== "loading" && !hasRunOnceAuth.current) {
+      hasRunOnceAuth.current = true
       if (session?.user?.id) {
-        setIsAuthenticated(true);
+        setIsAuthenticated(true)
       } else {
-        setIsAuthenticated(false);
+        setIsAuthenticated(false)
       }
     }
-  }, [session, status]);
+  }, [session, status])
+
+  useEffect(() => {
+    if (
+      setErrorMessage &&
+      selectedImageIds.length > 0 &&
+      selectedImageIds.includes("pagoEfec")
+    ) {
+      const efectivo = metodosPago.find(
+        (mp) => mp.metodoPago.nombre === "Efectivo"
+      )
+      if (efectivo && vuelto > 0 && efectivo.monto == Number(vuelto)) {
+        setErrorMessage("El vuelto no puede ser igual al pago en efectivo")
+      } else {
+        setErrorMessage("")
+      }
+      return
+    }
+    if (setErrorMessage) {
+      setErrorMessage("")
+    }
+  }, [metodosPago, vuelto, selectedImageIds])
 
   const handleMouseOver = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!isButtonDisabled) {
@@ -99,14 +126,20 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         (selectedImageId || (metodosPago?.length > 1 && vuelto >= 0))
       ) {
         setTooltip("Debes aceptar los términos y condiciones")
-      } else if (metodosPago?.length <= 1 && !selectedImageId && seleccionado) {
+      } else if (metodosPago?.length == 0) {
         setTooltip("Debes seleccionar un método de pago")
-      } else if (metodosPago?.length > 1 && vuelto < 0) {
+      } else if (metodosPago?.length > 0 && vuelto < 0) {
         setTooltip("Debes completar el total a pagar")
       } else if (!seleccionado && metodosPago?.length == 0) {
         setTooltip(
           "Debes seleccionar un método de pago y aceptar los términos y condiciones"
         )
+      } else {
+        const efectivo = metodosPago.find(
+          (mp) => mp.metodoPago.nombre === "Efectivo"
+        )
+        if (efectivo && efectivo.monto == Number(vuelto))
+          setTooltip("El vuelto no puede ser igual al pago en efectivo")
       }
     }
   }
@@ -209,57 +242,23 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         console.log("Métodos de pago anteriores eliminados")
       }
 
-      if (selectedImageId === "pagoEfec") {
-        const responseMetodoPago = await axios.post(
-          `${baseUrl}/admin/metodoPago/nombre`,
-          {
-            nombre: "Pago en Efectivo",
-          }
-        )
-        const responsePedidoXMetodoPago = await axios.post(
-          `${baseUrl}/admin/pedidoXMetodoPago`,
-          {
-            monto: paymentAmount,
-            pedido: pedido,
-            metodoPago: responseMetodoPago.data.metodoPago,
-          }
-        )
-
-        if (responseMetodoPago.data && responsePedidoXMetodoPago.data) {
-          console.log("Metodo de pago encontrado")
-          console.log(responseMetodoPago.data)
-          // if (!pedido.pedidosXMetodoPago) {
-          //   pedido.pedidosXMetodoPago = []
-          // }
-          // pedido.pedidosXMetodoPago.push(
-          //   responsePedidoXMetodoPago.data.pedidoXMetodoPago
-          // )
-        } else {
-          throw new Error("Error al guardar el metodo de pago")
-        }
-      }
-
-      if (metodosPago.length > 1) {
+      if (metodosPago.length > 0) {
         metodosPago.forEach(async (metodoPago) => {
-          const responsePedidoXMetodoPago = await axios.post(
-            `${baseUrl}/admin/pedidoXMetodoPago`,
-            {
-              monto: metodoPago.monto,
-              pedido: pedido,
-              metodoPago: metodoPago.metodoPago,
+          if (metodoPago.monto > 0) {
+            const responsePedidoXMetodoPago = await axios.post(
+              `${baseUrl}/admin/pedidoXMetodoPago`,
+              {
+                monto: metodoPago.monto,
+                pedido: pedido,
+                metodoPago: metodoPago.metodoPago,
+              }
+            )
+            if (responsePedidoXMetodoPago.data) {
+              console.log("Metodo de pago encontrado")
+              console.log(responsePedidoXMetodoPago.data)
+            } else {
+              throw new Error("Error al guardar el metodo de pago")
             }
-          )
-          if (responsePedidoXMetodoPago.data) {
-            console.log("Metodo de pago encontrado")
-            console.log(responsePedidoXMetodoPago.data)
-            // if (!pedido.pedidosXMetodoPago) {
-            //   pedido.pedidosXMetodoPago = []
-            // }
-            // pedido.pedidosXMetodoPago.push(
-            //   responsePedidoXMetodoPago.data.pedidoXMetodoPago
-            // )
-          } else {
-            throw new Error("Error al guardar el metodo de pago")
           }
         })
       }
@@ -435,40 +434,43 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
         <span style={{ color: "black" }}>Total</span>
         <span style={{ color: "#B88E2F" }}>S/ {total.toFixed(2)}</span>
       </div>
-      
+
       {/* Mostrar CANJES DE PUNTOS*/}
       {isAuthenticated && (
-        <><hr style={{ margin: "10px 0" }} /><div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginTop: "5px",
-          }}
-        >
-          <div className="flex items-center gap-x-1">
-            <span>Puntos Canjeables</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
-                  i
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="w-full break-words">
-                    Obtendrás los Puntos Canjeables después de que un
-                    Administrador confirme el pago del pedido. Recuerda que los
-                    puntos vencen cada 3 meses.
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+        <>
+          <hr style={{ margin: "10px 0" }} />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginTop: "5px",
+            }}
+          >
+            <div className="flex items-center gap-x-1">
+              <span>Puntos Canjeables</span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger className="flex items-center justify-center h-full px-2 py-1 text-xs bg-gray-200 rounded-full">
+                    i
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="w-full break-words">
+                      Obtendrás los Puntos Canjeables después de que un
+                      Administrador confirme el pago del pedido. Recuerda que
+                      los puntos vencen cada 3 meses.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <span>{canjePuntos}</span>
           </div>
-          <span>{canjePuntos}</span>
-        </div></>
+        </>
       )}
 
       <hr style={{ margin: "10px 0" }} />
       {/* Mostrar paymentAmount si está presente */}
-      {selectedImageId === "pagoEfec" && paymentAmount !== null && (
+      {/* {selectedImageId === "pagoEfec" && paymentAmount !== null && (
         <>
           <div
             style={{
@@ -492,9 +494,9 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           </div>
           <hr style={{ margin: "10px 0" }} />
         </>
-      )}
+      )} */}
 
-      {metodosPago.length > 1 && (
+      {metodosPago.length > 0 && (
         <div>
           <div
             style={{
@@ -547,6 +549,22 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
               <hr style={{ margin: "10px 0" }} />
             </>
           )}
+
+          {vuelto < 0 && (
+            <>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "5px",
+                }}
+              >
+                <span>Monto restante</span>
+                <span>S/ {(vuelto * -1).toFixed(2)}</span>
+              </div>
+              <hr style={{ margin: "10px 0" }} />
+            </>
+          )}
         </div>
       )}
 
@@ -566,7 +584,12 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           onClick={toggleSeleccion}
         />
         <span>He leído y acepto los&nbsp;</span>
-        <a href="/terminos" target="_blank" rel="noopener noreferrer" style={{ cursor: "pointer", textDecoration: "underline" }}>
+        <a
+          href="/terminos"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ cursor: "pointer", textDecoration: "underline" }}
+        >
           términos y condiciones
         </a>
       </div>
@@ -575,8 +598,13 @@ const ResumenCompra: React.FC<ResumenCompraProps> = ({
           Tu data personal será usada para mejorar tu experiencia en esta
           página, para otros propósitos revisar la{" "}
         </span>
-        <a href="/politicaprivacidad" target="_blank" rel="noopener noreferrer" style={{ cursor: "pointer", textDecoration: "underline" }}>
-            Política de Privacidad
+        <a
+          href="/politicaprivacidad"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ cursor: "pointer", textDecoration: "underline" }}
+        >
+          Política de Privacidad
         </a>
       </div>
 
