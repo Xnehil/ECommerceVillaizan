@@ -42,7 +42,7 @@ export default function ProductActions({
   const [isAdding, setIsAdding] = useState(false)
   const { data: session, status } = useSession()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const hasRunOnceAuth = useRef(false);
+  //const hasRunOnceAuth = useRef(false);
 
   const countryCode = useParams().countryCode as string
 
@@ -174,8 +174,8 @@ export default function ProductActions({
   }
 
   useEffect(() => {
-    if(status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true;
+    if(status !== "loading" /*&& !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true;
       if (session?.user?.id) {
         setIsAuthenticated(true);
       } else {

@@ -41,11 +41,11 @@ export default function Home() {
 
   const currentDay = getCurrentDay()
   const hasRunOnce = useRef(false)
-  const hasRunOnceAuth = useRef(false)
+  //const hasRunOnceAuth = useRef(false)
 
   useEffect(() => {
-    if (status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true
+    if (status !== "loading" /*&& !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true
       if (session?.user?.id) {
         setIsAuthenticated(true)
       } else {

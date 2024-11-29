@@ -26,7 +26,7 @@ export default function ProductDetail() {
   const { data: session, status } = useSession()
   const [existenPuntos, setExistenPuntos] = useState<boolean>(false)
   const [puntos, setPuntos] = useState<number>(0)
-  const hasRunOnceAuth = useRef(false)
+  //const hasRunOnceAuth = useRef(false)
   const [outOfSchedule, setOutOfSchedule] = useState(false)
 
   const fetchCarrito = async (): Promise<{
@@ -145,8 +145,8 @@ export default function ProductDetail() {
   }, [id])
 
   useEffect(() => {
-    if (status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true
+    if (status !== "loading" /*&& !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true
       if (session?.user?.id) {
         setIsAuthenticated(true)
         console.log("Authenticated")

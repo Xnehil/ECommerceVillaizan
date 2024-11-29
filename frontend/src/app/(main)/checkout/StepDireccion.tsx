@@ -82,7 +82,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
 
   const [googleLoaded, setGoogleLoaded] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const hasRunOnceAuth = useRef(false)
+  //const hasRunOnceAuth = useRef(false)
   const [mensajeErrorValidacion, setMensajeErrorValidacion] = useState("")
   const [showErrorValidacion, setShowErrorValidacion] = useState(false)
   const [formValidity, setFormValidity] = useState<boolean>(false);
@@ -120,8 +120,8 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
   }, [nombre, numeroDni, telefono, calle, referencia, selectedLocation, numeroRuc, selectedAddressId, comprobante]); // Add dependencies as needed
 
   useEffect(() => {
-    if (status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true
+    if (status !== "loading" /*&& !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true
       if (session?.user?.id) {
         setIsAuthenticated(true)
       } else {

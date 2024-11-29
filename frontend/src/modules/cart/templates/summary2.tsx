@@ -26,7 +26,7 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormVa
   const [loading, setLoading] = useState<boolean>(true); // For loading state
   const { data: session, status } = useSession();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const hasRunOnceAuth = useRef(false);
+  //const hasRunOnceAuth = useRef(false);
   const [isDisabled, setIsDisabled] = useState<boolean>(false);
   const [clickedWhenDisabled, setClickedWhenDisabled] = useState<boolean>(false); // Track click when disabled
 
@@ -43,8 +43,8 @@ const Summary2 = ({ carrito, handleSubmit, isFormValid, showWarnings,checkFormVa
   , [isFormValid, subtotal, minimo]);
 
   useEffect(() => {
-    if(status !== "loading" && !hasRunOnceAuth.current) {
-      hasRunOnceAuth.current = true;
+    if(status !== "loading" /*&& !hasRunOnceAuth.current*/) {
+      //hasRunOnceAuth.current = true;
       if (session?.user?.id) {
         setIsAuthenticated(true);
       } else {
