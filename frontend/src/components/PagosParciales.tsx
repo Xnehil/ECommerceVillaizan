@@ -182,11 +182,16 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
                       onChange={(e) => {
                         let value = e.target.value;
 
-                        // Ensure only valid numbers with one decimal
+                        // Ensure only valid numbers with one decimal or empty input
                         if (/^\d*\.?\d{0,1}$/.test(value)) {
-                          const numericValue = parseFloat(value);
-                          if (!isNaN(numericValue)) {
-                            onAmountChange && onAmountChange(image.id, numericValue);
+                          if (value === "") {
+                            // Handle empty input
+                            onAmountChange && onAmountChange(image.id, 0);
+                          } else {
+                            const numericValue = parseFloat(value);
+                            if (!isNaN(numericValue)) {
+                              onAmountChange && onAmountChange(image.id, numericValue);
+                            }
                           }
                         }
                       }}
