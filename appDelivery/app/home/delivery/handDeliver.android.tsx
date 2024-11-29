@@ -27,22 +27,23 @@ import {
   PedidoXMetodoPago,
   Venta,
 } from "@/interfaces/interfaces";
-import { Link, router } from "expo-router";
+import { Link, router, useRouter } from "expo-router";
 import {
   getCurrentDelivery,
   getUserData,
   storeCurrentDelivery,
 } from "@/functions/storage";
 
-let BASE_URL = '';
+let BASE_URL = "";
 if (Platform.OS === "web") {
-  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
-}
-else if(Platform.OS === "android") {
-  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL || process.env.EXPO_PUBLIC_BASE_URL || '';
-}
-else {
-  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || "";
+} else if (Platform.OS === "android") {
+  BASE_URL =
+    process.env.EXPO_PUBLIC_BASE_URL_MOVIL ||
+    process.env.EXPO_PUBLIC_BASE_URL ||
+    "";
+} else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || "";
 }
 
 import { useRef } from "react";
@@ -55,8 +56,6 @@ import {
   CameraType,
   useCameraPermissions,
 } from "expo-camera";
-
-
 
 const EntregarPedido = () => {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -101,15 +100,14 @@ const EntregarPedido = () => {
   const takePhoto = async (id: string) => {
     if (cameraRef.current) {
       const photo = await cameraRef.current.takePictureAsync();
-      if (currentImageType == "pedido"){
+      if (currentImageType == "pedido") {
         setFotoPedido(photo.uri);
-      }
-      else if (currentImageType == "pago"){
+      } else if (currentImageType == "pago") {
         setFotosPago((prev) => ({ ...prev, [id]: photo.uri }));
-        }
+      }
       setIsCameraActive(false);
       setImageOptionsVisible(false);
-      console.log("photito",photo);
+      console.log("photito", photo);
     } else {
       Alert.alert("Error", "No se pudo capturar la foto");
     }
@@ -388,11 +386,7 @@ const EntregarPedido = () => {
             <Text style={styles.modalTitle}>Seleccionar Imagen</Text>
 
             {isCameraActive ? (
-              <CameraView
-                style={styles.camera}
-                facing={facing}
-                ref={cameraRef}
-              >
+              <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
                 <View style={styles.buttonContainer2}>
                   <TouchableOpacity
                     style={styles.camerabutton}
@@ -421,7 +415,6 @@ const EntregarPedido = () => {
                 >
                   <Text style={styles.optionButtonText}>Tomar Foto</Text>
                 </TouchableOpacity>
-                
               </>
             )}
 
@@ -499,7 +492,7 @@ const EntregarPedido = () => {
       if (tipo === "pedido") {
         // Manejar imagen de pedido
         if (!fotoPedido) throw new Error("No hay imagen de pedido disponible.");
-  
+
         const fileUrl = await uploadImage(fotoPedido, `${tipo}-${id}`);
         mostrarMensaje("Imagen de pedido enviada con éxito");
         return { [id]: fileUrl }; // Retorna un objeto con la URL de la imagen del pedido
@@ -507,28 +500,39 @@ const EntregarPedido = () => {
         // Manejar imágenes de pago
         if (Object.keys(fotosPago).length === 0)
           throw new Error("No hay imágenes de métodos de pago disponibles.");
-  
+
         const urls: Record<string, string> = {};
-  
+
         for (const [idMetodoPago, imagenUri] of Object.entries(fotosPago)) {
           if (imagenUri) {
-            console.log("Enviando imagen de método de pago", idMetodoPago, ", ", imagenUri);
-            const fileUrl = await uploadImage(imagenUri, `${tipo}-${idMetodoPago}`);
+            console.log(
+              "Enviando imagen de método de pago",
+              idMetodoPago,
+              ", ",
+              imagenUri
+            );
+            const fileUrl = await uploadImage(
+              imagenUri,
+              `${tipo}-${idMetodoPago}`
+            );
             urls[idMetodoPago] = fileUrl; // Asigna la URL al método de pago correspondiente
           }
         }
-  
+
         mostrarMensaje("Imágenes de métodos de pago enviadas con éxito");
         return urls; // Retorna un objeto con las URLs generadas para cada método de pago
       }
     } catch (error) {
-      console.error(`Error al enviar la imagen de ${tipo}: ${error}`, "confirmacion");
+      console.error(
+        `Error al enviar la imagen de ${tipo}: ${error}`,
+        "confirmacion"
+      );
       mostrarMensaje(`Error al enviar la imagen de ${tipo}.`, "confirmacion");
       setIsLoading(false);
       return null; // Retorna null en caso de error
     }
   };
-  
+
   // Función auxiliar para subir una imagen a la API
   const uploadImage = async (imagenUri: string, fileName: string) => {
     try {
@@ -537,19 +541,19 @@ const EntregarPedido = () => {
       const blob = await response.blob();
       console.log("Blob generado:", blob);
       console.log("Nombre del archivo:", fileName);
-      
+
       const file = new File([blob], `${fileName}.png`, { type: blob.type });
-  
+
       const formData = new FormData();
       formData.append("file", file);
       formData.append("fileName", `${fileName}.png`);
-  
+
       if (fileName.startsWith("pago")) {
         formData.append("folderId", "1z4G9rU8EW9whmnrrVcaL76an-8vM-Ncv");
       } else if (fileName.startsWith("pedido")) {
         formData.append("folderId", "1JZLvX-20RWZdLdOKFMLA-5o25GSI4cNb");
       }
-  
+
       const responseUpload = await axios.post(`${BASE_URL}/imagenes`, formData);
       return responseUpload.data.fileUrl; // Retorna la URL generada
     } catch (error) {
@@ -557,7 +561,7 @@ const EntregarPedido = () => {
       throw error;
     }
   };
-  
+
   const handleCancelEntrega = () => {
     setModalCancelVisible(true); // Mostrar el modal de cancelación
   };
@@ -594,7 +598,11 @@ const EntregarPedido = () => {
         fotosPagoNecesarias === undefined ||
         Object.keys(fotosPago).length !== fotosPagoNecesarias
       ) {
-        mostrarMensaje(`Falta foto de todos los métodos de pago (${fotosPagoNecesarias ? fotosPagoNecesarias : ""})`);
+        mostrarMensaje(
+          `Falta foto de todos los métodos de pago (${
+            fotosPagoNecesarias ? fotosPagoNecesarias : ""
+          })`
+        );
         return;
       }
       setIsLoading(true);
@@ -734,7 +742,7 @@ const EntregarPedido = () => {
         await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
           estado: "entregado",
           urlEvidencia: urlPedido,
-          pagado:false,
+          pagado: false,
         });
 
         router.replace({
@@ -853,6 +861,15 @@ const EntregarPedido = () => {
     fetchData();
   }, []);
 
+  const router = useRouter();
+
+  const handlePress = () => {
+    router.push({
+      pathname: "/home/delivery/detalles",
+      params: { id: String(parsedPedido.id) },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.container}>
@@ -904,20 +921,15 @@ const EntregarPedido = () => {
                   No hay detalles del pedido
                 </Text>
               )}
-              <Link
-                href={{
-                  pathname: "/home/delivery/detalles",
-                  params: { id: String(parsedPedido.id) },
-                }}
-                asChild
-                id={String(parsedPedido.id)}
-              >
-                <Pressable>
+              <View>
+                <Pressable onPress={handlePress}>
                   {({ pressed }) => (
-                    <Text style={styles.linkVerMas}>Ver detalles</Text>
+                    <Text style={styles.linkVerMas}>
+                      {pressed ? "Cargando..." : "Ver detalles"}
+                    </Text>
                   )}
                 </Pressable>
-              </Link>
+              </View>
             </View>
 
             <TouchableOpacity
@@ -1581,21 +1593,21 @@ const styles = StyleSheet.create({
   swipeButtonContainer: {
     marginTop: 30,
   },
-    modalContainer: {
-      flex: 1,
-      justifyContent: "center",
-      backgroundColor: "white",
-      alignContent: "center",
-      alignItems: "center",
-      padding: 10,
-      marginHorizontal: 10,
-      borderRadius: 10,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      elevation: 5,
-    },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "white",
+    alignContent: "center",
+    alignItems: "center",
+    padding: 10,
+    marginHorizontal: 10,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
   modalTitle: {
     fontSize: 24,
     fontWeight: "bold",
