@@ -32,12 +32,21 @@ import {
   getUserData,
   storeCurrentDelivery,
 } from "@/functions/storage";
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 import { useRef } from "react";
 import { Picker } from "@react-native-picker/picker";
 import * as Linking from "expo-linking";
 import { Platform } from "react-native";
 
+let BASE_URL = ""
+if (Platform.OS === "web") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL|| '';
+}
+else if(Platform.OS === "android") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL|| process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
 const EntregarPedido = () => {
   const route = useRoute();
   const { pedido } = (route.params as { pedido?: string }) || { pedido: null };

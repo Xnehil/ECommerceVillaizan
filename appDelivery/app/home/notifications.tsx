@@ -5,7 +5,18 @@ import axios from "axios";
 import { Notificacion } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
 import { FontAwesome } from "@expo/vector-icons";
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL; 
+import { Platform } from "react-native";
+
+let BASE_URL = '';
+if (Platform.OS === "web") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else if(Platform.OS === "android") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL || process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
 
 export default function Notificaciones() {
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);

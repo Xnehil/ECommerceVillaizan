@@ -121,7 +121,8 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
               style={{
                 display: "flex",
                 flexDirection: "column",
-                width: "80px",
+                width: "100px", // Ensures enough space for content
+                alignItems: "center", // Center-align content for consistency
               }}
             >
               <div
@@ -129,7 +130,7 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
                 onMouseEnter={() => handleMouseEnter(index)}
                 onMouseLeave={handleMouseLeave}
                 onClick={() => {
-                  onImageClick(image.id)
+                  onImageClick(image.id);
                 }}
               >
                 <img
@@ -151,23 +152,50 @@ const PagosParciales: React.FC<PagosParcialesProps> = ({
               {/* Render the input field outside the imageWrapper */}
               {selectedImageIds.includes(image.id) &&
                 (selectedImageIds.length > 1 || image.id === "pagoEfec") && (
-                  <input
-                    type="number"
-                    style={styles.input}
-                    placeholder="Monto"
-                    value={
-                      metodosPago.find(
-                        (metodo) =>
-                          metodo.metodoPago.id === getMetodoPagoId(image.id)
-                      )?.monto
-                    }
-                    onChange={(e) => {
-                      const value = parseFloat(e.target.value)
-                      onAmountChange && onAmountChange(image.id, value)
-                    }}
-                  />
+                  <>
+                    <div
+                      style={{
+                        fontSize: "12px", // Small but visible text
+                        marginTop: "8px", // Adds space between the message and the image
+                        marginBottom: "3px", // Reduces space between the message and the input
+                        wordBreak: "break-word", // Ensure text wraps correctly
+                        textAlign: "center", // Center the text
+                      }}
+                    >
+                      Monto en S/
+                    </div>
+                    <input
+                      type="number"
+                      step="0.1" // Allows increments of 0.1
+                      style={{
+                        ...styles.input,
+                        width: "90%", // Ensure the input fits comfortably
+                        maxWidth: "120px", // Prevent the input from becoming too wide
+                        textAlign: "center", // Center the input value
+                      }}
+                      placeholder="Monto"
+                      value={
+                        metodosPago.find(
+                          (metodo) => metodo.metodoPago.id === getMetodoPagoId(image.id)
+                        )?.monto.toString() || ""
+                      }
+                      onChange={(e) => {
+                        let value = e.target.value;
+
+                        // Ensure only valid numbers with one decimal
+                        if (/^\d*\.?\d{0,1}$/.test(value)) {
+                          const numericValue = parseFloat(value);
+                          if (!isNaN(numericValue)) {
+                            onAmountChange && onAmountChange(image.id, numericValue);
+                          }
+                        }
+                      }}
+                    />
+                  </>
                 )}
             </div>
+          
+          
           ))}
         </div>
       </div>
