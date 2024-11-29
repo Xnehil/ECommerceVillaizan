@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, TextInput, Button, StyleSheet, Text, ActivityIndicator } from "react-native";
 import * as Google from "expo-auth-session/providers/google";
 import { useAuthRequest } from "expo-auth-session";
@@ -7,7 +7,18 @@ import axios from "axios";
 import { UsuarioResponse, UsuariosResponse } from "@/interfaces/interfaces";
 import { router } from "expo-router";
 import { getUserData, storeUserData } from "@/functions/storage";
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+import { Platform } from "react-native";
+
+let BASE_URL = '';
+if (Platform.OS === "web") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else if(Platform.OS === "android") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL || process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
@@ -119,7 +130,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     marginBottom: 16,
     textAlign: "center",
-    color: "white",
+    color: "black",
   },
   input: {
     height: 40,

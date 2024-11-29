@@ -12,8 +12,18 @@ import { useRouter } from "expo-router";
 import axios from "axios";
 import { Motorizado, InventarioMotorizado } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
+import { Platform } from "react-native";
 
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
+let BASE_URL = '';
+if (Platform.OS === "web") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else if(Platform.OS === "android") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL || process.env.EXPO_PUBLIC_BASE_URL || '';
+}
+else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+}
 
 export default function FlujoInicialScreen() {
   const [motorizado, setMotorizado] = useState<Motorizado | null>(null);

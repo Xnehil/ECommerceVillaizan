@@ -325,21 +325,23 @@ const MapComponent: React.FC<MapProps> = ({
             );
           }
           // En modo múltiple, mostrar todos
-          return true;
-        })
-        .map((loc) => (
-          <Marker
+            return true;
+          })
+          .map((loc, index) => (
+            <Marker
             key={loc.id}
             position={{ lat: loc.lat, lng: loc.lng }}
             icon={{
               url:
-                mode && pedidoSeleccionado?.id === loc.id
-                  ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Azul para el seleccionado
-                  : "http://maps.google.com/mapfiles/ms/icons/red-dot.png", // Rojo para otros en modo múltiple
+              index === 0
+                ? "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" // Azul para el primer pedido
+                : pedidoSeleccionado?.id === loc.id
+                ? "http://maps.google.com/mapfiles/ms/icons/red-dot.png" // Rojo para el seleccionado
+                : "http://maps.google.com/mapfiles/ms/icons/green-dot.png", // Verde para otros
             }}
-          />
-        ))}
-   View style {error && (
+            />
+          ))}
+         View style {error && (
   <View
     style={{
       position: "absolute",
