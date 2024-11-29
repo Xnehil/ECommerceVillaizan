@@ -18,6 +18,13 @@ import { ContenidoEducativo } from "src/models/ContenidoEducativo";
  *   get:
  *     summary: Lista todos los contenidos educativos con paginación
  *     tags: [ContenidosEducativos]
+ *     parameters:
+ *       - in: query
+ *         name: tipoContenido
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Tipo de contenido educativo para filtrar los resultados
  *     responses:
  *       200:
  *         description: Una lista de contenidos educativos
@@ -31,16 +38,20 @@ import { ContenidoEducativo } from "src/models/ContenidoEducativo";
  *                   items:
  *                     $ref: '#/components/schemas/ContenidoEducativo'
  */
-  export const GET = async (
-    req: MedusaRequest,
-    res: MedusaResponse
-  ) => {
-    const contenidoEducativoService: ContenidoEducativoService = req.scope.resolve("contenidoeducativoService");
+export const GET = async (
+  req: MedusaRequest,
+  res: MedusaResponse
+) => {
+  const contenidoEducativoService: ContenidoEducativoService = req.scope.resolve("contenidoeducativoService");
+  
+  const { tipoContenido } = req.query as { tipoContenido?: string };
 
-    res.json({
-      contenidoEducativos: await contenidoEducativoService.listarConPaginacion(),
-    })
-  }
+  const contenidos = await contenidoEducativoService.listar({ tipoContenido });
+
+  res.json({
+    contenidoEducativos: contenidos,
+  })
+}
 
   /**
  * @swagger
