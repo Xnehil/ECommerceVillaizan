@@ -327,10 +327,10 @@ const MapComponent: React.FC<MapProps> = ({
               coordinate={{ latitude: loc.lat, longitude: loc.lng }}
               image={
           index === 0
-            ? require('@/assets/blue-dot.png') // Azul para el primer pedido
+            ? require('@/assets/images/blue-dot.png') // Azul para el primer pedido
             : pedidoSeleccionado?.id === loc.id
-            ? require('@/assets/red-dot.png') // Rojo para el seleccionado
-            : require('@/assets/green-dot.png') // Verde para otros
+            ? require('@/assets/images/red-dot.png') // Rojo para el seleccionado
+            : require('@/assets/images/green-dot.png') // Verde para otros
               }
             />
           ))}
