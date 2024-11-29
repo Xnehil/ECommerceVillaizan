@@ -12,6 +12,7 @@ import {
 import * as Progress from "react-native-progress";
 import { Link, useRouter } from "expo-router";
 import axios from "axios";
+import * as Location from 'expo-location';
 import {
   Usuario,
   Pedido,
@@ -249,6 +250,36 @@ export default function Entregas() {
       }
     });
   }, [onMessage]);
+  const [location, setLocation] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  useEffect(() => {
+    const getLocation = async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.log("Permiso de ubicación denegado");
+          return;
+        }
+
+        let location_async = await Location.getCurrentPositionAsync({});
+        setLocation({
+          latitude: location_async.coords.latitude,
+          longitude: location_async.coords.longitude,
+        });
+      } catch (error) {
+        console.log("Error al obtener la ubicación:", error);
+      }
+    };
+
+    getLocation();
+    const locationInterval = setInterval(getLocation, 10000);
+
+    return () => {
+      clearInterval(locationInterval);
+    };
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -266,7 +297,13 @@ export default function Entregas() {
 
       {!verHistorial && (
         <View style={styles.containerMitad}>
-          
+           <Mapa
+            location={location}
+            //location={stableLocation}
+            pedidoSeleccionado={pedidoSeleccionado}
+            pedidos={pedidosAceptados}
+            mode={modoMultiple}
+          />
         </View>
       )}
 
