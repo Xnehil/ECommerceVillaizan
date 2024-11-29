@@ -23,6 +23,7 @@ import { Pedido } from "@/types/PaquetePedido";
 import InformacionCliente from "@/app/pedidos/[id]/informacionCliente";
 import InformacionDireccion from "@/app/pedidos/[id]/informacionDireccion";
 import InformacionPedido from "@/app/pedidos/[id]/informacionPedido";
+import { useSidebar } from "@/contexts/SidebarContext";
 
 interface PedidoPageProps {
   params: {
@@ -40,6 +41,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
   const a = useRef(0);
 
   const { toast } = useToast();
+  const {decrementPendingOrders} = useSidebar();
 
   useEffect(() => {
     const fetchProductByNombre = async () => {
@@ -96,6 +98,7 @@ const PedidoPage: React.FC<PedidoPageProps> = ({ params: { id } }) => {
         throw new Error("Error al actualizar el pedido");
       }
       console.log("Pedido saved", response.data);
+      decrementPendingOrders();
       pedido.current.estado = "verificado";
 
       try {
