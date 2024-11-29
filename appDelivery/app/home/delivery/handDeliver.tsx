@@ -621,7 +621,7 @@ const EntregarPedido = () => {
       const motivo =
         motivoCancelacion === "Otro" ? otroMotivo : motivoCancelacion;
       await axios.put(`${BASE_URL}/pedido/${parsedPedido.id}`, {
-        estado: "solicitado",
+        estado: "manual",
         motorizado: null,
         motivoCancelacion: motivo,
       });
