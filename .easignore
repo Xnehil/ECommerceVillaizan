@@ -1,0 +1,14 @@
+# Ignore .github, adminfront, backendecommerce, frontend and sql directories
+.github
+adminfront
+backendecommerce
+sql
+frontend
+
+.github/**
+adminfront/**
+backendecommerce/**
+sql/**
+frontend/**
+
+appDelivery/.expo 

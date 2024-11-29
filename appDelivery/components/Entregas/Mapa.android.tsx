@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import MapView, { Marker, Polyline, Circle, LatLng, Region, PROVIDER_GOOGLE } from "react-native-maps";
 import { Coordinate, Pedido, PedidoLoc } from "@/interfaces/interfaces";
 import { Button } from "react-native-elements";
-import { View,Text } from "react-native";
+import { View,Text, TouchableOpacity } from "react-native";
 import axios from "axios";
 
 interface MapProps {
@@ -243,9 +243,62 @@ const MapComponent: React.FC<MapProps> = ({
   const handleRegionChangeComplete = (region: Region) => {
     if (region && region.longitudeDelta) {
       const newRadius = calculateCircleRadius(region.longitudeDelta);
+      console.log("New radius:", newRadius);
       setCircleRadius(newRadius);
     }
   };
+
+  const handleZoomChanged = async () => {
+    if (mapRef.current) {
+      const boundaries = await mapRef.current.getMapBoundaries();
+      if (boundaries) {
+        const { northEast, southWest } = boundaries;
+        const newRadius = calculateCircleRadius2(northEast, southWest);
+        setCircleRadius(newRadius);
+      }
+    }
+  };
+  
+  const calculateCircleRadius2 = (northEast: { latitude: number; longitude: number }, southWest: { latitude: number; longitude: number }) => {
+    // Calcula el rango visible en kilómetros
+    const latDistance = haversineDistance(
+      { latitude: northEast.latitude, longitude: 0 },
+      { latitude: southWest.latitude, longitude: 0 }
+    );
+    const lngDistance = haversineDistance(
+      { latitude: 0, longitude: northEast.longitude },
+      { latitude: 0, longitude: southWest.longitude }
+    );
+  
+    // Toma el menor rango visible (ancho o alto del mapa) y ajusta proporcionalmente
+    const visibleRange = Math.min(latDistance, lngDistance);
+  
+    // Define un rango mínimo y máximo para el radio
+    const scaleFactor = 0.05; // Ajusta este valor para calibrar la proporcionalidad
+    const minRadius = 5; // En metros
+    const maxRadius = 500000; // En metros
+  
+    const calculatedRadius = visibleRange * 1000 * scaleFactor; // Convierte a metros y escala
+    return Math.min(Math.max(calculatedRadius, minRadius), maxRadius);
+  };
+  
+  const haversineDistance = (point1: { latitude: number; longitude: number }, point2: { latitude: number; longitude: number }) => {
+    const R = 6371; // Radio de la Tierra en kilómetros
+    const toRad = (angle: number) => (angle * Math.PI) / 180;
+  
+    const dLat = toRad(point2.latitude - point1.latitude);
+    const dLng = toRad(point2.longitude - point1.longitude);
+  
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(point1.latitude)) * Math.cos(toRad(point2.latitude)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
+    return R * c; // Distancia en kilómetros
+  };
+  
+  
 
   useEffect(() => {
     if (mapRef.current && location) {
@@ -265,6 +318,10 @@ const MapComponent: React.FC<MapProps> = ({
       });
     }
   }, [location, pedidoLocations]);
+  
+  const handleButtonPress = () => {
+    setShowRoutes(!showRoutes);
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -277,7 +334,8 @@ const MapComponent: React.FC<MapProps> = ({
           latitudeDelta: 0.1922,
           longitudeDelta: 0.1421,
         }}
-        onRegionChangeComplete={handleRegionChangeComplete}
+        
+        onRegionChangeComplete={handleZoomChanged}
       >
         {location && (
           <Circle
@@ -336,7 +394,6 @@ const MapComponent: React.FC<MapProps> = ({
           ))}
       </MapView>
   
-      {/* Move the error View outside the MapView */}
       {error && (
         <View
           style={{
@@ -354,6 +411,23 @@ const MapComponent: React.FC<MapProps> = ({
           <Text style={{ color: 'white' }}>{error}</Text>
         </View>
       )}
+          <TouchableOpacity
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          zIndex: 1000,
+          paddingVertical: 8,
+          paddingHorizontal: 16,
+          backgroundColor: "#4285F4",
+          borderRadius: 4,
+        }}
+        onPress={handleButtonPress}
+      >
+        <Text style={{ color: "white", fontWeight: "bold" }}>
+          {showRoutes ? "Ocultar Rutas" : "Mostrar Rutas"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
