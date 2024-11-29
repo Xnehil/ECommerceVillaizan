@@ -92,7 +92,7 @@ export default async (
         console.info('WebSocket connection closed');
       }
     });
-    ws.send(JSON.stringify({ message: `Bienvenido ${rol} al WebSocket` }));
+    // ws.send(JSON.stringify({ message: `Bienvenido ${rol} al WebSocket` }));
   });
 
 

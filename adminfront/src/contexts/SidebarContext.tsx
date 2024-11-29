@@ -9,6 +9,8 @@ interface SidebarContextType {
   setUnreadNotifications: React.Dispatch<React.SetStateAction<number>>;
   decrementNotificaciones: () => void;
   incrementNotificaciones: () => void;
+  refreshOrders: boolean;
+  setRefreshOrders: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -16,6 +18,7 @@ const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 export const SidebarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [pendingOrders, setPendingOrders] = useState<number>(0);
   const [unreadNotifications, setUnreadNotifications] = useState<number>(0);
+  const [refreshOrders, setRefreshOrders] = useState<boolean>(false);
 
   const decrementPendingOrders = () => {
     setPendingOrders((prev) => Math.max(prev - 1, 0));
@@ -34,7 +37,7 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({ children })
   }
 
   return (
-    <SidebarContext.Provider value={{ pendingOrders, setPendingOrders, decrementPendingOrders, incrementPendingOrders, unreadNotifications, setUnreadNotifications, decrementNotificaciones, incrementNotificaciones }}>
+    <SidebarContext.Provider value={{ pendingOrders, setPendingOrders, decrementPendingOrders, incrementPendingOrders, unreadNotifications, setUnreadNotifications, decrementNotificaciones, incrementNotificaciones, refreshOrders, setRefreshOrders }}>
       {children}
     </SidebarContext.Provider>
   );
