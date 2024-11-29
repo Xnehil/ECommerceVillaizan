@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { GoogleMap, Circle, Marker, Polyline } from "@react-google-maps/api";
 import { Coordinate, Pedido, PedidoLoc } from "@/interfaces/interfaces";
 import { Button } from "react-native-elements";
-import { View,Text } from "react-native";
+import { View,Text, TouchableOpacity } from "react-native";
 
 interface MapProps {
   location: { latitude: number; longitude: number } | null;
@@ -240,6 +240,7 @@ const MapComponent: React.FC<MapProps> = ({
       mapRef.current.fitBounds(bounds);
     }
   }, [location, pedidoLocations, mode]);
+
 
   return (
     <GoogleMap

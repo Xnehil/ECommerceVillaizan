@@ -12,7 +12,7 @@ import {
 import * as Progress from "react-native-progress";
 import { Link, useRouter } from "expo-router";
 import axios from "axios";
-import * as Location from 'expo-location';
+import * as Location from "expo-location";
 import {
   Usuario,
   Pedido,
@@ -28,15 +28,16 @@ import { geneticAlgorithm } from "@/functions/optimalRouteGenetic";
 import { findOptimalRouteForPedidos } from "@/functions/tspAlg";
 import { Platform } from "react-native";
 
-let BASE_URL = '';
+let BASE_URL = "";
 if (Platform.OS === "web") {
-  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
-}
-else if(Platform.OS === "android") {
-  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL || process.env.EXPO_PUBLIC_BASE_URL || '';
-}
-else {
-  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || "";
+} else if (Platform.OS === "android") {
+  BASE_URL =
+    process.env.EXPO_PUBLIC_BASE_URL_MOVIL ||
+    process.env.EXPO_PUBLIC_BASE_URL ||
+    "";
+} else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || "";
 }
 
 export default function Entregas() {
@@ -111,8 +112,8 @@ export default function Entregas() {
     }
   };
 
-   // UseEffect para ejecutar fetchPedidos cada 10 segundos
-   useEffect(() => {
+  // UseEffect para ejecutar fetchPedidos cada 10 segundos
+  useEffect(() => {
     const interval = setInterval(() => {
       fetchPedidos();
     }, 20000); // 10 segundos
@@ -120,7 +121,7 @@ export default function Entregas() {
     // Limpiar el intervalo cuando el componente se desmonte
     return () => clearInterval(interval);
   }, [usuario]);
-  
+
   useEffect(() => {
     getDataMemory();
   }, []);
@@ -174,7 +175,6 @@ export default function Entregas() {
         console.error("No se encontraron pedidos válidos con coordenadas.");
         return;
       }
-
     } catch (error) {
       console.error("Error al obtener los pedidos:", error);
     }
@@ -193,7 +193,8 @@ export default function Entregas() {
     return (
       <View style={styles.pedidoContainer2}>
         <Text style={styles.fechaCreacion}>
-          Fecha de creación: {pedido.creadoEn ? pedido.creadoEn.toLocaleDateString() : 'Fecha no disponible'}
+          Fecha de creación:{" "}
+          {pedido.creadoEn ? new Date(pedido.creadoEn).toLocaleDateString('es-ES') : "Fecha no disponible"}
         </Text>
         <Text style={styles.estado}>Estado: {pedido.estado}</Text>
         <Text style={styles.total}>Total: S/ {pedido.total}</Text>
@@ -206,10 +207,13 @@ export default function Entregas() {
     );
   };
 
-  const PedidoAceptado: React.FC<{ pedido: Pedido; index: number }> = ({ pedido, index }) => {
+  const PedidoAceptado: React.FC<{ pedido: Pedido; index: number }> = ({
+    pedido,
+    index,
+  }) => {
     const isFirstPedido = index === 0;
     const isSelected = pedidoSeleccionado?.id === pedido.id;
-  
+
     return (
       <View
         style={[
@@ -313,7 +317,7 @@ export default function Entregas() {
 
       {!verHistorial && (
         <View style={styles.containerMitad}>
-           <Mapa
+          <Mapa
             //location={location}
             location={stableLocation}
             pedidoSeleccionado={pedidoSeleccionado}
@@ -639,8 +643,8 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   firstPedido: {
-    borderColor: "#3B5998", 
-    backgroundColor: "#5A9BD4", 
+    borderColor: "#3B5998",
+    backgroundColor: "#5A9BD4",
     borderWidth: 2,
   },
   firstPedidoSelected: {
