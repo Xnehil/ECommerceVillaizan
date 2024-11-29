@@ -154,7 +154,8 @@ class ProductoService extends TransactionBaseService {
           return a.nombre.localeCompare(b.nombre);
         });
 
-        return productos;
+        //verifica que el stock sea mayor a 0, si no lo es, lo elimina del array
+        return productos.filter(producto => producto.inventarios.reduce((acc, inv) => acc + inv.stock, 0) > 0);
       }
       
     
