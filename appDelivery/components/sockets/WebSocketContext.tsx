@@ -1,10 +1,24 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import useWebSocket from "react-use-websocket";
-import { Notificacion} from "@/interfaces/interfaces";
+import { Notificacion } from "@/interfaces/interfaces";
 import { getUserData } from "@/functions/storage";
 import axios from "axios";
-const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
-const WS_URL = process.env.EXPO_PUBLIC_WS_URL;
+import { Platform } from "react-native";
+
+let BASE_URL = '';
+let WS_URL = '';
+if (Platform.OS === "web") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+  WS_URL = process.env.EXPO_PUBLIC_WS_URL || '';
+}
+else if(Platform.OS === "android") {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL_MOVIL || process.env.EXPO_PUBLIC_BASE_URL || '';
+  WS_URL = process.env.EXPO_PUBLIC_WS_URL_MOVIL || process.env.EXPO_PUBLIC_WS_URL || '';
+}
+else {
+  BASE_URL = process.env.EXPO_PUBLIC_BASE_URL || '';
+  WS_URL = process.env.EXPO_PUBLIC_WS_URL || '';
+}
 
 interface WebSocketContextType {
   sendUbicacion: (lat: number, lng: number) => void;
@@ -15,9 +29,14 @@ interface WebSocketContextType {
 const WebSocketContext = createContext<WebSocketContextType | null>(null);
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { sendMessage, lastMessage } = useWebSocket(WS_URL ?? "", { shouldReconnect: () => true });
+  const { sendMessage, lastMessage, readyState } = useWebSocket(WS_URL ?? "", {
+    shouldReconnect: () => true,
+    onOpen: () => {
+      console.log("WebSocket connection established");
+    },
+  });
   const callbacksRef = useRef<((data: any) => void)[]>([]);
-  
+
   useEffect(() => {
     const checkWSURL = async () => {
       if (!WS_URL) {
@@ -30,7 +49,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
     checkWSURL();
   }, [WS_URL]);
-  
+
   // Manejar mensajes entrantes
   useEffect(() => {
     if (lastMessage !== null) {
@@ -49,7 +68,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       callbacksRef.current = callbacksRef.current.filter((cb) => cb !== callback);
     };
   }, []);
-  
 
   const sendUbicacion = useCallback(
     (lat: number, lng: number) => {
@@ -91,19 +109,17 @@ export const useWebSocketContext = () => {
 const createNotification = async (error: string): Promise<Notificacion | null> => {
   const user = await getUserData();
   if (user) {
-  return {
-    id: "", 
-    estaActivo: true,
-    asunto: "WebSocket Connection Error",
-    descripcion: error,
-    tipoNotificacion: "error",
-    leido: false,
-    sistema: "WebSocketService",
-    usuario: user ,
-  };
-  }
-  else {
-    return null
+    return {
+      id: "",
+      estaActivo: true,
+      asunto: "WebSocket Connection Error",
+      descripcion: error,
+      tipoNotificacion: "error",
+      leido: false,
+      sistema: "WebSocketService",
+      usuario: user,
+    };
+  } else {
+    return null;
   }
 };
-
