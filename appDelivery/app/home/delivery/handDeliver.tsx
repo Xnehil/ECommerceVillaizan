@@ -666,8 +666,8 @@ const EntregarPedido = () => {
         // Subir imágenes del pedido y pagos
         let urlPedido, urlPago;
         try {
-          urlPedido = await enviarImagen(parsedPedido.id, "pedido");
-          urlPago = await enviarImagen(parsedPedido.id, "pago");
+          urlPedido = await enviarImagen(pedidoCompleto.id, "pedido");
+          urlPago = await enviarImagen(pedidoCompleto.id, "pago");
         } catch (error) {
           console.error("Error al subir imágenes:", error);
           mostrarMensaje("Error al subir imágenes");
@@ -702,8 +702,8 @@ const EntregarPedido = () => {
             fechaVenta: new Date(),
             numeroComprobante: "",
             montoTotal: pedidoCompleto.total,
-            totalPaletas,
-            totalMafaletas,
+            totalPaletas: totalPaletas,
+            totalMafeletas: totalMafaletas,
             estado: "entregado",
             totalIgv: pedidoCompleto.total * 0.18,
             pedido: parsedPedido.id,
@@ -797,7 +797,8 @@ const EntregarPedido = () => {
       return axios.post(`${BASE_URL}/pago`, pago).then((response) => {
         return {
           metodoPagoId: metodoPago.id,
-          pagoId: response.data.id,
+          pagoId: response.data.pago.id,
+          result: response
         };
       });
     });
@@ -806,7 +807,12 @@ const EntregarPedido = () => {
     console.log("resultados")
     console.log(resultados);
     for (const { metodoPagoId, pagoId } of resultados) {
+      
       try {
+        if (pagoId == undefined) {
+          console.log(`Error al procesar pago para ${metodoPagoId}`);
+          throw new Error(`Error al procesar pago para ${metodoPagoId}`);
+        }
         await axios.put(`${BASE_URL}/pedidoXMetodoPago/${metodoPagoId}`, {
           pago: pagoId,
         });

@@ -217,23 +217,7 @@ export default function TabOneScreen() {
       } catch (error) {
         console.error("Error al actualizar el estado del motorizado:", error);
       }
-      //Reasignar los pedidos, estado = reasignar
-      try {
-        for (const pedido of pedidos) {
-          const response = await axios.put(`${BASE_URL}/pedido/${pedido.id}`, {
-            estado: "manual",
-            motivoCancelacion:
-              motivoCancelacion === "Otro" ? otroMotivo : motivoCancelacion,
-          });
-          console.log(response.data);
-        }
-      } catch (error) {
-        console.error("Error al reasignar los pedidos:", error);
-        mostrarMensaje(
-          "Error al reasignar los pedidos, favor intentar de nuevo",
-          "auto"
-        );
-      }
+      
       try {
         const promises = pedidos.map((pedido) =>
           axios.put(`${BASE_URL}/pedido/${pedido.id}`, {

@@ -29,9 +29,6 @@ import { findOptimalRouteForPedidos } from "@/functions/tspAlg";
 import { Platform } from "react-native";
 
 
-console.log = () => {};
-console.warn = () => {};
-console.error = () => {};
 
 let BASE_URL = "";
 if (Platform.OS === "web") {
