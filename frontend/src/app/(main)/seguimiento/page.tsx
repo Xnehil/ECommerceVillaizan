@@ -178,6 +178,7 @@ const TrackingPage: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const [modalMessage, setModalMessage] = useState("");
   const [mensajePopup, setMensajePopup] = useState<string>("");
+  const [permiteCancelacion, setPermiteCancelacion] = useState<boolean>(false);
   
    // Función para abrir el modal de confirmación
    const handleCancelClick = () => {
@@ -196,6 +197,31 @@ const TrackingPage: React.FC = () => {
       }
     }
   }, [session, status]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        //setLoading(true);
+        const response = await axios.get(`${baseUrl}/admin/ajuste/permitir_cancelaciones`);
+        const ajuste = response.data.ajuste;
+        if(ajuste && ajuste.valor) {
+          if(ajuste.valor === "true") {
+            setPermiteCancelacion(true);
+          }
+          else{
+            setPermiteCancelacion(false);
+          }
+        }
+      } catch (err) {
+        setError("Error al cargar la información. Por favor, intenta nuevamente.");
+        if (axios.isAxiosError(err)) {
+          console.error("Error al cargar la información:", err.response?.data);
+        }
+      }
+    };
+
+    fetchData();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
     // Función para cancelar el pedido
   // Función para cancelar el pedido al confirmar en el modal
@@ -509,7 +535,7 @@ const TrackingPage: React.FC = () => {
                   ) : null}
                 </div>
                 {/* Botón para cancelar el pedido */}
-                {enRuta === "espera" && (
+                {enRuta === "espera" && permiteCancelacion && (
                   <div style={{ textAlign: "center", marginTop: "20px" }}>
                     <button
                       onClick={handleCancelClick}
