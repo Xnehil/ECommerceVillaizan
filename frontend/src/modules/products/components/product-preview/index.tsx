@@ -50,6 +50,7 @@ export default function ProductPreview({
   carrito,
   setCarrito,
   isAuthenticated,
+  outOfSchedule,
 }: {
   productPreview: Producto
   isFeatured?: boolean
@@ -57,6 +58,7 @@ export default function ProductPreview({
   carrito: Pedido | null
   setCarrito: React.Dispatch<React.SetStateAction<Pedido | null>>
   isAuthenticated: boolean
+  outOfSchedule?: boolean
 }) {
   const [isAdding, setIsAdding] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -92,7 +94,7 @@ export default function ProductPreview({
   }, [isAuthenticated, productPreview])
 
   // Verificar si el producto tiene stock
-  if (productPreview.inventarios[0].stock === 0) {
+  if (!outOfSchedule && productPreview.inventarios[0].stock === 0) {
     return null
   }
 
@@ -377,7 +379,7 @@ export default function ProductPreview({
         </Link>
       </div>
       {/* Botón Agregar, Cantidad, y Remover */}
-      {cantidadActual > 0 ? (
+      {!outOfSchedule && cantidadActual > 0 ? (
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex items-center">
           <button
             onClick={handleRemoveFromCart}
@@ -399,6 +401,7 @@ export default function ProductPreview({
           </button>
         </div>
       ) : (
+        !outOfSchedule &&
         productPreview.inventarios[0].stock > 0 && (
           <button
             onClick={handleAddToCart}
@@ -419,18 +422,19 @@ export default function ProductPreview({
       )}
 
       {/* Stock limitado */}
-      {productPreview.inventarios[0].stock < 0 ? (
-        <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2">
-          Este producto no está disponible en tu ciudad
-        </div>
-      ) : (
-        productPreview.inventarios[0].stock <=
-          productPreview.inventarios[0].stockMinimo && (
+      {!outOfSchedule &&
+        (productPreview.inventarios[0].stock < 0 ? (
           <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2">
-            Stock limitado: quedan pocas unidades disponibles en tu ciudad
+            Este producto no está disponible en tu ciudad
           </div>
-        )
-      )}
+        ) : (
+          productPreview.inventarios[0].stock <=
+            productPreview.inventarios[0].stockMinimo && (
+            <div className="mt-2 text-red-500 text-sm bg-red-100 rounded p-2">
+              Stock limitado: quedan pocas unidades disponibles en tu ciudad
+            </div>
+          )
+        ))}
 
       {/* Información del producto */}
       <div className="p-4">
