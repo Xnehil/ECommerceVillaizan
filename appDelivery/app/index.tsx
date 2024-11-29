@@ -43,6 +43,7 @@ export default function LoginScreen() {
     setLoading(true);
     if (password == '') {
       alert("Usuario o contraseña incorrecta");
+      setLoading(false);
       return;
     }
     try {
@@ -65,6 +66,8 @@ export default function LoginScreen() {
         );
         if (response.status === 401) {
           alert("Usuario o contraseña incorrecta");
+          setLoading(false);
+
           return;
         } else if (response.status === 200) {
           console.log("Correcto:", response);
@@ -79,6 +82,8 @@ export default function LoginScreen() {
     } catch (error) {
       console.error("Error al intentar login:", error);
       alert("Ocurrió un error al intentar iniciar sesión");
+      setLoading(false);
+
     } finally {
       setLoading(false);
     }
