@@ -1,12 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Spinner from '@modules/common/icons/spinner';
+import axios from 'axios';
 
-const berenjena="/images/berenjena.png";
-const cebolla="/images/cebolla.png";
-const pera="/images/pera.png";
-const pinon="/images/pinon.png";
-const tomate="/images/tomate.png";
-const zanahoria="/images/zanohoria.png";
 
 
 interface EnEsperaTrackingProps {
@@ -15,13 +10,35 @@ interface EnEsperaTrackingProps {
 }
 
 const EnEsperaTracking: React.FC<EnEsperaTrackingProps> = ({codigoSeguimiento, mensaje}) => {
-    const images = [berenjena, cebolla, pera, pinon, tomate, zanahoria];
-    const duplicatedImages = images.concat(images);
+    const [images, setImages] = useState<string[]>([]);
+    const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
+    const a=useRef(0);
+    
+    useEffect(() => {
+        const fetchImages = async () => {
+            const response = await axios.get(`${baseUrl}/admin/contenidoEducativo?tipoContenido=Imagen`);
+            const contenidos = response.data.contenidoEducativos;
+            let urls: string[] = [];
+            for (const contenido of contenidos) {
+                // They are like https://drive.google.com/uc?export=view&id=1PGt3vhQeNpy9HyHOInyMM1EfRJDkbutI. We need to convert them to https://drive.google.com/thumbnail?id=15OPb_x_a9kkmTUfxXeDf_dHHuimzR4OS&sz=w500
+                const id = contenido.URLContenido.split("id=")[1];
+                urls.push(`https://drive.google.com/thumbnail?id=${id}&sz=w400`);
+            }
+            // Only 8 random images 
+            urls = urls.sort(() => Math.random() - 0.5).slice(0, 8);
+            urls=urls.concat(urls);
+            setImages(urls);
+        }
+        if (a.current===0){
+            fetchImages();
+            a.current=1;
+        }
+    }, []);
 
     return (
         <div style={styles.container}>
             <div style={styles.fallingImagesContainer}>
-                {duplicatedImages.map((src, index) => (
+                {images.map((src, index) => (
                     <img
                         key={index}
                         src={src}
@@ -30,7 +47,7 @@ const EnEsperaTracking: React.FC<EnEsperaTrackingProps> = ({codigoSeguimiento, m
                             left: `${Math.random() * 100}%`,
                             animationDelay: `${Math.random() * 5}s`,
                         }}
-                        alt={`falling-${index}`}
+                        alt={``}
                     />
                 ))}
             </div>

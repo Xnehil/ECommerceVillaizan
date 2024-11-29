@@ -148,9 +148,11 @@ const handleClientMessage = (
         entregados.delete(idPedido);
       } else if (estadoPedidos.get(idPedido) === 'solicitado') {
         ws.send(JSON.stringify({ type: 'confirmarResponse', data: 'Pedido en proceso de confirmación' }));
-      } else if (estadoPedidos.get(idPedido) === 'cancelado') {
+      } else if (estadoPedidos.get(idPedido) === 'cancelado' || estadoPedidos.get(idPedido) === 'fraudulento') {
         ws.send(JSON.stringify({ type: 'canceladoResponse', data: 'Pedido cancelado' }));
-      } else if (location && enEntrega) {
+      } else if (estadoPedidos.get(idPedido) === 'manual') {
+        ws.send(JSON.stringify({ type: 'manualResponse', data: 'Pedido en proceso de confirmación' }));
+      }else if (location && enEntrega) {
         ws.send(JSON.stringify({ type: 'locationResponse', data: location }));
       } 
       else if (location && !enEntrega) {

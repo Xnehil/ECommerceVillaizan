@@ -6,12 +6,13 @@ export const InventarioMotorizadoRepository = dataSource
   .extend({
     async findByMotorizadoId(motorizadoId: string): Promise<InventarioMotorizado[]> {
       return this.createQueryBuilder("inventarioMotorizado")
-        .leftJoinAndSelect("inventarioMotorizado.motorizado", "motorizado")
-        .leftJoinAndSelect("inventarioMotorizado.producto", "producto")
-        .leftJoinAndSelect("motorizado.usuario", "usuario")
-        .where("motorizado.id = :motorizadoId", { motorizadoId })
-        .getMany();
-    },
+          .leftJoinAndSelect("inventarioMotorizado.motorizado", "motorizado")
+          .leftJoinAndSelect("inventarioMotorizado.producto", "producto")
+          .leftJoinAndSelect("motorizado.usuario", "usuario")
+          .where("motorizado.id = :motorizadoId", { motorizadoId })
+          .andWhere("inventarioMotorizado.stock >= 0") // Add condition to filter negative stock
+          .getMany();
+  },
 
     async findByProductoId(productoId: string) {
       return this.find({

@@ -263,6 +263,7 @@ export default function TabOneScreen() {
     setResolveCallback(null);
   };
   const navigation = useNavigation();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -296,7 +297,7 @@ export default function TabOneScreen() {
         style={[styles.card, !isConnected && styles.disabledCard]}
       >
         <Pressable style={styles.card_inside} disabled={!isConnected} onPress={() => {
-          if (isConnected) navigation.navigate("delivery"); 
+          if (isConnected) router.push("/home/delivery"); 
         }}>
           <MaterialIcons name="list-alt" size={24} color="white" />
           <View style={styles.cardText}>
@@ -310,8 +311,13 @@ export default function TabOneScreen() {
         </Pressable>
       </View>
 
-      <Link to={"/home/settings/inventory"} style={styles.card}>
-        <Pressable style={styles.card_inside}>
+      <View style={styles.card}>
+        <Pressable
+          style={styles.card_inside}
+          onPress={() => {
+            router.push("/home/settings/inventory");
+          }}
+        >
           <MaterialIcons name="inventory" size={24} color="white" />
           <View style={styles.cardText}>
             <Text style={[styles.cardTitle, styles.cardContent]}>
@@ -322,9 +328,15 @@ export default function TabOneScreen() {
             </Text>
           </View>
         </Pressable>
-      </Link>
-      <Link to={"/venta"} style={styles.card}>
-        <Pressable style={styles.card_inside}>
+      </View>
+
+      <View style={styles.card}>
+        <Pressable
+          style={styles.card_inside}
+          onPress={() => {
+            router.push("/venta");
+          }}
+        >
           <MaterialIcons name="point-of-sale" size={24} color="white" />
           <View style={styles.cardText}>
             <Text style={[styles.cardTitle, styles.cardContent]}>
@@ -333,7 +345,7 @@ export default function TabOneScreen() {
             <Text style={styles.cardContent}>Registra una venta externa</Text>
           </View>
         </Pressable>
-      </Link>
+      </View>
       <Modal
         visible={modalCancelVisible}
         animationType="slide"

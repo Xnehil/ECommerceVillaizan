@@ -364,7 +364,7 @@ export default function Entregas() {
       )}
 
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <View style={{ flexDirection: "row" }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={styles.Titulo}>
             {verHistorial ? "Tu historial" : "Tus entregas"}
           </Text>
@@ -373,6 +373,7 @@ export default function Entregas() {
               IconComponent={FontAwesome}
               name="refresh"
               color="black"
+              size={24}
             />
           </TouchableOpacity>
         </View>
@@ -380,7 +381,7 @@ export default function Entregas() {
           style={styles.toggleButton}
           onPress={() => setVerHistorial(!verHistorial)}
         >
-          <Text style={styles.toggleButtonText}>
+            <Text style={styles.toggleButtonText} numberOfLines={1} ellipsizeMode="tail">
             {verHistorial ? "Ver Pedidos Actuales" : "Ver Historial"}
           </Text>
         </TouchableOpacity>
@@ -482,7 +483,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   Titulo: {
-    fontSize: 25,
+    fontSize: 20,
     fontWeight: "bold",
     marginVertical: 10,
   },

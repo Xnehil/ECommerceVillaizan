@@ -23,12 +23,15 @@ const fetchCart = async () => {
   }
   const cart: Pedido = respuesta.cart;
 
+  /*
   if (cart.estado !== "carrito") {
     return null; // Retorna null si el carrito no está en estado "carrito"
-  }
+  }*/
 
-  const enrichedItems = await enrichLineItems(cart.detalles);
-  cart.detalles = enrichedItems.filter(item => item.estaActivo); // Filtra los items inactivos
+  if(cart.detalles){
+    const enrichedItems = await enrichLineItems(cart.detalles);
+    cart.detalles = enrichedItems.filter(item => item.estaActivo); // Filtra los items inactivos
+  }
 
   return cart;
 }

@@ -1,14 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Pedido } from 'types/PaquetePedido';
 import axios from 'axios';
 
-const berenjena = "/images/berenjena.png";
-const cebolla = "/images/cebolla.png";
-const pera = "/images/pera.png";
-const pinon = "/images/pinon.png";
-const tomate = "/images/tomate.png";
-const zanahoria = "/images/zanohoria.png";
+
 
 const baseUrl = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL;
 
@@ -20,8 +15,29 @@ interface PedidoCanceladoProps {
 
   const PedidoCancelado: React.FC<PedidoCanceladoProps> = ({ pedido }) => {
     const router = useRouter();
-    const images = [berenjena, cebolla, pera, pinon, tomate, zanahoria];
-    const duplicatedImages = images.concat(images);
+    const [images, setImages] = useState<string[]>([]);
+    const a=useRef(0);
+
+    useEffect(() => {
+        const fetchImages = async () => {
+            const response = await axios.get(`${baseUrl}/admin/contenidoEducativo?tipoContenido=Imagen`);
+            const contenidos = response.data.contenidoEducativos;
+            let urls: string[] = [];
+            for (const contenido of contenidos) {
+                const id = contenido.URLContenido.split("id=")[1];
+                urls.push(`https://drive.google.com/thumbnail?id=${id}&sz=w400`);
+            }
+            // Only 8 random images 
+            urls = urls.sort(() => Math.random() - 0.5).slice(0, 8);
+            urls=urls.concat(urls);
+            setImages(urls);
+        }
+        if (a.current===0){
+            fetchImages();
+            a.current=1;
+        }
+    }, []);
+
 
     const handleRetry = async () => {
         if(!pedido){
@@ -52,7 +68,7 @@ interface PedidoCanceladoProps {
     return (
         <div style={styles.container}>
             <div style={styles.fallingImagesContainer}>
-                {duplicatedImages.map((src, index) => (
+                {images.map((src, index) => (
                     <img
                         key={index}
                         src={src}
@@ -61,7 +77,7 @@ interface PedidoCanceladoProps {
                             left: `${Math.random() * 100}%`,
                             animationDelay: `${Math.random() * 5}s`,
                         }}
-                        alt={`falling-${index}`}
+                        alt={``}
                     />
                 ))}
             </div>
