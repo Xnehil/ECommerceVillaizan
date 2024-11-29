@@ -14,30 +14,34 @@ interface OrderDetailsProps {
     if (!pedido) {
       return null;
     }
-    console.log("Pedido data:", pedido);
+    // console.log("Pedido data:", pedido);
     const getStatusText = () => {
       switch (enRuta) {
-          case 'espera':
-              return 'En espera';
-          case 'ruta':
-              return 'En ruta';
-          case 'entregado':
-              return 'Entregado';
-          default:
-              return '';
+        case 'espera':
+            return 'En espera';
+        case 'ruta':
+            return 'En ruta';
+        case 'entregado':
+            return 'Entregado';
+        case 'cancelado':
+            return 'Cancelado';
+        default:
+            return '';
       }
   };
 
   const getStatusClass = () => {
       switch (enRuta) {
           case 'espera':
-              return 'text-yellow-600';
+              return 'text-yellow-600 font-sans';
           case 'ruta':
-              return 'text-blue-600';
+              return 'text-blue-600 font-sans';
           case 'entregado':
-              return 'text-green-600';
+              return 'text-green-600 font-sans';
+            case 'cancelado':
+                return 'text-red-600 font-sans';
           default:
-              return 'text-gray-600';
+              return 'text-gray-600 font-sans';
       }
   };
 
