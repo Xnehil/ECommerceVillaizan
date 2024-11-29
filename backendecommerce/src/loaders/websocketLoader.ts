@@ -148,9 +148,9 @@ const handleClientMessage = (
         entregados.delete(idPedido);
       } else if (estadoPedidos.get(idPedido) === 'solicitado') {
         ws.send(JSON.stringify({ type: 'confirmarResponse', data: 'Pedido en proceso de confirmación' }));
-
-      }
-        else if (location && enEntrega) {
+      } else if (estadoPedidos.get(idPedido) === 'cancelado') {
+        ws.send(JSON.stringify({ type: 'canceladoResponse', data: 'Pedido cancelado' }));
+      } else if (location && enEntrega) {
         ws.send(JSON.stringify({ type: 'locationResponse', data: location }));
       } 
       else if (location && !enEntrega) {
