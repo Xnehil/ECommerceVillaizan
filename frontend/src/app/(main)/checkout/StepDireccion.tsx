@@ -170,6 +170,9 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
       
       console.log("Selected Address ID:", addressId)
     }
+    else{
+      setSelectedAddressId(null)
+    }
     
   }
 
@@ -370,7 +373,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
         mensajesError.push("RUC inválido")
         console.log("Error ruc")
       }
-      let checkSelectedAddressId = selectedAddressId !== null || !isAuthenticated
+      let checkSelectedAddressId = (selectedAddressId !== null && isAuthenticated) || !isAuthenticated
       if(!checkSelectedAddressId) {
         mensajesError.push("Dirección inválida")
         console.log("Error dirección")
@@ -702,6 +705,7 @@ const StepDireccion: React.FC<StepDireccionProps> = ({
                 checkFormValidity={isFormValid}
                 showErrorValidacion={showErrorValidacion}
                 mensajeErrorValidacion={mensajeErrorValidacion}
+                href="/checkout?step=pago"
               />
             ) : (
               <p>Cargando carrito...</p>

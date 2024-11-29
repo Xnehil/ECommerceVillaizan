@@ -65,6 +65,9 @@ const LoggedInAddresses: React.FC<LoggedInAddressesProps> = ({ userId, ciudadId,
           if(selectedAddressIdPassed){
             setSelectedAddressId(selectedAddressIdPassed);
           }
+          else{
+            setSelectedAddressId(null);
+          }
           // Validate savedAddressId
           /*
           console.log("Validating savedAddressId");

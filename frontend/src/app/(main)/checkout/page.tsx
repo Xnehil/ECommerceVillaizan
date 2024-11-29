@@ -18,39 +18,39 @@ export const metadata: Metadata = {
 
 const fetchCart = async () => {
   const respuesta = await getOrSetCart();
-  /*
+
   if (!respuesta) {
     return null
-  }*/
+  }
+  const cart: Pedido = respuesta.cart;
 
-  //const cart: Pedido = respuesta.cart;
-  const cart: Pedido = respuesta?.cart;
-  let cookieValue = respuesta?.cookie;
+
+
 
   /*
   if (cart.estado !== "carrito") {
     return null; // Retorna null si el carrito no está en estado "carrito"
   }*/
 
-  if(cart?.detalles){
+  if(cart.detalles){
     const enrichedItems = await enrichLineItems(cart.detalles);
     cart.detalles = enrichedItems.filter(item => item.estaActivo); // Filtra los items inactivos
   }
 
-  let state ="carrito"
-  if (cart.direccion === null){
-    state = "direccion"
-  }
+
+
+
+
 
   return cart;
 }
 
 export default async function MetodoPago() {
   const cart = await fetchCart();
-  /*
+
   if (!cart) {
     notFound(); // Trigger a 404 page if the cart isn't found
     return null;
-  }*/
+  }
   return <Checkout pedido={cart} />;
 }
