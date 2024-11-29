@@ -589,173 +589,191 @@ const EntregarPedido = () => {
   };
 
   const confirmarEntrega = async () => {
-    try {
-      const fotosPagoNecesarias = pedidoCompleto?.pedidosXMetodoPago?.length;
-      if (fotoPedido === null || fotoPedido === undefined) {
-        mostrarMensaje("Falta foto de pedido");
-        return;
-      } else if (
-        fotosPagoNecesarias === undefined ||
-        Object.keys(fotosPago).length !== fotosPagoNecesarias
-      ) {
-        mostrarMensaje(
-          `Falta foto de todos los métodos de pago (${
-            fotosPagoNecesarias ? fotosPagoNecesarias : ""
-          })`
-        );
-        return;
-      }
-      setIsLoading(true);
-      const urlPedido = await enviarImagen(parsedPedido.id, "pedido");
-      const urlPago = await enviarImagen(parsedPedido.id, "pago");
-      if (urlPago === undefined || urlPago === null) {
-        return;
-      }
-      console.log(urlPedido, urlPago);
-      //Crear Venta
-      if (pedidoCompleto != null && pedidoCompleto.pedidosXMetodoPago != null) {
-        const response_detalle = await axios.get(
-          `${BASE_URL}/pedido/${pedidoCompleto.id}/conDetalle?pedido=true`
-        );
-        pedidoCompleto.detalles = response_detalle.data.pedido.detalles;
-        const detalles = pedidoCompleto.detalles || [];
-        let totalPaletas = 0;
-        let totalMafaletas = 0;
-        try {
-          totalPaletas = detalles
-            .filter(
-              (detalle: DetallePedido) =>
-                detalle.producto.tipoProducto?.nombre === "Paleta"
-            )
-            .reduce(
-              (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
-              0
-            );
-        } catch (error) {
-          console.error("Error calculating totalPaletas:", error);
-          setIsLoading(false);
+    if (pedidoCompleto == null) {
+      mostrarMensaje("Error al confirmar la entrega");
+      return;
+    } else {
+      try {
+        // Validar datos iniciales
+        const fotosPagoNecesarias = pedidoCompleto?.pedidosXMetodoPago?.length;
+        if (!fotoPedido) {
+          mostrarMensaje("Falta foto de pedido");
+          return;
+        }
+        if (
+          fotosPagoNecesarias === undefined ||
+          Object.keys(fotosPago).length !== fotosPagoNecesarias
+        ) {
+          mostrarMensaje("Faltan fotos de todos los métodos de pago");
+          return;
         }
 
+        setIsLoading(true);
+
+        // Subir imágenes del pedido y pagos
+        let urlPedido, urlPago;
         try {
-          totalMafaletas = detalles
-            .filter(
-              (detalle: DetallePedido) =>
-                detalle.producto.tipoProducto?.nombre === "Mafaleta"
-            )
-            .reduce(
-              (acc: number, detalle: DetallePedido) => acc + detalle.cantidad,
-              0
-            );
+          urlPedido = await enviarImagen(pedidoCompleto.id, "pedido");
+          urlPago = await enviarImagen(pedidoCompleto.id, "pago");
         } catch (error) {
-          console.error("Error calculating totalMafaletas:", error);
+          console.error("Error al subir imágenes:", error);
+          mostrarMensaje("Error al subir imágenes");
           setIsLoading(false);
+          return;
         }
 
-        const venta: Venta = {
-          id: "",
-          tipoComprobante: "Boleta",
-          fechaVenta: new Date(),
-          numeroComprobante: "",
-          montoTotal: pedidoCompleto.total,
-          totalPaletas: totalPaletas,
-          totalMafeletas: totalMafaletas,
-          estado: "entregado",
-          totalIgv: pedidoCompleto.total * 0.18,
-          pedido: parsedPedido.id,
-          ordenSerie: null,
-        };
+        if (!urlPago) {
+          mostrarMensaje("Error al subir evidencia de pago");
+          setIsLoading(false);
+          return;
+        }
 
-        const ventaData = await axios.post(`${BASE_URL}/venta`, venta);
-        console.log(ventaData);
-        // Crear un array para almacenar las promesas de axios
-        const promesasPagos = [];
+        console.log("URLs generadas:", urlPedido, urlPago);
 
-        // Iterar por cada método de pago
-        for (const metodoPago of pedidoCompleto.pedidosXMetodoPago) {
-          const pago: Pago = {
-            esTransferencia: true,
-            montoCobrado: metodoPago.monto,
-            numeroOperacion: null,
-            urlEvidencia: urlPago[metodoPago.id],
-            codigoTransaccion: null,
-            venta: ventaData.data.id,
-            metodoPago: metodoPago.metodoPago,
-            banco: null,
-            pedido: pedidoCompleto,
+        // Crear Venta
+        let ventaData;
+        try {
+          const detallesResponse = await axios.get(
+            `${BASE_URL}/pedido/${pedidoCompleto.id}/conDetalle?pedido=true`
+          );
+          console.log("Detalles guardados: ", detallesResponse.data);
+          const detalles = detallesResponse.data.pedido.detalles || [];
+          pedidoCompleto.detalles = detalles;
+
+          const totalPaletas = calcularTotalPorProducto(detalles, "Paleta");
+          const totalMafaletas = calcularTotalPorProducto(detalles, "Mafaleta");
+
+          const venta = {
             id: "",
-            estaActivo: true,
+            tipoComprobante: "Boleta",
+            fechaVenta: new Date(),
+            numeroComprobante: "",
+            montoTotal: pedidoCompleto.total,
+            totalPaletas: totalPaletas,
+            totalMafeletas: totalMafaletas,
+            estado: "entregado",
+            totalIgv: pedidoCompleto.total * 0.18,
+            pedido: parsedPedido.id,
+            ordenSerie: null,
           };
 
-          console.log(pago);
-
-          // Agregar la promesa de axios al array
-          promesasPagos.push(axios.post(`${BASE_URL}/pago`, pago));
-        }
-
-        // Usar Promise.all para esperar a que todas las solicitudes se completen
-        try {
-          // Enviar pagos en paralelo
-          const resultados = await Promise.all(promesasPagos);
-          console.log("Todos los pagos se han procesado:", resultados);
-
-          // Enlazar cada pago con su respectivo pedidosXMetodoPago
-          for (let i = 0; i < resultados.length; i++) {
-            const pagoActualizado = resultados[i]?.data;
-            const metodoPago = pedidoCompleto.pedidosXMetodoPago[i];
-
-            // Validar que los datos existan
-            if (!pagoActualizado || !metodoPago) {
-              console.warn(
-                `No se pudo procesar el enlace para el índice ${i}. Datos faltantes.`
-              );
-              continue;
-            }
-            let error_pxm = null;
-            try {
-              // Enlazar el pago con pedidosXMetodoPago
-              await axios.put(
-                `${BASE_URL}/pedidoXMetodoPago/${metodoPago.id}`,
-                {
-                  pago: pagoActualizado.id,
-                }
-              );
-              console.log(
-                `Pago ${pagoActualizado.id} enlazado con pedidosXMetodoPago ${metodoPago.id}`
-              );
-            } catch (error) {
-              error_pxm = error;
-              console.error(
-                `Error al enlazar el pago ${pagoActualizado.id} con pedidosXMetodoPago ${metodoPago.id}:`,
-                error
-              );
-              setIsLoading(false);
-            }
-            if (error_pxm) {
-              throw error_pxm;
-            }
-          }
+          ventaData = await axios.post(`${BASE_URL}/venta`, venta);
         } catch (error) {
-          console.error("Ocurrió un error al procesar los pagos:", error);
+          console.error("Error al crear la venta:", error);
+          mostrarMensaje("Error al crear la venta");
           setIsLoading(false);
+          return;
         }
 
-        await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
-          estado: "entregado",
-          urlEvidencia: urlPedido,
-          pagado: false,
-        });
+        console.log("Venta creada:", ventaData.data);
 
+        // Procesar pagos
+        try {
+          await procesarPagos(
+            pedidoCompleto?.pedidosXMetodoPago || [],
+            urlPago,
+            ventaData.data
+          );
+        } catch (error) {
+          console.error("Error al procesar los pagos:", error);
+          mostrarMensaje("Error al procesar los pagos");
+          setIsLoading(false);
+          return;
+        }
+
+        // Actualizar estado del pedido
+        try {
+          await axios.put(`${BASE_URL}/pedido/${pedidoCompleto.id}`, {
+            estado: "entregado",
+            urlEvidencia: urlPedido,
+            pagado: true,
+          });
+        } catch (error) {
+          console.error("Error al actualizar el pedido:", error);
+          mostrarMensaje("Error al actualizar el pedido");
+          setIsLoading(false);
+          return;
+        }
+        console.log("Pedido actualizado");
+
+        // Navegar al siguiente paso
+        setIsLoading(false);
         router.replace({
           pathname: "/home/delivery/confirmada",
           params: {},
         });
+      } catch (error) {
+        console.error("Error general en confirmarEntrega:", error);
+        mostrarMensaje("Error al confirmar la entrega");
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error updating pedido:", error);
-      mostrarMensaje("Error al confirmar la entrega", "confirmacion");
-      setIsLoading(false);
     }
-    setIsLoading(false);
+  };
+
+  // Función para calcular totales por tipo de producto
+  const calcularTotalPorProducto = (detalles : DetallePedido[], tipoProducto: String) => {
+    try {
+      return detalles
+        .filter(
+          (detalle) => detalle.producto.tipoProducto?.nombre === tipoProducto
+        )
+        .reduce((acc, detalle) => acc + detalle.cantidad, 0);
+    } catch (error) {
+      console.error(`Error al calcular total para ${tipoProducto}:`, error);
+      return 0;
+    }
+  };
+
+  // Función para procesar pagos
+  const procesarPagos = async (pedidosXMetodoPago:PedidoXMetodoPago[], urlPago: Record<string, string>, venta:Venta) => {
+    const promesasPagos = pedidosXMetodoPago.map((metodoPago) => {
+      const pago = {
+        esTransferencia: true,
+        montoCobrado: metodoPago.monto,
+        numeroOperacion: null,
+        urlEvidencia: urlPago[metodoPago.id],
+        codigoTransaccion: null,
+        venta: venta.id,
+        metodoPago: metodoPago.metodoPago,
+        banco: null,
+        pedido: pedidoCompleto,
+        id: "",
+        estaActivo: true,
+      };
+
+      return axios.post(`${BASE_URL}/pago`, pago).then((response) => {
+        return {
+          metodoPagoId: metodoPago.id,
+          pagoId: response.data.pago.id,
+          result: response
+        };
+      });
+    });
+
+    const resultados = await Promise.all(promesasPagos);
+    console.log("resultados")
+    console.log(resultados);
+    for (const { metodoPagoId, pagoId } of resultados) {
+      
+      try {
+        if (pagoId == undefined) {
+          console.log(`Error al procesar pago para ${metodoPagoId}`);
+          throw new Error(`Error al procesar pago para ${metodoPagoId}`);
+        }
+        await axios.put(`${BASE_URL}/pedidoXMetodoPago/${metodoPagoId}`, {
+          pago: pagoId,
+        });
+        console.log(
+          `Pago ${pagoId} enlazado con pedidoXMetodoPago ${metodoPagoId}`
+        );
+      } catch (error) {
+        console.error(
+          `Error al enlazar el pago ${pagoId} con pedidoXMetodoPago ${metodoPagoId}:`,
+          error
+        );
+        throw error;
+      }
+    }
   };
 
   const handleConfirmarEntrega = async () => {
